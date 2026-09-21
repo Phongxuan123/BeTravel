@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Be.Travel",
+    "slug": "be-travel",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.betravel.app"
+    },
+    "ios": {
+      "bundleIdentifier": "com.betravel.app",
+      "supportsTablet": true
+    }
+  }
+}

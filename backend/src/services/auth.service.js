@@ -15,6 +15,18 @@ const DUMMY_HASH =
 const PROFILE_PHONE_REGEX =
     /^(0|\+84)[0-9]{9}$/;
 
+const normalizeVietnamPhone = (value) => {
+    const phone = String(value ?? "")
+        .trim()
+        .replace(/[\s.-]/g, "");
+
+    if (phone.startsWith("+84")) {
+        return `0${phone.slice(3)}`;
+    }
+
+    return phone;
+};
+
 const serializeUser = (user) => ({
     id: user._id.toString(),
     username: user.username,
@@ -64,45 +76,66 @@ const createSession = async (
     };
 };
 
+const normalizeUsernameBase = (email) => {
+    const prefix = String(email || "")
+        .split("@")[0]
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, "")
+        .slice(0, 24);
+
+    return prefix.length >= 3 ? prefix : "traveler";
+};
+
+const generateUniqueUsername = async (email) => {
+    const base = normalizeUsernameBase(email);
+    let username = base;
+    let counter = 1;
+
+    while (await User.exists({ username })) {
+        const suffix = String(counter);
+        username = `${base.slice(0, 30 - suffix.length)}${suffix}`;
+        counter += 1;
+    }
+
+    return username;
+};
+
 export const registerUser = async ({
     fullName,
     username,
     email,
-    phone,
+    phone = "",
     password
 }) => {
-    const normalizedFullName =
-        fullName.trim();
+    const normalizedFullName = fullName.trim();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPhone = normalizeVietnamPhone(phone);
 
-    const normalizedUsername =
-        username.trim().toLowerCase();
-
-    const normalizedEmail =
-        email.trim().toLowerCase();
-
-    const normalizedPhone =
-        phone.trim();
-
-    const [emailOwner, usernameOwner] =
-        await Promise.all([
-            User.findOne({
-                email: normalizedEmail
-            }),
-            User.findOne({
-                username: normalizedUsername
-            })
-        ]);
+    const emailOwner = await User.findOne({ email: normalizedEmail });
 
     if (emailOwner) {
         throw new Error("EMAIL_EXISTS");
     }
 
-    if (usernameOwner) {
-        throw new Error("USERNAME_EXISTS");
+    const phoneOwner = await User.findOne({ phone: normalizedPhone });
+
+    if (phoneOwner) {
+        throw new Error("PHONE_EXISTS");
     }
 
-    const passwordHash =
-        await bcrypt.hash(password, 12);
+    let normalizedUsername;
+
+    if (username) {
+        normalizedUsername = username.trim().toLowerCase();
+        const usernameOwner = await User.findOne({ username: normalizedUsername });
+        if (usernameOwner) {
+            throw new Error("USERNAME_EXISTS");
+        }
+    } else {
+        normalizedUsername = await generateUniqueUsername(normalizedEmail);
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
 
     const user = await User.create({
         fullName: normalizedFullName,
@@ -114,10 +147,6 @@ export const registerUser = async ({
         isActive: true
     });
 
-    /*
-     * No registration OTP and no activation email.
-     * Registration finishes here. User logs in afterward.
-     */
     return serializeUser(user);
 };
 
@@ -126,13 +155,15 @@ export const loginUser = async ({
     password,
     rememberMe
 }) => {
-    const normalizedIdentifier =
-        identifier.trim().toLowerCase();
+    const rawIdentifier = identifier.trim();
+    const normalizedIdentifier = rawIdentifier.toLowerCase();
+    const normalizedPhoneIdentifier = normalizeVietnamPhone(rawIdentifier);
 
     const user = await User.findOne({
         $or: [
             { email: normalizedIdentifier },
-            { username: normalizedIdentifier }
+            { username: normalizedIdentifier },
+            { phone: normalizedPhoneIdentifier }
         ]
     }).select("+password");
 
@@ -326,9 +357,7 @@ export const linkGoogleAccount = async ({
 };
 
 const sanitizeProfilePhone = (value) =>
-    String(value ?? "")
-        .trim()
-        .replace(/[\s.-]/g, "");
+    normalizeVietnamPhone(value);
 
 export const updateUserProfile = async ({
     userId,
@@ -387,6 +416,17 @@ export const updateUserProfile = async ({
             )
         ) {
             throw new Error("PHONE_INVALID");
+        }
+
+        if (normalizedPhone) {
+            const phoneOwner = await User.findOne({
+                phone: normalizedPhone,
+                _id: { $ne: user._id }
+            });
+
+            if (phoneOwner) {
+                throw new Error("PHONE_EXISTS");
+            }
         }
 
         user.phone = normalizedPhone;

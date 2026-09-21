@@ -103,3 +103,13 @@ POST   /api/auth/reset-password
 ```
 
 Registration does not require email confirmation.
+
+## Mobile UI compatibility patch
+
+The bundled React Native registration screen follows the Be.Travel design and sends only `fullName`, `email`, `password`, `confirmPassword`, and `termsAccepted`.
+
+Therefore this copy of the backend was adjusted so:
+
+- `username` is optional at registration and is generated from the email prefix when omitted.
+- `phone` is optional at registration.
+- password login `identifier` accepts email, username, or phone.
