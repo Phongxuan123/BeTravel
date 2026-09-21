@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+const normalizePhoneInput = (value) =>
+    String(value ?? "")
+        .trim()
+        .replace(/[\s.-]/g, "");
+
+const vietnamPhoneSchema = z
+    .string()
+    .transform(normalizePhoneInput)
+    .refine(
+        (phone) => /^(0|\+84)[0-9]{9}$/.test(phone),
+        "Số điện thoại không hợp lệ"
+    );
+
 export const registerSchema = z
     .object({
         fullName: z
@@ -8,6 +21,8 @@ export const registerSchema = z
             .min(2, "Họ tên phải có ít nhất 2 ký tự")
             .max(150, "Họ tên quá dài"),
 
+        // Username không hiển thị trên màn hình đăng ký.
+        // Nếu client không gửi, backend sẽ tự sinh từ email.
         username: z
             .string()
             .trim()
@@ -17,7 +32,8 @@ export const registerSchema = z
             .regex(
                 /^[a-z0-9_]+$/,
                 "Username chỉ được chứa chữ thường, số và dấu gạch dưới"
-            ),
+            )
+            .optional(),
 
         email: z
             .string()
@@ -25,30 +41,16 @@ export const registerSchema = z
             .toLowerCase()
             .email("Email không hợp lệ"),
 
-        phone: z
-            .string()
-            .trim()
-            .regex(
-                /^(0|\+84)[0-9]{9}$/,
-                "Số điện thoại không hợp lệ"
-            ),
+        // Từ phiên bản này số điện thoại là bắt buộc khi đăng ký mới.
+        phone: vietnamPhoneSchema,
 
         password: z
             .string()
             .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
             .max(128, "Mật khẩu quá dài")
-            .regex(
-                /[A-Z]/,
-                "Mật khẩu cần có ít nhất 1 chữ hoa"
-            )
-            .regex(
-                /[a-z]/,
-                "Mật khẩu cần có ít nhất 1 chữ thường"
-            )
-            .regex(
-                /[0-9]/,
-                "Mật khẩu cần có ít nhất 1 chữ số"
-            ),
+            .regex(/[A-Z]/, "Mật khẩu cần có ít nhất 1 chữ hoa")
+            .regex(/[a-z]/, "Mật khẩu cần có ít nhất 1 chữ thường")
+            .regex(/[0-9]/, "Mật khẩu cần có ít nhất 1 chữ số"),
 
         confirmPassword: z
             .string()
@@ -62,8 +64,7 @@ export const registerSchema = z
             )
     })
     .refine(
-        (data) =>
-            data.password === data.confirmPassword,
+        (data) => data.password === data.confirmPassword,
         {
             message: "Mật khẩu xác nhận không khớp",
             path: ["confirmPassword"]
@@ -76,7 +77,7 @@ export const loginSchema = z.object({
         .trim()
         .min(
             1,
-            "Vui lòng nhập email hoặc tên tài khoản"
+            "Vui lòng nhập email, số điện thoại hoặc tên tài khoản"
         ),
 
     password: z

@@ -138,7 +138,7 @@ export const register = async (
             email:
                 result.data.email,
             phone:
-                result.data.phone,
+                result.data.phone || "",
             password:
                 result.data.password
         });
@@ -168,6 +168,13 @@ export const register = async (
             });
         }
 
+        if (error.message === "PHONE_EXISTS") {
+            return res.status(409).json({
+                success: false,
+                message: "Số điện thoại đã được sử dụng"
+            });
+        }
+
         if (error?.code === 11000) {
             const field = Object.keys(
                 error.keyPattern || {}
@@ -178,7 +185,9 @@ export const register = async (
                 message:
                     field === "email"
                         ? "Email đã được sử dụng"
-                        : "Username đã được sử dụng"
+                        : field === "phone"
+                            ? "Số điện thoại đã được sử dụng"
+                            : "Username đã được sử dụng"
             });
         }
 
@@ -532,6 +541,10 @@ export const updateProfile = async (
             PHONE_INVALID: [
                 400,
                 "Số điện thoại không hợp lệ. Vui lòng dùng dạng 0xxxxxxxxx hoặc +84xxxxxxxxx"
+            ],
+            PHONE_EXISTS: [
+                409,
+                "Số điện thoại đã được sử dụng"
             ],
             USER_NOT_FOUND: [
                 404,

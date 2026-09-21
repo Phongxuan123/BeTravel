@@ -29,13 +29,21 @@ const userSchema = new mongoose.Schema(
             index: true
         },
 
+        /*
+         * Giữ required:false để các tài khoản cũ đang có phone:""
+         * không bị lỗi khi đọc/cập nhật.
+         * Đăng ký mới bắt buộc phone ở auth.validator.js.
+         */
         phone: {
             type: String,
             required: false,
             default: "",
-            trim: true
+            trim: true,
+            index: true
         },
 
+        // Giữ nguyên field cũ để không phá dữ liệu/schema hiện có.
+        // Mobile hiện tại không triển khai Google Login.
         googleId: {
             type: String,
             unique: true,
@@ -57,11 +65,6 @@ const userSchema = new mongoose.Schema(
             default: "user"
         },
 
-        /*
-         * BeTravel does not require registration email verification.
-         * isActive is therefore an account enabled/disabled flag,
-         * not an OTP verification flag.
-         */
         isActive: {
             type: Boolean,
             default: true
