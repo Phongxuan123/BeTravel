@@ -227,12 +227,104 @@ Moi file trong `fixtures/` la **mot response that**, khong them bot gi.
 | `auth.login.json` | `POST /auth/login` — 200 |
 | `auth.refresh.json` | `POST /auth/refresh` — 200 |
 | `auth.me.json` | `GET /auth/me` — 200 |
+| `admin.country.json` | `POST/GET/PATCH /admin/countries` — 200/201 |
+| `admin.legalArticle.json` | `GET /admin/legal/articles/:id` (đã published) — 200 |
 | `error.validation.json` | bat ky endpoint nao — 400 |
 | `error.unauthorized.json` | bat ky endpoint nao — 401 |
+| `error.forbidden.json` | bat ky endpoint `/admin/*` khi khong phai admin — 403 |
+| `error.conflict.json` | vi du publish thieu source — 409 |
 
 Ca hai phia deu co test doi chieu vao chinh cac file nay:
 
 - `backend/test/contracts.test.js` — response that phai co dung bo key nhu fixture
 - `mobile/src/lib/api/__tests__/contracts.test.ts` — schema client phai parse duoc fixture
+- `admin/src/lib/__tests__/contracts.test.ts` — schema Zod cua admin phai parse duoc fixture
 
-Lech fixture --> **test do o ca hai phia cung luc**, phat hien ngay thay vi luc tich hop.
+Lech fixture --> **test do o ca hai/ba phia cung luc**, phat hien ngay thay vi luc tich hop.
+
+---
+
+## 7. ENDPOINT ADMIN — `/api/admin/*`
+
+Tat ca endpoint duoi day BAT BUOC `Authorization: Bearer <accessToken>` cua mot
+user co `role: 'admin'`. Khong dat role admin --> `403 FORBIDDEN`. Chua dang
+nhap --> `401 UNAUTHORIZED`. Day la RBAC kiem o **backend** (`requireRole`),
+khong phai an nut phia admin UI.
+
+### 7.1. `GET /admin/dashboard`
+
+```jsonc
+{ "ok": true, "data": {
+  "articlesByStatus": { "draft": 3, "pending_review": 1, "published": 8,
+                         "superseded": 2, "archived": 0 },
+  "articlesTotal": 14, "countryCount": 2, "locationCount": 12, "failedJobCount": 0 } }
+```
+
+### 7.2. Countries / Topics / Locations — CRUD dong nhat
+
+```
+GET    /admin/countries?status=&page=&limit=       200, meta {page,limit,total}
+POST   /admin/countries                             201
+GET    /admin/countries/:id                         200
+PATCH  /admin/countries/:id                          200
+DELETE /admin/countries/:id                          200 { deleted: true }
+
+GET    /admin/topics?countryCode=&page=&limit=
+POST   /admin/topics
+GET    /admin/topics/:id
+PATCH  /admin/topics/:id
+DELETE /admin/topics/:id
+
+GET    /admin/locations?countryCode=&type=&page=&limit=
+POST   /admin/locations
+GET    /admin/locations/:id
+PATCH  /admin/locations/:id
+DELETE /admin/locations/:id
+```
+
+`location.location` la GeoJSON Point: `{ "type": "Point", "coordinates": [lng, lat] }`
+— **luon la [kinh do, vi do]**, dao nguoc la loi kinh dien.
+
+| Tinh huong | Code |
+|---|---|
+| Thieu field bat buoc, sai dinh dang | `VALIDATION_ERROR` |
+| Khong tim thay ban ghi | `NOT_FOUND` |
+
+### 7.3. Legal Articles — mo hinh day du
+
+```
+GET    /admin/legal/articles?countryCode=&topicSlug=&status=&search=&page=&limit=
+POST   /admin/legal/articles                          201, tao draft version 1
+GET    /admin/legal/articles/:id
+PATCH  /admin/legal/articles/:id                        BAT BUOC kem `updatedAt`
+POST   /admin/legal/articles/:id/status   { status, note? }
+POST   /admin/legal/articles/:id/new-version            201, clone sang version+1 draft
+```
+
+★ **Chong ghi de**: `PATCH` phai kem `updatedAt` cua ban dang xem. Khac voi
+`updatedAt` hien co trong DB --> `409 CONFLICT`, `details: {updatedBy, updatedAt}`
+la trang thai hien hanh de client tai lai.
+
+★ **May trang thai** qua `POST .../status`:
+- Chuyen sang `published`: bat buoc >=1 `sources[]` co du `url`+`authority`+
+  `publishedAt`, `summaryVi` khong rong, `effectiveFrom` co gia tri, `topicSlug`
+  ton tai. Thieu --> `409 CONFLICT`, `details` la mang `{path, message}` liet
+  ke tung field con thieu.
+- Publish thanh cong: `isCurrent=true` cho ban nay; moi ban khac cung
+  `(countryCode,slug)` dang `isCurrent=true` bi chuyen `superseded` +
+  `isCurrent=false`. Enqueue job `reindex_article`.
+- Roi khoi `published` (vi du sang `archived`): enqueue job `purge_chunks`.
+
+`POST .../new-version`: ban nhap moi **KHONG** `isCurrent` ngay — chi tro
+thanh current luc duoc publish.
+
+### 7.4. `GET /admin/audit?entityType=&actorId=&from=&to=&page=&limit=`
+
+```jsonc
+{ "ok": true, "data": [{
+  "_id": "...", "actorId": "...", "actorUsername": "",
+  "action": "STATUS_CHANGE", "entityType": "LegalArticle", "entityId": "...",
+  "diff": { "before": {...}, "after": {...} },
+  "ip": "127.0.0.1", "createdAt": "2026-09-22T..." }],
+  "meta": { "page": 1, "limit": 20, "total": 5 } }
+```

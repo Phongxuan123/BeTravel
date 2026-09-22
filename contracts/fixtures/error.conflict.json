@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Bài chưa đủ điều kiện để xuất bản",
+    "details": [
+      { "path": "sources", "message": "Cần ít nhất 1 nguồn đủ url, authority, publishedAt" },
+      { "path": "summaryVi", "message": "Tóm tắt (summaryVi) không được để trống" }
+    ]
+  }
+}
