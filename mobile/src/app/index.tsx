@@ -48,6 +48,12 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, paddingHorizontal: 18 }}
       >
+        {(tripsQuery.isError || articlesQuery.isError) && (
+          <View className="mb-3 rounded-md bg-danger-tint p-3">
+            <Text className="text-center text-sm text-danger">Không tải được một số dữ liệu. Kiểm tra kết nối mạng.</Text>
+          </View>
+        )}
+
         {/* Header */}
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center" style={{ gap: 12 }}>

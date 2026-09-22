@@ -116,3 +116,72 @@ test("loi UNAUTHORIZED khop hinh dang fixture error.unauthorized.json", async ()
   assertSameKeys(res.body.error, fixture.error, "error.unauthorized");
   assert.equal(res.body.error.code, fixture.error.code);
 });
+
+// ── B3: noi dung cong khai + trips ────────────────────────────────────────
+test("response cua GET /api/countries khop fixture public.country.json", async () => {
+  const fixture = readFixture("public.country.json");
+  const Country = (await import("../src/models/Country.js")).default;
+  await Country.create({ code: "KR", name: "Hàn Quốc", language: "Tiếng Hàn", status: "active" });
+
+  const res = await request(app).get("/api/countries");
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.country");
+});
+
+test("response cua GET /api/legal/topics khop fixture public.legalTopic.json", async () => {
+  const fixture = readFixture("public.legalTopic.json");
+  const LegalTopic = (await import("../src/models/LegalTopic.js")).default;
+  await LegalTopic.create({ countryCode: "KR", slug: "giao-thong", label: "Giao thông", order: 2 });
+
+  const res = await request(app).get("/api/legal/topics").query({ country: "KR" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.legalTopic");
+});
+
+test("response cua GET /api/legal/articles/:country/:slug khop fixture public.legalArticle.json", async () => {
+  const fixture = readFixture("public.legalArticle.json");
+  const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
+  await LegalArticle.create({
+    countryCode: "KR", topicSlug: "giao-thong", slug: "bang-lai-nuoc-ngoai", version: 1, isCurrent: true,
+    status: "published", title: "Bằng lái nước ngoài", summaryVi: "Tóm tắt",
+    sources: [{ title: "Nguồn", url: "https://example.go.kr", authority: "Bộ Tư pháp", kind: "gov", publishedAt: new Date() }],
+    effectiveFrom: new Date(),
+  });
+
+  const res = await request(app).get("/api/legal/articles/KR/bang-lai-nuoc-ngoai");
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data, fixture.data, "public.legalArticle");
+});
+
+test("response cua GET /api/legal/search khop fixture public.legalSearch.json", async () => {
+  const fixture = readFixture("public.legalSearch.json");
+  const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
+  await LegalArticle.create({
+    countryCode: "KR", topicSlug: "giao-thong", slug: "bang-lai-nuoc-ngoai", version: 1, isCurrent: true,
+    status: "published", title: "Bằng lái nước ngoài", summaryVi: "Tóm tắt",
+    sources: [{ title: "Nguồn", url: "https://example.go.kr", authority: "Bộ Tư pháp", kind: "gov", publishedAt: new Date() }],
+    effectiveFrom: new Date(),
+  });
+
+  const res = await request(app).get("/api/legal/search").query({ q: "bang lai", country: "KR" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.legalSearch");
+});
+
+test("response cua POST /api/users/trips khop fixture trip.json", async () => {
+  const fixture = readFixture("trip.json");
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app);
+
+  const res = await request(app)
+    .post("/api/users/trips")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({ countryCode: "KR", startDate: "2026-10-01", endDate: "2026-10-10" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data, fixture.data, "trip");
+});

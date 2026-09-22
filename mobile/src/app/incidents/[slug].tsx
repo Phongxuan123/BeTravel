@@ -20,6 +20,17 @@ export default function IncidentDetailScreen() {
   const incidentQuery = useQuery({ queryKey: ['incident', slug], queryFn: () => fetchIncident(slug) });
   const incident = incidentQuery.data?.data;
 
+  if (incidentQuery.isError || (!incidentQuery.isLoading && !incident)) {
+    return (
+      <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
+        <Text className="text-center text-base font-body-bold text-ink">Không tải được hướng dẫn này</Text>
+        <Pressable onPress={() => router.back()}>
+          <Text className="font-body-bold text-primary">Quay lại</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   if (!incident) {
     return (
       <View className="flex-1 items-center justify-center bg-bg">

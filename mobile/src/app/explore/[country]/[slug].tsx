@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { View, Text, ScrollView, Share } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -11,20 +10,32 @@ import { Button } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { colors } from '@/lib/theme';
 import { fetchArticle } from '@/lib/data';
+import { useSavedArticles } from '@/features/explore/useSavedArticles';
 
 export default function ArticleDetailScreen() {
   const { country: countryCode, slug } = useLocalSearchParams<{ country: string; slug: string }>();
-  const [saved, setSaved] = useState(false);
+  const { isSaved, toggleSaved } = useSavedArticles();
   const articleQuery = useQuery({
     queryKey: ['article', countryCode, slug],
     queryFn: () => fetchArticle(countryCode, slug),
   });
   const article = articleQuery.data?.data;
+  const saved = isSaved(countryCode, slug);
 
   const onShare = () => {
     if (!article) return;
     Share.share({ message: `${article.title} — ${article.source.url}` }).catch(() => {});
   };
+
+  if (articleQuery.isError || (!articleQuery.isLoading && !article)) {
+    return (
+      <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
+        <Text className="text-center text-base font-body-bold text-ink">Không tải được bài luật này</Text>
+        <Text className="text-center text-sm text-muted">Kiểm tra kết nối mạng hoặc bài có thể đã bị gỡ.</Text>
+        <Button label="Quay lại" variant="secondary" onPress={() => router.back()} />
+      </View>
+    );
+  }
 
   if (!article) {
     return (
@@ -51,7 +62,7 @@ export default function ArticleDetailScreen() {
               accessibilityLabel={saved ? 'Bỏ lưu' : 'Lưu quy định'}
               variant={saved ? 'warning' : 'outline'}
               icon={<Star size={18} color={saved ? colors.warning : colors.muted} fill={saved ? colors.warning : 'none'} />}
-              onPress={() => setSaved((v) => !v)}
+              onPress={() => toggleSaved(countryCode, slug)}
             />
             <IconButton accessibilityLabel="Chia sẻ" variant="outline" icon={<ShareIcon size={18} color={colors.ink} />} onPress={onShare} />
           </>

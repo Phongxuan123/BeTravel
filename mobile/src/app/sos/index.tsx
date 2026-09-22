@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
@@ -30,7 +30,12 @@ export default function SosHubScreen() {
             <Text className="font-display text-ink" style={{ fontSize: 22 }}>
               Hỗ trợ khẩn cấp
             </Text>
-            <IconButton accessibilityLabel="Tăng tương phản màn hình" variant="outline" icon={<Sun size={18} color={colors.ink} />} />
+            <IconButton
+              accessibilityLabel="Tăng tương phản màn hình"
+              variant="outline"
+              icon={<Sun size={18} color={colors.ink} />}
+              onPress={() => Alert.alert('Tăng tương phản', 'Tính năng hỗ trợ hiển thị sẽ có ở bản cập nhật sau.')}
+            />
           </View>
 
           <View className="mt-4 h-[52px] flex-row items-center rounded-lg bg-surface px-3.5" style={{ gap: 8 }}>
@@ -38,7 +43,11 @@ export default function SosHubScreen() {
             <Text className="flex-1 text-base font-body-semibold text-ink" numberOfLines={1}>
               {country.currentCity}
             </Text>
-            <Text className="font-body-bold text-primary">Cập nhật</Text>
+            <Pressable
+              onPress={() => Alert.alert('Cập nhật vị trí', 'Tự động xác định vị trí (GPS) sẽ có ở bản cập nhật sau.')}
+            >
+              <Text className="font-body-bold text-primary">Cập nhật</Text>
+            </Pressable>
           </View>
         </View>
 

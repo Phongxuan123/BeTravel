@@ -1,6 +1,7 @@
 import { useMemo, useReducer, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Info, ArrowRight } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -12,8 +13,9 @@ import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { DateRangeCalendar, type DateRange } from '@/components/common/DateRangeCalendar';
 import { colors } from '@/lib/theme';
-import { countries } from '@/mocks/fixtures/countries';
-import { createTrip } from '@/lib/data';
+import { createTrip, fetchCountries } from '@/lib/data';
+import { ApiError } from '@/lib/api/http';
+import { useAuth } from '@/lib/auth';
 import { now } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 
@@ -60,15 +62,21 @@ export default function TripWizardScreen() {
   const [query, setQuery] = useState('');
   const [month, setMonth] = useState(() => now());
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { isGuest } = useAuth();
+  const queryClient = useQueryClient();
 
   const goStep = (n: number) => setStep(Math.min(Math.max(n, 1), 4));
+
+  const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
+  const countries = useMemo(() => countriesQuery.data?.data ?? [], [countriesQuery.data]);
 
   const country = countries.find((c) => c.code === state.countryCode);
 
   const filteredCountries = useMemo(() => {
     const q = stripDiacritics(query);
     return countries.filter((c) => stripDiacritics(c.name).includes(q));
-  }, [query]);
+  }, [query, countries]);
 
   const canContinue =
     (step === 1 && !!state.countryCode) ||
@@ -82,10 +90,36 @@ export default function TripWizardScreen() {
       return;
     }
     if (!state.countryCode || !state.range.start || !state.range.end) return;
+
+    // Chuyen di thuoc ve mot user dang nhap (backend co /api/users/trips
+    // yeu cau authenticateToken) -- khach chua dang nhap khong tao duoc,
+    // dieu huong sang dang nhap thay vi de loi 401 lot ra khong ro rang.
+    if (isGuest) {
+      // Dieu huong ve buoc 1 (khong phai buoc 4) vi state cua wizard nam trong
+      // useReducer cuc bo -- sau vong dang nhap se la MOT instance man hinh
+      // moi, khong con giu duoc lua chon quoc gia/ngay cu.
+      router.push(`/login?next=${encodeURIComponent('/trips/new?step=1')}` as never);
+      return;
+    }
+
+    setError(null);
     setSubmitting(true);
-    await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
-    setSubmitting(false);
-    router.replace('/');
+    try {
+      await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
+      // Home/Trips van dang mo trong tab bar (khong remount khi quay lai) --
+      // phai tu tay bao React Query cache ['trips'] da cu, khong thi man
+      // hinh cu se khong bao gio thay chuyen di vua tao.
+      await queryClient.invalidateQueries({ queryKey: ['trips'] });
+      router.replace('/');
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Không thể tạo chuyến đi. Kiểm tra kết nối mạng và thử lại.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -121,13 +155,16 @@ export default function TripWizardScreen() {
             <Text className="mt-5 text-[13px] font-body-semibold text-muted">Phổ biến:</Text>
             <View className="mt-2 flex-row" style={{ gap: 8 }}>
               {['JP', 'KR', 'TH'].map((code) => {
-                const c = countries.find((x) => x.code === code)!;
+                const c = countries.find((x) => x.code === code);
+                if (!c) return null;
                 const active = state.countryCode === code;
+                const comingSoon = c.status === 'coming_soon';
                 return (
                   <Pressable
                     key={code}
+                    disabled={comingSoon}
                     onPress={() => dispatch({ type: 'SET_COUNTRY', code })}
-                    className={`rounded-full px-3 py-2 ${active ? 'bg-primary-soft' : 'bg-[#F0F4F9]'}`}
+                    className={`rounded-full px-3 py-2 ${active ? 'bg-primary-soft' : 'bg-[#F0F4F9]'} ${comingSoon ? 'opacity-50' : ''}`}
                   >
                     <Text className={`text-sm font-body-semibold ${active ? 'text-primary-strong' : 'text-ink'}`}>{c.name}</Text>
                   </Pressable>
@@ -139,30 +176,40 @@ export default function TripWizardScreen() {
             <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
               {filteredCountries.map((c) => {
                 const selected = state.countryCode === c.code;
+                const comingSoon = c.status === 'coming_soon';
                 return (
                   <Pressable
                     key={c.code}
+                    disabled={comingSoon}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: selected }}
+                    accessibilityState={{ checked: selected, disabled: comingSoon }}
                     onPress={() => dispatch({ type: 'SET_COUNTRY', code: c.code })}
                     className={`h-[70px] flex-row items-center rounded-lg border px-4 ${
                       selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'
-                    }`}
+                    } ${comingSoon ? 'opacity-50' : ''}`}
                   >
                     <CountryFlag code={c.code} width={40} height={30} />
                     <View className="ml-3 flex-1">
                       <Text className="text-[18px] font-body-bold text-ink">{c.name}</Text>
-                      <Text className="text-sm text-muted">
-                        {c.region} · {c.regulationsCount} quy định
-                      </Text>
+                      {comingSoon ? (
+                        <Text className="text-sm text-muted">Sắp ra mắt — chưa có cẩm nang pháp luật</Text>
+                      ) : (
+                        <Text className="text-sm text-muted">
+                          {c.region} · {c.regulationsCount} quy định
+                        </Text>
+                      )}
                     </View>
-                    <View
-                      className={`h-7 w-7 items-center justify-center rounded-full border-2 ${
-                        selected ? 'border-primary bg-primary' : 'border-[#C9D6EE]'
-                      }`}
-                    >
-                      {selected && <View className="h-2.5 w-2.5 rounded-full bg-white" />}
-                    </View>
+                    {comingSoon ? (
+                      <Badge label="Sắp ra mắt" tone="neutral" />
+                    ) : (
+                      <View
+                        className={`h-7 w-7 items-center justify-center rounded-full border-2 ${
+                          selected ? 'border-primary bg-primary' : 'border-[#C9D6EE]'
+                        }`}
+                      >
+                        {selected && <View className="h-2.5 w-2.5 rounded-full bg-white" />}
+                      </View>
+                    )}
                   </Pressable>
                 );
               })}
@@ -305,6 +352,11 @@ export default function TripWizardScreen() {
 
       <BottomActionBar>
         <View className="flex-1">
+          {error && (
+            <View className="mb-2 rounded-md bg-danger-tint p-3">
+              <Text className="text-sm text-danger">{error}</Text>
+            </View>
+          )}
           <Button label={step === 4 ? 'Xác nhận chuyến đi' : 'Tiếp tục →'} onPress={onContinue} disabled={!canContinue} loading={submitting} />
           {step === 4 && (
             <Pressable className="mt-2 items-center py-1" onPress={() => router.push('/trips')}>

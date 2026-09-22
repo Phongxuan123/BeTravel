@@ -10,6 +10,7 @@ import { PasswordStrength } from '@/components/ui/PasswordStrength';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { ApiError } from '@/lib/api/http';
 
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -37,9 +38,14 @@ export default function RegisterScreen() {
     }
     setError(null);
     setLoading(true);
-    await register(name, email, password, phone.trim());
-    setLoading(false);
-    router.replace('/trips/new?step=1');
+    try {
+      await register(name, email, password, phone.trim());
+      router.replace('/trips/new?step=1');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Không thể tạo tài khoản. Kiểm tra kết nối mạng và thử lại.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

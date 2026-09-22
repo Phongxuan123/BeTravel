@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "66f0a1b2c3d4e5f607182950",
+      "countryCode": "KR",
+      "slug": "bang-lai-nuoc-ngoai",
+      "title": "Dùng bằng lái nước ngoài / bằng lái quốc tế (IDP) để lái xe tại Hàn Quốc",
+      "summaryVi": "Người nước ngoài được lái xe tại Hàn Quốc tối đa 1 năm kể từ ngày nhập cảnh nếu có IDP.",
+      "topicSlug": "giao-thong",
+      "topicLabel": "Giao thông",
+      "sourceAgency": "Korea Legislation Research Institute"
+    }
+  ],
+  "meta": { "page": 1, "limit": 20, "total": 1 }
+}

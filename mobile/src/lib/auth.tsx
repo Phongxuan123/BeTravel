@@ -93,7 +93,17 @@ function useRealAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) =
         setUser(nextUser);
       },
       logout: async () => {
-        await authApi.logout();
+        // authApi.logout() tu xoa token cuc bo trong finally roi VAN nem loi
+        // tiep neu goi API revoke that bai (mat mang) -- neu khong bat o day,
+        // hai dong ben duoi (xoa user state) se KHONG chay, de UI hien "van
+        // dang nhap" trong khi token da mat that. Dang xuat phia client phai
+        // luon thanh cong du API revoke co that bai hay khong.
+        try {
+          await authApi.logout();
+        } catch {
+          // da nuot loi: token cuc bo da chac chan bi xoa (finally trong
+          // authApi.logout), chi la server chua kip biet phien nay het han.
+        }
         await removeKey(StorageKeys.authUser);
         setUser(null);
       },

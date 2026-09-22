@@ -8,6 +8,7 @@ import {
   SourceKind,
   IndexStateStatus,
 } from "../core/constants.js";
+import { normalizeVi } from "../utils/textNormalize.js";
 
 /*
  * legal_articles la trung tam cua san pham: noi dung phap ly da kiem chung,
@@ -90,6 +91,13 @@ const legalArticleSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     summaryVi: { type: String, default: "" },
 
+    // Ban da bo dau + lowercase cua title/summaryVi -- dung cho tim kiem
+    // tieng Viet khong dau o API cong khai (B3). Tu dong tinh lai trong hook
+    // pre('save') ben duoi, KHONG dat 'required' vi luon duoc code tinh, chua
+    // bao gio nhap tay.
+    titleNorm: { type: String, default: "", index: true },
+    summaryNorm: { type: String, default: "" },
+
     keyPoints: { type: [keyPointSchema], default: [] },
     penalties: { type: [penaltySchema], default: [] },
     exceptions: { type: [String], default: [] },
@@ -134,5 +142,12 @@ legalArticleSchema.index(
 
 legalArticleSchema.index({ countryCode: 1, status: 1 });
 legalArticleSchema.index({ title: "text", summaryVi: "text" });
+
+// Tinh lai titleNorm/summaryNorm moi lan luu de luon dong bo voi title/summaryVi
+// hien tai -- xem utils/textNormalize.js va publicContent.service.js#searchArticles.
+legalArticleSchema.pre("save", function normalizeSearchFields() {
+  if (this.isModified("title")) this.titleNorm = normalizeVi(this.title);
+  if (this.isModified("summaryVi")) this.summaryNorm = normalizeVi(this.summaryVi);
+});
 
 export default mongoose.model("LegalArticle", legalArticleSchema);

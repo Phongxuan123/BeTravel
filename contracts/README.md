@@ -328,3 +328,68 @@ thanh current luc duoc publish.
   "ip": "127.0.0.1", "createdAt": "2026-09-22T..." }],
   "meta": { "page": 1, "limit": 20, "total": 5 } }
 ```
+
+---
+
+## 8. ENDPOINT CONG KHAI — `/api/countries`, `/api/legal/*` (B3)
+
+Khong can `Authorization`. Moi truy van `legal_articles` o day BAT BUOC loc
+`status:'published'` VA `isCurrent:true` o BACKEND (khong tin client) — bai
+`draft`/`pending_review`/`superseded` lot ra day la BUG NGHIEM TRONG
+(CLAUDE.md Phan 4.1). Xem `backend/src/services/publicContent.service.js`.
+
+### 8.1. Countries
+
+```
+GET /countries              200, tra CA active lan coming_soon kem articleCount
+GET /countries/:code        200, hoac 404 NOT_FOUND
+```
+
+`status: 'coming_soon'` nghia la da co du lieu trong DB nhung chua mo cho
+nguoi dung — client phai TU hien trang thai ro rang (vi du "Sap ra mat"),
+KHONG bia noi dung, khong loi.
+
+### 8.2. Legal content
+
+```
+GET /legal/topics?country=KR                          200, kem articleCount/chu de
+GET /legal/articles?country=KR&topic=&page=&limit=     200, meta {page,limit,total}
+GET /legal/articles/:country/:slug                     200 kem relatedArticles
+                                                         (toi da 4, cung topic),
+                                                         hoac 404 neu chua publish
+GET /legal/search?q=&country=KR&topic=&page=           200, meta {page,limit,total}
+```
+
+★ **Tim khong dau**: `q` duoc tach tung tu, moi tu phai xuat hien o
+`titleNorm` hoac `summaryNorm` (da bo dau + lowercase, tu dong tinh lai moi
+lan luu bai — xem `LegalArticle.js` hook `pre('save')`). "phat vape" khop
+"Muc phat ... (vape)" du hai tu khong lien tiep.
+
+**Diem thay the cho B4**: khi `legal_chunks` + Atlas Search san sang, chi cai
+lai PHAN THAN cua `publicContent.service.js#searchArticles` sang goi Atlas
+Search — chu ky ham va shape ket qua ben duoi GIU NGUYEN, controller/route/
+mobile khong phai sua.
+
+Shape 1 ket qua tim kiem:
+
+```jsonc
+{ "id": "...", "countryCode": "KR", "slug": "bang-lai-nuoc-ngoai",
+  "title": "...", "summaryVi": "...", "topicSlug": "giao-thong",
+  "topicLabel": "Giao thông", "sourceAgency": "Korea Legislation Research Institute" }
+```
+
+### 8.3. Trips — `/api/users/trips` (can dang nhap, khong can role rieng)
+
+```
+GET    /users/trips             200, chuyen di CUA CHINH user dang goi
+POST   /users/trips             201, LUON tao isCurrent:false
+PUT    /users/trips/:id/current 200, dat chuyen di nay la current, cac chuyen
+                                      di khac cua user tu dong isCurrent:false
+DELETE /users/trips/:id         200 { deleted: true }
+```
+
+★ **Chi 1 `isCurrent:true` moi user tai mot thoi diem** — ep bang partial
+unique index `{userId}` where `isCurrent:true` tren model `Trip` (cung mau
+voi `LegalArticle`), cong voi logic tuan tu o service layer. Goi
+`:id` khong thuoc ve user dang goi --> `404 NOT_FOUND` (khong lo ra `403`
+de tranh do thong tin ID cua nguoi khac ton tai).

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, ToastAndroid, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import { Globe, Flag, ChevronRight, LogOut, Check } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
@@ -13,7 +14,7 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { countries } from '@/mocks/fixtures/countries';
+import { fetchCountries } from '@/lib/data';
 
 function toast(message: string) {
   if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);
@@ -23,6 +24,8 @@ function toast(message: string) {
 export default function SettingsScreen() {
   const { logout } = useAuth();
   const { country, countryCode, setCountryCode } = useCountry();
+  const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
+  const countries = countriesQuery.data?.data ?? [];
   const [legalAlerts, setLegalAlerts] = useState(true);
   const [safetyAlerts, setSafetyAlerts] = useState(true);
   const [tripReminder, setTripReminder] = useState(false);
@@ -40,8 +43,13 @@ export default function SettingsScreen() {
         text: 'Đăng xuất',
         style: 'destructive',
         onPress: async () => {
-          await logout();
-          router.replace('/login');
+          try {
+            await logout();
+          } finally {
+            // logout() da tu nuot loi API revoke va van dam bao xoa state
+            // cuc bo (xem lib/auth.tsx) -- dieu huong ve /login du the nao.
+            router.replace('/login');
+          }
         },
       },
     ]);

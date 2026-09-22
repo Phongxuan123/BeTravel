@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { ApiError } from '@/lib/api/http';
 import { useEmergencyContacts } from '@/features/profile/useEmergencyContacts';
 import { useDocumentStatus, type DocumentKey } from '@/features/profile/useDocumentStatus';
 
@@ -45,6 +46,8 @@ export default function ProfileScreen() {
   const [contactDraft, setContactDraft] = useState({ name: '', relationship: '', phone: '' });
   const [activeDoc, setActiveDoc] = useState<DocumentKey | null>(null);
   const [docNoteDraft, setDocNoteDraft] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [savingName, setSavingName] = useState(false);
 
   if (isGuest) {
     return (
@@ -63,12 +66,21 @@ export default function ProfileScreen() {
 
   const openEditName = () => {
     setNameDraft(user!.name);
+    setNameError(null);
     setEditingName(true);
   };
   const saveName = async () => {
     if (!nameDraft.trim()) return;
-    await updateProfile({ name: nameDraft.trim() });
-    setEditingName(false);
+    setNameError(null);
+    setSavingName(true);
+    try {
+      await updateProfile({ name: nameDraft.trim() });
+      setEditingName(false);
+    } catch (err) {
+      setNameError(err instanceof ApiError ? err.message : 'Không thể lưu. Kiểm tra kết nối mạng và thử lại.');
+    } finally {
+      setSavingName(false);
+    }
   };
 
   const openAddContact = () => {
@@ -176,8 +188,13 @@ export default function ProfileScreen() {
 
       <SimpleSheet visible={editingName} onClose={() => setEditingName(false)} title="Sửa hồ sơ">
         <TextField label="Họ và tên" value={nameDraft} onChangeText={setNameDraft} />
+        {nameError && (
+          <View className="mt-3 rounded-md bg-danger-tint p-3">
+            <Text className="text-sm text-danger">{nameError}</Text>
+          </View>
+        )}
         <View className="mt-4">
-          <Button label="Lưu thay đổi" onPress={saveName} disabled={!nameDraft.trim()} />
+          <Button label="Lưu thay đổi" onPress={saveName} disabled={!nameDraft.trim()} loading={savingName} />
         </View>
       </SimpleSheet>
 

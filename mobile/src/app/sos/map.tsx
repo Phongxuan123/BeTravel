@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -44,6 +44,7 @@ export default function SosMapScreen() {
   const insets = useSafeAreaInsets();
   const { country } = useCountry();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all');
+  const mapRef = useRef<MapView>(null);
   const locationsQuery = useQuery({ queryKey: ['support-locations'], queryFn: fetchSupportLocations });
   const locations = (locationsQuery.data?.data ?? []).filter((l) => filter === 'all' || l.type === filter);
 
@@ -56,7 +57,7 @@ export default function SosMapScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <MapView style={{ flex: 1 }} initialRegion={region} customMapStyle={LIGHT_MAP_STYLE}>
+      <MapView ref={mapRef} style={{ flex: 1 }} initialRegion={region} customMapStyle={LIGHT_MAP_STYLE}>
         {locations.map((loc) => (
           <Marker key={loc.id} coordinate={{ latitude: loc.lat, longitude: loc.lng }} title={loc.name} pinColor={markerColor(loc.type)} />
         ))}
@@ -103,6 +104,7 @@ export default function SosMapScreen() {
 
       <Pressable
         accessibilityLabel="Định vị lại"
+        onPress={() => mapRef.current?.animateToRegion(region, 400)}
         className="absolute right-[18px] h-14 w-14 items-center justify-center rounded-lg bg-surface"
         style={{ bottom: 300, shadowColor: '#0E1C33', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
       >
@@ -121,6 +123,8 @@ export default function SosMapScreen() {
           {locations.map((loc) => (
             <Pressable
               key={loc.id}
+              accessibilityLabel={`Xem ${loc.name} trên bản đồ`}
+              onPress={() => mapRef.current?.animateToRegion({ latitude: loc.lat, longitude: loc.lng, latitudeDelta: 0.02, longitudeDelta: 0.02 }, 400)}
               className={`h-[72px] flex-row items-center rounded-lg px-3 ${loc.featured ? 'border border-danger-line bg-danger-tint' : 'border border-line bg-surface'}`}
             >
               <IconTile tone={TYPE_TONE[loc.type]} size={48}>
