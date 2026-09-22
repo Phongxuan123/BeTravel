@@ -1,7 +1,7 @@
 import { useMemo, useReducer, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Search, Info, ArrowRight } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -64,6 +64,7 @@ export default function TripWizardScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isGuest } = useAuth();
+  const queryClient = useQueryClient();
 
   const goStep = (n: number) => setStep(Math.min(Math.max(n, 1), 4));
 
@@ -105,6 +106,10 @@ export default function TripWizardScreen() {
     setSubmitting(true);
     try {
       await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
+      // Home/Trips van dang mo trong tab bar (khong remount khi quay lai) --
+      // phai tu tay bao React Query cache ['trips'] da cu, khong thi man
+      // hinh cu se khong bao gio thay chuyen di vua tao.
+      await queryClient.invalidateQueries({ queryKey: ['trips'] });
       router.replace('/');
     } catch (err) {
       setError(
