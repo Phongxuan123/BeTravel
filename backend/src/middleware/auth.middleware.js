@@ -1,93 +1,73 @@
-import {
-    verifyAccessToken
-} from "../utils/token.js";
+import { verifyAccessToken } from "../utils/token.js";
 
 const extractBearerToken = (authorization) => {
-    if (typeof authorization !== "string") {
-        return null;
-    }
+  if (typeof authorization !== "string") {
+    return null;
+  }
 
-    const [scheme, token] =
-        authorization.split(" ");
+  const [scheme, token] = authorization.split(" ");
 
-    if (scheme !== "Bearer" || !token) {
-        return null;
-    }
+  if (scheme !== "Bearer" || !token) {
+    return null;
+  }
 
-    return token;
+  return token;
 };
 
-export const authenticateToken = (
-    req,
-    res,
-    next
-) => {
-    try {
-        const token = extractBearerToken(
-            req.headers.authorization
-        );
+export const authenticateToken = (req, res, next) => {
+  try {
+    const token = extractBearerToken(req.headers.authorization);
 
-        if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: "Bạn chưa đăng nhập"
-            });
-        }
-
-        const payload =
-            verifyAccessToken(token);
-
-        if (!payload?.sub) {
-            return res.status(401).json({
-                success: false,
-                message: "Token không hợp lệ"
-            });
-        }
-
-        req.user = {
-            userId: payload.sub,
-            role: payload.role
-        };
-
-        next();
-    } catch (error) {
-        if (
-            error.name ===
-            "TokenExpiredError"
-        ) {
-            return res.status(401).json({
-                success: false,
-                message:
-                    "Phiên đăng nhập đã hết hạn"
-            });
-        }
-
-        if (
-            error.name ===
-            "JsonWebTokenError"
-        ) {
-            return res.status(401).json({
-                success: false,
-                message: "Token không hợp lệ"
-            });
-        }
-
-        next(error);
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Bạn chưa đăng nhập",
+      });
     }
-};
 
-export const requireRole = (...roles) =>
-    (req, res, next) => {
-        if (
-            !req.user ||
-            !roles.includes(req.user.role)
-        ) {
-            return res.status(403).json({
-                success: false,
-                message:
-                    "Bạn không có quyền thực hiện thao tác này"
-            });
-        }
+    const payload = verifyAccessToken(token);
 
-        next();
+    if (!payload?.sub) {
+      return res.status(401).json({
+        success: false,
+        message: "Token không hợp lệ",
+      });
+    }
+
+    req.user = {
+      userId: payload.sub,
+      role: payload.role,
     };
+
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Phiên đăng nhập đã hết hạn",
+      });
+    }
+
+    if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token không hợp lệ",
+      });
+    }
+
+    next(error);
+  }
+};
+
+export const requireRole =
+  (...roles) =>
+  (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Bạn không có quyền thực hiện thao tác này",
+      });
+    }
+
+    next();
+  };
