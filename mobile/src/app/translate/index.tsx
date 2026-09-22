@@ -23,9 +23,14 @@ export default function TranslatorScreen() {
   const runTranslate = async (text: string) => {
     if (!text.trim()) return;
     setLoading(true);
-    const r = await translateText(text);
-    setResult(r);
-    setLoading(false);
+    try {
+      const r = await translateText(text);
+      setResult(r);
+    } catch {
+      Alert.alert('Không thể dịch', 'Kiểm tra kết nối mạng và thử lại.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onPickPhrase = (phrase: QuickPhrase) => {

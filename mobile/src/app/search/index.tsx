@@ -2,38 +2,47 @@ import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, MessageCircle, Search as SearchIcon, X } from 'lucide-react-native';
+import { ArrowRight, MessageCircle, Search as SearchIcon, X, Check } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { QuickChip } from '@/components/ui/QuickChip';
 import { FilterChip } from '@/components/ui/FilterChip';
 import { EmptyState } from '@/components/common/EmptyState';
+import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { searchArticles } from '@/lib/data';
+import { searchArticles, fetchTopics } from '@/lib/data';
 
 export default function SearchScreen() {
   const params = useLocalSearchParams<{ q?: string }>();
   const { countryCode, country } = useCountry();
   const [query, setQuery] = useState(params.q ?? '');
   const [debounced, setDebounced] = useState(query);
+  const [topicFilter, setTopicFilter] = useState<string | null>(null);
+  const [pickingTopic, setPickingTopic] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(query), 300);
     return () => clearTimeout(t);
   }, [query]);
 
+  const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
   const resultsQuery = useQuery({
     queryKey: ['search', debounced, countryCode],
     queryFn: () => searchArticles(debounced, countryCode),
     enabled: debounced.trim().length > 0,
   });
 
-  const results = resultsQuery.data?.data ?? [];
+  // searchArticles() giu nguyen chu ky (query, countryCode) de dong bo voi
+  // mocks/client.ts (CLAUDE.md B3 muc 9) -- loc theo chu de o phia client
+  // thay vi them tham so moi cho ham API.
+  const allResults = resultsQuery.data?.data ?? [];
+  const results = topicFilter ? allResults.filter((r) => r.topicLabel === topicFilter) : allResults;
   const hasQuery = debounced.trim().length > 0;
   const hasResults = results.length > 0;
+  const hasError = resultsQuery.isError;
 
   return (
     <View className="flex-1 bg-bg">
@@ -58,7 +67,7 @@ export default function SearchScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3">
           <View className="flex-row" style={{ gap: 8 }}>
             <FilterChip label={country?.name ?? ''} active iconLeft={<CountryFlag code={countryCode} width={18} height={13} />} />
-            <FilterChip label="Chủ đề" showChevron />
+            <FilterChip label={topicFilter ?? 'Chủ đề'} active={!!topicFilter} showChevron onPress={() => setPickingTopic(true)} />
           </View>
         </ScrollView>
       </View>
@@ -68,7 +77,13 @@ export default function SearchScreen() {
           <Text className="text-center text-muted">Nhập từ khoá để tìm quy định pháp luật.</Text>
         )}
 
-        {hasQuery && hasResults && (
+        {hasQuery && hasError && (
+          <View className="rounded-md bg-danger-tint p-4">
+            <Text className="text-center text-sm text-danger">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
+          </View>
+        )}
+
+        {hasQuery && !hasError && hasResults && (
           <>
             <Text className="mb-3 text-[15px] text-muted">
               {results.length} kết quả · lọc theo <Text className="font-body-bold text-ink">{country?.name}</Text>
@@ -110,7 +125,7 @@ export default function SearchScreen() {
           </>
         )}
 
-        {hasQuery && !hasResults && !resultsQuery.isLoading && (
+        {hasQuery && !hasError && !hasResults && !resultsQuery.isLoading && (
           <View>
             <EmptyState
               title="Không tìm thấy quy định phù hợp"
@@ -129,6 +144,41 @@ export default function SearchScreen() {
           </View>
         )}
       </ScrollView>
+
+      <SimpleSheet visible={pickingTopic} onClose={() => setPickingTopic(false)} title="Chọn chủ đề">
+        <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: topicFilter === null }}
+            onPress={() => {
+              setTopicFilter(null);
+              setPickingTopic(false);
+            }}
+            className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${topicFilter === null ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+          >
+            <Text className="text-base font-body-semibold text-ink">Tất cả chủ đề</Text>
+            {topicFilter === null && <Check size={18} color={colors.primary} />}
+          </Pressable>
+          {topicsQuery.data?.data.map((topic) => {
+            const selected = topic.label === topicFilter;
+            return (
+              <Pressable
+                key={topic.key}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selected }}
+                onPress={() => {
+                  setTopicFilter(topic.label);
+                  setPickingTopic(false);
+                }}
+                className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+              >
+                <Text className="text-base font-body-semibold text-ink">{topic.label}</Text>
+                {selected && <Check size={18} color={colors.primary} />}
+              </Pressable>
+            );
+          })}
+        </View>
+      </SimpleSheet>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react-native';
@@ -12,6 +12,7 @@ import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { fetchTrips, setCurrentTrip, fetchCountries } from '@/lib/data';
+import { ApiError } from '@/lib/api/http';
 import { formatTripRange, tripDurationDays } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 import type { Trip } from '@/mocks/schemas';
@@ -45,8 +46,15 @@ export default function TripsScreen() {
   const past = visible.filter((t) => tripStatus(t) === 'past');
 
   const onSetCurrent = async (id: string) => {
-    await setCurrentTrip(id);
-    queryClient.invalidateQueries({ queryKey: ['trips'] });
+    try {
+      await setCurrentTrip(id);
+      queryClient.invalidateQueries({ queryKey: ['trips'] });
+    } catch (err) {
+      Alert.alert(
+        'Không thể đặt chuyến đi chính',
+        err instanceof ApiError ? err.message : 'Kiểm tra kết nối mạng và thử lại.',
+      );
+    }
   };
 
   return (
@@ -75,7 +83,13 @@ export default function TripsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 12 }}>
-        {trips.length === 0 && !tripsQuery.isLoading && (
+        {tripsQuery.isError && (
+          <View className="rounded-md bg-danger-tint p-3">
+            <Text className="text-center text-sm text-danger">Không tải được danh sách chuyến đi. Kiểm tra kết nối mạng.</Text>
+          </View>
+        )}
+
+        {trips.length === 0 && !tripsQuery.isLoading && !tripsQuery.isError && (
           <EmptyState title="Chưa có chuyến đi" description="Tạo chuyến đi đầu tiên để mở khoá cẩm nang pháp luật.">
             <Button label="Tạo chuyến đi" onPress={() => router.push('/trips/new?step=1')} />
           </EmptyState>

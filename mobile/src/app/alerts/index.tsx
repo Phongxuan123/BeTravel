@@ -46,15 +46,25 @@ export default function AlertsScreen() {
   }, [alerts]);
 
   const onOpen = async (alert: Alert) => {
-    await markAlertRead(alert.id);
-    queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    try {
+      await markAlertRead(alert.id);
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    } catch {
+      // Danh dau da doc that bai khong nen chan nguoi dung xem noi dung --
+      // van dieu huong tiep, chi la thong bao co the con hien "chua doc".
+    }
     if (alert.category === 'trip') router.push('/trips');
     else router.push('/explore');
   };
 
   const onReadAll = async () => {
-    await markAllAlertsRead();
-    queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    try {
+      await markAllAlertsRead();
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    } catch {
+      // Nuot loi co chu dich: day la thao tac phu, khong can bao loi to
+      // cho nguoi dung, chi khong crash ung dung.
+    }
   };
 
   return (

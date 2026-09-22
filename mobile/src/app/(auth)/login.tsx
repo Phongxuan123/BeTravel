@@ -9,6 +9,7 @@ import { TextField } from '@/components/ui/TextField';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { ApiError } from '@/lib/api/http';
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
@@ -28,9 +29,14 @@ export default function LoginScreen() {
     }
     setError(null);
     setLoading(true);
-    await login(email, password);
-    setLoading(false);
-    router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
+    try {
+      await login(email, password);
+      router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

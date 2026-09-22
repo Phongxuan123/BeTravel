@@ -1,6 +1,6 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-22 · Phiên: B3 — Public content API + nối mobile Explore/Search/Trips
+Cập nhật lần cuối: 2026-09-23 · Phiên: B3 + đợt rà soát tương tác toàn mobile (ngoài lộ trình batch, theo yêu cầu trực tiếp)
 
 | Batch | Trạng thái | Ngày | Ghi chú |
 |---|---|---|---|
@@ -128,6 +128,55 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
     `hai-quan` tạm dùng chung icon `documents` vì mobile chưa có icon riêng
     cho hai chủ đề này.
 
+### Đợt rà soát tương tác toàn mobile (23/09/2026, ngoài lộ trình batch — người dùng yêu cầu trực tiếp: "kiểm tra lại từ đầu đến cuối, tìm và fix")
+
+Sau khi B3 nối API thật, người dùng phát hiện nhiều nút/chip không phản hồi
+khi bấm và một số thao tác bị "treo loading" khi API lỗi. Dùng agent con rà
+soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn đề chia
+3 nhóm — đã xử lý 26/32:
+
+20. **11/11 "nút chết" (không có `onPress`) đã nối hành vi.** Phần lớn là UI
+    dựng sẵn từ commit gốc (trước B1), chưa bao giờ gắn hành vi — không phải
+    lỗi do các batch trước gây ra. Xử lý theo 3 cách tùy tính chất:
+    - **Có hành vi thật, ý nghĩa rõ ràng** → nối thật: chip đổi quốc gia/lọc
+      chủ đề ở Explore + Search (mở `SimpleSheet`), nút lưu bài luật (xem mục
+      21), nút "Định vị lại" và chạm vào dòng địa điểm ở SOS map (dùng
+      `mapRef.animateToRegion`).
+    - **Cần tính năng chưa xây (out of scope batch hiện tại)** → thông báo rõ
+      ràng "Tính năng đang phát triển" thay vì im lặng: lịch sử phiên chat,
+      tăng tương phản, cập nhật vị trí GPS, tìm trong danh sách sự cố, "Xem
+      chi tiết"/"Báo sai" ở câu trả lời AI (những tính năng này thuộc phạm vi
+      B5/B6/B7/B8, không tự mở rộng làm ở đây).
+    - **Nút hiện ra nhưng không còn ý nghĩa** → chỉ hiện khi có tác dụng:
+      "Xem tất cả" ở Explore giờ chỉ hiện khi đang lọc theo chủ đề (bấm vào
+      sẽ bỏ lọc), biến mất khi không có gì để "xem tất cả" thêm.
+21. **[MỚI] Tính năng "Lưu quy định" (bookmark) làm THẬT bằng AsyncStorage
+    cục bộ** (`features/explore/useSavedArticles.ts`), dùng chung giữa màn
+    Explore và màn chi tiết bài luật (trước đó màn chi tiết dùng
+    `useState(false)` riêng, luôn reset khi mở lại — cũng là một dạng "nút
+    chết về mặt dữ liệu"). Chưa có backend favorites thật (thuộc B8) nên chưa
+    đồng bộ giữa các thiết bị — ghi rõ trong comment code, không giả vờ đây
+    là tính năng đã hoàn chỉnh.
+22. **9/9 thao tác async thiếu `try/catch` đã được bọc lại**, theo đúng mẫu
+    đã lập ở B3 (`trips/new.tsx`): `login`, `register`, `saveName` (profile),
+    `logout`, `runTranslate`, `askLegalAssistant` (chat), `setCurrentTrip`,
+    `markAlertRead`/`markAllAlertsRead`. Trước đó Promise bị reject không ai
+    xử lý → nút bấm treo loading vĩnh viễn, không báo lỗi, đúng loại lỗi
+    người dùng đã gặp phải với `trips/new.tsx` trước khi B3 vá.
+23. **[BUG THẬT, không chỉ thiếu try/catch] `logout()` để lại UI sai trạng
+    thái nếu mất mạng lúc đăng xuất.** `authApi.logout()` xóa token cục bộ
+    trong `finally` nhưng VẪN ném lỗi tiếp nếu lệnh gọi API thu hồi phiên thất
+    bại — khiến `lib/auth.tsx#logout()` bỏ qua bước xóa `user` khỏi state
+    (vì ném lỗi trước khi chạy tới đó), để UI hiển thị "vẫn đăng nhập" trong
+    khi token đã mất thật. Sửa: `lib/auth.tsx` tự nuốt lỗi từ `authApi.logout()`
+    trước khi xóa state cục bộ — đăng xuất phía client giờ LUÔN thành công dù
+    API thu hồi có lỗi hay không.
+24. **6/12 chỗ thiếu trạng thái lỗi rõ ràng (phân biệt "đang tải" / "lỗi
+    mạng" / "rỗng thật") đã thêm banner đỏ**, ưu tiên các màn hình đã nối API
+    thật: Trang chủ, Explore, Search, Trips, chi tiết bài luật, chi tiết sự
+    cố. 6 chỗ còn lại (Alerts, Incidents danh sách, Settings/Trips-cards đọc
+    quốc gia trong picker) CHƯA làm — xem "Nợ kỹ thuật".
+
 ## Đang vướng
 
 - **[B3, ĐÃ SEED, 2/8 ĐÃ PUBLISH theo yêu cầu người dùng] Đã có 8 bài luật KR
@@ -215,6 +264,19 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
 
 ## Nợ kỹ thuật
 
+- **[23/09/2026, sau đợt rà soát] 6/12 chỗ thiếu trạng thái lỗi mạng rõ ràng
+  chưa xử lý** — `alerts/index.tsx` và `incidents/index.tsx` (còn 100% mock,
+  rủi ro thấp vì mock không thể lỗi mạng thật), `settings/index.tsx` (danh
+  sách quốc gia trong picker chọn mặc định im lặng rỗng nếu lỗi), và
+  `trips/index.tsx` (`countriesQuery` bên trong từng thẻ chuyến đi — lỗi thì
+  thẻ tự ẩn thay vì báo, chấp nhận được vì không crash, chỉ mất một thẻ).
+  Không chặn vì đều là suy giảm nhẹ nhàng (graceful), không phải treo màn
+  hình hay crash — nên ưu tiên thấp hơn 26 vấn đề đã xử lý cùng đợt.
+- **[23/09/2026] "Lưu quy định" (favorites) hiện là tính năng cục bộ
+  (AsyncStorage), không đồng bộ giữa các thiết bị/khi cài lại app** — B8 cần
+  thay bằng API thật (`/api/users/favorites` hoặc tương tự) và di chuyển dữ
+  liệu cũ trong AsyncStorage lên server khi user đăng nhập, không chỉ thêm
+  API mới song song.
 - **[BUG DA SUA]** `src/config/db.js` import sai đường dẫn (`./env.js` thay vì
   `../core/env.js`) khiến `npm run dev` crash ngay khi khởi động — không bị
   test bắt vì test tích hợp kết nối DB trực tiếp qua `test/setup.js`, không đi

@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren, Search } from 'lucide-react-native';
@@ -17,7 +17,17 @@ export default function IncidentsScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <PageHeader title="Xử lý sự cố" right={<IconButton accessibilityLabel="Tìm sự cố" variant="soft" icon={<Search size={18} color={colors.primary} />} />} />
+      <PageHeader
+        title="Xử lý sự cố"
+        right={
+          <IconButton
+            accessibilityLabel="Tìm sự cố"
+            variant="soft"
+            icon={<Search size={18} color={colors.primary} />}
+            onPress={() => Alert.alert('Tìm sự cố', 'Tính năng tìm kiếm trong danh sách sự cố sẽ có ở bản cập nhật sau.')}
+          />
+        }
+      />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 12 }}>
         <Text className="text-[15px] text-muted">Chọn tình huống bạn đang gặp — mỗi hướng dẫn có các bước làm ngay.</Text>
 

@@ -8,6 +8,7 @@ export const StorageKeys = {
   preferences: 'bt_preferences',
   emergencyContacts: 'bt_emergency_contacts',
   documentStatus: 'bt_document_status',
+  savedArticles: 'bt_saved_articles',
 } as const;
 
 export async function getJSON<T>(key: string): Promise<T | null> {

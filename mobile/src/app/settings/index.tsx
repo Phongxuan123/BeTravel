@@ -43,8 +43,13 @@ export default function SettingsScreen() {
         text: 'Đăng xuất',
         style: 'destructive',
         onPress: async () => {
-          await logout();
-          router.replace('/login');
+          try {
+            await logout();
+          } finally {
+            // logout() da tu nuot loi API revoke va van dam bao xoa state
+            // cuc bo (xem lib/auth.tsx) -- dieu huong ve /login du the nao.
+            router.replace('/login');
+          }
         },
       },
     ]);

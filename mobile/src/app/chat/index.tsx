@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, MessageCircle, Send, TriangleAlert } from 'lucide-react-native';
@@ -53,14 +53,37 @@ export default function ChatScreen() {
     const pendingMsg: Message = { id: nextMessageId('a'), role: 'assistant', pending: true };
     setMessages((prev) => [...prev, userMsg, pendingMsg]);
     setInput('');
-    const answer = await askLegalAssistant(question);
-    setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer } : m)));
+    try {
+      const answer = await askLegalAssistant(question);
+      setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer } : m)));
+    } catch {
+      // Khong de bong "pending" (3 cham nhap nhay) treo mai -- chuyen sang
+      // dang insufficient_evidence de tai su dung AnswerCard co san thay vi
+      // them mot loai bubble loi rieng.
+      const errorAnswer: ChatAnswer = {
+        status: 'insufficient_evidence',
+        reason: 'Không thể kết nối tới trợ lý AI lúc này. Kiểm tra kết nối mạng và thử lại.',
+        suggestions: [],
+      };
+      setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer: errorAnswer } : m)));
+    }
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
   };
 
   return (
     <View className="flex-1 bg-bg">
-      <PageHeader title="AI Legal Assistant" subtitle="Trợ lý pháp lý du lịch" right={<IconButton accessibilityLabel="Lịch sử phiên chat" variant="outline" icon={<Clock size={18} color={colors.ink} />} />} />
+      <PageHeader
+        title="AI Legal Assistant"
+        subtitle="Trợ lý pháp lý du lịch"
+        right={
+          <IconButton
+            accessibilityLabel="Lịch sử phiên chat"
+            variant="outline"
+            icon={<Clock size={18} color={colors.ink} />}
+            onPress={() => Alert.alert('Lịch sử phiên chat', 'Tính năng đang phát triển, sẽ có ở bản cập nhật sau.')}
+          />
+        }
+      />
       <View className="border-b border-line bg-surface px-[18px] py-2.5">
         <View className="flex-row items-center self-start rounded-full bg-primary-soft px-3 py-1.5" style={{ gap: 6 }}>
           <CountryFlag code={countryCode} width={16} height={12} />
