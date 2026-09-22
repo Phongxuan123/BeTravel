@@ -103,7 +103,9 @@ export const requestPasswordReset = async (email) => {
 
     console.error("Password reset email error:", error.message);
 
-    throw new Error("PASSWORD_RESET_EMAIL_FAILED");
+    // Giữ lại lỗi gốc (SMTP) trong `cause` để log phía server truy vết được,
+    // trong khi controller/client chỉ thấy mã nghiệp vụ PASSWORD_RESET_EMAIL_FAILED.
+    throw new Error("PASSWORD_RESET_EMAIL_FAILED", { cause: error });
   }
 
   return { accepted: true };
@@ -215,6 +217,4 @@ export const resetPassword = async ({ resetToken, password }) => {
   await PasswordReset.deleteMany({
     userId: user._id,
   });
-
-  return { success: true };
 };

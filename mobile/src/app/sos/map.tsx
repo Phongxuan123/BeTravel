@@ -8,7 +8,7 @@ import { ChevronLeft, LocateFixed, Navigation, Phone, Search } from 'lucide-reac
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { fetchSupportLocations } from '@/mocks/client';
+import { fetchSupportLocations } from '@/lib/data';
 import type { SupportLocation } from '@/mocks/schemas';
 
 const LIGHT_MAP_STYLE = [

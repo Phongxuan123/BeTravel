@@ -12,7 +12,7 @@ import { AnswerCard } from '@/features/chat/components/AnswerCard';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { askLegalAssistant, type ChatAnswer } from '@/mocks/client';
+import { askLegalAssistant, type ChatAnswer } from '@/lib/data';
 
 type Message = { id: string; role: 'user' | 'assistant'; text?: string; answer?: ChatAnswer; pending?: boolean };
 

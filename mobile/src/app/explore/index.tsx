@@ -12,7 +12,7 @@ import { SectionHeader } from '@/components/common/SectionHeader';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { fetchTopics, fetchArticles } from '@/mocks/client';
+import { fetchTopics, fetchArticles } from '@/lib/data';
 import type { Topic, Article } from '@/mocks/schemas';
 
 const TOPIC_ICON: Record<Topic['iconKey'], { icon: typeof FileText; tone: Tone }> = {

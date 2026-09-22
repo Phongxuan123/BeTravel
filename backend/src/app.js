@@ -2,49 +2,50 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
+import mongoose from "mongoose";
 
+import { env } from "./core/env.js";
+import { ok } from "./core/envelope.js";
+import { searchDriverStatus } from "./core/searchDriver.js";
 import authRoutes from "./routes/auth.routes.js";
-
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 
 const app = express();
 
-/* Useful behind Render/Railway/Nginx and for express-rate-limit. */
+/* Cần thiết sau Render/Railway/Nginx và để express-rate-limit đọc đúng IP. */
 app.set("trust proxy", 1);
 
 app.use(
   helmet({
-    crossOriginResourcePolicy: {
-      policy: "cross-origin",
-    },
-    crossOriginOpenerPolicy: {
-      policy: "same-origin-allow-popups",
-    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
   }),
 );
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: env.CORS_ORIGINS,
     credentials: true,
   }),
 );
 
 app.use(express.json({ limit: "2mb" }));
-
-app.use(
-  express.urlencoded({
-    extended: true,
-    limit: "2mb",
-  }),
-);
-
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
 
+// mongoose.connection.readyState: 0 disconnected · 1 connected · 2 connecting · 3 disconnecting
+const CONNECTION_STATE_LABELS = ["disconnected", "connected", "connecting", "disconnecting"];
+
+/*
+ * Dùng cho cron ping chống Render ngủ (xem docs/00_..., Phần B.13) và để
+ * người vận hành kiểm tra nhanh trạng thái kết nối DB / search driver.
+ */
 app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "BeTravel API is running",
+  ok(res, {
+    db: CONNECTION_STATE_LABELS[mongoose.connection.readyState] ?? "disconnected",
+    searchDriver: searchDriverStatus(),
+    version: env.APP_VERSION,
+    uptime: process.uptime(),
   });
 });
 

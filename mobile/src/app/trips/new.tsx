@@ -13,7 +13,7 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { DateRangeCalendar, type DateRange } from '@/components/common/DateRangeCalendar';
 import { colors } from '@/lib/theme';
 import { countries } from '@/mocks/fixtures/countries';
-import { createTrip } from '@/mocks/client';
+import { createTrip } from '@/lib/data';
 import { now } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 

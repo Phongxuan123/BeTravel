@@ -1,3 +1,5 @@
+import { fail } from "../core/envelope.js";
+import { ErrorCode } from "../core/errors.js";
 import { verifyAccessToken } from "../utils/token.js";
 
 const extractBearerToken = (authorization) => {
@@ -7,11 +9,7 @@ const extractBearerToken = (authorization) => {
 
   const [scheme, token] = authorization.split(" ");
 
-  if (scheme !== "Bearer" || !token) {
-    return null;
-  }
-
-  return token;
+  return scheme === "Bearer" && token ? token : null;
 };
 
 export const authenticateToken = (req, res, next) => {
@@ -19,54 +17,40 @@ export const authenticateToken = (req, res, next) => {
     const token = extractBearerToken(req.headers.authorization);
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Bạn chưa đăng nhập",
-      });
+      return fail(res, ErrorCode.UNAUTHORIZED, "Bạn chưa đăng nhập");
     }
 
     const payload = verifyAccessToken(token);
 
     if (!payload?.sub) {
-      return res.status(401).json({
-        success: false,
-        message: "Token không hợp lệ",
-      });
+      return fail(res, ErrorCode.UNAUTHORIZED, "Token không hợp lệ");
     }
 
-    req.user = {
-      userId: payload.sub,
-      role: payload.role,
-    };
+    req.user = { userId: payload.sub, role: payload.role };
 
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({
-        success: false,
-        message: "Phiên đăng nhập đã hết hạn",
-      });
+      return fail(res, ErrorCode.UNAUTHORIZED, "Phiên đăng nhập đã hết hạn");
     }
 
     if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({
-        success: false,
-        message: "Token không hợp lệ",
-      });
+      return fail(res, ErrorCode.UNAUTHORIZED, "Token không hợp lệ");
     }
 
     next(error);
   }
 };
 
+/*
+ * RBAC phải kiểm ở BACKEND. Ẩn nút phía client không phải là bảo vệ --
+ * bất kỳ ai cũng gọi thẳng được endpoint bằng curl.
+ */
 export const requireRole =
   (...roles) =>
   (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: "Bạn không có quyền thực hiện thao tác này",
-      });
+      return fail(res, ErrorCode.FORBIDDEN, "Bạn không có quyền thực hiện thao tác này");
     }
 
     next();

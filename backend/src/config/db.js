@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { env } from "./env.js";
+
 const sanitizeMongoUriForLog = (uri) => {
   try {
     const parsed = new URL(uri);
@@ -18,22 +20,10 @@ const sanitizeMongoUriForLog = (uri) => {
   }
 };
 
-const getMongoUri = () => {
-  const uri = String(process.env.MONGODB_URI || "").trim();
-
-  if (!uri) {
-    throw new Error("MONGODB_URI is missing");
-  }
-
-  if (!uri.startsWith("mongodb://") && !uri.startsWith("mongodb+srv://")) {
-    throw new Error("MONGODB_URI is invalid");
-  }
-
-  return uri;
-};
-
 const connectDB = async () => {
-  const uri = getMongoUri();
+  // env.js đã validate MONGODB_URI bằng Zod lúc khởi động (fail fast) -- không
+  // cần kiểm tra lại ở đây.
+  const uri = env.MONGODB_URI;
   const safeInfo = sanitizeMongoUriForLog(uri);
 
   console.log("MongoDB connection target:", {
@@ -49,10 +39,12 @@ const connectDB = async () => {
      * Do not override dbName here.
      *
      * Example URI:
-     * mongodb+srv://user:password@cluster.mongodb.net/WDPPROJECT01
+     * mongodb+srv://user:password@<cluster-host>/WDPPROJECT01
      * => mongoose.connection.name === "WDPPROJECT01"
      */
     serverSelectionTimeoutMS: 10000,
+    // Atlas M0 giới hạn kết nối chặt -- không đặt pool lớn hơn mức này (Rủi ro R14).
+    maxPoolSize: env.MONGO_MAX_POOL_SIZE,
   });
 
   console.log("MongoDB Atlas connected successfully");

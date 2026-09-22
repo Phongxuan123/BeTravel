@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/lib/theme';
-import type { ChatAnswer } from '@/mocks/client';
+import type { ChatAnswer } from '@/lib/data';
 
 // 2 biến thể theo spec mục 6.10: "Có nguồn pháp lý" và "Chưa đủ dữ liệu".
 // Biến thể "Chưa đủ dữ liệu" KHÔNG BAO GIỜ hiển thị nội dung trả lời — chỉ lý do + gợi ý.

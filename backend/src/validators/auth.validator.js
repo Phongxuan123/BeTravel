@@ -27,8 +27,14 @@ export const registerSchema = z
 
     email: z.string().trim().toLowerCase().email("Email không hợp lệ"),
 
-    // Từ phiên bản này số điện thoại là bắt buộc khi đăng ký mới.
-    phone: vietnamPhoneSchema,
+    /*
+     * Màn hình đăng ký hiện tại của mobile (register.tsx) KHÔNG có ô nhập số
+     * điện thoại -- chỉ có ở luồng /login-phone riêng (đang là placeholder,
+     * xem lib/auth.tsx). Theo quy tắc "không sửa màn hình mobile khi nối API",
+     * bắt buộc phone ở đây sẽ chặn mọi lượt đăng ký thật, nên đổi thành optional.
+     * Khi UI thêm ô số điện thoại sau này, giá trị gửi lên vẫn được validate đúng.
+     */
+    phone: vietnamPhoneSchema.optional(),
 
     password: z
       .string()

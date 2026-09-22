@@ -8,7 +8,7 @@ import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { fetchQuickPhrases, translateText } from '@/mocks/client';
+import { fetchQuickPhrases, translateText } from '@/lib/data';
 import type { QuickPhrase } from '@/mocks/schemas';
 
 export default function TranslatorScreen() {

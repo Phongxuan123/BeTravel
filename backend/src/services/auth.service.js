@@ -1,9 +1,11 @@
 import bcrypt from "bcrypt";
 
 import User from "../models/User.js";
-import RefreshToken from "../models/RefreshToken.js";
 
-import { generateAccessToken, generateRefreshToken, hashToken } from "../utils/token.js";
+import { env } from "../core/env.js";
+import { serializeUser } from "../core/serializers.js";
+import { generateAccessToken } from "../utils/token.js";
+import { issueRefreshToken } from "./refreshToken.service.js";
 
 const DUMMY_HASH = "$2b$12$C6UzMDM.H6dfI/f/IKcEe.9tR1E1uR6f2N6QJ8j5N6I7A2k7x";
 
@@ -21,36 +23,21 @@ const normalizeVietnamPhone = (value) => {
   return phone;
 };
 
-const serializeUser = (user) => ({
-  id: user._id.toString(),
-  username: user.username,
-  fullName: user.fullName,
-  email: user.email,
-  phone: user.phone || "",
-  role: user.role,
-  isActive: user.isActive,
-  createdAt: user.createdAt,
-  updatedAt: user.updatedAt,
-});
-
-const createSession = async (user, refreshTokenDays) => {
-  const accessToken = generateAccessToken(user);
-
-  const refreshToken = generateRefreshToken();
-
-  const expiresAt = new Date(Date.now() + refreshTokenDays * 24 * 60 * 60 * 1000);
-
-  await RefreshToken.create({
-    userId: user._id,
-    tokenHash: hashToken(refreshToken),
-    expiresAt,
+/*
+ * Tạo phiên đăng nhập mới: access token + refresh token thuộc một family mới.
+ */
+const createSession = async (user, refreshTokenDays, context = {}) => {
+  const { rawRefreshToken, expiresAt } = await issueRefreshToken({
+    user,
+    ttlDays: refreshTokenDays,
+    context,
   });
 
   return {
-    accessToken,
-    refreshToken,
+    accessToken: generateAccessToken(user),
+    refreshToken: rawRefreshToken,
     expiresAt,
-    expiresIn: process.env.JWT_ACCESS_EXPIRES || "15m",
+    expiresIn: env.JWT_ACCESS_EXPIRES,
     user: serializeUser(user),
   };
 };
@@ -90,10 +77,14 @@ export const registerUser = async ({ fullName, username, email, phone = "", pass
     throw new Error("EMAIL_EXISTS");
   }
 
-  const phoneOwner = await User.findOne({ phone: normalizedPhone });
+  // Phone rỗng là hợp lệ (chưa bắt buộc ở đăng ký) -- không kiểm trùng chuỗi rỗng,
+  // nếu không mọi tài khoản không nhập phone sẽ chặn lẫn nhau.
+  if (normalizedPhone) {
+    const phoneOwner = await User.findOne({ phone: normalizedPhone });
 
-  if (phoneOwner) {
-    throw new Error("PHONE_EXISTS");
+    if (phoneOwner) {
+      throw new Error("PHONE_EXISTS");
+    }
   }
 
   let normalizedUsername;
@@ -123,7 +114,7 @@ export const registerUser = async ({ fullName, username, email, phone = "", pass
   return serializeUser(user);
 };
 
-export const loginUser = async ({ identifier, password, rememberMe }) => {
+export const loginUser = async ({ identifier, password, rememberMe }, context = {}) => {
   const rawIdentifier = identifier.trim();
   const normalizedIdentifier = rawIdentifier.toLowerCase();
   const normalizedPhoneIdentifier = normalizeVietnamPhone(rawIdentifier);
@@ -155,7 +146,8 @@ export const loginUser = async ({ identifier, password, rememberMe }) => {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  return createSession(user, rememberMe ? 7 : 1);
+  // Nhớ đăng nhập --> dùng trọn REFRESH_TTL_DAYS; không nhớ --> hết hạn sau 1 ngày.
+  return createSession(user, rememberMe ? env.REFRESH_TTL_DAYS : 1, context);
 };
 
 const generateUniqueGoogleUsername = async (email) => {
@@ -176,7 +168,7 @@ const generateUniqueGoogleUsername = async (email) => {
   return username;
 };
 
-export const loginWithGoogle = async ({ googleId, email, fullName }) => {
+export const loginWithGoogle = async ({ googleId, email, fullName }, context = {}) => {
   if (!googleId || typeof googleId !== "string") {
     throw new Error("GOOGLE_ID_INVALID");
   }
@@ -203,7 +195,7 @@ export const loginWithGoogle = async ({ googleId, email, fullName }) => {
       await user.save();
     }
 
-    return createSession(user, 7);
+    return createSession(user, env.REFRESH_TTL_DAYS, context);
   }
 
   const existingEmailUser = await User.findOne({
@@ -233,7 +225,7 @@ export const loginWithGoogle = async ({ googleId, email, fullName }) => {
     isActive: true,
   });
 
-  return createSession(user, 7);
+  return createSession(user, env.REFRESH_TTL_DAYS, context);
 };
 
 export const linkGoogleAccount = async ({ userId, googleId, email, fullName }) => {
@@ -334,5 +326,3 @@ export const updateUserProfile = async ({ userId, fullName, phone }) => {
 
   return serializeUser(user);
 };
-
-export { serializeUser };

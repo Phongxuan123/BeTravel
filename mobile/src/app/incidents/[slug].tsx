@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { fetchIncident } from '@/mocks/client';
+import { fetchIncident } from '@/lib/data';
 
 export default function IncidentDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();

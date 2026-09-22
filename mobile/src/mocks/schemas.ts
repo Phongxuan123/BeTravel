@@ -24,7 +24,7 @@ export const embassySchema = z.object({
 });
 
 export const countrySchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   code: z.string(),
   name: z.string(),
   region: z.string(),
@@ -37,7 +37,7 @@ export const countrySchema = z.object({
 export type Country = z.infer<typeof countrySchema>;
 
 export const topicSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   key: z.string(),
   countryCode: z.string(),
   label: z.string(),
@@ -52,7 +52,7 @@ export const articleKeyPointSchema = z.object({
 });
 
 export const articleSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   id: z.string(),
   slug: z.string(),
   countryCode: z.string(),
@@ -71,7 +71,7 @@ export const articleSchema = z.object({
 export type Article = z.infer<typeof articleSchema>;
 
 export const tripSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   id: z.string(),
   countryCode: z.string(),
   startDate: z.string(),
@@ -87,7 +87,7 @@ export const incidentStepSchema = z.object({
 });
 
 export const incidentSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   slug: z.string(),
   title: z.string(),
   iconKey: z.string(),
@@ -99,7 +99,7 @@ export const incidentSchema = z.object({
 export type Incident = z.infer<typeof incidentSchema>;
 
 export const alertSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   id: z.string(),
   category: z.enum(['legal', 'safety', 'trip']),
   title: z.string(),
@@ -111,7 +111,7 @@ export const alertSchema = z.object({
 export type Alert = z.infer<typeof alertSchema>;
 
 export const quickPhraseSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   id: z.string(),
   countryCode: z.string(),
   vi: z.string(),
@@ -121,7 +121,7 @@ export const quickPhraseSchema = z.object({
 export type QuickPhrase = z.infer<typeof quickPhraseSchema>;
 
 export const supportLocationSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   id: z.string(),
   type: z.enum(['police', 'hospital', 'embassy', 'other']),
   name: z.string(),
@@ -135,7 +135,7 @@ export const supportLocationSchema = z.object({
 export type SupportLocation = z.infer<typeof supportLocationSchema>;
 
 export const searchResultSchema = z.object({
-  __mock: z.literal(true),
+  __mock: z.literal(true).optional(),
   id: z.string(),
   title: z.string(),
   summary: z.string(),

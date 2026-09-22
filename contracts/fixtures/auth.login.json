@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NmYwYTFiMmMzZDRlNWY2MDcxODI5M2EiLCJyb2xlIjoidXNlciJ9.0000000000000000000000000000000000000000000",
+    "refreshToken": "9f3c1d7ab4e25680f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7081",
+    "expiresAt": "2026-09-29T10:00:00.000Z",
+    "expiresIn": "15m",
+    "user": {
+      "id": "66f0a1b2c3d4e5f60718293a",
+      "username": "nguyenvana",
+      "fullName": "Nguyen Van A",
+      "email": "a@example.com",
+      "phone": "0901234567",
+      "role": "user",
+      "isActive": true,
+      "createdAt": "2026-09-20T10:00:00.000Z",
+      "updatedAt": "2026-09-22T08:30:00.000Z"
+    }
+  }
+}
