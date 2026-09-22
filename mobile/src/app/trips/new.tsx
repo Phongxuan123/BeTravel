@@ -14,6 +14,8 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { DateRangeCalendar, type DateRange } from '@/components/common/DateRangeCalendar';
 import { colors } from '@/lib/theme';
 import { createTrip, fetchCountries } from '@/lib/data';
+import { ApiError } from '@/lib/api/http';
+import { useAuth } from '@/lib/auth';
 import { now } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 
@@ -60,6 +62,8 @@ export default function TripWizardScreen() {
   const [query, setQuery] = useState('');
   const [month, setMonth] = useState(() => now());
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { isGuest } = useAuth();
 
   const goStep = (n: number) => setStep(Math.min(Math.max(n, 1), 4));
 
@@ -85,10 +89,32 @@ export default function TripWizardScreen() {
       return;
     }
     if (!state.countryCode || !state.range.start || !state.range.end) return;
+
+    // Chuyen di thuoc ve mot user dang nhap (backend co /api/users/trips
+    // yeu cau authenticateToken) -- khach chua dang nhap khong tao duoc,
+    // dieu huong sang dang nhap thay vi de loi 401 lot ra khong ro rang.
+    if (isGuest) {
+      // Dieu huong ve buoc 1 (khong phai buoc 4) vi state cua wizard nam trong
+      // useReducer cuc bo -- sau vong dang nhap se la MOT instance man hinh
+      // moi, khong con giu duoc lua chon quoc gia/ngay cu.
+      router.push(`/login?next=${encodeURIComponent('/trips/new?step=1')}` as never);
+      return;
+    }
+
+    setError(null);
     setSubmitting(true);
-    await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
-    setSubmitting(false);
-    router.replace('/');
+    try {
+      await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
+      router.replace('/');
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Không thể tạo chuyến đi. Kiểm tra kết nối mạng và thử lại.',
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -321,6 +347,11 @@ export default function TripWizardScreen() {
 
       <BottomActionBar>
         <View className="flex-1">
+          {error && (
+            <View className="mb-2 rounded-md bg-danger-tint p-3">
+              <Text className="text-sm text-danger">{error}</Text>
+            </View>
+          )}
           <Button label={step === 4 ? 'Xác nhận chuyến đi' : 'Tiếp tục →'} onPress={onContinue} disabled={!canContinue} loading={submitting} />
           {step === 4 && (
             <Pressable className="mt-2 items-center py-1" onPress={() => router.push('/trips')}>

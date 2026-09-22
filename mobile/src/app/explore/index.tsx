@@ -2,17 +2,18 @@ import { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Bookmark, Star, Plus, ChevronRight, FileText, IdCard, CircleDollarSign, Shield, BriefcaseBusiness, Car, Users } from 'lucide-react-native';
+import { Search, Bookmark, Star, Plus, ChevronRight, Check, FileText, IdCard, CircleDollarSign, Shield, BriefcaseBusiness, Car, Users } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { FilterChip } from '@/components/ui/FilterChip';
 import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/common/SectionHeader';
+import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { fetchTopics, fetchArticles } from '@/lib/data';
+import { fetchTopics, fetchArticles, fetchCountries } from '@/lib/data';
 import type { Topic, Article } from '@/mocks/schemas';
 
 const TOPIC_ICON: Record<Topic['iconKey'], { icon: typeof FileText; tone: Tone }> = {
@@ -26,11 +27,25 @@ const TOPIC_ICON: Record<Topic['iconKey'], { icon: typeof FileText; tone: Tone }
 
 export default function ExploreScreen() {
   const params = useLocalSearchParams<{ saved?: string }>();
-  const { countryCode, country } = useCountry();
+  const { countryCode, setCountryCode, country } = useCountry();
   const [savedOnly, setSavedOnly] = useState(params.saved === '1');
+  const [topicFilter, setTopicFilter] = useState<string | null>(null);
+  const [pickingCountry, setPickingCountry] = useState(false);
+  const [pickingTopic, setPickingTopic] = useState(false);
 
+  const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
-  const articlesQuery = useQuery({ queryKey: ['articles', countryCode, savedOnly], queryFn: () => fetchArticles(countryCode, { savedOnly }) });
+  const articlesQuery = useQuery({
+    queryKey: ['articles', countryCode, savedOnly, topicFilter],
+    queryFn: () => fetchArticles(countryCode, { savedOnly, topicKey: topicFilter ?? undefined }),
+  });
+
+  const topicFilterLabel = topicsQuery.data?.data.find((t) => t.key === topicFilter)?.label ?? 'Chủ đề';
+
+  const onPickTopic = (key: string | null) => {
+    setTopicFilter(key);
+    setPickingTopic(false);
+  };
 
   return (
     <AppShell active="explore">
@@ -47,8 +62,14 @@ export default function ExploreScreen() {
         </Pressable>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3">
           <View className="flex-row" style={{ gap: 8 }}>
-            <FilterChip label={country?.name ?? ''} active iconLeft={<CountryFlag code={countryCode} width={18} height={13} />} showChevron />
-            <FilterChip label="Chủ đề" showChevron />
+            <FilterChip
+              label={country?.name ?? ''}
+              active
+              iconLeft={<CountryFlag code={countryCode} width={18} height={13} />}
+              showChevron
+              onPress={() => setPickingCountry(true)}
+            />
+            <FilterChip label={topicFilterLabel} active={!!topicFilter} showChevron onPress={() => setPickingTopic(true)} />
             <FilterChip label="Đã lưu" active={savedOnly} iconLeft={<Bookmark size={14} color={savedOnly ? '#fff' : colors.ink} />} onPress={() => setSavedOnly((v) => !v)} />
           </View>
         </ScrollView>
@@ -63,7 +84,12 @@ export default function ExploreScreen() {
                 const meta = TOPIC_ICON[topic.iconKey];
                 const Icon = meta.icon;
                 return (
-                  <Pressable key={topic.key} style={{ width: '47%' }} className="rounded-lg border border-line bg-surface p-3.5">
+                  <Pressable
+                    key={topic.key}
+                    style={{ width: '47%' }}
+                    className="rounded-lg border border-line bg-surface p-3.5"
+                    onPress={() => setTopicFilter(topic.key)}
+                  >
                     <IconTile tone={meta.tone} size={44}>
                       <Icon size={20} color={colors.primary} />
                     </IconTile>
@@ -72,7 +98,11 @@ export default function ExploreScreen() {
                   </Pressable>
                 );
               })}
-              <Pressable style={{ width: '47%' }} className="items-start rounded-lg border border-dashed border-[#C9D6EE] bg-[#FAFCFF] p-3.5">
+              <Pressable
+                style={{ width: '47%' }}
+                className="items-start rounded-lg border border-dashed border-[#C9D6EE] bg-[#FAFCFF] p-3.5"
+                onPress={() => setPickingTopic(true)}
+              >
                 <IconTile tone="blue" size={44}>
                   <Plus size={20} color={colors.primary} />
                 </IconTile>
@@ -94,6 +124,63 @@ export default function ExploreScreen() {
           </View>
         </View>
       </ScrollView>
+
+      <SimpleSheet visible={pickingCountry} onClose={() => setPickingCountry(false)} title="Chọn quốc gia">
+        <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
+          {countriesQuery.data?.data.map((c) => {
+            const selected = c.code === countryCode;
+            const comingSoon = c.status === 'coming_soon';
+            return (
+              <Pressable
+                key={c.code}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selected }}
+                onPress={() => {
+                  setCountryCode(c.code);
+                  setPickingCountry(false);
+                }}
+                className={`h-16 flex-row items-center rounded-lg border px-3 ${selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+              >
+                <CountryFlag code={c.code} width={36} height={26} />
+                <View className="ml-3 flex-1">
+                  <Text className="text-base font-body-semibold text-ink">{c.name}</Text>
+                  {comingSoon && <Text className="text-xs text-muted">Sắp ra mắt — chưa có cẩm nang pháp luật</Text>}
+                </View>
+                {selected && <Check size={18} color={colors.primary} />}
+              </Pressable>
+            );
+          })}
+        </View>
+      </SimpleSheet>
+
+      <SimpleSheet visible={pickingTopic} onClose={() => setPickingTopic(false)} title="Chọn chủ đề">
+        <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
+          <Pressable
+            accessibilityRole="radio"
+            accessibilityState={{ checked: topicFilter === null }}
+            onPress={() => onPickTopic(null)}
+            className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${topicFilter === null ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+          >
+            <Text className="text-base font-body-semibold text-ink">Tất cả chủ đề</Text>
+            {topicFilter === null && <Check size={18} color={colors.primary} />}
+          </Pressable>
+          {topicsQuery.data?.data.map((topic) => {
+            const selected = topic.key === topicFilter;
+            return (
+              <Pressable
+                key={topic.key}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selected }}
+                onPress={() => onPickTopic(topic.key)}
+                className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+              >
+                <Text className="text-base font-body-semibold text-ink">{topic.label}</Text>
+                {selected && <Check size={18} color={colors.primary} />}
+              </Pressable>
+            );
+          })}
+        </View>
+      </SimpleSheet>
     </AppShell>
   );
 }
