@@ -1,0 +1,68 @@
+{
+  "ok": true,
+  "data": {
+    "_id": "66f0a1b2c3d4e5f607182950",
+    "countryCode": "KR",
+    "topicSlug": "giao-thong",
+    "slug": "bang-lai-nuoc-ngoai",
+    "version": 1,
+    "isCurrent": true,
+    "status": "published",
+    "title": "Dùng bằng lái nước ngoài / bằng lái quốc tế (IDP) để lái xe tại Hàn Quốc",
+    "summaryVi": "Người nước ngoài được lái xe tại Hàn Quốc tối đa 1 năm kể từ ngày nhập cảnh nếu có IDP.",
+    "titleNorm": "dung bang lai nuoc ngoai / bang lai quoc te (idp) de lai xe tai han quoc",
+    "summaryNorm": "nguoi nuoc ngoai duoc lai xe tai han quoc toi da 1 nam ke tu ngay nhap canh neu co idp.",
+    "keyPoints": [{ "text": "Được lái xe tối đa 1 năm với IDP hợp lệ.", "severity": "normal" }],
+    "penalties": [
+      {
+        "behavior": "Lái xe không có bằng lái hợp lệ",
+        "amountText": "phạt tù đến 1 năm hoặc phạt tiền đến 3.000.000 KRW",
+        "amountMin": 0,
+        "amountMax": 3000000,
+        "currency": "KRW",
+        "note": "Điều 152 Luật Giao thông Đường bộ"
+      }
+    ],
+    "exceptions": ["Xe cho thuê (rental) vẫn được phép."],
+    "foreignerNotes": ["IDP phải xin TRƯỚC khi rời Việt Nam."],
+    "bodyMd": "Người nước ngoài được lái xe tại Hàn Quốc tối đa 1 năm kể từ ngày nhập cảnh nếu có IDP.",
+    "sources": [
+      {
+        "title": "Using a Foreign Driver's License",
+        "url": "https://easylaw.go.kr/CSM/CsmOvSave.laf?csmSeq=2332",
+        "authority": "Korea Legislation Research Institute",
+        "kind": "gov",
+        "publishedAt": "2025-03-01T00:00:00.000Z",
+        "accessedAt": "2026-09-22T00:00:00.000Z"
+      }
+    ],
+    "effectiveFrom": "2009-06-20T00:00:00.000Z",
+    "effectiveTo": null,
+    "riskLevel": "danger",
+    "tags": ["giao-thong", "bang-lai", "idp"],
+    "supersedesId": null,
+    "reviewedBy": "66f0a1b2c3d4e5f60718293a",
+    "reviewedAt": "2026-09-22T08:00:00.000Z",
+    "reviewNote": "",
+    "indexState": {
+      "status": "not_indexed",
+      "chunkCount": 0,
+      "lastIndexedAt": null,
+      "embeddingModel": "",
+      "error": ""
+    },
+    "createdAt": "2026-09-20T10:00:00.000Z",
+    "updatedAt": "2026-09-22T08:00:00.000Z",
+    "__v": 0,
+    "relatedArticles": [
+      {
+        "_id": "66f0a1b2c3d4e5f607182951",
+        "countryCode": "KR",
+        "slug": "qua-toc-do-phat-nguoi",
+        "title": "Mức phạt vượt tốc độ tại Hàn Quốc",
+        "summaryVi": "Tóm tắt mức phạt vượt tốc độ.",
+        "topicSlug": "giao-thong"
+      }
+    ]
+  }
+}

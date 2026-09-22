@@ -84,7 +84,7 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 type RequestOptions = {
-  method?: 'GET' | 'POST' | 'PATCH' | 'DELETE';
+  method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
   body?: unknown;
   /** Endpoint auth công khai (register/login/...) -- không gắn Bearer, không tự refresh khi 401. */
   skipAuth?: boolean;

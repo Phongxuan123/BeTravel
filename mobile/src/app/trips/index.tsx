@@ -11,8 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { CountryFlag } from '@/components/brand/CountryFlag';
-import { fetchTrips, setCurrentTrip } from '@/lib/data';
-import { getCountryByCode } from '@/mocks/fixtures/countries';
+import { fetchTrips, setCurrentTrip, fetchCountries } from '@/lib/data';
 import { formatTripRange, tripDurationDays } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 import type { Trip } from '@/mocks/schemas';
@@ -113,7 +112,8 @@ export default function TripsScreen() {
 }
 
 function OngoingTripCard({ trip }: { trip: Trip }) {
-  const country = getCountryByCode(trip.countryCode);
+  const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
+  const country = countriesQuery.data?.data.find((c) => c.code === trip.countryCode);
   if (!country) return null;
   const today = now();
   const total = Math.max(1, daysBetween(parseISODate(trip.startDate), parseISODate(trip.endDate)));
@@ -150,7 +150,8 @@ function OngoingTripCard({ trip }: { trip: Trip }) {
 }
 
 function SimpleTripCard({ trip, muted, onSetCurrent }: { trip: Trip; muted?: boolean; onSetCurrent: (id: string) => void }) {
-  const country = getCountryByCode(trip.countryCode);
+  const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
+  const country = countriesQuery.data?.data.find((c) => c.code === trip.countryCode);
   if (!country) return null;
   const today = now();
   const daysUntil = daysBetween(today, parseISODate(trip.startDate));

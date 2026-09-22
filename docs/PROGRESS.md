@@ -1,12 +1,12 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-22 · Phiên: B2 — Content backbone + Admin Portal
+Cập nhật lần cuối: 2026-09-22 · Phiên: B3 — Public content API + nối mobile Explore/Search/Trips
 
 | Batch | Trạng thái | Ngày | Ghi chú |
 |---|---|---|---|
 | B1 Auth thật            | xong | 2026-09-22 | Envelope {ok,data}, auth thật nối mobile, refresh xoay vòng + ân hạn |
 | B2 Content + Admin      | xong | 2026-09-22 | Models + admin API + máy trạng thái + admin SPA (Vite/React/TS/Tailwind) |
-| B3 Public content       | chưa làm | | |
+| B3 Public content       | xong | 2026-09-22 | API công khai countries/topics/articles/search + trips thật, seed 4 nước + 6 chủ đề + 8 bài draft KR có nguồn thật, mobile nối API thật |
 | B4 RAG + guardrails     | chưa làm | | |
 | B5 Chat + feedback      | chưa làm | | |
 | B6 SOS                  | chưa làm | | |
@@ -85,7 +85,76 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
     `credentials:'include'` nên nếu backend bật `AUTH_TRANSPORT=cookie` thì
     cookie httpOnly cũng hoạt động song song, không cần đổi code.
 
+### B3
+
+13. **Search tách theo TỪNG TỪ (AND), không so khớp nguyên cụm.** Prompt B3
+    mô tả `$regex` trên `titleNorm/summaryNorm`, nhưng so khớp nguyên cụm quá
+    cứng ("phat vape" không khớp "Mức phạt ... (vape)" vì hai từ không liền
+    nhau). Tách `q` thành từng từ, MỖI từ phải xuất hiện ở titleNorm hoặc
+    summaryNorm (không cần liền kề) — vẫn dùng `$regex` như prompt yêu cầu,
+    chỉ đổi cách ghép điều kiện. Xem `publicContent.service.js#searchArticles`.
+14. **`titleNorm`/`summaryNorm` tính lại tự động trong hook `pre('save')` của
+    `LegalArticle`**, không tính thủ công ở service — đảm bảo không bao giờ
+    lệch với `title`/`summaryVi` hiện tại dù sửa qua đường nào (admin CRUD,
+    script seed, hay sau này qua job).
+15. **`Trip` model dùng partial unique index `{userId}` where `isCurrent:true`**
+    — cùng mẫu phòng thủ với `LegalArticle` (Phần B2, quyết định gốc ở
+    `docs/00_...`). `createTrip` LUÔN đặt `isCurrent:false` (giống hệt hành vi
+    `mocks/client.ts` hiện có) — người dùng tự đặt "chuyến đi chính" qua
+    `PUT .../:id/current`; đây KHÔNG phải bug, là parity có chủ đích với mock.
+16. **Sửa 3 file KHÔNG phải "màn hình" nhưng chặn hoàn toàn việc nối API
+    thật:** `lib/countryContext.tsx`, `app/trips/index.tsx`,
+    `app/trips/new.tsx` đều import thẳng `mocks/fixtures/countries` thay vì đi
+    qua `lib/data.ts` — nghĩa là dù bật `EXPO_PUBLIC_USE_MOCKS=false`, TOÀN BỘ
+    thông tin quốc gia trong app (kể cả số khẩn cấp, đại sứ quán) vẫn luôn là
+    dữ liệu mock. Đây là bug thật (không phải khác biệt cosmetic), sửa lại
+    dùng `fetchCountries()` từ `lib/data.ts` qua React Query — không đổi UI/
+    logic hiển thị nào khác trong 3 file này.
+17. **`region`/`currentCity`/`embassy.openTime,closeTime,distanceKm` ở mobile
+    Country KHÔNG có trong model backend** (`docs/00_...` Phần C.2 không định
+    nghĩa các field này — chúng là nhãn trình bày UI cũ của bản mock). Xử lý ở
+    `lib/api/adapters.ts#adaptCountry`: `region`/`currentCity` tra theo bảng
+    tĩnh nhỏ (4 nước KR/JP/TH/SG), `embassy.openTime/closeTime/distanceKm` để
+    rỗng/0 thay vì bịa số (cần vị trí người dùng thật, dự kiến B6/B8).
+    `regulationsCount` là SỐ THẬT (đếm bài `published+isCurrent` mỗi nước,
+    tính ở `publicContent.service.js`), không phải số tĩnh như mock cũ.
+18. **`trips/new.tsx` bước 1 chặn chọn quốc gia `coming_soon`** (disable +
+    badge "Sắp ra mắt") — đúng yêu cầu DoD B3 "xử lý country chưa hỗ trợ, hiện
+    trạng thái rõ ràng, không lỗi". Đây là thay đổi UI có chủ đích theo đúng
+    mục 12 của prompt B3, không phải mở rộng phạm vi tự ý.
+19. **`iconKey` của Topic (enum đóng 6 giá trị ở mobile) suy ra từ `topicSlug`
+    qua bảng tĩnh trong adapters.ts**, không đọc field `icon` tự do của
+    backend (dành cho admin nhập, không đảm bảo khớp enum). `lao-dong` và
+    `hai-quan` tạm dùng chung icon `documents` vì mobile chưa có icon riêng
+    cho hai chủ đề này.
+
 ## Đang vướng
+
+- **[B3, ĐÃ SEED] Đã có 8 bài luật KR `status:'draft'` có nguồn thật trong
+  Atlas** (chạy `npm run seed` — idempotent, chạy lại không tạo trùng), theo
+  đúng nội dung `docs/06_Legal_Content_Seed_KR.md`: nhập cảnh/visa (K-ETA vs
+  C-3), quá hạn lưu trú, bằng lái nước ngoài/IDP, ma túy (cảnh báo, thiếu
+  trích dẫn điều luật — ưu tiên thấp nhất để publish), hải quan, lao động
+  EPS/lương tối thiểu 2026, số khẩn cấp, mất hộ chiếu/Đại sứ quán VN tại
+  Seoul. **CHƯA publish bài nào** — cần người (CPO/nhóm nội dung) đọc lại,
+  đối chiếu nguồn `secondary` với `.go.kr`, viết `bodyMd` đầy đủ (hiện đang
+  để tạm bằng `summaryVi`, chưa đủ chất lượng cho chunk RAG ở B4), rồi tự
+  chuyển `draft → pending_review → published` qua Admin Portal. Đã smoke-test
+  thật: publish thử 1 bài (`qua-han-luu-tru`) → xuất hiện đúng ở
+  `/api/legal/articles`, `/api/legal/articles/KR/:slug`, `/api/legal/search`
+  → revert lại `draft` sau khi xác nhận, không để sót bài "published" ngoài ý
+  muốn trong Atlas. Vẫn KHÔNG thay thế việc thu thập đủ 15–20 bài luật KR ở
+  Phần D.2 `00_BeTravel_MasterPlan_v2.md`.
+- **[B3, MỚI] `JP`/`TH`/`SG` seed với `status:'coming_soon'` và `embassy: {}`
+  rỗng** (chỉ có `emergencyNumbers` — đây là kiến thức phổ thông đã kiểm
+  chứng, không phải dữ liệu pháp lý cần nguồn riêng). Khi nhóm nội dung mở
+  một trong ba nước này, cần bổ sung `embassy.address/phone` thật qua Admin
+  Portal (Countries) trước khi đổi `status` sang `active`.
+- **[B3, MỚI] Embassy KR trong seed lấy theo nguồn của bài `mat-ho-chieu-ho-tro-cong-dan`**
+  (`123 Bukchon-ro, Jongno-gu, Seoul`), khác địa chỉ cũ trong mock UI trước đây
+  (`28 Dongbinggo-ro, Yongsan-gu, Seoul`). Chưa có tọa độ `lat/lng` đã kiểm
+  chứng cho địa chỉ mới — để trống thay vì đoán; cần người điền qua Admin
+  Portal nếu bản đồ đại sứ quán cần hiển thị chính xác (dùng ở B6/B8).
 
 - **`backend/.env` đã được điền** (MONGODB_URI Atlas thật) và đã SMOKE TEST
   THÀNH CÔNG bằng `curl` thật: register → login → `/me` → refresh xoay vòng →
@@ -114,13 +183,27 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
   nhận trực tiếp**. Đề nghị người dùng tự chạy `cd admin && npm run dev` và
   thử qua ít nhất luồng: đăng nhập → tạo quốc gia → tạo chủ đề → soạn bài
   luật → thêm nguồn → xuất bản → xem lại nhật ký.
-- **Nhập thử 1 bài luật KR thật từ đầu đến publish (DoD B2 dòng cuối)**: cơ
-  chế đã được smoke test bằng dữ liệu giả và chạy trong vài giây (rất nhanh
-  hơn 15 phút yêu cầu), nhưng đây là quy trình con người thao tác qua UI thật
-  với **nội dung pháp lý KR có nguồn thật** — nằm ngoài khả năng tôi tự làm
-  (không có nguồn pháp lý KR đã kiểm chứng, xem "Đường găng thật" ở
-  `docs/00_BeTravel_MasterPlan_v2.md` Phần A.3). Việc của nhóm nội dung, bắt
-  đầu song song từ bây giờ theo đúng lộ trình.
+- **[GIẢI QUYẾT MỘT PHẦN ở B3]** DoD B2 dòng cuối ("nhập thử 1 bài luật KR
+  thật từ đầu đến publish") — đã smoke test bằng `curl` với NỘI DUNG THẬT
+  (bài `qua-han-luu-tru` trong seed B3, có nguồn `.go.kr` thật, publish →
+  xuất hiện đúng ở API công khai → revert lại `draft`). Vẫn CHƯA có ai thao
+  tác qua giao diện Admin Portal thật (chuột/bàn phím qua trình duyệt) — vẫn
+  cần người tự làm ít nhất 1 lần qua UI để xác nhận trải nghiệm soạn thảo
+  (autosave, markdown preview, StatusBar) hoạt động đúng, không chỉ API phía
+  sau.
+- **[B3, MỚI] Chưa click-test mobile app qua Expo Go/emulator thật với API
+  thật trong phiên này** — không có công cụ chạy React Native/thiết bị ảo
+  trong môi trường làm việc. Đã xác minh: `tsc --noEmit` sạch, `expo lint`
+  sạch, 61 test Jest xanh (bao gồm test đối chiếu `contracts/fixtures/` mới
+  cho countries/topics/articles/search/trips), và toàn bộ 8 endpoint mới đã
+  smoke test thật bằng `curl` trên Atlas (bao gồm CRUD trips, publish/revert
+  1 bài luật). Nhưng hành vi runtime thật trên mobile (loading/empty/error
+  state hiển thị đúng, ô "Sắp ra mắt" ở bước 1 tạo chuyến đi không cho chọn
+  được, Explore/Search hiển thị đúng dữ liệu KR) **chưa được xác nhận trực
+  tiếp qua Expo Go**. Đề nghị người dùng chạy `cd mobile && npx expo start -c`
+  với `EXPO_PUBLIC_USE_MOCKS=false` và thử qua: xem Home/Explore quốc gia KR,
+  tạo chuyến đi (thử chọn JP để thấy trạng thái "Sắp ra mắt"), tìm kiếm
+  "qua han" sau khi publish thử 1 bài qua Admin Portal.
 
 ## Nợ kỹ thuật
 
@@ -134,9 +217,22 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
   Google (không chỉ email), cần thêm hạng mục tích hợp `expo-auth-session` +
   OAuth client ID cho iOS/Android — ngoài phạm vi B1, cần thông tin từ Google
   Cloud Console.
-- `mobile/src/lib/data.ts` hiện tái xuất 100% từ mock cho mọi thứ ngoài auth.
-  Từ B3 trở đi, từng hàm sẽ đổi dần sang mẫu
-  `USE_MOCKS ? mock.fn : real.fn` khi backend có endpoint tương ứng.
+- **[GIẢI QUYẾT MỘT PHẦN ở B3]** `mobile/src/lib/data.ts`: countries/topics/
+  legal articles/search/trips đã đổi sang mẫu `USE_MOCKS ? mock.fn : real.fn`.
+  Phần còn lại (incidents/alerts/quick-phrases/support-locations/chat/
+  translate) vẫn 100% mock — sẽ đổi dần ở B5/B6/B7 khi backend có endpoint
+  tương ứng.
+- **B3**: tính năng "đã lưu quy định" (`saved`/`savedOnly`) thuộc B8
+  (favorites), chưa có API. `adaptArticle` luôn trả `saved:false`;
+  `fetchArticles(..., {savedOnly:true})` ở `lib/api/content.ts` trả mảng rỗng
+  ngay (không gọi API) để tránh vỡ màn hình Explore khi bấm nút "Đã lưu" —
+  cần thay bằng truy vấn thật khi B8 có API favorites.
+- **B3**: `publicContent.service.js#searchArticles` dùng `$regex` không có
+  index hỗ trợ tốt (chỉ có index thường trên `titleNorm`, không phải text/
+  Atlas Search index) — đủ nhanh với vài chục bài hiện tại, nhưng sẽ chậm dần
+  khi số bài tăng. Đây CHÍNH LÀ điểm B4 sẽ thay bằng Atlas Search trên
+  `legal_chunks` (đã ghi rõ trong code + `contracts/README.md` mục 8.2),
+  không phải nợ kỹ thuật cần xử lý riêng.
 - **B2**: job worker (`services/job.service.js`) mới có handler rỗng (log +
   đánh dấu `done`) — B4 phải cắm handler thật cho `reindex_article` và
   `purge_chunks` qua `registerJobHandler()`, không cần sửa lại phần lock/retry.

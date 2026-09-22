@@ -1,6 +1,6 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
-Phiên bản : v0.2.0 --> v0.4.0
+Phiên bản : v0.2.0 --> v0.5.0
 Cập nhật  : 22/09/2026
 Thực hiện : Claude Code
 
@@ -122,6 +122,46 @@ Thực hiện : Claude Code
 - `admin/` chưa có test cấp component (React Testing Library) -- chỉ có test đối chiếu contract. Logic phức tạp (máy trạng thái) nằm ở backend đã có test đầy đủ; UI chủ yếu là form CRUD.
 - Job worker mới có handler rỗng, B4 sẽ cắm `registerJobHandler('reindex_article', ...)` và `'purge_chunks'` thật.
 
+## B3 — PUBLIC CONTENT API + NOI MOBILE (v0.4.0 --> v0.5.0)
+
+### B3.1. Tong quan
+- Tổng số file mới        : 12 backend (models/services/controllers/routes/validators/scripts/test) + 5 contracts/fixtures + 4 mobile (adapters.ts, content.ts, adapters.test.ts)
+- Tổng số file chỉnh sửa  : 3 backend (constants.js, LegalArticle.js, app.js, package.json) + 6 mobile (data.ts, countryContext.tsx, trips/index.tsx, trips/new.tsx, http.ts, mocks/schemas.ts)
+- Warning xử lý           : 1 (Mongoose duplicate index cảnh báo trên `Trip.userId`)
+- Bug fix                 : 2 (cả hai phát hiện khi tự chạy `npm run test` trước khi commit, không lọt ra smoke test thật — xem B3.4)
+
+### B3.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/src/services/publicContent.service.js` | 1, 4, 6, 11 | Tầng truy vấn công khai, MỌI hàm ép filter `published+isCurrent` -- comment tiếng Việt giải thích rõ đây là bug nghiêm trọng nếu thiếu |
+| `backend/src/models/LegalArticle.js` | 3, 6, 11 | Thêm `titleNorm`/`summaryNorm` + hook `pre('save')` tự tính lại -- không bao giờ lệch với title/summaryVi hiện tại |
+| `backend/src/models/Trip.js` | 1, 9 | Partial unique index `{userId}` where `isCurrent:true` -- tái dùng đúng mẫu phòng thủ đã có ở `LegalArticle` (Rule 3 ở mức kiến trúc, không phải copy code) |
+| `backend/scripts/seed-content.js` | 7, 10, 11 | Idempotent (bỏ qua nếu đã tồn tại, không ghi đè công sức người dùng), toàn bộ nội dung dịch nguyên văn từ `docs/06_...`, không tự sinh thêm |
+| `mobile/src/lib/api/adapters.ts` | 1, 4, 11 | Cầu nối mô hình dữ liệu -- mọi khác biệt (iconKey, region, regulationsCount thật) xử lý tập trung một chỗ, comment giải thích lý do từng quyết định |
+| `mobile/src/lib/countryContext.tsx`, `app/trips/index.tsx`, `app/trips/new.tsx` | 7, 9 | Sửa bug thật: import thẳng mock fixture bỏ qua công tắc `EXPO_PUBLIC_USE_MOCKS` -- không phải "màn hình" theo nghĩa hẹp nên được phép sửa theo CLAUDE.md B3 mục 11 |
+
+### B3.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md)
+
+- Search tách theo từng từ (AND trên titleNorm/summaryNorm), không so khớp nguyên cụm -- "phat vape" phải khớp "Mức phạt ... (vape)" dù hai từ không liền nhau.
+- `region`/`currentCity`/giờ mở cửa đại sứ quán không có trong model backend (master plan không định nghĩa) -- xử lý bằng bảng tĩnh nhỏ trong `adapters.ts`, không hard-code ở backend.
+- `iconKey` (enum đóng 6 giá trị UI) suy ra từ `topicSlug` qua bảng tĩnh trong adapter, không đọc field `icon` tự do của backend.
+- `trips/new.tsx` chặn chọn quốc gia `coming_soon` (disable + badge) -- đúng yêu cầu tường minh của prompt B3 mục 12, không phải mở rộng phạm vi tự ý.
+
+### B3.4. Warning & Bug da xu ly
+
+| Loại | Mô tả | File | Cách fix |
+|------|-------|------|----------|
+| Bug (phát hiện khi chạy test lần đầu) | Hook `pre('save')` viết theo chữ ký callback cũ `function(next)`, nhưng Mongoose 9 không gọi `next` theo cách đó với hàm 1 tham số kiểu này trong ngữ cảnh `Model.create()` -- ném `TypeError: next is not a function`, mọi `LegalArticle.create()` trong toàn hệ thống (kể cả admin CRUD cũ) sập | `models/LegalArticle.js` | Bỏ tham số `next`, dùng hook đồng bộ không callback (Mongoose 9 tự nhận diện qua `fn.length`) | 38/38 test xanh sau sửa |
+| W1 (cảnh báo Mongoose) | Khai `index:true` trên field `userId` VÀ `schema.index({userId:1},...)` cùng lúc -- Mongoose cảnh báo duplicate index, index sau không được áp dụng đúng option | `models/Trip.js` | Bỏ `index:true` ở field, giữ lại `schema.index()` (có `unique` + `partialFilterExpression`, cần khai đầy đủ) | Cảnh báo biến mất, index unique vẫn đúng |
+| Bug logic (phát hiện qua test tự viết, không phải qua smoke test) | Test tìm kiếm đầu tiên viết theo giả định so khớp NGUYÊN CỤM ("phat vape" phải liền nhau trong titleNorm) -- sai với cách người dùng thật gõ tìm kiếm (từ khoá rời rạc) | `services/publicContent.service.js` | Đổi từ 1 `$regex` nguyên cụm sang `$and` của nhiều `$regex` (mỗi từ) | Test "tim khong dau" xanh, đồng thời sát hành vi tìm kiếm thật hơn |
+
+### B3.5. Van de con ton dong
+
+- Chưa click-test mobile app qua Expo Go với API thật (không có công cụ chạy React Native trong phiên này) -- đã xác minh `tsc --noEmit`, `expo lint`, 61 test Jest xanh, và toàn bộ endpoint mới smoke test thật bằng `curl` trên Atlas (bao gồm publish/revert 1 bài luật thật, CRUD trips đầy đủ). Đề nghị người dùng tự chạy `npx expo start -c` với `EXPO_PUBLIC_USE_MOCKS=false`.
+- 8 bài luật KR seed ở `draft`, chưa bài nào `published` -- cần người (không phải Claude Code) đọc lại, đối chiếu nguồn `secondary`, viết `bodyMd` đầy đủ rồi tự publish qua Admin Portal.
+- `publicContent.service.js#searchArticles` dùng `$regex` không có Atlas Search index hỗ trợ -- đủ nhanh ở quy mô hiện tại, B4 sẽ thay bằng Atlas Search trên `legal_chunks` mà không cần sửa controller/route/mobile (đã thiết kế điểm thay thế ngay trong code).
+
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
@@ -129,3 +169,4 @@ Thực hiện : Claude Code
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |
 | v0.3.1    | 22/09/2026 | B1 (điều chỉnh) | Phone bắt buộc lại + UI đăng ký; login-phone chặn bằng màn hình tĩnh; sửa 2 bug phát hiện qua smoke test thật trên Atlas (import sai đường dẫn, `refreshToken: null` lọt envelope) |
 | v0.4.0    | 22/09/2026 | B2 | Content backbone backend (models, admin API, máy trạng thái, job queue, audit log) + Admin Portal SPA hoàn toàn mới (Vite/React/TS/Tailwind v4); sửa 2 bug qua smoke test thật (Express 5 req.query, Mongoose deprecation) |
+| v0.5.0    | 22/09/2026 | B3 | API công khai countries/legal/trips + seed 4 nước, 6 chủ đề, 8 bài luật KR draft có nguồn thật; mobile nối API thật qua adapters.ts, sửa 3 file bị bỏ qua công tắc mock/thật; sửa 3 bug (2 qua test, 1 qua đọc code) |

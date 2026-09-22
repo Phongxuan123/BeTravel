@@ -28,6 +28,9 @@ export const RiskLevel = Object.freeze({
 
 export const SourceKind = Object.freeze({
   GOV: "gov",
+  // Trang tong hop / dich vu tu nhan -- so lieu can doi chieu lai voi nguon
+  // GOV cung bai truoc khi publish (xem docs/06_Legal_Content_Seed_KR.md).
+  SECONDARY: "secondary",
   NEWS: "news",
   LEGAL_TEXT: "legal_text",
   EMBASSY: "embassy",
