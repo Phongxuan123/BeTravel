@@ -1,6 +1,6 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
-Phiên bản : v0.2.0 --> v0.3.1
+Phiên bản : v0.2.0 --> v0.4.0
 Cập nhật  : 22/09/2026
 Thực hiện : Claude Code
 
@@ -81,9 +81,51 @@ Thực hiện : Claude Code
 - Khi thêm entity mới (`LegalArticle`, `Job`, ...), theo đúng mẫu `domainErrors.js` cho lỗi nghiệp vụ thay vì rẽ nhánh `error.message` trong controller.
 - Cân nhắc thêm `mongodb-memory-server` vào CI pipeline (nếu dự án dựng CI) để test backend chạy được không cần Atlas thật.
 
+---
+
+## B2 — CONTENT BACKBONE + ADMIN PORTAL (v0.3.1 --> v0.4.0)
+
+### B2.1. Tong quan
+- Tổng số file mới        : 26 backend (models/controllers/services/validators/routes/test) + ~35 admin (SPA hoàn toàn mới)
+- Tổng số file chỉnh sửa  : 4 backend (app.js, server.js core/env.js không đổi thêm) + contracts/README.md + 4 fixture mới
+- Warning xử lý           : 2 (Mongoose `new:true` deprecated ở 4 chỗ; bundle admin >500kB do Leaflet)
+- Bug fix                 : 2 (phát hiện qua smoke test thật trên Atlas, xem B2.4)
+
+### B2.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/src/core/adminCrudController.js` | 3, 9 | Factory CRUD dùng chung cho Country/Topic/Location -- tránh lặp code 3 lần |
+| `backend/src/services/legalArticle.service.js` | 1, 7, 11 | Máy trạng thái, optimistic concurrency, versioning -- không dùng factory vì logic đặc thù |
+| `backend/src/services/auditLog.service.js` | 4, 9 | Comment giải thích tại sao gọi tường minh thay vì middleware chung |
+| `backend/src/middleware/validate.middleware.js` | 7 | Sửa bug Express 5 (`req.query` chỉ có getter) ngay khi viết, không đợi phát hiện |
+| `admin/src/lib/resource.ts`, `admin/src/lib/api.ts` | 1, 3 | Đối xứng với factory backend -- 3 resource CRUD đơn giản dùng chung, LegalArticle riêng |
+| `admin/src/App.tsx` | 13A (W4) | `React.lazy` cho `LocationsPage` (kéo theo Leaflet ~150kB) -- giảm bundle chính từ 555kB xuống 391kB |
+| `admin/src/lib/schemas.ts` + `__tests__/contracts.test.ts` | — | Đối chiếu contracts/fixtures/ giống mobile -- 3 phía cùng test 1 nguồn sự thật |
+
+### B2.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md)
+
+- Publish thiếu điều kiện trả `409 CONFLICT` thay vì `422` như văn bản prompt B2 -- `ErrorCode` là enum đóng theo CLAUDE.md, không có 422.
+- Admin SPA dùng Tailwind v4 (`@tailwindcss/vite`) và giữ `oxlint` mặc định của Vite scaffold thay vì đổi sang ESLint -- dự án hoàn toàn mới, không có convention có sẵn để "tuân thủ".
+- Refresh token phía admin lưu `localStorage` (chấp nhận rủi ro XSS thấp hơn mobile vì là công cụ nội bộ), nhưng `apiClient.ts` vẫn gửi `credentials:'include'` nên vẫn tương thích nếu backend bật `AUTH_TRANSPORT=cookie`.
+
+### B2.4. Bug fix (phat hien qua smoke test that tren Atlas)
+
+| Loại | Mô tả | File | Cách fix |
+|------|-------|------|----------|
+| Logic bug (Express 5) | `req.query` chỉ có getter trong Express 5 -- `validateQuery` middleware gán lại cả object ném `TypeError`, mọi endpoint admin có query (list, filter) trả 500 | `middleware/validate.middleware.js` | Mutate từng field của `req.query` thay vì gán lại tham chiếu |
+| W1 deprecation | Mongoose 9 bỏ option `new: true` cho `findOneAndUpdate`/`findByIdAndUpdate` | `country.service.js`, `legalTopic.service.js`, `supportLocation.service.js`, `job.service.js` | Đổi sang `returnDocument: "after"` ở cả 4 chỗ |
+
+### B2.5. Van de con ton dong
+
+- Chưa click-test admin SPA trong trình duyệt thật (không có công cụ trình duyệt trong phiên này) -- đã xác minh `tsc -b`, `vite build`, `oxlint`, Vite dev transform cho mọi file, và toàn bộ API phía sau bằng `curl` thật trên Atlas (login, CRUD, publish, CORS). Đề nghị người dùng tự thử qua UI thật.
+- `admin/` chưa có test cấp component (React Testing Library) -- chỉ có test đối chiếu contract. Logic phức tạp (máy trạng thái) nằm ở backend đã có test đầy đủ; UI chủ yếu là form CRUD.
+- Job worker mới có handler rỗng, B4 sẽ cắm `registerJobHandler('reindex_article', ...)` và `'purge_chunks'` thật.
+
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
 | v0.2.0    |      | —     | Trạng thái ban đầu |
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |
 | v0.3.1    | 22/09/2026 | B1 (điều chỉnh) | Phone bắt buộc lại + UI đăng ký; login-phone chặn bằng màn hình tĩnh; sửa 2 bug phát hiện qua smoke test thật trên Atlas (import sai đường dẫn, `refreshToken: null` lọt envelope) |
+| v0.4.0    | 22/09/2026 | B2 | Content backbone backend (models, admin API, máy trạng thái, job queue, audit log) + Admin Portal SPA hoàn toàn mới (Vite/React/TS/Tailwind v4); sửa 2 bug qua smoke test thật (Express 5 req.query, Mongoose deprecation) |

@@ -1,0 +1,34 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-brand: #1d4ed8;
+  --color-brand-dark: #1e3a8a;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+  --color-surface: #f8fafc;
+  --color-line: #e2e8f0;
+  --color-danger: #dc2626;
+  --color-danger-tint: #fee2e2;
+  --color-warn: #d97706;
+  --color-warn-tint: #fef3c7;
+  --color-success: #16a34a;
+  --color-success-tint: #dcfce7;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+/* Leaflet can dinh nghia chieu cao cho container ban do, khong thi ban do khong hien ra. */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}

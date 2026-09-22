@@ -266,6 +266,38 @@ test("hai lan sua cung mot bai voi updatedAt cu -> CONFLICT, khong ghi de", asyn
   assert.equal(secondEditRes.body.error.code, "CONFLICT");
 });
 
+test("partial unique index chan duoc 2 ban cung (countryCode,slug) cung isCurrent:true", async () => {
+  // Kiem tra lop phong thu O TANG DATABASE, khong qua API -- de chac chan
+  // rang buoc nam trong chinh index Mongo, khong chi dua vao logic ung dung
+  // (logic ung dung co the co bug, index thi khong).
+  const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
+  await LegalArticle.init(); // dam bao index da duoc tao truoc khi test (mongodb-memory-server tao lazy)
+
+  await LegalArticle.create({
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "trung-slug",
+    version: 1,
+    isCurrent: true,
+    status: "draft",
+    title: "Ban 1",
+  });
+
+  await assert.rejects(
+    () =>
+      LegalArticle.create({
+        countryCode: "KR",
+        topicSlug: "giao-thong",
+        slug: "trung-slug",
+        version: 2,
+        isCurrent: true, // TRUNG voi ban tren -- phai bi partial unique index chan
+        status: "draft",
+        title: "Ban 2",
+      }),
+    /duplicate key|E11000/,
+  );
+});
+
 test("admin tao SupportLocation voi GeoJSON [lng, lat]", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
 
