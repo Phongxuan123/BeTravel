@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { env } from "./env.js";
+import { env } from "../core/env.js";
 
 const sanitizeMongoUriForLog = (uri) => {
   try {

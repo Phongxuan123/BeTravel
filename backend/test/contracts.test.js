@@ -41,6 +41,7 @@ test("response cua /auth/register khop fixture auth.register.json", async () => 
   const res = await request(app).post("/api/auth/register").send({
     fullName: "Nguyen Van A",
     email: "a@example.com",
+    phone: "0901234567",
     password: "Matkhau123",
     confirmPassword: "Matkhau123",
     termsAccepted: true,
@@ -57,6 +58,7 @@ test("response cua /auth/login khop fixture auth.login.json", async () => {
   await request(app).post("/api/auth/register").send({
     fullName: "Nguyen Van A",
     email: "a@example.com",
+    phone: "0901234567",
     password: "Matkhau123",
     confirmPassword: "Matkhau123",
     termsAccepted: true,
@@ -77,6 +79,7 @@ test("response cua /auth/me khop fixture auth.me.json", async () => {
   await request(app).post("/api/auth/register").send({
     fullName: "Nguyen Van A",
     email: "a@example.com",
+    phone: "0901234567",
     password: "Matkhau123",
     confirmPassword: "Matkhau123",
     termsAccepted: true,

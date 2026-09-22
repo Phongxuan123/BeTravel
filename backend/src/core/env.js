@@ -7,8 +7,13 @@ import { z } from "zod";
  * khi các module con đã được nạp -- module nào đọc env lúc khởi tạo sẽ thấy
  * rỗng. Đặt ở đây thì mọi module import `env` đều chắc chắn đã có .env.
  * `override: true` để một MONGODB_URI cũ còn sót trong terminal không đè lên .env.
+ *
+ * NGOẠI LỆ: trong NODE_ENV=test, KHÔNG override. test/setup.js tự đặt
+ * MONGODB_URI/JWT_ACCESS_SECRET trỏ vào mongodb-memory-server TRƯỚC khi import
+ * module này -- override:true sẽ lấy MONGODB_URI Atlas thật trong .env đè lên,
+ * khiến test cố kết nối mạng thật và treo hàng chục giây.
  */
-dotenv.config({ path: ".env", override: true, quiet: true });
+dotenv.config({ path: ".env", override: process.env.NODE_ENV !== "test", quiet: true });
 
 /*
  * Validate toàn bộ biến môi trường NGAY LÚC KHỞI ĐỘNG và fail fast.

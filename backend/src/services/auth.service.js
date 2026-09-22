@@ -77,14 +77,10 @@ export const registerUser = async ({ fullName, username, email, phone = "", pass
     throw new Error("EMAIL_EXISTS");
   }
 
-  // Phone rỗng là hợp lệ (chưa bắt buộc ở đăng ký) -- không kiểm trùng chuỗi rỗng,
-  // nếu không mọi tài khoản không nhập phone sẽ chặn lẫn nhau.
-  if (normalizedPhone) {
-    const phoneOwner = await User.findOne({ phone: normalizedPhone });
+  const phoneOwner = await User.findOne({ phone: normalizedPhone });
 
-    if (phoneOwner) {
-      throw new Error("PHONE_EXISTS");
-    }
+  if (phoneOwner) {
+    throw new Error("PHONE_EXISTS");
   }
 
   let normalizedUsername;

@@ -22,6 +22,7 @@ beforeEach(clearTestDb);
 const validRegisterBody = () => ({
   fullName: "Nguyen Van A",
   email: "a@example.com",
+  phone: "0901234567",
   password: "Matkhau123",
   confirmPassword: "Matkhau123",
   termsAccepted: true,

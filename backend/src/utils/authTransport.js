@@ -25,9 +25,12 @@ export const applyAuthTransport = (res, session) => {
 
   const { expiresAt, refreshToken, ...rest } = session;
 
-  return authTransportIncludes("body")
-    ? { ...rest, refreshToken, expiresAt }
-    : { ...rest, expiresAt };
+  // Trong cửa sổ ân hạn (replay), session.refreshToken là null vì không cấp
+  // token mới. BỎ HẲN field thay vì gửi `refreshToken: null` -- client parse
+  // bằng z.string().optional() chỉ chấp nhận field vắng mặt, không chấp nhận null.
+  const shouldIncludeRefreshToken = authTransportIncludes("body") && refreshToken;
+
+  return shouldIncludeRefreshToken ? { ...rest, refreshToken, expiresAt } : { ...rest, expiresAt };
 };
 
 export const clearAuthTransportCookie = (res) => clearRefreshTokenCookie(res);

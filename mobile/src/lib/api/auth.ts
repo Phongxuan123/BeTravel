@@ -28,7 +28,7 @@ export async function register(input: {
   email: string;
   password: string;
   confirmPassword: string;
-  phone?: string;
+  phone: string;
   termsAccepted: boolean;
 }): Promise<{ user: ApiUser }> {
   return apiRequest('/auth/register', { method: 'POST', body: input, skipAuth: true });

@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import * as authApi from './api/auth';
-import { ApiError } from './api/http';
 import { getJSON, setJSON, removeKey, StorageKeys } from './storage';
 
 export type AuthUser = { name: string; email: string; phone?: string };
@@ -10,8 +9,7 @@ type AuthContextValue = {
   isGuest: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithPhone: (phone: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone: string) => Promise<void>;
   updateProfile: (patch: Partial<Pick<AuthUser, 'name'>>) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -39,13 +37,8 @@ function useMockAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) =
         await setJSON(StorageKeys.authUser, nextUser);
         setUser(nextUser);
       },
-      loginWithPhone: async (phone) => {
-        const nextUser = { name: 'Bạn', email: `${phone}@phone.betravel`, phone };
-        await setJSON(StorageKeys.authUser, nextUser);
-        setUser(nextUser);
-      },
-      register: async (name, email) => {
-        const nextUser = { name, email };
+      register: async (name, email, _password, phone) => {
+        const nextUser = { name, email, phone };
         await setJSON(StorageKeys.authUser, nextUser);
         setUser(nextUser);
       },
@@ -76,24 +69,14 @@ function useRealAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) =
         await setJSON(StorageKeys.authUser, nextUser);
         setUser(nextUser);
       },
-      loginWithPhone: async () => {
-        // Backend chưa hỗ trợ đăng nhập OTP qua SMS (cần dịch vụ SMS ngoài, nằm
-        // ngoài phạm vi MVP -- xem CLAUDE.md Phần 4.4). Giữ nguyên màn hình,
-        // báo lỗi rõ ràng thay vì âm thầm tạo phiên giả.
-        throw new ApiError(
-          'VALIDATION_ERROR',
-          'Đăng nhập bằng số điện thoại đang được phát triển. Vui lòng dùng email.',
-          0,
-        );
-      },
-      register: async (name, email, password) => {
-        // Màn hình đăng ký hiện chỉ thu thập name/email/password; confirmPassword
-        // và termsAccepted đã được UI tự kiểm (nút Đăng ký chỉ bật khi khớp và đã
-        // đồng ý điều khoản) nên gửi lại đúng giá trị đó lên backend là hợp lệ,
-        // không phải dữ liệu bịa.
+      register: async (name, email, password, phone) => {
+        // confirmPassword và termsAccepted đã được UI tự kiểm (nút Đăng ký chỉ
+        // bật khi mật khẩu khớp và đã đồng ý điều khoản) nên gửi lại đúng giá
+        // trị đó lên backend là hợp lệ, không phải dữ liệu bịa.
         await authApi.register({
           fullName: name,
           email,
+          phone,
           password,
           confirmPassword: password,
           termsAccepted: true,

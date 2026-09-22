@@ -1,101 +1,48 @@
-import { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, Phone, KeyRound } from 'lucide-react-native';
+import { ChevronLeft, Construction, Mail } from 'lucide-react-native';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
-import { TextField } from '@/components/ui/TextField';
 import { colors } from '@/lib/theme';
-import { useAuth } from '@/lib/auth';
 
-// Đăng nhập bằng số điện thoại — luồng mock (không gửi SMS thật, mã OTP cố định "123456"
-// để demo). Theo spec Q6: hiển thị đầy đủ, không cần backend SMS thật ở track UI này.
+// Đăng nhập bằng số điện thoại cần dịch vụ gửi OTP qua SMS -- nằm ngoài phạm vi
+// MVP (chưa có nhà cung cấp SMS nào được cấu hình). Thay vì mô phỏng một luồng
+// OTP giả (dễ khiến người dùng tưởng đã có tài khoản thật), màn hình này chặn
+// sớm và hướng người dùng quay lại đăng nhập bằng email.
 export default function LoginPhoneScreen() {
   const insets = useSafeAreaInsets();
-  const { loginWithPhone } = useAuth();
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const onSendOtp = () => {
-    if (phone.trim().length < 8) {
-      setError('Nhập số điện thoại hợp lệ (kèm mã quốc gia, ví dụ +84...).');
-      return;
-    }
-    setError(null);
-    setStep('otp');
-  };
-
-  const onVerify = async () => {
-    if (otp !== '123456') {
-      setError('Mã OTP không đúng. (Bản demo: dùng mã 123456)');
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    await loginWithPhone(phone.trim());
-    setLoading(false);
-    router.replace('/');
-  };
 
   return (
-    <ScrollView
+    <View
       className="flex-1 bg-surface"
-      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
-      keyboardShouldPersistTaps="handled"
+      style={{ paddingHorizontal: 24, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
     >
-      <IconButton accessibilityLabel="Quay lại" variant="soft" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
+      <IconButton
+        accessibilityLabel="Quay lại"
+        variant="soft"
+        icon={<ChevronLeft size={20} color={colors.ink} />}
+        onPress={() => router.back()}
+      />
 
-      <Text className="mt-6 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-        Đăng nhập bằng số điện thoại
-      </Text>
-      <Text className="mt-2 text-[15px] text-muted">
-        {step === 'phone' ? 'Chúng tôi sẽ gửi mã xác nhận 6 số qua SMS.' : `Nhập mã 6 số đã gửi tới ${phone}.`}
-      </Text>
+      <View className="flex-1 items-center justify-center" style={{ gap: 16 }}>
+        <View className="items-center justify-center rounded-full bg-[#F0F5FD]" style={{ width: 88, height: 88 }}>
+          <Construction size={40} color={colors.primary} />
+        </View>
 
-      <View className="mt-6" style={{ gap: 16 }}>
-        {step === 'phone' ? (
-          <TextField
-            label="Số điện thoại"
-            placeholder="+84 91 234 5678"
-            value={phone}
-            onChangeText={setPhone}
-            iconLeft={<Phone size={20} color={colors.subtle} />}
-            keyboardType="phone-pad"
-          />
-        ) : (
-          <TextField
-            label="Mã OTP"
-            placeholder="123456"
-            value={otp}
-            onChangeText={setOtp}
-            iconLeft={<KeyRound size={20} color={colors.subtle} />}
-            keyboardType="number-pad"
-            maxLength={6}
-            helperText="Bản demo: mã luôn là 123456"
-          />
-        )}
+        <Text className="text-center font-display text-ink" style={{ fontSize: 24, lineHeight: 30 }}>
+          Tính năng đang phát triển
+        </Text>
+        <Text className="text-center text-[15px] text-muted" style={{ maxWidth: 280 }}>
+          Đăng nhập bằng số điện thoại chưa sẵn sàng. Vui lòng dùng email để đăng nhập hoặc tạo tài khoản.
+        </Text>
 
-        {error && (
-          <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-sm text-danger">{error}</Text>
-          </View>
-        )}
-
-        {step === 'phone' ? (
-          <Button label="Gửi mã xác nhận" onPress={onSendOtp} />
-        ) : (
-          <>
-            <Button label="Xác nhận" onPress={onVerify} loading={loading} />
-            <Pressable className="items-center py-2" onPress={() => setStep('phone')}>
-              <Text className="text-[15px] font-body-semibold text-muted">Đổi số điện thoại</Text>
-            </Pressable>
-          </>
-        )}
+        <Button
+          label="Đăng nhập bằng email"
+          iconLeft={<Mail size={18} color="#fff" />}
+          onPress={() => router.replace('/login')}
+        />
       </View>
-    </ScrollView>
+    </View>
   );
 }
