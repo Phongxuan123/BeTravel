@@ -1,0 +1,57 @@
+{
+  "ok": true,
+  "data": {
+    "_id": "66f0a1b2c3d4e5f607182950",
+    "countryCode": "KR",
+    "topicSlug": "giao-thong",
+    "slug": "thuoc-la-dien-tu",
+    "version": 1,
+    "isCurrent": true,
+    "status": "published",
+    "title": "Thuốc lá điện tử và vape",
+    "summaryVi": "Tóm tắt quy định về thuốc lá điện tử tại Hàn Quốc.",
+    "keyPoints": [{ "text": "Cấm hút nơi công cộng", "severity": "normal" }],
+    "penalties": [
+      {
+        "behavior": "Hút thuốc lá điện tử nơi cấm",
+        "amountText": "Phạt tới 100.000 KRW",
+        "amountMin": 0,
+        "amountMax": 100000,
+        "currency": "KRW",
+        "note": ""
+      }
+    ],
+    "exceptions": [],
+    "foreignerNotes": [],
+    "bodyMd": "## Quy định\n...",
+    "sources": [
+      {
+        "title": "Luật quản lý thuốc lá Hàn Quốc",
+        "url": "https://law.go.kr/example",
+        "authority": "Bộ Y tế và Phúc lợi Hàn Quốc",
+        "kind": "gov",
+        "publishedAt": "2025-03-01T00:00:00.000Z",
+        "accessedAt": "2026-09-20T00:00:00.000Z"
+      }
+    ],
+    "effectiveFrom": "2025-03-01T00:00:00.000Z",
+    "effectiveTo": null,
+    "riskLevel": "warn",
+    "tags": ["thuoc-la", "vape"],
+    "supersedesId": null,
+    "reviewedBy": "66f0a1b2c3d4e5f60718293a",
+    "reviewedAt": "2026-09-22T08:00:00.000Z",
+    "reviewNote": "",
+    "indexState": {
+      "status": "not_indexed",
+      "chunkCount": 0,
+      "lastIndexedAt": null,
+      "embeddingModel": "",
+      "error": ""
+    },
+    "createdBy": "66f0a1b2c3d4e5f60718293a",
+    "updatedBy": "66f0a1b2c3d4e5f60718293a",
+    "createdAt": "2026-09-20T10:00:00.000Z",
+    "updatedAt": "2026-09-22T08:00:00.000Z"
+  }
+}
