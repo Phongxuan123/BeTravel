@@ -130,21 +130,29 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
 
 ## Đang vướng
 
-- **[B3, ĐÃ SEED] Đã có 8 bài luật KR `status:'draft'` có nguồn thật trong
-  Atlas** (chạy `npm run seed` — idempotent, chạy lại không tạo trùng), theo
-  đúng nội dung `docs/06_Legal_Content_Seed_KR.md`: nhập cảnh/visa (K-ETA vs
-  C-3), quá hạn lưu trú, bằng lái nước ngoài/IDP, ma túy (cảnh báo, thiếu
-  trích dẫn điều luật — ưu tiên thấp nhất để publish), hải quan, lao động
-  EPS/lương tối thiểu 2026, số khẩn cấp, mất hộ chiếu/Đại sứ quán VN tại
-  Seoul. **CHƯA publish bài nào** — cần người (CPO/nhóm nội dung) đọc lại,
-  đối chiếu nguồn `secondary` với `.go.kr`, viết `bodyMd` đầy đủ (hiện đang
-  để tạm bằng `summaryVi`, chưa đủ chất lượng cho chunk RAG ở B4), rồi tự
-  chuyển `draft → pending_review → published` qua Admin Portal. Đã smoke-test
-  thật: publish thử 1 bài (`qua-han-luu-tru`) → xuất hiện đúng ở
-  `/api/legal/articles`, `/api/legal/articles/KR/:slug`, `/api/legal/search`
-  → revert lại `draft` sau khi xác nhận, không để sót bài "published" ngoài ý
-  muốn trong Atlas. Vẫn KHÔNG thay thế việc thu thập đủ 15–20 bài luật KR ở
-  Phần D.2 `00_BeTravel_MasterPlan_v2.md`.
+- **[B3, ĐÃ SEED, 2/8 ĐÃ PUBLISH theo yêu cầu người dùng] Đã có 8 bài luật KR
+  có nguồn thật trong Atlas** (chạy `npm run seed` — idempotent, chạy lại
+  không tạo trùng), theo đúng nội dung `docs/06_Legal_Content_Seed_KR.md`:
+  nhập cảnh/visa (K-ETA vs C-3), quá hạn lưu trú, bằng lái nước ngoài/IDP, ma
+  túy (cảnh báo, thiếu trích dẫn điều luật — ưu tiên thấp nhất để publish),
+  hải quan, lao động EPS/lương tối thiểu 2026, số khẩn cấp, mất hộ chiếu/Đại
+  sứ quán VN tại Seoul.
+  **Trạng thái hiện tại (23/09/2026):** 2 bài đã `published` theo yêu cầu
+  trực tiếp của người dùng để xem app với dữ liệu thật ngay — `qua-han-luu-tru`
+  (Nhập cảnh) và `lao-dong-eps-luong-toi-thieu` (Lao động), cả hai đều đủ
+  điều kiện CƠ HỌC (có `effectiveFrom` + ít nhất 1 nguồn đủ url/authority/
+  publishedAt). **Đây KHÔNG đồng nghĩa nội dung đã được người có chuyên môn
+  kiểm chứng đầy đủ** — chỉ là đủ điều kiện kỹ thuật để xuất bản, một số
+  nguồn trong 2 bài này vẫn là `kind:'secondary'` (xem `foreignerNotes` từng
+  bài) — nên đối chiếu lại với `.go.kr` khi có thời gian. 6 bài còn lại vẫn
+  `draft`, thiếu `effectiveFrom` hoặc nguồn có ngày công bố — cần người
+  (CPO/nhóm nội dung) bổ sung qua Admin Portal trước khi publish được. Cũng
+  cần viết `bodyMd` đầy đủ cho cả 8 bài (hiện để tạm bằng `summaryVi`, chưa
+  đủ chất lượng cho chunk RAG ở B4). Đã xác nhận thật qua Atlas: cả 2 bài
+  xuất hiện đúng ở `/api/legal/articles`, `/api/legal/articles/KR/:slug`, và
+  đếm đúng ở `/api/legal/topics` (Nhập cảnh: 1, Lao động: 1). Vẫn KHÔNG thay
+  thế việc thu thập đủ 15–20 bài luật KR ở Phần D.2
+  `00_BeTravel_MasterPlan_v2.md`.
 - **[B3, MỚI] `JP`/`TH`/`SG` seed với `status:'coming_soon'` và `embassy: {}`
   rỗng** (chỉ có `emergencyNumbers` — đây là kiến thức phổ thông đã kiểm
   chứng, không phải dữ liệu pháp lý cần nguồn riêng). Khi nhóm nội dung mở
