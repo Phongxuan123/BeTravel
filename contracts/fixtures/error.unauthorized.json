@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+  }
+}

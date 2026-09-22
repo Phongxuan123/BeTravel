@@ -1,0 +1,11 @@
+{
+  "ok": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Dữ liệu không hợp lệ",
+    "details": [
+      { "path": "email", "message": "Email không hợp lệ" },
+      { "path": "password", "message": "Mật khẩu phải có ít nhất 8 ký tự" }
+    ]
+  }
+}

@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { useAuth } from '@/lib/auth';
-import { fetchTrips, fetchAlerts, fetchArticles } from '@/mocks/client';
+import { fetchTrips, fetchAlerts, fetchArticles } from '@/lib/data';
 import { formatTripRange } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 

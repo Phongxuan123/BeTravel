@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { CountryFlag } from '@/components/brand/CountryFlag';
-import { fetchTrips, setCurrentTrip } from '@/mocks/client';
+import { fetchTrips, setCurrentTrip } from '@/lib/data';
 import { getCountryByCode } from '@/mocks/fixtures/countries';
 import { formatTripRange, tripDurationDays } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';

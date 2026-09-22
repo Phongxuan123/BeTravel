@@ -1,6 +1,6 @@
 import { render } from '@testing-library/react-native';
 import { AnswerCard } from '../AnswerCard';
-import type { ChatAnswer } from '@/mocks/client';
+import type { ChatAnswer } from '@/lib/data';
 
 const answered: ChatAnswer = {
   status: 'answered',

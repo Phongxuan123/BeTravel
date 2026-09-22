@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { colors } from '@/lib/theme';
-import { fetchArticle } from '@/mocks/client';
+import { fetchArticle } from '@/lib/data';
 
 export default function ArticleDetailScreen() {
   const { country: countryCode, slug } = useLocalSearchParams<{ country: string; slug: string }>();

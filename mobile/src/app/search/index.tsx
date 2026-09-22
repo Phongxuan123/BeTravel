@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { searchArticles } from '@/mocks/client';
+import { searchArticles } from '@/lib/data';
 
 export default function SearchScreen() {
   const params = useLocalSearchParams<{ q?: string }>();

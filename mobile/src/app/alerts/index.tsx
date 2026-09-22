@@ -8,7 +8,7 @@ import { PageHeaderBare } from '@/components/common/PageHeader';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
-import { fetchAlerts, markAlertRead, markAllAlertsRead } from '@/mocks/client';
+import { fetchAlerts, markAlertRead, markAllAlertsRead } from '@/lib/data';
 import type { Alert } from '@/mocks/schemas';
 import { now } from '@/lib/date';
 

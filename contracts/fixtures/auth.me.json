@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "data": {
+    "user": {
+      "id": "66f0a1b2c3d4e5f60718293a",
+      "username": "nguyenvana",
+      "fullName": "Nguyen Van A",
+      "email": "a@example.com",
+      "phone": "0901234567",
+      "role": "user",
+      "isActive": true,
+      "googleLinked": false,
+      "createdAt": "2026-09-20T10:00:00.000Z",
+      "updatedAt": "2026-09-22T08:30:00.000Z"
+    }
+  }
+}

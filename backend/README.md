@@ -17,7 +17,7 @@ Backend authentication reusable for BeTravel, based on the previous FYCE auth ar
 Create `backend/.env` from `.env.example` and set:
 
 ```env
-MONGODB_URI=mongodb+srv://<db_user>:<db_password>@wdp.w0bnsxm.mongodb.net/WDPPROJECT01
+MONGODB_URI=mongodb+srv://<db_user>:<db_password>@<cluster-host>/WDPPROJECT01
 ```
 
 The backend will use `WDPPROJECT01` because that database is part of the URI.
@@ -37,7 +37,7 @@ NODE_ENV=development
 PORT=3000
 CLIENT_URL=http://localhost:5173
 
-MONGODB_URI=mongodb+srv://<db_user>:<db_password>@wdp.w0bnsxm.mongodb.net/WDPPROJECT01
+MONGODB_URI=mongodb+srv://<db_user>:<db_password>@<cluster-host>/WDPPROJECT01
 
 JWT_ACCESS_SECRET=replace_with_a_long_random_secret
 JWT_ACCESS_EXPIRES=15m
@@ -65,7 +65,7 @@ Expected startup output:
 ```text
 MongoDB connection target: {
   username: '<db_user>',
-  host: 'wdp.w0bnsxm.mongodb.net',
+  host: '<cluster-host>',
   database: 'WDPPROJECT01'
 }
 MongoDB Atlas connected successfully

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { User, Mail, Lock, Eye, EyeOff, Check, ChevronLeft } from 'lucide-react-native';
+import { User, Mail, Phone, Lock, Eye, EyeOff, Check, ChevronLeft } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { TextField } from '@/components/ui/TextField';
@@ -16,6 +16,7 @@ export default function RegisterScreen() {
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -23,16 +24,20 @@ export default function RegisterScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = name.trim().length > 0 && email.includes('@') && password.length >= 8 && confirm === password && agree;
+  // Cùng định dạng với backend (auth.validator.js): 0xxxxxxxxx hoặc +84xxxxxxxxx.
+  const isValidPhone = /^(0|\+84)[0-9]{9}$/.test(phone.trim().replace(/[\s.-]/g, ''));
+
+  const canSubmit =
+    name.trim().length > 0 && email.includes('@') && isValidPhone && password.length >= 8 && confirm === password && agree;
 
   const onSubmit = async () => {
     if (!canSubmit) {
-      setError('Vui lòng điền đầy đủ thông tin và đồng ý điều khoản.');
+      setError('Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.');
       return;
     }
     setError(null);
     setLoading(true);
-    await register(name, email, password);
+    await register(name, email, password, phone.trim());
     setLoading(false);
     router.replace('/trips/new?step=1');
   };
@@ -64,6 +69,14 @@ export default function RegisterScreen() {
           iconLeft={<Mail size={20} color={colors.subtle} />}
           keyboardType="email-address"
           autoCapitalize="none"
+        />
+        <TextField
+          label="Số điện thoại"
+          value={phone}
+          onChangeText={setPhone}
+          iconLeft={<Phone size={20} color={colors.subtle} />}
+          keyboardType="phone-pad"
+          helperText="Dạng 0xxxxxxxxx hoặc +84xxxxxxxxx"
         />
         <View>
           <TextField

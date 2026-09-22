@@ -1,0 +1,238 @@
+# BE.TRAVEL — CONTRACT API
+
+> Nguon su that duy nhat ve hinh dang API. Backend, mobile va admin deu doi chieu vao day.
+> Doi hinh dang API --> sua file nay + `fixtures/*.json` TRUOC, roi moi sua code, trong CUNG MOT commit.
+
+---
+
+## 1. ENVELOPE
+
+Moi response cua API deu nam trong mot trong hai dang duoi day. Khong co dang thu ba.
+
+Thanh cong:
+
+```jsonc
+{ "ok": true, "data": <T> }
+{ "ok": true, "data": <T[]>, "meta": { "page": 1, "limit": 20, "total": 57 } }
+```
+
+That bai:
+
+```jsonc
+{ "ok": false, "error": { "code": "VALIDATION_ERROR", "message": "...", "details": [...] } }
+```
+
+`details` chi xuat hien khi co du lieu bo sung. `message` la tieng Viet cho nguoi dung doc;
+`code` la thu ma client phan nhanh xu ly. **Client khong bao gio so khop theo `message`.**
+
+---
+
+## 2. ERROR CODE — ENUM DONG 10 GIA TRI
+
+Khong duoc tu nghi them ma moi.
+
+| Code | HTTP | Dung khi |
+|---|---|---|
+| `VALIDATION_ERROR` | 400 | Du lieu dau vao sai dinh dang (ZodError roi vao day) |
+| `UNAUTHORIZED` | 401 | Chua dang nhap, token sai/het han, phien bi thu hoi |
+| `FORBIDDEN` | 403 | Da dang nhap nhung khong du quyen, hoac tai khoan bi vo hieu hoa |
+| `NOT_FOUND` | 404 | Khong tim thay tai nguyen hoac endpoint |
+| `CONFLICT` | 409 | Trung du lieu duy nhat (email, phone, username) hoac xung dot trang thai |
+| `RATE_LIMITED` | 429 | Vuot gioi han so lan goi trong cua so thoi gian |
+| `QUOTA_EXCEEDED` | 429 | Vuot han muc AI trong ngay (luu trong DB) |
+| `UPSTREAM_ERROR` | 502 | Dich vu ngoai loi (Google, SMTP, LLM, embedding) |
+| `INSUFFICIENT_EVIDENCE` | 200 | RAG khong du bang chung --> tra loi tu choi, KHONG phai loi he thong |
+| `INTERNAL_ERROR` | 500 | Loi khong luong truoc. Production khong lo stack trace |
+
+`INSUFFICIENT_EVIDENCE` tra HTTP 200 vi day la ket qua nghiep vu hop le, khong phai su co.
+
+---
+
+## 3. AUTH TRANSPORT
+
+Bien moi truong `AUTH_TRANSPORT` quyet dinh refresh token di duong nao:
+
+| Gia tri | Hanh vi |
+|---|---|
+| `body` (mac dinh) | Tra `refreshToken` trong `data`. Danh cho mobile (`expo-secure-store`) |
+| `cookie` | Chi set httpOnly cookie. Danh cho admin web |
+| `both` | Lam ca hai. Dung khi mot backend phuc vu ca hai client |
+
+Backend **luon doc duoc refresh token tu ca cookie lan `req.body.refreshToken`**, bat ke
+`AUTH_TRANSPORT` la gi. Viet mot lan, chay ca hai che do.
+
+Access token luon di qua header `Authorization: Bearer <accessToken>`.
+
+---
+
+## 4. ENDPOINT
+
+Base path: `/api`
+
+### 4.1. `GET /health`
+
+Khong can auth. Dung cho cron ping chong ngu tren Render.
+
+```jsonc
+{ "ok": true, "data": { "db": "connected", "searchDriver": "atlas",
+                        "version": "1.0.0", "uptime": 1234.5 } }
+```
+
+`db`: `connected` | `connecting` | `disconnected`.
+
+---
+
+### 4.2. `POST /auth/register`
+
+Rate limit: 5 lan / 15 phut.
+
+Request:
+
+```jsonc
+{ "fullName": "Nguyen Van A", "username": "nguyenvana",   // username tuy chon
+  "email": "a@example.com", "phone": "0901234567",        // phone BAT BUOC
+  "password": "Matkhau123", "confirmPassword": "Matkhau123",
+  "termsAccepted": true }
+```
+
+Response `201` --> xem `fixtures/auth.register.json`. Dang ky **khong** tu dong dang nhap.
+
+| Tinh huong | Code |
+|---|---|
+| Thieu field, mat khau yeu, confirm khong khop | `VALIDATION_ERROR` |
+| Email / phone / username da ton tai | `CONFLICT` |
+
+### 4.3. `POST /auth/login`
+
+Rate limit: 10 lan / 15 phut.
+
+```jsonc
+{ "identifier": "a@example.com", "password": "Matkhau123", "rememberMe": true }
+```
+
+`identifier` nhan email, username **hoac** so dien thoai.
+`rememberMe: true` --> refresh token song 7 ngay; `false` --> 1 ngay.
+
+Response `200` --> xem `fixtures/auth.login.json`.
+
+| Tinh huong | Code |
+|---|---|
+| Sai tai khoan / mat khau | `UNAUTHORIZED` |
+| Tai khoan chua co mat khau (dang ky bang Google) | `VALIDATION_ERROR` |
+| Tai khoan bi vo hieu hoa | `FORBIDDEN` |
+
+### 4.4. `POST /auth/google`
+
+```jsonc
+{ "credential": "<Google ID token>" }
+```
+
+Response giong `4.3`.
+
+| Tinh huong | Code |
+|---|---|
+| Thieu credential, googleId/email sai dinh dang | `VALIDATION_ERROR` |
+| Credential khong hop le / het han / email chua xac thuc | `UNAUTHORIZED` |
+| Email da co tai khoan mat khau, hoac Google da lien ket nguoi khac | `CONFLICT` |
+| Google Client ID chua cau hinh phia server | `INTERNAL_ERROR` |
+
+### 4.5. `POST /auth/google/link`
+
+Can `Authorization`. Lien ket Google vao tai khoan mat khau dang dang nhap.
+Email Google phai trung email tai khoan. Response: `{ "ok": true, "data": { "user": {...} } }`.
+
+### 4.6. `POST /auth/refresh`
+
+Khong can `Authorization`. Doc refresh token tu cookie **hoac** body:
+
+```jsonc
+{ "refreshToken": "<opaque 128 hex>" }   // bo qua neu dung cookie
+```
+
+Response `200` --> xem `fixtures/auth.refresh.json`.
+
+**Xoay vong co cua so an han** (`REFRESH_ROTATION_GRACE_SECONDS`, mac dinh 10 giay):
+
+```
+token hop le            --> cap token moi, thu hoi token cu, tra ca hai
+token vua bi thay < 10s --> tra lai token dang hieu luc (race lanh tinh)
+token bi thay >= 10s    --> TAI SU DUNG: thu hoi toan bo family, 401 UNAUTHORIZED
+```
+
+| Tinh huong | Code |
+|---|---|
+| Thieu token, token khong ton tai, het han, bi thu hoi | `UNAUTHORIZED` |
+| Tai khoan bi vo hieu hoa | `FORBIDDEN` |
+
+### 4.7. `POST /auth/logout`
+
+Doc refresh token tu cookie hoac body. Thu hoi **toan bo family** cua token do.
+Luon tra `200` ke ca khi khong co token: `{ "ok": true, "data": { "loggedOut": true } }`.
+
+### 4.8. `GET /auth/me`
+
+Can `Authorization`. Response --> xem `fixtures/auth.me.json`.
+
+### 4.9. `PATCH /auth/me`
+
+Can `Authorization`. Body `{ "fullName"?: string, "phone"?: string }` — it nhat mot field.
+Response giong `4.8`.
+
+| Tinh huong | Code |
+|---|---|
+| Khong gui field nao, ho ten / sdt sai dinh dang | `VALIDATION_ERROR` |
+| So dien thoai da thuoc ve nguoi khac | `CONFLICT` |
+| Khong tim thay tai khoan | `NOT_FOUND` |
+
+### 4.10. Quen mat khau
+
+Rate limit chung: 8 lan / 15 phut. Tat ca tra `{ "ok": true, "data": {...} }`.
+
+| Endpoint | Body | Data tra ve |
+|---|---|---|
+| `POST /auth/forgot-password` | `{ email }` | `{ "sent": true }` |
+| `POST /auth/verify-reset-otp` | `{ email, otp }` | `{ "resetToken": "..." }` |
+| `POST /auth/resend-reset-otp` | `{ email }` | `{ "sent": true }` |
+| `POST /auth/reset-password` | `{ resetToken, password }` | `{ "reset": true }` |
+
+`forgot-password` va `resend-reset-otp` luon bao thanh cong du email co ton tai hay khong —
+co y, de khong ro ri danh sach email dang ky.
+
+---
+
+## 5. HINH DANG `user`
+
+Dung chung o moi response co `user`. Khong bao gio chua `password`.
+
+```jsonc
+{ "id": "66f0a1b2c3d4e5f60718293a", "username": "nguyenvana",
+  "fullName": "Nguyen Van A", "email": "a@example.com", "phone": "0901234567",
+  "role": "user",              // user | admin
+  "isActive": true,
+  "createdAt": "2026-09-20T10:00:00.000Z",
+  "updatedAt": "2026-09-22T08:30:00.000Z" }
+```
+
+`GET /auth/me` tra them `googleLinked: boolean`.
+
+---
+
+## 6. FIXTURES
+
+Moi file trong `fixtures/` la **mot response that**, khong them bot gi.
+
+| File | Endpoint |
+|---|---|
+| `auth.register.json` | `POST /auth/register` — 201 |
+| `auth.login.json` | `POST /auth/login` — 200 |
+| `auth.refresh.json` | `POST /auth/refresh` — 200 |
+| `auth.me.json` | `GET /auth/me` — 200 |
+| `error.validation.json` | bat ky endpoint nao — 400 |
+| `error.unauthorized.json` | bat ky endpoint nao — 401 |
+
+Ca hai phia deu co test doi chieu vao chinh cac file nay:
+
+- `backend/test/contracts.test.js` — response that phai co dung bo key nhu fixture
+- `mobile/src/lib/api/__tests__/contracts.test.ts` — schema client phai parse duoc fixture
+
+Lech fixture --> **test do o ca hai phia cung luc**, phat hien ngay thay vi luc tich hop.

@@ -7,7 +7,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
-import { fetchIncidents } from '@/mocks/client';
+import { fetchIncidents } from '@/lib/data';
 import type { Incident } from '@/mocks/schemas';
 
 const ICONS: Record<string, typeof IdCard> = { IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren };
