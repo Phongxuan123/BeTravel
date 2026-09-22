@@ -1,0 +1,48 @@
+import type { SupportLocation } from '../schemas';
+
+export const supportLocations: SupportLocation[] = [
+  {
+    __mock: true,
+    id: 'sl1',
+    type: 'police',
+    name: 'Đồn cảnh sát Shinjuku',
+    meta: 'Cảnh sát · 450 m · Mở 24/7',
+    distanceKm: 0.45,
+    phone: '110',
+    lat: 35.6938,
+    lng: 139.7034,
+    featured: true,
+  },
+  {
+    __mock: true,
+    id: 'sl2',
+    type: 'hospital',
+    name: 'Bệnh viện Tokyo Medical',
+    meta: 'Bệnh viện · 1,2 km · Có tiếng Anh',
+    distanceKm: 1.2,
+    phone: '0333426111',
+    lat: 35.6905,
+    lng: 139.6923,
+  },
+  {
+    __mock: true,
+    id: 'sl3',
+    type: 'embassy',
+    name: 'Đại sứ quán Việt Nam',
+    meta: 'Đại sứ quán · 6,2 km · 08:30 – 17:00',
+    distanceKm: 6.2,
+    phone: '+81368040219',
+    lat: 35.6708,
+    lng: 139.6883,
+  },
+  {
+    __mock: true,
+    id: 'sl4',
+    type: 'other',
+    name: 'Trung tâm hỗ trợ du khách Shinjuku',
+    meta: 'Hỗ trợ du khách · 0,8 km · 09:00 – 18:00',
+    distanceKm: 0.8,
+    lat: 35.6912,
+    lng: 139.7005,
+  },
+];
