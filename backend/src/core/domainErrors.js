@@ -68,6 +68,18 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   PASSWORD_NO_LOWERCASE: [ErrorCode.VALIDATION_ERROR, "Mật khẩu cần ít nhất 1 chữ thường"],
   PASSWORD_NO_NUMBER: [ErrorCode.VALIDATION_ERROR, "Mật khẩu cần ít nhất 1 chữ số"],
   PASSWORD_SAME_AS_OLD: [ErrorCode.VALIDATION_ERROR, "Mật khẩu mới không được trùng mật khẩu cũ"],
+
+  // Chat AI (B4)
+  QUOTA_EXCEEDED_USER: [
+    ErrorCode.QUOTA_EXCEEDED,
+    "Bạn đã dùng hết lượt hỏi AI hôm nay. Vui lòng thử lại vào ngày mai.",
+  ],
+  QUOTA_EXCEEDED_GLOBAL: [
+    ErrorCode.QUOTA_EXCEEDED,
+    "Hệ thống đang quá tải lượt hỏi AI. Vui lòng thử lại sau ít phút.",
+  ],
+  CHAT_SESSION_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy phiên chat"],
+  CHAT_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy tin nhắn"],
 });
 
 /*

@@ -69,6 +69,17 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    /*
+     * Quota AI luu DB (B4) -- rate-limit RAM (middleware/rateLimit.middleware.js)
+     * reset khi server restart nen KHONG du de bao ve chi phi goi LLM that.
+     * date dang 'YYYY-MM-DD' theo gio server, reset thu cong bang so sanh ngay
+     * moi lan tang (xem services/aiUsage.service.js), khong dung cron rieng.
+     */
+    aiUsage: {
+      date: { type: String, default: "" },
+      count: { type: Number, default: 0 },
+    },
   },
   {
     timestamps: true,

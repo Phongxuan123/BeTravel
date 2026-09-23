@@ -1,13 +1,13 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-23 · Phiên: B3 + đợt rà soát tương tác toàn mobile + màn chặn "đang hoàn thiện" (ngoài lộ trình batch, theo yêu cầu trực tiếp)
+Cập nhật lần cuối: 2026-09-23 · Phiên: B4 (RAG + guardrails)
 
 | Batch | Trạng thái | Ngày | Ghi chú |
 |---|---|---|---|
 | B1 Auth thật            | xong | 2026-09-22 | Envelope {ok,data}, auth thật nối mobile, refresh xoay vòng + ân hạn |
 | B2 Content + Admin      | xong | 2026-09-22 | Models + admin API + máy trạng thái + admin SPA (Vite/React/TS/Tailwind) |
 | B3 Public content       | xong | 2026-09-22 | API công khai countries/topics/articles/search + trips thật, seed 4 nước + 6 chủ đề + 8 bài draft KR có nguồn thật, mobile nối API thật |
-| B4 RAG + guardrails     | chưa làm | | |
+| B4 RAG + guardrails     | xong | 2026-09-23 | Embedding/LLM provider (mock bắt buộc + Gemini/OpenAI), chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm, chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 |
 | B5 Chat + feedback      | chưa làm | | |
 | B6 SOS                  | chưa làm | | |
 | B7 Incidents + dịch     | chưa làm | | |
@@ -128,6 +128,56 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
     `hai-quan` tạm dùng chung icon `documents` vì mobile chưa có icon riêng
     cho hai chủ đề này.
 
+### B4 (23/09/2026)
+
+26. **MockEmbedding không phải vector ngẫu nhiên mà là bag-of-words băm từ
+    (djb2) có loại bỏ ~90 từ chức năng tiếng Việt phổ biến** (xem
+    `rag/embedding/mock.embedding.js`) rồi chuẩn hoá L2 — 2 đoạn text càng
+    chung nhiều từ ĐẶC TRƯNG càng có cosine similarity cao. Không lọc từ chức
+    năng thì mọi bài luật (đều nói về "người Việt", "Hàn Quốc", "quy định")
+    có cosine similarity cao giả tạo bất kể chủ đề, golden test không phân
+    biệt được must_answer/must_refuse. Đây là mô phỏng hành vi hạ trọng số từ
+    phổ biến (IDF thấp) của embedding thật, không phải "gian lận" để test qua.
+27. **Ngưỡng RAG cho môi trường TEST được hạ riêng** (`RAG_MIN_TOP_SCORE=0.27`,
+    `RAG_MIN_SOFT_SCORE=0.2`, `RAG_MIN_CHUNKS=1` trong `test/setup.js`, cùng
+    mẫu với `REFRESH_ROTATION_GRACE_SECONDS` ở B1) — ngưỡng mặc định
+    0.62/0.55 trong `.env.example` được hiệu chỉnh cho hình học cosine của
+    Gemini embedding thật, không áp dụng được cho MockEmbedding (đo thực tế
+    qua smoke test Atlas: câu hỏi đúng chủ đề chỉ đạt ~0.19–0.65 tuỳ độ trùng
+    từ vựng). Ngưỡng production KHÔNG đổi.
+28. **`chat.service.js` tự phát hiện câu hỏi nhắc tên một quốc gia KHÁC với
+    quốc gia của phiên chat, chặn TRƯỚC cả retrieval** (không để LLM tự quyết
+    định) — deterministic, không tốn chi phí gọi LLM, và không phụ thuộc chất
+    lượng provider để tuân thủ đúng quy tắc 5 của system prompt (CLAUDE.md
+    mục 4.2). Phát hiện bằng so khớp chuỗi đã chuẩn hoá (`normalizeVi`) với
+    tên các quốc gia khác trong DB, không phải suy luận ngữ nghĩa.
+29. **Golden test dùng LẠI chính nội dung 8 bài luật KR trong
+    `scripts/seed-content.js`** (export `KR_ARTICLES`/`buildBodyMd`, guard
+    `if (process.argv[1] && import.meta.url === pathToFileURL(...).href)` để
+    import không tự chạy `run()`) thay vì bịa một bộ dữ liệu test song song —
+    Rule 3 (DRY), và tránh hai nguồn "sự thật" về nội dung KR lệch nhau.
+30. **[BUG THẬT, phát hiện khi viết golden test]** Guard ban đầu dùng
+    `` `file://${process.argv[1]}` `` để tự phát hiện "đang chạy trực tiếp
+    hay bị import" — vỡ trên Windows vì đường dẫn có khoảng trắng
+    (`K9 WDP`) và dùng `\` thay vì `/`. Sửa bằng `pathToFileURL()` (Node
+    `node:url`) thay vì tự ghép chuỗi — phát hiện được nhờ `npm run seed`
+    không in gì ra sau khi thêm guard, đã chạy lại xác nhận in đúng log
+    "[bo qua] ..." như cũ.
+31. **`bodyMd` của 8 bài luật KR được viết lại có cấu trúc heading**
+    (`## Tổng quan` / `## Điểm cần lưu ý` / `## Trường hợp ngoại lệ` / `## Lưu
+    ý cho người nước ngoài`) thay vì chỉ là bản sao `summaryVi` — trước đó
+    không chunk được gì có ích (`rag/chunking.js` cắt theo heading markdown).
+    Script seed CHỈ backfill bodyMd khi phát hiện còn đúng placeholder cũ
+    (`bodyMd === summaryVi`), không ghi đè nếu admin đã tự sửa qua Portal. Đã
+    chạy thật trên Atlas — cả 8 bài (kể cả 2 bài `published`) đã có bodyMd mới.
+32. **Smoke test Gemini thật thất bại: key được cấp trả về `401
+    ACCESS_TOKEN_TYPE_UNSUPPORTED`** — định dạng key (`AQ.Ab8...`) không phải
+    API key chuẩn của Gemini Developer API (thường bắt đầu `AIzaSy...`). Toàn
+    bộ pipeline vẫn được xác nhận chạy đúng end-to-end bằng `LLM_PROVIDER=mock`
+    + `EMBEDDING_PROVIDER=mock` qua job worker thật trên Atlas (reindex 2 bài
+    published, sinh đúng số chunk, gọi `/api/chat/...` trả lời có trích dẫn
+    đúng bài). `.env` đã trả về `mock`/`mock` sau khi test — xem "Đang vướng".
+
 ### Đợt rà soát tương tác toàn mobile (23/09/2026, ngoài lộ trình batch — người dùng yêu cầu trực tiếp: "kiểm tra lại từ đầu đến cuối, tìm và fix")
 
 Sau khi B3 nối API thật, người dùng phát hiện nhiều nút/chip không phản hồi
@@ -179,6 +229,20 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
 
 ## Đang vướng
 
+- **[B4, MỚI] Gemini API key được cấp KHÔNG hoạt động với REST API key auth
+  (`?key=...`)** — Google trả `401 ACCESS_TOKEN_TYPE_UNSUPPORTED`, định dạng
+  key (`AQ.Ab8...`) không giống API key chuẩn của Gemini Developer API
+  (thường bắt đầu `AIzaSy...`, lấy tại aistudio.google.com/apikey → nút "Create
+  API key", KHÔNG phải mục khác trong AI Studio). Cần người lấy lại đúng loại
+  key rồi điền vào `backend/.env` (`GEMINI_API_KEY`), đổi `LLM_PROVIDER=gemini`
+  và `EMBEDDING_PROVIDER=gemini`, sau đó gọi lại
+  `POST /api/admin/rag/reindex-country {countryCode:"KR"}` (role admin) để
+  index lại 2 bài đã published bằng embedding thật. Hiện `.env` đang để
+  `mock`/`mock` (an toàn, đúng yêu cầu batch) — pipeline đã xác nhận chạy
+  đúng end-to-end ở chế độ này, chỉ chưa xác nhận được với AI thật.
+- **[B4, MỚI] Chat backend đã xong nhưng CHƯA có UI mobile** (đúng phạm vi
+  B4 — UI chat thuộc B5). `/api/chat/*` đã có thể gọi thẳng qua Postman/curl
+  để demo cho giảng viên nếu cần trước khi làm B5.
 - **[B3, ĐÃ SEED, 2/8 ĐÃ PUBLISH theo yêu cầu người dùng] Đã có 8 bài luật KR
   có nguồn thật trong Atlas** (chạy `npm run seed` — idempotent, chạy lại
   không tạo trùng), theo đúng nội dung `docs/06_Legal_Content_Seed_KR.md`:
@@ -195,9 +259,10 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
   nguồn trong 2 bài này vẫn là `kind:'secondary'` (xem `foreignerNotes` từng
   bài) — nên đối chiếu lại với `.go.kr` khi có thời gian. 6 bài còn lại vẫn
   `draft`, thiếu `effectiveFrom` hoặc nguồn có ngày công bố — cần người
-  (CPO/nhóm nội dung) bổ sung qua Admin Portal trước khi publish được. Cũng
-  cần viết `bodyMd` đầy đủ cho cả 8 bài (hiện để tạm bằng `summaryVi`, chưa
-  đủ chất lượng cho chunk RAG ở B4). Đã xác nhận thật qua Atlas: cả 2 bài
+  (CPO/nhóm nội dung) bổ sung qua Admin Portal trước khi publish được.
+  **[CẬP NHẬT B4]** `bodyMd` cả 8 bài đã được viết lại có cấu trúc heading
+  (không còn là bản sao `summaryVi`) — đủ để chunk cho RAG, xem quyết định
+  31. Đã xác nhận thật qua Atlas: cả 2 bài
   xuất hiện đúng ở `/api/legal/articles`, `/api/legal/articles/KR/:slug`, và
   đếm đúng ở `/api/legal/topics` (Nhập cảnh: 1, Lao động: 1). Vẫn KHÔNG thay
   thế việc thu thập đủ 15–20 bài luật KR ở Phần D.2
@@ -321,9 +386,30 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
   khi số bài tăng. Đây CHÍNH LÀ điểm B4 sẽ thay bằng Atlas Search trên
   `legal_chunks` (đã ghi rõ trong code + `contracts/README.md` mục 8.2),
   không phải nợ kỹ thuật cần xử lý riêng.
-- **B2**: job worker (`services/job.service.js`) mới có handler rỗng (log +
-  đánh dấu `done`) — B4 phải cắm handler thật cho `reindex_article` và
-  `purge_chunks` qua `registerJobHandler()`, không cần sửa lại phần lock/retry.
+- **[XONG Ở B4]** ~~B2: job worker handler rỗng~~ — `reindex_article`/
+  `purge_chunks` đã có handler thật (`rag/jobs/`), đã smoke test qua Atlas.
+- **[B4, MỚI] `AtlasSearchDriver` (`rag/search/atlas.driver.js`) CHƯA có test
+  tự động** — không chạy được trên `mongodb-memory-server` (không hỗ trợ
+  `$vectorSearch`/`$search`), chỉ xác minh được bằng tay trên Atlas thật sau
+  khi tạo 2 index (`docs/atlas-indexes.md`). `MemorySearchDriver` (dùng trong
+  toàn bộ test + golden test) có test đầy đủ và cùng shape kết quả, nhưng
+  không chứng minh được cú pháp aggregation `$vectorSearch`/`$search` đúng
+  100% cho tới khi chạy thật trên Atlas với index đã ACTIVE.
+- **[B4, MỚI] `chat.service.js` không dùng lịch sử hội thoại (multi-turn)
+  khi build prompt** — mỗi câu hỏi được xử lý độc lập (không có "câu trên nói
+  gì"). Phù hợp cho MVP (câu hỏi pháp lý thường độc lập) nhưng nếu B5 cần hỏi
+  nối tiếp kiểu "còn với trường hợp X thì sao?", cần thêm ngữ cảnh hội thoại
+  vào `buildUserPrompt`.
+- **[B4, MỚI] `promptTokens`/`completionTokens`/`costEstimateUsd` trong
+  `ChatMessage`/`AiEvent` luôn là 0** — provider Gemini/OpenAI trả về usage
+  metadata thật (`usageMetadata`/`usage` trong response) nhưng chưa được đọc
+  và lưu lại. Không chặn chức năng (chỉ là telemetry), nên làm khi cần đối
+  soát chi phí thật.
+- **[B4, MỚI] `AiCache` không phân biệt user** — cache theo
+  `sha256(question+country+chunkIds)` dùng chung cho MỌI user hỏi cùng câu
+  với cùng ngữ cảnh, đúng theo thiết kế (`docs/03_Contracts_v2.md` mục 11).
+  Đây là quyết định có chủ đích (câu trả lời pháp lý không phụ thuộc vào
+  danh tính người hỏi), không phải sơ suất.
 - **B2**: `admin/` chưa có test cho từng trang React (chỉ có test đối chiếu
   contract ở `lib/schemas.ts`). Với quy mô B2 (form CRUD, không có logic phức
   tạp phía client — máy trạng thái thật nằm ở backend đã có test), chấp nhận

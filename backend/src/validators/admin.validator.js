@@ -180,3 +180,12 @@ export const auditListQuerySchema = paginationQuerySchema.extend({
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
 });
+
+// ── RAG (B4) ─────────────────────────────────────────────────────────────
+export const ragReindexCountrySchema = z.object({
+  countryCode: countryCodeSchema,
+});
+
+export const ragStatusQuerySchema = z.object({
+  countryCode: countryCodeSchema.optional(),
+});

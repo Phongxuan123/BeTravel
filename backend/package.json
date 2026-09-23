@@ -12,6 +12,7 @@
     "format": "prettier --write \"src/**/*.js\" \"test/**/*.js\"",
     "format:check": "prettier --check \"src/**/*.js\" \"test/**/*.js\"",
     "test": "node --test \"test/**/*.test.js\"",
+    "test:golden": "node --test test/golden.test.js",
     "create-admin": "node scripts/create-admin.js",
     "seed": "node scripts/seed-content.js"
   },

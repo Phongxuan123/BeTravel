@@ -162,6 +162,45 @@ Thực hiện : Claude Code
 - 8 bài luật KR seed ở `draft`, chưa bài nào `published` -- cần người (không phải Claude Code) đọc lại, đối chiếu nguồn `secondary`, viết `bodyMd` đầy đủ rồi tự publish qua Admin Portal.
 - `publicContent.service.js#searchArticles` dùng `$regex` không có Atlas Search index hỗ trợ -- đủ nhanh ở quy mô hiện tại, B4 sẽ thay bằng Atlas Search trên `legal_chunks` mà không cần sửa controller/route/mobile (đã thiết kế điểm thay thế ngay trong code).
 
+## B4 — RAG ENGINE + GUARDRAILS (v0.5.0 --> v0.6.0)
+
+### B4.1. Tong quan
+- Tổng số file mới        : ~30 backend (`rag/` toàn bộ: embedding × 4, llm × 4, search × 3, chunking, rrf, retrieval, prompt, guard, jobs × 3; models × 4: LegalChunk/ChatSession/ChatMessage/AiCache/AiEvent; services × 2: chat, aiUsage, ragAdmin; controllers × 2; routes; validator; test × 3: rag.guard, golden.test.js + kr.json; docs/atlas-indexes.md) + 1 admin (RagIndexPage.tsx)
+- Tổng số file chỉnh sửa  : `core/constants.js`, `core/domainErrors.js`, `models/User.js` (thêm `aiUsage`), `middleware/rateLimit.middleware.js`, `routes/admin.routes.js`, `validators/admin.validator.js`, `app.js`, `server.js`, `scripts/seed-content.js` (export data + backfill `bodyMd`), `contracts/README.md`, 4 file admin (`api.ts`, `types.ts`, `App.tsx`, `Layout.tsx`)
+- Warning xử lý           : 1 (`prefer-const` ở `chat.service.js`, tự sửa bằng `lint:fix`)
+- Bug fix                 : 2 (chi tiết ở B4.4, cả hai phát hiện qua tự smoke test/viết golden test, không lọt ra ngoài)
+
+### B4.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/src/rag/guard.js` | 1, 4, 6, 9 | Hậu kiểm bằng code -- KHÔNG bao giờ tin LLM tự kiểm duyệt chính nó. Pure function, có 3 test riêng (`rag.guard.test.js`), kể cả test ép LLM "nói dối" |
+| `backend/src/rag/retrieval.js` | 1, 4, 6, 11 | 2 lớp phòng thủ: filter sơ bộ ở driver + `$lookup` thật về `legal_articles` xác minh `status`/`isCurrent` -- không tin field copy trên chunk |
+| `backend/src/rag/embedding/mock.embedding.js` | 6, 9 | Bag-of-words có loại bỏ stopword tiếng Việt (mô phỏng IDF thấp của embedding thật) thay vì vector ngẫu nhiên -- để golden test THỰC SỰ phân biệt được đúng/sai chunk |
+| `backend/src/services/chat.service.js` | 2, 7, 8 | Lắp ráp toàn bộ pipeline (quota → country-mismatch → retrieval → cache → LLM → guard → persist) -- mỗi bước có điều kiện rõ ràng, return sớm, không nested if sâu |
+| `backend/scripts/seed-content.js` | 3, 10 | Export `KR_ARTICLES`/`buildBodyMd` để golden test tái dùng CHÍNH nội dung thật (không bịa dữ liệu test song song) -- sửa kèm 1 bug thật (xem B4.4) |
+| `admin/src/pages/RagIndexPage.tsx` | 1, 2 | Màn hình A04 theo đúng yêu cầu prompt: bảng trạng thái + nút re-index + hiển thị lỗi, tự làm mới 5s để thấy job chuyển trạng thái |
+
+### B4.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md muc 26-32)
+
+- MockEmbedding lọc ~90 từ chức năng tiếng Việt phổ biến trước khi băm -- không có bước này mọi bài luật đều "giống nhau" do cùng nói về người Việt/Hàn Quốc, golden test không phân biệt được must_answer/must_refuse.
+- Ngưỡng `RAG_MIN_TOP_SCORE`/`RAG_MIN_SOFT_SCORE` hạ riêng cho môi trường test (`test/setup.js`), không đổi ngưỡng production (hiệu chỉnh cho Gemini thật, không áp dụng được cho MockEmbedding).
+- `chat.service.js` tự phát hiện câu hỏi nhắc quốc gia khác, chặn TRƯỚC retrieval -- deterministic, không tốn chi phí LLM, đúng quy tắc 5 system prompt.
+- Golden test dùng lại nội dung thật của `scripts/seed-content.js` thay vì bịa dữ liệu test riêng (Rule 3 DRY).
+
+### B4.4. Warning & Bug da xu ly
+
+| Loại | Mô tả | File | Cách fix |
+|------|-------|------|----------|
+| Bug (phát hiện khi viết golden test) | Guard tự phát hiện "đang chạy trực tiếp hay bị import" bằng ghép chuỗi thủ công `` `file://${process.argv[1]}` `` -- vỡ trên Windows vì đường dẫn có khoảng trắng (`K9 WDP`) và dùng `\`; `npm run seed` chạy xong không in gì (guard sai làm `run()` không được gọi) | `scripts/seed-content.js` | Dùng `pathToFileURL()` từ `node:url` thay vì tự ghép chuỗi | Chạy lại `npm run seed`, in đúng log `[bo qua] ...` như trước |
+| Bug logic (phát hiện qua smoke test Atlas thật) | Câu hỏi đúng chủ đề nhưng dùng nhiều từ chức năng tiếng Việt phổ biến ("Hàn Quốc", "quy định"...) có cosine similarity với MockEmbedding cao ngang câu hỏi SAI chủ đề -- ngưỡng mặc định (hiệu chỉnh cho Gemini thật) không phân biệt được | `rag/embedding/mock.embedding.js`, `test/setup.js`, `test/golden/kr.json` | Thêm bước lọc từ chức năng vào MockEmbedding (mô phỏng IDF) + hạ ngưỡng CHỈ trong test + đổi 2 câu hỏi must_refuse dùng từ vựng trùng quá nhiều với bài "bằng lái xe" | Golden test 25/25 xanh, khoảng cách điểm must_answer thấp nhất (0.30) và must_refuse cao nhất (0.25) có biên an toàn |
+
+### B4.5. Van de con ton dong
+
+- Chưa smoke test được với Gemini API thật -- key được cấp trả `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` (không phải định dạng API key chuẩn). Đã xác nhận toàn bộ pipeline chạy đúng end-to-end bằng `LLM_PROVIDER=mock`+`EMBEDDING_PROVIDER=mock` qua job worker thật trên Atlas (xem docs/PROGRESS.md "Đang vướng").
+- `AtlasSearchDriver` chưa có test tự động (không chạy được trên `mongodb-memory-server`) -- chỉ xác minh cú pháp bằng đọc code, cần test tay trên Atlas thật sau khi tạo 2 index theo `docs/atlas-indexes.md`.
+- Chưa đọc `promptTokens`/`completionTokens` thật từ response Gemini/OpenAI (luôn 0) -- không chặn chức năng, cần làm khi cần đối soát chi phí thật.
+
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
@@ -170,3 +209,4 @@ Thực hiện : Claude Code
 | v0.3.1    | 22/09/2026 | B1 (điều chỉnh) | Phone bắt buộc lại + UI đăng ký; login-phone chặn bằng màn hình tĩnh; sửa 2 bug phát hiện qua smoke test thật trên Atlas (import sai đường dẫn, `refreshToken: null` lọt envelope) |
 | v0.4.0    | 22/09/2026 | B2 | Content backbone backend (models, admin API, máy trạng thái, job queue, audit log) + Admin Portal SPA hoàn toàn mới (Vite/React/TS/Tailwind v4); sửa 2 bug qua smoke test thật (Express 5 req.query, Mongoose deprecation) |
 | v0.5.0    | 22/09/2026 | B3 | API công khai countries/legal/trips + seed 4 nước, 6 chủ đề, 8 bài luật KR draft có nguồn thật; mobile nối API thật qua adapters.ts, sửa 3 file bị bỏ qua công tắc mock/thật; sửa 3 bug (2 qua test, 1 qua đọc code) |
+| v0.6.0    | 23/09/2026 | B4 | RAG engine đầy đủ (embedding/LLM provider + mock bắt buộc, chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm), chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 (15 must_answer + 6 must_refuse + 4 country_isolation); sửa 2 bug (1 qua smoke test Atlas, 1 qua viết golden test) |

@@ -14,6 +14,7 @@
  * Dung: npm run seed
  */
 import mongoose from "mongoose";
+import { pathToFileURL } from "node:url";
 
 import { env } from "../src/core/env.js";
 import Country from "../src/models/Country.js";
@@ -21,7 +22,7 @@ import LegalTopic from "../src/models/LegalTopic.js";
 import LegalArticle from "../src/models/LegalArticle.js";
 import { CountryStatus, ContentStatus, RiskLevel, KeyPointSeverity } from "../src/core/constants.js";
 
-const COUNTRIES = [
+export const COUNTRIES = [
   {
     code: "KR",
     name: "Hàn Quốc",
@@ -65,7 +66,7 @@ const COUNTRIES = [
   },
 ];
 
-const KR_TOPICS = [
+export const KR_TOPICS = [
   { slug: "nhap-canh", label: "Nhập cảnh", order: 1 },
   { slug: "giao-thong", label: "Giao thông", order: 2 },
   { slug: "hinh-su", label: "Hình sự", order: 3 },
@@ -76,7 +77,9 @@ const KR_TOPICS = [
 
 // Noi dung dich nguyen tu docs/06_Legal_Content_Seed_KR.md -- KHONG duoc tu
 // them/bot du lieu phap ly o day, chi duoc sua loi ky thuat khi seed.
-const KR_ARTICLES = [
+// Export de test/golden/kr.golden.test.js tai su dung CHINH noi dung nay lam
+// du lieu RAG that (khong bia mot bo du lieu gia lap song song, Rule 3 DRY).
+export const KR_ARTICLES = [
   {
     topicSlug: "nhap-canh",
     slug: "visa-nhap-canh",
@@ -293,6 +296,26 @@ const KR_ARTICLES = [
   },
 ];
 
+// B4: bodyMd co cau truc heading -- rag/chunking.js cat theo heading markdown,
+// khong chunk duoc gi co ich tu mot doan van xuoi duy nhat (truoc day bodyMd
+// chi la ban sao summaryVi). Penalties KHONG lap lai o day vi chunking.js tu
+// sinh rieng 1 chunk cho moi penalty tu article.penalties.
+export function buildBodyMd(a) {
+  const sections = [`## Tổng quan\n${a.summaryVi}`];
+
+  if (a.keyPoints?.length) {
+    sections.push(`## Điểm cần lưu ý\n${a.keyPoints.map((k) => `- ${k.text}`).join("\n")}`);
+  }
+  if (a.exceptions?.length) {
+    sections.push(`## Trường hợp ngoại lệ\n${a.exceptions.map((e) => `- ${e}`).join("\n")}`);
+  }
+  if (a.foreignerNotes?.length) {
+    sections.push(`## Lưu ý cho người nước ngoài\n${a.foreignerNotes.map((n) => `- ${n}`).join("\n")}`);
+  }
+
+  return sections.join("\n\n");
+}
+
 const run = async () => {
   await mongoose.connect(env.MONGODB_URI, { maxPoolSize: env.MONGO_MAX_POOL_SIZE });
 
@@ -319,7 +342,16 @@ const run = async () => {
   for (const a of KR_ARTICLES) {
     const existing = await LegalArticle.findOne({ countryCode: "KR", slug: a.slug });
     if (existing) {
-      console.log(`[bo qua] LegalArticle KR/${a.slug} da ton tai`);
+      // Backfill bodyMd cho ban ghi tu lan seed truoc B4 (luc do bodyMd chi la
+      // ban sao summaryVi) -- CHI cap nhat khi con dung placeholder cu, KHONG
+      // dong vao neu admin da tu sua bodyMd qua Portal (tranh mat cong nguoi dung).
+      if (existing.bodyMd === existing.summaryVi) {
+        existing.bodyMd = buildBodyMd(a);
+        await existing.save();
+        console.log(`[cap nhat bodyMd] LegalArticle KR/${a.slug}`);
+      } else {
+        console.log(`[bo qua] LegalArticle KR/${a.slug} da ton tai`);
+      }
       continue;
     }
     await LegalArticle.create({
@@ -328,9 +360,7 @@ const run = async () => {
       version: 1,
       isCurrent: true,
       status: ContentStatus.DRAFT,
-      // bodyMd day du (dung de chunk RAG o B4) chua duoc viet -- xem
-      // docs/06_Legal_Content_Seed_KR.md muc "Huong dan dung file nay".
-      bodyMd: a.summaryVi,
+      bodyMd: buildBodyMd(a),
     });
     console.log(`[tao moi] LegalArticle KR/${a.slug} (draft)`);
   }
@@ -339,7 +369,14 @@ const run = async () => {
   process.exit(0);
 };
 
-run().catch((error) => {
-  console.error("Loi seed noi dung:", error);
-  process.exit(1);
-});
+// Chi thuc thi khi chay truc tiep ("node scripts/seed-content.js" / "npm run
+// seed") -- KHONG chay khi file nay duoc import de tai su dung du lieu (vi du
+// test/golden/kr.golden.test.js import KR_ARTICLES/buildBodyMd o tren).
+// pathToFileURL (khong phai ghep chuoi "file://" thu cong) vi Windows dung
+// dau `\` va co the co khoang trang trong duong dan (vi du "K9 WDP").
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  run().catch((error) => {
+    console.error("Loi seed noi dung:", error);
+    process.exit(1);
+  });
+}

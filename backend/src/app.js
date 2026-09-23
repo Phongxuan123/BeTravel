@@ -11,6 +11,7 @@ import authRoutes from "./routes/auth.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 import publicRoutes from "./routes/public.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -55,6 +56,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users/trips", tripsRoutes);
+app.use("/api/chat", chatRoutes);
 app.use("/api", publicRoutes);
 
 app.use(notFoundHandler);

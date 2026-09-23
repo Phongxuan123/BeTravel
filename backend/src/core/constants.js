@@ -69,3 +69,18 @@ export const UserRole = Object.freeze({
   USER: "user",
   ADMIN: "admin",
 });
+
+// Ly do chat tra ve fallback thay vi cau tra loi that (B4, xem rag/guard.js).
+export const FallbackReason = Object.freeze({
+  // Retrieval khong dat nguong TRUOC KHI goi LLM (rag/retrieval.js).
+  INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE",
+  // LLM da tra loi nhung hau kiem bang code phat hien vi pham (rag/guard.js).
+  GUARD_REJECTED: "GUARD_REJECTED",
+  // Provider loi (mang, parse JSON that bai...) -- khong phai loi nghiep vu.
+  PROVIDER_ERROR: "PROVIDER_ERROR",
+});
+
+export const ChatRole = Object.freeze({
+  USER: "user",
+  ASSISTANT: "assistant",
+});
