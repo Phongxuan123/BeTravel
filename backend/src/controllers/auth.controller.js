@@ -6,6 +6,7 @@ import {
   loginWithGoogle,
   linkGoogleAccount,
   updateUserProfile,
+  changeUserPassword,
 } from "../services/auth.service.js";
 
 import { refreshAccessToken, revokeRefreshToken } from "../services/refreshToken.service.js";
@@ -18,7 +19,7 @@ import {
   resetPassword as resetPasswordService,
 } from "../services/passwordReset.service.js";
 
-import { registerSchema, loginSchema } from "../validators/auth.validator.js";
+import { registerSchema, loginSchema, changePasswordSchema } from "../validators/auth.validator.js";
 import {
   readRefreshToken,
   applyAuthTransport,
@@ -190,6 +191,22 @@ export const resetPassword = async (req, res, next) => {
     await resetPasswordService({ resetToken: req.body?.resetToken, password: req.body?.password });
 
     return ok(res, { reset: true });
+  } catch (error) {
+    next(toAppError(error));
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const input = changePasswordSchema.parse(req.body);
+
+    await changeUserPassword({
+      userId: req.user.userId,
+      currentPassword: input.currentPassword,
+      newPassword: input.newPassword,
+    });
+
+    return ok(res, { changed: true });
   } catch (error) {
     next(toAppError(error));
   }

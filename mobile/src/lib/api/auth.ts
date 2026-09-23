@@ -13,9 +13,14 @@ export type ApiUser = {
   updatedAt: string;
 };
 
-type Session = { accessToken: string; refreshToken?: string; user: ApiUser };
+type Session = {
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: string;
+  expiresIn?: string;
+  user: ApiUser;
+};
 
-// Lưu accessToken vào memory + refreshToken (nếu server trả, tuỳ AUTH_TRANSPORT) vào secure-store.
 async function persistSession(session: Session): Promise<void> {
   setAccessToken(session.accessToken);
   if (session.refreshToken) {
@@ -48,7 +53,6 @@ export async function login(input: {
   return session;
 }
 
-/** Khôi phục phiên khi mở app: đọc refresh token từ secure-store rồi đổi lấy access token mới. */
 export async function restoreSession(): Promise<ApiUser | null> {
   const refreshToken = await getRefreshToken();
   if (!refreshToken) return null;
@@ -82,4 +86,46 @@ export async function me(): Promise<{ user: ApiUser }> {
 
 export async function updateProfile(patch: { fullName?: string; phone?: string }): Promise<{ user: ApiUser }> {
   return apiRequest('/auth/me', { method: 'PATCH', body: patch });
+}
+
+export async function requestPasswordReset(email: string): Promise<{ sent: true }> {
+  return apiRequest('/auth/forgot-password', {
+    method: 'POST',
+    body: { email },
+    skipAuth: true,
+  });
+}
+
+export async function verifyPasswordResetOtp(email: string, otp: string): Promise<{ resetToken: string }> {
+  return apiRequest('/auth/verify-reset-otp', {
+    method: 'POST',
+    body: { email, otp },
+    skipAuth: true,
+  });
+}
+
+export async function resendPasswordResetOtp(email: string): Promise<{ sent: true }> {
+  return apiRequest('/auth/resend-reset-otp', {
+    method: 'POST',
+    body: { email },
+    skipAuth: true,
+  });
+}
+
+export async function resetPassword(resetToken: string, password: string): Promise<{ reset: true }> {
+  return apiRequest('/auth/reset-password', {
+    method: 'POST',
+    body: { resetToken, password },
+    skipAuth: true,
+  });
+}
+
+export async function changePassword(input: {
+  currentPassword: string;
+  newPassword: string;
+}): Promise<{ changed: true }> {
+  return apiRequest('/auth/change-password', {
+    method: 'POST',
+    body: input,
+  });
 }

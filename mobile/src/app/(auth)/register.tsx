@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
+import { isPasswordValid, passwordValidationMessage } from '@/lib/password';
 
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
@@ -28,12 +29,13 @@ export default function RegisterScreen() {
   // Cùng định dạng với backend (auth.validator.js): 0xxxxxxxxx hoặc +84xxxxxxxxx.
   const isValidPhone = /^(0|\+84)[0-9]{9}$/.test(phone.trim().replace(/[\s.-]/g, ''));
 
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const canSubmit =
-    name.trim().length > 0 && email.includes('@') && isValidPhone && password.length >= 8 && confirm === password && agree;
+    name.trim().length >= 2 && isValidEmail && isValidPhone && isPasswordValid(password) && confirm === password && agree;
 
   const onSubmit = async () => {
     if (!canSubmit) {
-      setError('Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.');
+      setError(passwordValidationMessage(password) ?? 'Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.');
       return;
     }
     setError(null);
@@ -91,6 +93,7 @@ export default function RegisterScreen() {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
             iconLeft={<Lock size={20} color={colors.subtle} />}
+            helperText="Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số"
             slotRight={
               <Pressable accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onPress={() => setShowPassword((v) => !v)}>
                 {showPassword ? <EyeOff size={20} color={colors.primary} /> : <Eye size={20} color={colors.primary} />}

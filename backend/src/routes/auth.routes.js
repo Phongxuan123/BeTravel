@@ -13,6 +13,7 @@ import {
   verifyResetOtp,
   resendResetOtp,
   resetPassword,
+  changePassword,
 } from "../controllers/auth.controller.js";
 
 import { authenticateToken } from "../middleware/auth.middleware.js";
@@ -48,6 +49,8 @@ router.post("/logout", logout);
 router.get("/me", authenticateToken, getProfile);
 
 router.patch("/me", authenticateToken, updateProfile);
+
+router.post("/change-password", loginRateLimit, authenticateToken, changePassword);
 
 /* Existing forgot-password flow kept from FYCE, rebranded. */
 router.post("/forgot-password", resetRateLimit, forgotPassword);

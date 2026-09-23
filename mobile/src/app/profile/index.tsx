@@ -42,6 +42,7 @@ export default function ProfileScreen() {
 
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.name ?? '');
+  const [phoneDraft, setPhoneDraft] = useState(user?.phone ?? '');
   const [addingContact, setAddingContact] = useState(false);
   const [contactDraft, setContactDraft] = useState({ name: '', relationship: '', phone: '' });
   const [activeDoc, setActiveDoc] = useState<DocumentKey | null>(null);
@@ -66,15 +67,25 @@ export default function ProfileScreen() {
 
   const openEditName = () => {
     setNameDraft(user!.name);
+    setPhoneDraft(user!.phone ?? '');
     setNameError(null);
     setEditingName(true);
   };
   const saveName = async () => {
-    if (!nameDraft.trim()) return;
+    if (nameDraft.trim().length < 2) {
+      setNameError('Họ và tên phải có ít nhất 2 ký tự.');
+      return;
+    }
+    const normalizedPhone = phoneDraft.trim().replace(/[\s.-]/g, '');
+    if (normalizedPhone && !/^(0|\+84)[0-9]{9}$/.test(normalizedPhone)) {
+      setNameError('Số điện thoại không hợp lệ. Dùng dạng 0xxxxxxxxx hoặc +84xxxxxxxxx.');
+      return;
+    }
+
     setNameError(null);
     setSavingName(true);
     try {
-      await updateProfile({ name: nameDraft.trim() });
+      await updateProfile({ name: nameDraft.trim(), phone: normalizedPhone });
       setEditingName(false);
     } catch (err) {
       setNameError(err instanceof ApiError ? err.message : 'Không thể lưu. Kiểm tra kết nối mạng và thử lại.');
@@ -117,6 +128,7 @@ export default function ProfileScreen() {
               {user!.name}
             </Text>
             <Text className="text-[15px] text-muted">{user!.email}</Text>
+            {user!.phone ? <Text className="text-[14px] text-muted">{user!.phone}</Text> : null}
           </View>
           <IconButton accessibilityLabel="Sửa hồ sơ" variant="outline" size={50} icon={<Pencil size={18} color={colors.ink} />} onPress={openEditName} />
         </View>
@@ -187,7 +199,16 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <SimpleSheet visible={editingName} onClose={() => setEditingName(false)} title="Sửa hồ sơ">
-        <TextField label="Họ và tên" value={nameDraft} onChangeText={setNameDraft} />
+        <View style={{ gap: 14 }}>
+          <TextField label="Họ và tên" value={nameDraft} onChangeText={setNameDraft} />
+          <TextField
+            label="Số điện thoại"
+            value={phoneDraft}
+            onChangeText={setPhoneDraft}
+            keyboardType="phone-pad"
+            helperText="Dạng 0xxxxxxxxx hoặc +84xxxxxxxxx"
+          />
+        </View>
         {nameError && (
           <View className="mt-3 rounded-md bg-danger-tint p-3">
             <Text className="text-sm text-danger">{nameError}</Text>
