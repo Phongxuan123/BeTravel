@@ -64,6 +64,8 @@ export type ApiSearchHit = {
 export type ApiTrip = {
   _id: string;
   countryCode: string;
+  destinationCity?: string;
+  destinationDetail?: string;
   startDate: string;
   endDate: string;
   isCurrent: boolean;
@@ -82,12 +84,6 @@ const REGION_BY_CODE: Record<string, string> = {
   SG: 'Đông Nam Á',
 };
 
-const CAPITAL_BY_CODE: Record<string, string> = {
-  KR: 'Seoul',
-  JP: 'Tokyo',
-  TH: 'Bangkok',
-  SG: 'Singapore',
-};
 
 export function adaptCountry(api: ApiCountry): Country {
   return {
@@ -96,7 +92,8 @@ export function adaptCountry(api: ApiCountry): Country {
     region: REGION_BY_CODE[api.code] ?? '',
     language: api.language ?? '',
     regulationsCount: api.articleCount,
-    currentCity: CAPITAL_BY_CODE[api.code] ?? api.name,
+    // Country khong phai la vi tri hien tai cua user. Khong bia thu do lam vi tri.
+    currentCity: '',
     status: api.status,
     emergencyNumbers: {
       police: api.emergencyNumbers?.police ?? '',
@@ -202,6 +199,8 @@ export function adaptTrip(api: ApiTrip): Trip {
   return {
     id: api._id,
     countryCode: api.countryCode,
+    destinationCity: api.destinationCity ?? '',
+    destinationDetail: api.destinationDetail ?? '',
     startDate: toDateOnly(api.startDate),
     endDate: toDateOnly(api.endDate),
     isCurrent: api.isCurrent,

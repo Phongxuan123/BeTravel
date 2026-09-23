@@ -42,6 +42,8 @@ export const articleSearchQuerySchema = paginationQuerySchema.extend({
 export const tripCreateSchema = z
   .object({
     countryCode: countryCodeSchema,
+    destinationCity: z.string().trim().min(1, "Thanh pho/khu vuc khong duoc de trong").max(100),
+    destinationDetail: z.string().trim().max(240).optional().default(""),
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
   })

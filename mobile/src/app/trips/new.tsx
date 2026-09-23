@@ -1,9 +1,9 @@
 import { useMemo, useReducer, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Info, ArrowRight } from 'lucide-react-native';
+import { Search, Info, ArrowRight, MapPin } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { StepProgress } from '@/components/ui/StepProgress';
@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { DateRangeCalendar, type DateRange } from '@/components/common/DateRangeCalendar';
 import { colors } from '@/lib/theme';
-import { createTrip, fetchCountries } from '@/lib/data';
+import { createTrip, setCurrentTrip, fetchCountries } from '@/lib/data';
 import { ApiError } from '@/lib/api/http';
 import { useAuth } from '@/lib/auth';
 import { now } from '@/lib/date';
@@ -21,6 +21,8 @@ import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 
 type State = {
   countryCode: string | null;
+  destinationCity: string;
+  destinationDetail: string;
   range: DateRange;
   locationAlerts: boolean;
   regulationAlerts: boolean;
@@ -28,6 +30,8 @@ type State = {
 
 type Action =
   | { type: 'SET_COUNTRY'; code: string }
+  | { type: 'SET_DESTINATION_CITY'; value: string }
+  | { type: 'SET_DESTINATION_DETAIL'; value: string }
   | { type: 'SET_RANGE'; range: DateRange }
   | { type: 'TOGGLE_LOCATION' }
   | { type: 'TOGGLE_REGULATION' };
@@ -35,7 +39,13 @@ type Action =
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'SET_COUNTRY':
-      return { ...state, countryCode: action.code };
+      return state.countryCode === action.code
+        ? state
+        : { ...state, countryCode: action.code, destinationCity: '', destinationDetail: '' };
+    case 'SET_DESTINATION_CITY':
+      return { ...state, destinationCity: action.value };
+    case 'SET_DESTINATION_DETAIL':
+      return { ...state, destinationDetail: action.value };
     case 'SET_RANGE':
       return { ...state, range: action.range };
     case 'TOGGLE_LOCATION':
@@ -55,6 +65,8 @@ export default function TripWizardScreen() {
   const [step, setStep] = useState(() => Math.min(Math.max(Number(params.step) || 1, 1), 4));
   const [state, dispatch] = useReducer(reducer, {
     countryCode: null,
+    destinationCity: '',
+    destinationDetail: '',
     range: { start: null, end: null },
     locationAlerts: true,
     regulationAlerts: true,
@@ -79,7 +91,7 @@ export default function TripWizardScreen() {
   }, [query, countries]);
 
   const canContinue =
-    (step === 1 && !!state.countryCode) ||
+    (step === 1 && !!state.countryCode && state.destinationCity.trim().length > 0) ||
     (step === 2 && !!state.range.start && !!state.range.end) ||
     step === 3 ||
     step === 4;
@@ -89,7 +101,7 @@ export default function TripWizardScreen() {
       goStep(step + 1);
       return;
     }
-    if (!state.countryCode || !state.range.start || !state.range.end) return;
+    if (!state.countryCode || !state.destinationCity.trim() || !state.range.start || !state.range.end) return;
 
     // Chuyen di thuoc ve mot user dang nhap (backend co /api/users/trips
     // yeu cau authenticateToken) -- khach chua dang nhap khong tao duoc,
@@ -105,10 +117,35 @@ export default function TripWizardScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
-      // Home/Trips van dang mo trong tab bar (khong remount khi quay lai) --
-      // phai tu tay bao React Query cache ['trips'] da cu, khong thi man
-      // hinh cu se khong bao gio thay chuyen di vua tao.
+      const created = await createTrip({
+        countryCode: state.countryCode,
+        destinationCity: state.destinationCity.trim(),
+        destinationDetail: state.destinationDetail.trim(),
+        startDate: state.range.start,
+        endDate: state.range.end,
+      });
+
+      // UI bước 4 ghi rõ "Sẽ là chuyến đi chính". Backend cố ý tạo trip
+      // với isCurrent=false, nên mobile phải gọi endpoint set-current ngay sau
+      // khi tạo để lời hứa trên UI khớp dữ liệu thật.
+      try {
+        await setCurrentTrip(created.data.id);
+      } catch (currentError) {
+        // Trip đã tạo thành công; không để người dùng bấm lại và vô tình tạo
+        // bản ghi trùng chỉ vì bước đặt current gặp lỗi mạng.
+        await queryClient.invalidateQueries({ queryKey: ['trips'] });
+        Alert.alert(
+          'Chuyến đi đã được tạo',
+          currentError instanceof ApiError
+            ? `Chưa thể đặt làm chuyến đi chính: ${currentError.message}`
+            : 'Chưa thể đặt làm chuyến đi chính. Bạn có thể chọn lại trong Chuyến đi của tôi.',
+        );
+        router.replace('/trips');
+        return;
+      }
+
+      // Home/Trips có thể đang giữ cache cũ trong tab bar; buộc refetch để
+      // chuyến đi vừa tạo và trạng thái isCurrent mới xuất hiện ngay.
       await queryClient.invalidateQueries({ queryKey: ['trips'] });
       router.replace('/');
     } catch (err) {
@@ -214,6 +251,41 @@ export default function TripWizardScreen() {
                 );
               })}
             </View>
+
+            {country && (
+              <View className="mt-6 rounded-lg border border-line bg-surface p-4">
+                <View className="flex-row items-center" style={{ gap: 8 }}>
+                  <MapPin size={18} color={colors.primary} />
+                  <Text className="text-base font-body-bold text-ink">Điểm đến chính</Text>
+                </View>
+                <Text className="mt-1 text-sm text-muted">
+                  Nhập nơi bạn thực sự sẽ ở hoặc ghé đến. Ứng dụng sẽ không tự suy ra thủ đô.
+                </Text>
+
+                <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Thành phố / khu vực *</Text>
+                <TextInput
+                  className="h-14 rounded-md border border-line bg-[#F9FBFD] px-4 text-base text-ink"
+                  placeholder="Ví dụ: Seoul, Busan, Jeju..."
+                  placeholderTextColor={colors.subtle}
+                  value={state.destinationCity}
+                  onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_CITY', value })}
+                  autoCapitalize="words"
+                  maxLength={100}
+                />
+
+                <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Địa điểm cụ thể (không bắt buộc)</Text>
+                <TextInput
+                  className="min-h-[56px] rounded-md border border-line bg-[#F9FBFD] px-4 py-3 text-base text-ink"
+                  placeholder="Ví dụ: Gangnam-gu, tên khách sạn, địa chỉ..."
+                  placeholderTextColor={colors.subtle}
+                  value={state.destinationDetail}
+                  onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_DETAIL', value })}
+                  autoCapitalize="sentences"
+                  maxLength={240}
+                  multiline
+                />
+              </View>
+            )}
           </View>
         )}
 
@@ -301,6 +373,18 @@ export default function TripWizardScreen() {
                   <Text className="text-[15px] font-body-bold text-primary">Sửa</Text>
                 </Pressable>
               </View>
+
+              <View className="mt-4 rounded-md bg-[#F4F8FF] p-3">
+                <View className="flex-row items-center" style={{ gap: 8 }}>
+                  <MapPin size={17} color={colors.primary} />
+                  <Text className="text-[13px] font-body-semibold text-muted">Điểm đến chính</Text>
+                </View>
+                <Text className="mt-1 text-lg font-body-bold text-ink">{state.destinationCity}</Text>
+                {!!state.destinationDetail && (
+                  <Text className="mt-0.5 text-sm text-muted">{state.destinationDetail}</Text>
+                )}
+              </View>
+
               <View className="my-4 h-px bg-line" />
               <View className="flex-row items-center justify-between">
                 <View>

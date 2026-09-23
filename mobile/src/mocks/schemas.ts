@@ -77,6 +77,8 @@ export const tripSchema = z.object({
   __mock: z.literal(true).optional(),
   id: z.string(),
   countryCode: z.string(),
+  destinationCity: z.string(),
+  destinationDetail: z.string().optional(),
   startDate: z.string(),
   endDate: z.string(),
   isCurrent: z.boolean(),

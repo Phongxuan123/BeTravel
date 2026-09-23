@@ -73,7 +73,7 @@ export async function fetchTrips() {
   return delay([...tripsState]);
 }
 
-export async function createTrip(input: { countryCode: string; startDate: string; endDate: string }) {
+export async function createTrip(input: { countryCode: string; destinationCity: string; destinationDetail?: string; startDate: string; endDate: string }) {
   const trip: Trip = { __mock: true, id: `t${Date.now()}`, isCurrent: false, ...input };
   tripsState = [...tripsState, trip];
   return delay(trip);

@@ -78,7 +78,7 @@ export async function fetchTrips(): Promise<Envelope<Trip[]>> {
   return { ok: true, data: raw.map(adaptTrip) };
 }
 
-export async function createTrip(input: { countryCode: string; startDate: string; endDate: string }): Promise<Envelope<Trip>> {
+export async function createTrip(input: { countryCode: string; destinationCity: string; destinationDetail?: string; startDate: string; endDate: string }): Promise<Envelope<Trip>> {
   const raw = await apiRequest<ApiTrip>('/users/trips', { method: 'POST', body: input });
   return { ok: true, data: adaptTrip(raw) };
 }

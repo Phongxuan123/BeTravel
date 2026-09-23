@@ -180,7 +180,7 @@ test("response cua POST /api/users/trips khop fixture trip.json", async () => {
   const res = await request(app)
     .post("/api/users/trips")
     .set("Authorization", `Bearer ${accessToken}`)
-    .send({ countryCode: "KR", startDate: "2026-10-01", endDate: "2026-10-10" });
+    .send({ countryCode: "KR", destinationCity: "Seoul", destinationDetail: "Gangnam-gu", startDate: "2026-10-01", endDate: "2026-10-10" });
 
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data, fixture.data, "trip");

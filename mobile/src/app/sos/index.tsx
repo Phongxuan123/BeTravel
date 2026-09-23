@@ -41,7 +41,7 @@ export default function SosHubScreen() {
           <View className="mt-4 h-[52px] flex-row items-center rounded-lg bg-surface px-3.5" style={{ gap: 8 }}>
             <MapPin size={18} color={colors.danger} />
             <Text className="flex-1 text-base font-body-semibold text-ink" numberOfLines={1}>
-              {country.currentCity}
+              {country.currentCity || 'Chưa xác định vị trí'}
             </Text>
             <Pressable
               onPress={() => Alert.alert('Cập nhật vị trí', 'Tự động xác định vị trí (GPS) sẽ có ở bản cập nhật sau.')}
