@@ -126,7 +126,11 @@ export default function ArticleDetailScreen() {
         <Button
           label="Hỏi AI về nội dung này"
           iconLeft={<MessageCircle size={18} color="#fff" />}
-          onPress={() => router.push(`/chat?country=${countryCode}&focusArticleId=${article.id}` as never)}
+          onPress={() =>
+            router.push(
+              `/chat?country=${countryCode}&focusArticleId=${article.id}&q=${encodeURIComponent(`Giải thích rõ hơn về "${article.title}" giúp mình.`)}` as never,
+            )
+          }
         />
       </BottomActionBar>
     </View>

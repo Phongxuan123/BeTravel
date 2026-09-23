@@ -142,3 +142,54 @@ export type RagArticleStatus = {
   indexState: RagIndexState;
   updatedAt: string;
 };
+
+// B5 -- module feedback (A08). Rieng voi ChatMessage.feedback (thumbs nhanh).
+export type FeedbackRating = 'up' | 'down';
+export type FeedbackStatus = 'pending' | 'resolved' | 'dismissed';
+
+export type Feedback = {
+  _id: string;
+  userId: string;
+  targetType: 'chat_message';
+  targetId: string;
+  rating: FeedbackRating;
+  note: string;
+  context: { countryCode: string; question: string };
+  status: FeedbackStatus;
+  reviewerId: string | null;
+  reviewerNote: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ChatCitation = {
+  marker: string;
+  articleId: string;
+  articleSlug: string;
+  title: string;
+  heading: string;
+};
+
+export type FeedbackDetail = {
+  feedback: Feedback;
+  message: {
+    text: string;
+    citations: ChatCitation[];
+    retrieval: { topScore: number; chunkIds: string[]; passed: boolean };
+    fallbackReason: string | null;
+    model: string;
+    createdAt: string;
+  } | null;
+};
+
+// B5 -- A01 Dashboard nang cap, tu ai_events (backend/src/services/analytics.service.js).
+export type AnalyticsOverview = {
+  days: number;
+  totalChats: number;
+  fallbackCount: number;
+  fallbackRate: number;
+  avgLatencyMs: number;
+  costEstimateUsd: number;
+  pendingFeedbackCount: number;
+  topFallbackQuestions: { question: string; count: number }[];
+};

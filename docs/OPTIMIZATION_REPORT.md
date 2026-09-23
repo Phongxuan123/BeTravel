@@ -197,9 +197,48 @@ Thực hiện : Claude Code
 
 ### B4.5. Van de con ton dong
 
-- Chưa smoke test được với Gemini API thật -- key được cấp trả `401 ACCESS_TOKEN_TYPE_UNSUPPORTED` (không phải định dạng API key chuẩn). Đã xác nhận toàn bộ pipeline chạy đúng end-to-end bằng `LLM_PROVIDER=mock`+`EMBEDDING_PROVIDER=mock` qua job worker thật trên Atlas (xem docs/PROGRESS.md "Đang vướng").
+- [ĐÃ GIẢI QUYẾT ở B5, xem 2026-09-23] Smoke test Gemini thật -- key đúng định dạng đã xác nhận chạy đúng end-to-end.
 - `AtlasSearchDriver` chưa có test tự động (không chạy được trên `mongodb-memory-server`) -- chỉ xác minh cú pháp bằng đọc code, cần test tay trên Atlas thật sau khi tạo 2 index theo `docs/atlas-indexes.md`.
 - Chưa đọc `promptTokens`/`completionTokens` thật từ response Gemini/OpenAI (luôn 0) -- không chặn chức năng, cần làm khi cần đối soát chi phí thật.
+
+## B5 — CHAT MOBILE + FEEDBACK (v0.6.1 --> v0.7.0)
+
+### B5.1. Tong quan
+- Tổng số file mới        : 5 backend (`models/Feedback.js`, `services/feedback.service.js`, `services/analytics.service.js`, `controllers/feedback.controller.js`, `controllers/adminFeedback.controller.js`, `controllers/adminAnalytics.controller.js`, `routes/feedback.routes.js`, `validators/feedback.validator.js`, `test/feedback.test.js`) + 3 mobile (`lib/api/chat.ts`, `lib/api/feedback.ts`, `lib/api/__tests__/chat.test.ts`) + 1 admin (`pages/FeedbackQueuePage.tsx`)
+- Tổng số file chỉnh sửa  : backend (`core/constants.js`, `core/domainErrors.js`, `models/AiEvent.js`, `services/chat.service.js`, `validators/chat.validator.js`, `validators/admin.validator.js`, `controllers/chat.controller.js`, `routes/admin.routes.js`, `middleware/rateLimit.middleware.js`, `app.js`, `contracts/README.md`) + mobile (`app/chat/index.tsx`, `features/chat/components/AnswerCard.tsx`, `lib/data.ts`, `mocks/client.ts`, `app/explore/[country]/[slug].tsx`) + admin (`lib/api.ts`, `lib/types.ts`, `pages/DashboardPage.tsx`, `App.tsx`, `components/Layout.tsx`)
+- Warning xử lý           : 0 mới (2 API `{new:true}` deprecated -- xem B5.4 -- không phải warning ESLint mà warning runtime Mongoose)
+- Bug fix                 : 3 (chi tiết ở B5.4, cả 3 phát hiện qua smoke test thật trên Atlas, không lọt ra ngoài)
+
+### B5.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `mobile/src/lib/api/chat.ts` | 1, 2, 4, 11 | Adapter response thật -> `ChatAnswer` (cắt disclaimer trùng, map citation sang marker bấm được); 2 getter riêng thay vì đổi kiểu trả về `askLegalAssistant()` (giữ đúng spec "cùng kiểu trả về ChatAnswer") |
+| `mobile/src/features/chat/components/AnswerCard.tsx` | 2, 9 | `TextWithMarkers` tách dòng theo regex `[Sn]`, render marker dạng `<Text onPress>` lồng trong `<Text>` cha (RN hỗ trợ link inline) thay vì nhúng `Linking.openURL` cứng như trước |
+| `backend/src/services/feedback.service.js` | 1, 7 | `createFeedback` xác minh `targetId` thuộc đúng user gọi qua `sessionId.userId` (populate), không tin `targetId` từ client -- chặn báo cáo/spam trên tin nhắn người khác |
+| `backend/src/services/analytics.service.js` | 6, 7 | Toàn bộ số liệu A01 nâng cấp từ `ai_events` thật qua aggregate, không có số liệu bịa/hardcode |
+| `admin/src/pages/FeedbackQueuePage.tsx` | 1, 2 | A08: bảng lọc rating/status/country + modal chi tiết (câu hỏi, câu trả lời, citation, score) + đổi trạng thái có audit log |
+
+### B5.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md muc 34-41)
+
+- `askLegalAssistant()` giữ nguyên `Promise<ChatAnswer>`, session/message id đọc qua getter riêng thay vì đổi return type.
+- Module feedback (`Feedback` model, có note, vào hàng đợi A08) tách riêng với `ChatMessage.feedback` (thumbs nhanh, đã có từ B4).
+- Quản lý session bằng state module-level trong `chat.ts`: tự tiếp tục phiên gần nhất của quốc gia đang chọn; CTA "Hỏi AI về bài này" luôn bắt đầu phiên mới.
+- `AiEvent` thêm field `question` (nguyên văn, không chỉ hash) để "Top câu hỏi bị fallback" đọc được.
+
+### B5.4. Warning & Bug da xu ly
+
+| Loại | Mô tả | File | Cách fix |
+|------|-------|------|----------|
+| Bug (phát hiện qua smoke test Atlas) | `validateQuery` middleware không thực sự coerce được giá trị vào `req.query` (`req.query` trả object MỚI mỗi lần đọc trong Express bản đang dùng, `Object.assign` ghi vào bản sao rồi mất) -- `GET /admin/analytics/overview?days=7` trả `days:"7"` (string) thay vì `7` | `controllers/adminAnalytics.controller.js` | Tự `Number(req.query.days)` lại trong controller thay vì tin middleware (sửa cục bộ, không đụng file dùng chung -- sửa gốc để ở B9, xem "Nợ kỹ thuật") |
+| Bug (phát hiện qua smoke test Atlas) | `topFallbackQuestions` hiện `question: null` cho `AiEvent` cũ tạo trước khi có field `question` -- filter `{$ne:""}` không loại được field THIẾU HẲN | `services/analytics.service.js` | Đổi filter thành `{ $exists: true, $ne: "" }` |
+| Warning runtime (Mongoose deprecation) | `{ new: true }` ở `findOneAndUpdate()` deprecated | `services/chat.service.js`, `services/feedback.service.js` | Đổi thành `{ returnDocument: "after" }` ở cả 2 nơi (đồng bộ 1 kiểu) |
+
+### B5.5. Van de con ton dong
+
+- `validateQuery` middleware cần sửa TẬN GỐC ở B9 -- hiện chỉ vá cục bộ ở endpoint bị lộ (`adminAnalytics`), các endpoint khác dùng `z.coerce` vẫn có cùng vấn đề (vô hại tới giờ nhờ tự parse lại độc lập ở nơi khác, nhưng là bẫy cho code mới).
+- Session chat chỉ resume được phiên GẦN NHẤT theo quốc gia -- chưa có tìm kiếm/lọc lịch sử theo ngày hay từ khoá, đủ dùng cho MVP.
+- `costEstimateUsd` trong A01 Dashboard luôn 0 (kế thừa từ B4 -- provider chưa trả usage tokens thật).
 
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
@@ -211,3 +250,4 @@ Thực hiện : Claude Code
 | v0.5.0    | 22/09/2026 | B3 | API công khai countries/legal/trips + seed 4 nước, 6 chủ đề, 8 bài luật KR draft có nguồn thật; mobile nối API thật qua adapters.ts, sửa 3 file bị bỏ qua công tắc mock/thật; sửa 3 bug (2 qua test, 1 qua đọc code) |
 | v0.6.0    | 23/09/2026 | B4 | RAG engine đầy đủ (embedding/LLM provider + mock bắt buộc, chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm), chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 (15 must_answer + 6 must_refuse + 4 country_isolation); sửa 2 bug (1 qua smoke test Atlas, 1 qua viết golden test) |
 | v0.6.1    | 23/09/2026 | B4 (điều chỉnh) | Smoke test Gemini thật thành công với key đúng định dạng; phát hiện `gemini-2.5-flash` (default cũ) bị Google trả 404 cho key mới, đổi default `LLM_MODEL` sang `gemini-3.6-flash`; `.env` chốt dùng `LLM_PROVIDER=gemini`/`EMBEDDING_PROVIDER=gemini` cho dev thật, xác nhận test (78/78) và golden test (25/25) không phụ thuộc `.env` nên không bị ảnh hưởng |
+| v0.7.0    | 24/09/2026 | B5 | Chat mobile nối RAG thật (session/lịch sử/marker bấm được/focusArticleId/quota), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI; sửa 3 bug qua smoke test thật trên Atlas (bug `validateQuery` không coerce `req.query`, `topFallbackQuestions` null, 2 API Mongoose deprecated) |

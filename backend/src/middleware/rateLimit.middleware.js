@@ -46,3 +46,10 @@ export const chatRateLimit = buildRateLimit({
   limit: 20,
   message: "Bạn đang hỏi quá nhanh. Vui lòng chờ một chút rồi thử lại.",
 });
+
+// Chong spam nut "Bao sai" -- khong tinh chi phi AI nhung van co the lam ngap
+// hang doi A08 neu khong gioi han.
+export const feedbackRateLimit = buildRateLimit({
+  limit: 30,
+  message: "Bạn đang gửi báo cáo quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});

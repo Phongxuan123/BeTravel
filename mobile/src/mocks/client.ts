@@ -157,12 +157,14 @@ export async function fetchSupportLocations() {
 }
 
 // AI Legal Assistant — trả lời giả lập theo 2 biến thể của spec mục 6.10.
+// marker/articleSlug/countryCode là field MỞ RỘNG cho B5 (đánh dấu [S1] có thể
+// bấm được, mở đúng bài luật) -- optional để không phá vỡ dữ liệu giả lập cũ.
 export type ChatAnswer =
   | {
       status: 'answered';
       updatedAt: string;
       content: string;
-      sources: { name: string; url: string }[];
+      sources: { name: string; url: string; marker?: string; articleSlug?: string; countryCode?: string }[];
     }
   | {
       status: 'insufficient_evidence';
@@ -170,7 +172,10 @@ export type ChatAnswer =
       suggestions: string[];
     };
 
-export async function askLegalAssistant(question: string): Promise<ChatAnswer> {
+export async function askLegalAssistant(
+  question: string,
+  _opts?: { countryCode?: string; focusArticleId?: string },
+): Promise<ChatAnswer> {
   await new Promise((r) => setTimeout(r, 600));
   const q = stripDiacritics(question);
   if (q.includes('thuoc') || q.includes('mang thuoc')) {
@@ -191,6 +196,52 @@ export async function askLegalAssistant(question: string): Promise<ChatAnswer> {
       '**Có**, bạn được quay phim ở nơi công cộng. Nhưng có 2 giới hạn quan trọng:\n- Cấm quay ở nơi có biển báo: đền chùa, bảo tàng, ga tàu tư nhân.\n- Đăng ảnh rõ mặt người khác lên mạng có thể bị kiện quyền hình ảnh. [S1]',
     sources: [{ name: 'Quy định về quyền hình ảnh cá nhân — Bộ Tư pháp Nhật Bản', url: 'https://www.moj.go.jp' }],
   };
+}
+
+// Danh sách phiên chat -- mock trả rỗng (không lưu lịch sử qua lần mở app),
+// chỉ tồn tại để lib/data.ts chuyển đổi qua công tắc mock/thật không vỡ type.
+export type ChatSession = { _id: string; countryCode: string; title: string; updatedAt: string };
+export type ChatUiMessage = {
+  _id: string;
+  role: 'user' | 'assistant';
+  text: string;
+  answer?: ChatAnswer;
+  feedback?: 'up' | 'down' | null;
+};
+
+export async function listChatSessions() {
+  return delay<ChatSession[]>([]);
+}
+
+export async function createChatSession(countryCode: string) {
+  return delay<ChatSession>({ _id: `mock-${Date.now()}`, countryCode, title: '', updatedAt: new Date().toISOString() });
+}
+
+export async function deleteChatSession(_id: string) {
+  return delay<{ deleted: true }>({ deleted: true });
+}
+
+export async function loadChatSessionMessages(_sessionId: string, _countryCode: string) {
+  return delay<ChatUiMessage[]>([]);
+}
+
+export async function setChatMessageFeedback(_sessionId: string, _messageId: string, _feedback: 'up' | 'down') {
+  return delay<{ ok: true }>({ ok: true });
+}
+
+export async function reportWrongAnswer(_input: { targetId: string; note: string; countryCode: string; question: string }) {
+  return delay<{ ok: true }>({ ok: true });
+}
+
+let mockLastMessageId = 0;
+
+export function getActiveSessionId(): string | null {
+  return 'mock-session';
+}
+
+export function getLastMessageId(): string | null {
+  mockLastMessageId += 1;
+  return `mock-msg-${mockLastMessageId}`;
 }
 
 export async function translateText(text: string): Promise<{ translated: string; phonetic: string }> {

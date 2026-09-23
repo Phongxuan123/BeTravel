@@ -80,6 +80,13 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   ],
   CHAT_SESSION_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy phiên chat"],
   CHAT_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy tin nhắn"],
+
+  // Feedback (B5)
+  FEEDBACK_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy feedback"],
+  FEEDBACK_TARGET_NOT_FOUND: [
+    ErrorCode.NOT_FOUND,
+    "Không tìm thấy tin nhắn được báo cáo, hoặc bạn không có quyền báo cáo tin nhắn này",
+  ],
 });
 
 /*

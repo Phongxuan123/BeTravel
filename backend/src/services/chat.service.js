@@ -44,7 +44,7 @@ export const setMessageFeedback = async (userId, sessionId, messageId, feedback)
   const message = await ChatMessage.findOneAndUpdate(
     { _id: messageId, sessionId, role: ChatRole.ASSISTANT },
     { $set: { feedback } },
-    { new: true },
+    { returnDocument: "after" },
   );
   if (!message) throw new Error("CHAT_MESSAGE_NOT_FOUND");
   return message;
@@ -90,6 +90,7 @@ async function logAiEvent({ userId, sessionId, countryCode, question, result, mo
     sessionId,
     countryCode,
     questionHash: crypto.createHash("sha256").update(normalizeVi(question)).digest("hex"),
+    question,
     chunkIds: result.retrieval?.chunkIds ?? [],
     topScore: result.retrieval?.topScore ?? 0,
     model,
@@ -104,7 +105,7 @@ async function logAiEvent({ userId, sessionId, countryCode, question, result, mo
  * Pipeline chat day du -- day la noi DUY NHAT lap rap retrieval + prompt +
  * guard + cache + quota. Controller chi goi ham nay, khong biet chi tiet ben trong.
  */
-export const sendMessage = async ({ userId, sessionId, question }) => {
+export const sendMessage = async ({ userId, sessionId, question, focusArticleId }) => {
   const session = await ChatSession.findOne({ _id: sessionId, userId });
   if (!session) throw new Error("CHAT_SESSION_NOT_FOUND");
 
@@ -138,7 +139,7 @@ export const sendMessage = async ({ userId, sessionId, question }) => {
     return { session, message };
   }
 
-  const retrieval = await retrieve({ question, countryCode });
+  const retrieval = await retrieve({ question, countryCode, focusArticleId });
 
   if (!retrieval.passed) {
     const result = {

@@ -84,3 +84,22 @@ export const ChatRole = Object.freeze({
   USER: "user",
   ASSISTANT: "assistant",
 });
+
+// Module feedback (B5) -- rieng voi ChatMessage.feedback (thumbs nhanh, khong
+// note). Feedback co note dung cho "Bao sai" -> vao hang doi A08 cho admin xu ly.
+export const FeedbackTargetType = Object.freeze({
+  CHAT_MESSAGE: "chat_message",
+});
+
+export const FeedbackRating = Object.freeze({
+  UP: "up",
+  DOWN: "down",
+});
+
+export const FeedbackStatus = Object.freeze({
+  PENDING: "pending",
+  RESOLVED: "resolved",
+  DISMISSED: "dismissed",
+});
+
+export const FeedbackStatusValues = Object.values(FeedbackStatus);

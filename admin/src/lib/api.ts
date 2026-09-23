@@ -9,6 +9,11 @@ import type {
   DashboardSummary,
   ContentStatus,
   RagArticleStatus,
+  Feedback,
+  FeedbackDetail,
+  FeedbackRating,
+  FeedbackStatus,
+  AnalyticsOverview,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -53,4 +58,18 @@ export const ragApi = {
   status: (countryCode?: string) => apiRequest<RagArticleStatus[]>('/admin/rag/status', { query: { countryCode } }),
   reindexCountry: (countryCode: string) =>
     apiRequest<{ queued: number }>('/admin/rag/reindex-country', { method: 'POST', body: { countryCode } }),
+};
+
+export const feedbackApi = {
+  list: (query?: { rating?: FeedbackRating; status?: FeedbackStatus; countryCode?: string; page?: number; limit?: number }) =>
+    apiRequest<Feedback[]>('/admin/feedback', { query }),
+
+  get: (id: string) => apiRequest<FeedbackDetail>(`/admin/feedback/${id}`),
+
+  updateStatus: (id: string, payload: { status: FeedbackStatus; reviewerNote?: string }) =>
+    apiRequest<Feedback>(`/admin/feedback/${id}`, { method: 'PATCH', body: payload }),
+};
+
+export const analyticsApi = {
+  overview: (days?: number) => apiRequest<AnalyticsOverview>('/admin/analytics/overview', { query: { days } }),
 };

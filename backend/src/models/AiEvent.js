@@ -10,6 +10,9 @@ const aiEventSchema = new mongoose.Schema(
     sessionId: { type: mongoose.Schema.Types.ObjectId, ref: "ChatSession" },
     countryCode: { type: String, required: true },
     questionHash: { type: String, required: true },
+    // Luu ca van ban goc (khong chi hash) -- "TOP CAU HOI BI FALLBACK" (A01)
+    // can hien thi duoc cho doi noi dung doc, hash mot chieu khong dung duoc.
+    question: { type: String, default: "" },
     chunkIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
     topScore: { type: Number, default: 0 },
     model: { type: String, default: "" },
