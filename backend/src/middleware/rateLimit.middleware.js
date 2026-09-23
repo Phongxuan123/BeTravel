@@ -36,3 +36,13 @@ export const resetRateLimit = buildRateLimit({
   limit: 8,
   message: "Quá nhiều yêu cầu khôi phục mật khẩu. Vui lòng thử lại sau.",
 });
+
+/*
+ * Lop 1 bao ve chi phi AI (B4) -- chong spam burst trong 15 phut. Lop 2 (that
+ * su bao ve chi phi, khong reset khi restart) la quota luu DB, xem
+ * services/aiUsage.service.js.
+ */
+export const chatRateLimit = buildRateLimit({
+  limit: 20,
+  message: "Bạn đang hỏi quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});

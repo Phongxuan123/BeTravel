@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut } from 'lucide-react';
+import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit } from 'lucide-react';
 import { useAuth } from '../lib/authContext';
 
 const NAV_ITEMS = [
@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { to: '/topics', label: 'Chủ đề', icon: Tags },
   { to: '/articles', label: 'Bài luật', icon: FileText },
   { to: '/locations', label: 'Điểm hỗ trợ', icon: MapPin },
+  { to: '/rag', label: 'RAG Index', icon: BrainCircuit },
   { to: '/audit', label: 'Nhật ký', icon: History },
 ];
 
@@ -22,6 +23,7 @@ function useBreadcrumb(): string[] {
     topics: 'Chủ đề',
     articles: 'Bài luật',
     locations: 'Điểm hỗ trợ',
+    rag: 'RAG Index',
     audit: 'Nhật ký',
     new: 'Tạo mới',
   };

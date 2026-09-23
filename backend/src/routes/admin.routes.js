@@ -10,6 +10,7 @@ import { locationsController } from "../controllers/adminLocations.controller.js
 import * as articlesController from "../controllers/adminArticles.controller.js";
 import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
+import * as ragController from "../controllers/adminRag.controller.js";
 
 import {
   countryCreateSchema,
@@ -26,6 +27,8 @@ import {
   locationUpdateSchema,
   locationListQuerySchema,
   auditListQuerySchema,
+  ragReindexCountrySchema,
+  ragStatusQuerySchema,
 } from "../validators/admin.validator.js";
 
 const router = express.Router();
@@ -68,5 +71,8 @@ router.patch("/locations/:id", validateBody(locationUpdateSchema), locationsCont
 router.delete("/locations/:id", locationsController.remove);
 
 router.get("/audit", validateQuery(auditListQuerySchema), auditController.list);
+
+router.post("/rag/reindex-country", validateBody(ragReindexCountrySchema), ragController.reindexCountry);
+router.get("/rag/status", validateQuery(ragStatusQuerySchema), ragController.status);
 
 export default router;

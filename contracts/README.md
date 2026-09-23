@@ -394,3 +394,49 @@ unique index `{userId}` where `isCurrent:true` tren model `Trip` (cung mau
 voi `LegalArticle`), cong voi logic tuan tu o service layer. Goi
 `:id` khong thuoc ve user dang goi --> `404 NOT_FOUND` (khong lo ra `403`
 de tranh do thong tin ID cua nguoi khac ton tai).
+
+## 9. ENDPOINT CHAT AI — `/api/chat/*` (B4, can dang nhap)
+
+★ Chua co UI mobile (thuoc B5) -- muc nay chi ghi lai contract phia backend de
+B5 noi vao dung. Toan bo pipeline (retrieval + guard chong ao giac) xem
+`backend/src/rag/`, `docs/atlas-indexes.md`.
+
+```
+GET    /chat/sessions                              200, danh sach phien CUA CHINH user
+POST   /chat/sessions            {countryCode}      201, tao phien moi
+DELETE /chat/sessions/:id                           200 { deleted: true }
+GET    /chat/sessions/:id/messages                  200, lich su tin nhan cua phien
+POST   /chat/sessions/:id/messages {question}        201 { sessionId, message } -- ★ TRA MOT LAN,
+                                                      KHONG STREAMING (master plan B.7)
+POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  200
+```
+
+`message` (role='assistant') co dang:
+```jsonc
+{
+  "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer",
+  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading", "authority", "effectiveFrom", "updatedAt" }],
+  "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
+  "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR"
+  "confidence": "medium",
+  "needsOfficialHelp": false
+}
+```
+
+★ **Cau hoi nhac ten mot quoc gia KHAC voi `countryCode` cua session** duoc
+chan o tang service (`chat.service.js#detectOtherCountryMention`) TRUOC ca
+retrieval -- tra loi co dinh moi nguoi dung doi quoc gia, khong bao gio de
+LLM tu quyet dinh (deterministic, khong ton chi phi goi LLM).
+
+★ **Quota 2 lop** (CLAUDE.md muc 4.1): `express-rate-limit` RAM (20
+req/15p/IP, lop 1) + quota luu DB `users.aiUsage` theo ngay (`AI_DAILY_QUOTA_USER`,
+mac dinh 40/ngay/user; van an toan he thong `AI_DAILY_QUOTA_GLOBAL`, mac dinh
+800/ngay) -- vuot quota --> `429 QUOTA_EXCEEDED`. Day la lop THAT SU bao ve
+chi phi vi khong reset khi server restart.
+
+## 10. ENDPOINT ADMIN RAG — `/api/admin/rag/*` (B4, role admin)
+
+```
+GET  /admin/rag/status?countryCode=            200, trang thai index tung bai published+isCurrent
+POST /admin/rag/reindex-country {countryCode}   200 { queued: N }, xep lai job reindex_article
+```

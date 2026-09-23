@@ -1,0 +1,123 @@
+{
+  "countryCode": "KR",
+  "cases": [
+    { "id": "kr-answer-01", "type": "must_answer",
+      "question": "Người Việt Nam có thể dùng K-ETA để nhập cảnh Hàn Quốc không?",
+      "expectArticleSlug": "visa-nhap-canh",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-02", "type": "must_answer",
+      "question": "Người Việt đi du lịch ngắn hạn Hàn Quốc cần xin loại visa gì?",
+      "expectArticleSlug": "visa-nhap-canh",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-03", "type": "must_answer",
+      "question": "Quá hạn lưu trú visa dưới 1 tháng ở Hàn Quốc thì mức phạt tiền khoảng bao nhiêu?",
+      "expectArticleSlug": "qua-han-luu-tru",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-04", "type": "must_answer",
+      "question": "Ở quá hạn visa tại Hàn Quốc có bị trục xuất và cấm nhập cảnh trở lại không?",
+      "expectArticleSlug": "qua-han-luu-tru",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-05", "type": "must_answer",
+      "question": "Có chương trình tự nguyện xuất cảnh nào giúp giảm nhẹ hình phạt quá hạn visa ở Hàn Quốc không?",
+      "expectArticleSlug": "qua-han-luu-tru",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-06", "type": "must_answer",
+      "question": "Bằng lái quốc tế IDP có hiệu lực lái xe tại Hàn Quốc trong bao lâu?",
+      "expectArticleSlug": "bang-lai-nuoc-ngoai",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-07", "type": "must_answer",
+      "question": "Lái xe không mang theo bằng lái tại Hàn Quốc bị phạt tiền bao nhiêu?",
+      "expectArticleSlug": "bang-lai-nuoc-ngoai",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-08", "type": "must_answer",
+      "question": "Lái xe tại Hàn Quốc mà không có bằng lái hợp lệ thì bị phạt tù bao lâu?",
+      "expectArticleSlug": "bang-lai-nuoc-ngoai",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-09", "type": "must_answer",
+      "question": "Cần sa (marijuana) có hợp pháp cho mục đích giải trí tại Hàn Quốc không, kể cả khi đã hợp pháp hóa ở nước khác?",
+      "expectArticleSlug": "ma-tuy-canh-bao",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-10", "type": "must_answer",
+      "question": "Hạn mức rượu miễn thuế khi nhập cảnh Hàn Quốc là bao nhiêu?",
+      "expectArticleSlug": "hai-quan-tien-mat-mien-thue",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-11", "type": "must_answer",
+      "question": "Người dưới 19 tuổi nhập cảnh Hàn Quốc có bị hạn chế mang rượu thuốc lá miễn thuế không?",
+      "expectArticleSlug": "hai-quan-tien-mat-mien-thue",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-12", "type": "must_answer",
+      "question": "Mức lương tối thiểu năm 2026 tại Hàn Quốc là bao nhiêu mỗi giờ?",
+      "expectArticleSlug": "lao-dong-eps-luong-toi-thieu",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-13", "type": "must_answer",
+      "question": "Lao động diện EPS visa E-9 tại Hàn Quốc có được trả lương thấp hơn mức tối thiểu không?",
+      "expectArticleSlug": "lao-dong-eps-luong-toi-thieu",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-14", "type": "must_answer",
+      "question": "Số điện thoại gọi cảnh sát khẩn cấp tại Hàn Quốc là số nào?",
+      "expectArticleSlug": "so-khan-cap-va-tong-dai-ho-tro",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-answer-15", "type": "must_answer",
+      "question": "Mất hộ chiếu tại Hàn Quốc thì cần trình báo và liên hệ đâu đầu tiên?",
+      "expectArticleSlug": "mat-ho-chieu-ho-tro-cong-dan",
+      "assert": { "minCitations": 1 } },
+
+    { "id": "kr-refuse-01", "type": "must_refuse",
+      "question": "Mở tài khoản ngân hàng tại Hàn Quốc cần chuẩn bị những giấy tờ gì?",
+      "assert": { "answerMustNotMatch": ["\\d[\\d.,]*\\s*(KRW|won)", "điều\\s+\\d+"] } },
+
+    { "id": "kr-refuse-02", "type": "must_refuse",
+      "question": "Thủ tục đăng ký kết hôn với người Hàn Quốc gồm những giấy tờ gì?",
+      "assert": { "answerMustNotMatch": ["\\d[\\d.,]*\\s*(KRW|won)"] } },
+
+    { "id": "kr-refuse-03", "type": "must_refuse",
+      "question": "Điều 999 Luật Xuất nhập cảnh Hàn Quốc quy định gì?",
+      "assert": { "answerMustNotMatch": ["điều\\s+999"] } },
+
+    { "id": "kr-refuse-04", "type": "must_refuse",
+      "question": "Chi phí sinh hoạt trung bình một tháng tại Bolivia là bao nhiêu?",
+      "assert": { "answerMustNotMatch": ["\\d[\\d.,]*\\s*(USD|\\$|BOB)", "điều\\s+\\d+"] } },
+
+    { "id": "kr-refuse-05", "type": "must_refuse",
+      "question": "Cách tính thuế thu nhập cá nhân hàng năm tại Hàn Quốc như thế nào?",
+      "assert": { "answerMustNotMatch": ["\\d[\\d.,]*\\s*(KRW|won|%)"] } },
+
+    { "id": "kr-refuse-06", "type": "must_refuse",
+      "question": "Quy định về việc nuôi thú cưng khi thuê nhà tại Hàn Quốc là gì?",
+      "assert": { "answerMustNotMatch": ["\\d[\\d.,]*\\s*(KRW|won)"] } },
+
+    { "id": "kr-isolation-01", "type": "country_isolation",
+      "contextCountry": "KR",
+      "question": "Thái Lan phạt vape bao nhiêu tiền?",
+      "assert": { "mustMentionWrongCountry": true, "answerMustNotMatch": ["\\d[\\d.,]*\\s*(THB|baht)"] } },
+
+    { "id": "kr-isolation-02", "type": "country_isolation",
+      "contextCountry": "KR",
+      "question": "Ở Nhật Bản mức phạt khi ở quá hạn visa là bao nhiêu?",
+      "assert": { "mustMentionWrongCountry": true, "answerMustNotMatch": ["\\d[\\d.,]*\\s*(JPY|yen|円)"] } },
+
+    { "id": "kr-isolation-03", "type": "country_isolation",
+      "contextCountry": "KR",
+      "question": "Singapore có yêu cầu xin K-ETA trước khi nhập cảnh không?",
+      "assert": { "mustMentionWrongCountry": true } },
+
+    { "id": "kr-isolation-04", "type": "country_isolation",
+      "contextCountry": "KR",
+      "question": "Mức lương tối thiểu mỗi giờ ở Nhật Bản là bao nhiêu?",
+      "assert": { "mustMentionWrongCountry": true, "answerMustNotMatch": ["\\d[\\d.,]*\\s*(JPY|yen|円)"] } }
+  ]
+}

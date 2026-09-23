@@ -122,3 +122,23 @@ export type DashboardSummary = {
   locationCount: number;
   failedJobCount: number;
 };
+
+// B4 -- trang thai index RAG cua tung bai luat (chi bai published+isCurrent moi
+// duoc index, xem backend/src/services/ragAdmin.service.js).
+export type RagIndexState = {
+  status: 'not_indexed' | 'queued' | 'indexing' | 'indexed' | 'failed';
+  chunkCount: number;
+  lastIndexedAt: string | null;
+  embeddingModel: string;
+  error: string;
+};
+
+export type RagArticleStatus = {
+  _id: string;
+  title: string;
+  slug: string;
+  countryCode: string;
+  topicSlug: string;
+  indexState: RagIndexState;
+  updatedAt: string;
+};

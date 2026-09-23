@@ -9,14 +9,16 @@ import { env } from "./core/env.js";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import { startJobWorker } from "./services/job.service.js";
+import { registerRagJobHandlers } from "./rag/jobs/index.js";
 
 const startServer = async () => {
   try {
     await connectDB();
 
     // Worker job queue (collection `jobs`, khong can Redis -- xem CLAUDE.md B.11).
-    // Handler that (reindex/purge chunk) duoc dang ky o B4; gio moi job tam thoi
-    // duoc danh dau 'done' de khong ket qua doi vo han.
+    // Dang ky handler that (reindex/purge chunk, B4) TRUOC khi worker bat dau
+    // poll, tranh mot job den truoc khi handler kip dang ky.
+    registerRagJobHandlers();
     startJobWorker();
 
     app.listen(env.PORT, () => {

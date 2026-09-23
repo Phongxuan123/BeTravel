@@ -1,6 +1,15 @@
 import { apiRequest } from './apiClient';
 import { createAdminResource } from './resource';
-import type { Country, LegalTopic, LegalArticle, SupportLocation, AuditLog, DashboardSummary, ContentStatus } from './types';
+import type {
+  Country,
+  LegalTopic,
+  LegalArticle,
+  SupportLocation,
+  AuditLog,
+  DashboardSummary,
+  ContentStatus,
+  RagArticleStatus,
+} from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
 export const topicsApi = createAdminResource<LegalTopic>('/admin/topics');
@@ -38,4 +47,10 @@ export const auditApi = {
 
 export const dashboardApi = {
   get: () => apiRequest<DashboardSummary>('/admin/dashboard'),
+};
+
+export const ragApi = {
+  status: (countryCode?: string) => apiRequest<RagArticleStatus[]>('/admin/rag/status', { query: { countryCode } }),
+  reindexCountry: (countryCode: string) =>
+    apiRequest<{ queued: number }>('/admin/rag/reindex-country', { method: 'POST', body: { countryCode } }),
 };

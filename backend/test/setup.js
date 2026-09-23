@@ -13,6 +13,19 @@ process.env.AUTH_TRANSPORT ??= "both";
 // không thể đổi nó giữa chừng -- đặt sẵn 1 giây để test "trong cửa sổ ân hạn"
 // chạy ngay lập tức và test "ngoài cửa sổ ân hạn" chỉ cần chờ hơn 1 giây.
 process.env.REFRESH_ROTATION_GRACE_SECONDS ??= "1";
+/*
+ * B4: nguong RAG_MIN_TOP_SCORE/RAG_MIN_SOFT_SCORE mac dinh (0.62/0.55) duoc
+ * hieu chinh cho hinh hoc cosine cua embedding THAT (Gemini). MockEmbedding
+ * (bag-of-words bam tu, xem rag/embedding/mock.embedding.js) khong co ngu
+ * nghia thuc su nen diem cosine thap hon nhieu du noi dung THUC SU lien quan
+ * (~0.15-0.35 quan sat duoc qua smoke test that). Ha nguong CHI trong test de
+ * golden test (SEARCH_DRIVER=memory + LLM_PROVIDER=mock, CLAUDE.md bat buoc
+ * khong goi API that) van phan biet duoc noi dung lien quan/khong lien quan,
+ * KHONG anh huong nguong that dung voi Gemini o production (.env rieng).
+ */
+process.env.RAG_MIN_TOP_SCORE ??= "0.27";
+process.env.RAG_MIN_SOFT_SCORE ??= "0.2";
+process.env.RAG_MIN_CHUNKS ??= "1";
 
 let mongod;
 
