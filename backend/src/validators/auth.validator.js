@@ -10,6 +10,14 @@ const vietnamPhoneSchema = z
   .transform(normalizePhoneInput)
   .refine((phone) => /^(0|\+84)[0-9]{9}$/.test(phone), "Số điện thoại không hợp lệ");
 
+const strongPasswordSchema = z
+  .string()
+  .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+  .max(128, "Mật khẩu quá dài")
+  .regex(/[A-Z]/, "Mật khẩu cần có ít nhất 1 chữ hoa")
+  .regex(/[a-z]/, "Mật khẩu cần có ít nhất 1 chữ thường")
+  .regex(/[0-9]/, "Mật khẩu cần có ít nhất 1 chữ số");
+
 export const registerSchema = z
   .object({
     fullName: z.string().trim().min(2, "Họ tên phải có ít nhất 2 ký tự").max(150, "Họ tên quá dài"),
@@ -31,13 +39,7 @@ export const registerSchema = z
     // đăng ký mobile có ô nhập riêng, xem register.tsx.
     phone: vietnamPhoneSchema,
 
-    password: z
-      .string()
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .max(128, "Mật khẩu quá dài")
-      .regex(/[A-Z]/, "Mật khẩu cần có ít nhất 1 chữ hoa")
-      .regex(/[a-z]/, "Mật khẩu cần có ít nhất 1 chữ thường")
-      .regex(/[0-9]/, "Mật khẩu cần có ít nhất 1 chữ số"),
+    password: strongPasswordSchema,
 
     confirmPassword: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
 
@@ -54,4 +56,9 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Vui lòng nhập mật khẩu"),
 
   rememberMe: z.boolean().optional().default(false),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
+  newPassword: strongPasswordSchema,
 });

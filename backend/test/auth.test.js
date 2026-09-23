@@ -193,3 +193,48 @@ test("GET /api/health tra envelope {ok:true} voi db va searchDriver", async () =
   assert.equal(res.body.data.db, "connected");
   assert.ok(res.body.data.searchDriver);
 });
+
+test("POST /api/auth/login cho phep dang nhap bang so dien thoai +84", async () => {
+  await request(app).post("/api/auth/register").send(validRegisterBody());
+
+  const res = await request(app)
+    .post("/api/auth/login")
+    .send({ identifier: "+84901234567", password: "Matkhau123", rememberMe: true });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.ok, true);
+  assert.equal(res.body.data.user.phone, "0901234567");
+});
+
+test("POST /api/auth/change-password doi mat khau that va thu hoi refresh token cu", async () => {
+  await request(app).post("/api/auth/register").send(validRegisterBody());
+  const loginRes = await request(app)
+    .post("/api/auth/login")
+    .send({ identifier: "a@example.com", password: "Matkhau123", rememberMe: true });
+
+  const oldRefreshToken = loginRes.body.data.refreshToken;
+  const accessToken = loginRes.body.data.accessToken;
+
+  const changeRes = await request(app)
+    .post("/api/auth/change-password")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({ currentPassword: "Matkhau123", newPassword: "Matkhau456" });
+
+  assert.equal(changeRes.status, 200);
+  assert.equal(changeRes.body.data.changed, true);
+
+  const oldPasswordLogin = await request(app)
+    .post("/api/auth/login")
+    .send({ identifier: "a@example.com", password: "Matkhau123" });
+  assert.equal(oldPasswordLogin.status, 401);
+
+  const newPasswordLogin = await request(app)
+    .post("/api/auth/login")
+    .send({ identifier: "a@example.com", password: "Matkhau456" });
+  assert.equal(newPasswordLogin.status, 200);
+
+  const oldRefresh = await request(app)
+    .post("/api/auth/refresh")
+    .send({ refreshToken: oldRefreshToken });
+  assert.equal(oldRefresh.status, 401);
+});

@@ -1,13 +1,14 @@
 import bcrypt from "bcrypt";
 
 import User from "../models/User.js";
+import RefreshToken from "../models/RefreshToken.js";
 
 import { env } from "../core/env.js";
 import { serializeUser } from "../core/serializers.js";
 import { generateAccessToken } from "../utils/token.js";
 import { issueRefreshToken } from "./refreshToken.service.js";
 
-const DUMMY_HASH = "$2b$12$C6UzMDM.H6dfI/f/IKcEe.9tR1E1uR6f2N6QJ8j5N6I7A2k7x";
+const DUMMY_HASH = "$2b$12$/NV9aeHeucnXQSpxaSaOmeZ.N3XU54xtNwggXZc8AFNI7afNvVH16";
 
 const PROFILE_PHONE_REGEX = /^(0|\+84)[0-9]{9}$/;
 
@@ -321,4 +322,38 @@ export const updateUserProfile = async ({ userId, fullName, phone }) => {
   await user.save();
 
   return serializeUser(user);
+};
+
+export const changeUserPassword = async ({ userId, currentPassword, newPassword }) => {
+  const user = await User.findById(userId).select("+password");
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  if (!user.isActive) {
+    throw new Error("ACCOUNT_NOT_ACTIVE");
+  }
+
+  if (!user.password) {
+    throw new Error("PASSWORD_LOGIN_UNAVAILABLE");
+  }
+
+  const currentPasswordMatches = await bcrypt.compare(currentPassword, user.password);
+  if (!currentPasswordMatches) {
+    throw new Error("CURRENT_PASSWORD_INVALID");
+  }
+
+  const sameAsCurrent = await bcrypt.compare(newPassword, user.password);
+  if (sameAsCurrent) {
+    throw new Error("PASSWORD_SAME_AS_OLD");
+  }
+
+  user.password = await bcrypt.hash(newPassword, 12);
+  await user.save();
+
+  // Đổi mật khẩu là sự kiện bảo mật: thu hồi mọi refresh token của tài khoản.
+  await RefreshToken.deleteMany({ userId: user._id });
+
+  return true;
 };

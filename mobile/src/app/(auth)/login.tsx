@@ -14,8 +14,8 @@ import { ApiError } from '@/lib/api/http';
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { login } = useAuth();
-  const params = useLocalSearchParams<{ next?: string }>();
-  const [email, setEmail] = useState('minh.tran@email.com');
+  const params = useLocalSearchParams<{ next?: string; email?: string }>();
+  const [identifier, setIdentifier] = useState(params.email ?? '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
@@ -23,14 +23,15 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async () => {
-    if (!email.includes('@') || password.length < 8) {
-      setError('Email hoặc mật khẩu không hợp lệ. Mật khẩu tối thiểu 8 ký tự.');
+    if (!identifier.trim() || !password) {
+      setError('Vui lòng nhập email/tên tài khoản và mật khẩu.');
       return;
     }
+
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
+      await login(identifier.trim(), password, remember);
       router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.');
@@ -56,12 +57,13 @@ export default function LoginScreen() {
 
       <View className="mt-6" style={{ gap: 16 }}>
         <TextField
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
+          label="Email hoặc tên tài khoản"
+          value={identifier}
+          onChangeText={setIdentifier}
+          placeholder="ban@example.com"
           iconLeft={<Mail size={20} color={colors.subtle} />}
-          keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
         />
         <TextField
           label="Mật khẩu"
@@ -69,7 +71,6 @@ export default function LoginScreen() {
           onChangeText={setPassword}
           secureTextEntry={!showPassword}
           iconLeft={<Lock size={20} color={colors.subtle} />}
-          helperText="Tối thiểu 8 ký tự"
           slotRight={
             <Pressable accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onPress={() => setShowPassword((v) => !v)}>
               {showPassword ? <EyeOff size={20} color={colors.primary} /> : <Eye size={20} color={colors.primary} />}

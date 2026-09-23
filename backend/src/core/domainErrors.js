@@ -13,6 +13,7 @@ const DOMAIN_ERROR_MAP = Object.freeze({
 
   // Đăng nhập
   INVALID_CREDENTIALS: [ErrorCode.UNAUTHORIZED, "Tài khoản hoặc mật khẩu không chính xác"],
+  CURRENT_PASSWORD_INVALID: [ErrorCode.UNAUTHORIZED, "Mật khẩu hiện tại không chính xác"],
   PASSWORD_LOGIN_UNAVAILABLE: [
     ErrorCode.VALIDATION_ERROR,
     "Tài khoản này chưa có mật khẩu. Hãy đăng nhập bằng Google hoặc dùng Quên mật khẩu để tạo mật khẩu.",

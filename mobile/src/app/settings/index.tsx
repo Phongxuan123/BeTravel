@@ -15,6 +15,9 @@ import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
 import { fetchCountries } from '@/lib/data';
+import { changePassword } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/http';
+import { passwordValidationMessage } from '@/lib/password';
 
 function toast(message: string) {
   if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);
@@ -35,6 +38,7 @@ export default function SettingsScreen() {
   const [changingPassword, setChangingPassword] = useState(false);
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState<string | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const onLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
@@ -55,23 +59,35 @@ export default function SettingsScreen() {
     ]);
   };
 
-  const onSubmitPasswordChange = () => {
+  const onSubmitPasswordChange = async () => {
     if (pwForm.current.length < 1) {
       setPwError('Nhập mật khẩu hiện tại.');
       return;
     }
-    if (pwForm.next.length < 8) {
-      setPwError('Mật khẩu mới cần tối thiểu 8 ký tự.');
+    const passwordError = passwordValidationMessage(pwForm.next);
+    if (passwordError) {
+      setPwError(passwordError);
       return;
     }
     if (pwForm.next !== pwForm.confirm) {
       setPwError('Xác nhận mật khẩu không khớp.');
       return;
     }
+
     setPwError(null);
-    setChangingPassword(false);
-    setPwForm({ current: '', next: '', confirm: '' });
-    toast('Đã đổi mật khẩu');
+    setSavingPassword(true);
+    try {
+      await changePassword({ currentPassword: pwForm.current, newPassword: pwForm.next });
+      setChangingPassword(false);
+      setPwForm({ current: '', next: '', confirm: '' });
+      toast('Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
+      await logout();
+      router.replace('/login');
+    } catch (err) {
+      setPwError(err instanceof ApiError ? err.message : 'Không thể đổi mật khẩu. Vui lòng thử lại.');
+    } finally {
+      setSavingPassword(false);
+    }
   };
 
   return (
@@ -136,14 +152,14 @@ export default function SettingsScreen() {
       <SimpleSheet visible={changingPassword} onClose={() => setChangingPassword(false)} title="Đổi mật khẩu">
         <View style={{ gap: 14 }}>
           <TextField label="Mật khẩu hiện tại" secureTextEntry value={pwForm.current} onChangeText={(v) => setPwForm((p) => ({ ...p, current: v }))} />
-          <TextField label="Mật khẩu mới" secureTextEntry helperText="Tối thiểu 8 ký tự" value={pwForm.next} onChangeText={(v) => setPwForm((p) => ({ ...p, next: v }))} />
+          <TextField label="Mật khẩu mới" secureTextEntry helperText="Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số" value={pwForm.next} onChangeText={(v) => setPwForm((p) => ({ ...p, next: v }))} />
           <TextField label="Xác nhận mật khẩu mới" secureTextEntry value={pwForm.confirm} onChangeText={(v) => setPwForm((p) => ({ ...p, confirm: v }))} />
           {pwError && (
             <View className="rounded-md bg-danger-tint p-3">
               <Text className="text-sm text-danger">{pwError}</Text>
             </View>
           )}
-          <Button label="Đổi mật khẩu" onPress={onSubmitPasswordChange} />
+          <Button label="Đổi mật khẩu" onPress={onSubmitPasswordChange} loading={savingPassword} />
         </View>
       </SimpleSheet>
     </View>

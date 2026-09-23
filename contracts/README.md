@@ -184,7 +184,24 @@ Response giong `4.8`.
 | So dien thoai da thuoc ve nguoi khac | `CONFLICT` |
 | Khong tim thay tai khoan | `NOT_FOUND` |
 
-### 4.10. Quen mat khau
+### 4.10. `POST /auth/change-password`
+
+Can `Authorization`. Doi mat khau cho tai khoan dang dang nhap.
+
+```jsonc
+{ "currentPassword": "Matkhau123", "newPassword": "Matkhau456" }
+```
+
+Thanh cong: `{ "ok": true, "data": { "changed": true } }`.
+Sau khi doi thanh cong, backend thu hoi toan bo refresh token cua tai khoan; mobile phai xoa token cuc bo va dang nhap lai.
+
+| Tinh huong | Code |
+|---|---|
+| Mat khau hien tai sai | `UNAUTHORIZED` |
+| Mat khau moi yeu / trung mat khau cu | `VALIDATION_ERROR` |
+| Tai khoan bi vo hieu hoa | `FORBIDDEN` |
+
+### 4.11. Quen mat khau
 
 Rate limit chung: 8 lan / 15 phut. Tat ca tra `{ "ok": true, "data": {...} }`.
 
