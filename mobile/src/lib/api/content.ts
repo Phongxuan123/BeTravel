@@ -78,8 +78,23 @@ export async function fetchTrips(): Promise<Envelope<Trip[]>> {
   return { ok: true, data: raw.map(adaptTrip) };
 }
 
-export async function createTrip(input: { countryCode: string; startDate: string; endDate: string }): Promise<Envelope<Trip>> {
+export type TripInput = {
+  countryCode: string;
+  destinationCity: string;
+  destinationDetail?: string;
+  locationAlerts?: boolean;
+  regulationAlerts?: boolean;
+  startDate: string;
+  endDate: string;
+};
+
+export async function createTrip(input: TripInput): Promise<Envelope<Trip>> {
   const raw = await apiRequest<ApiTrip>('/users/trips', { method: 'POST', body: input });
+  return { ok: true, data: adaptTrip(raw) };
+}
+
+export async function updateTrip(id: string, input: TripInput): Promise<Envelope<Trip>> {
+  const raw = await apiRequest<ApiTrip>(`/users/trips/${id}`, { method: 'PUT', body: input });
   return { ok: true, data: adaptTrip(raw) };
 }
 

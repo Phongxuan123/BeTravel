@@ -42,6 +42,10 @@ export const articleSearchQuerySchema = paginationQuerySchema.extend({
 export const tripCreateSchema = z
   .object({
     countryCode: countryCodeSchema,
+    destinationCity: z.string().trim().min(1, "Thanh pho/khu vuc khong duoc de trong").max(100),
+    destinationDetail: z.string().trim().max(240).optional().default(""),
+    locationAlerts: z.boolean().optional().default(true),
+    regulationAlerts: z.boolean().optional().default(true),
     startDate: z.coerce.date(),
     endDate: z.coerce.date(),
   })
@@ -49,3 +53,7 @@ export const tripCreateSchema = z
     message: "Ngay ve phai sau hoac bang ngay di",
     path: ["endDate"],
   });
+
+// Edit chuyến đi dùng cùng contract với create để tránh partial update làm dữ liệu
+// nửa cũ/nửa mới. isCurrent được quản lý bằng endpoint /:id/current riêng.
+export const tripUpdateSchema = tripCreateSchema;

@@ -73,10 +73,45 @@ export async function fetchTrips() {
   return delay([...tripsState]);
 }
 
-export async function createTrip(input: { countryCode: string; startDate: string; endDate: string }) {
-  const trip: Trip = { __mock: true, id: `t${Date.now()}`, isCurrent: false, ...input };
+type TripInput = {
+  countryCode: string;
+  destinationCity: string;
+  destinationDetail?: string;
+  locationAlerts?: boolean;
+  regulationAlerts?: boolean;
+  startDate: string;
+  endDate: string;
+};
+
+export async function createTrip(input: TripInput) {
+  const trip: Trip = {
+    __mock: true,
+    id: `t${Date.now()}`,
+    isCurrent: false,
+    ...input,
+    locationAlerts: input.locationAlerts ?? true,
+    regulationAlerts: input.regulationAlerts ?? true,
+  };
   tripsState = [...tripsState, trip];
   return delay(trip);
+}
+
+export async function updateTrip(id: string, input: TripInput) {
+  const index = tripsState.findIndex((trip) => trip.id === id);
+  if (index < 0) throw new Error('Không tìm thấy chuyến đi');
+  tripsState = tripsState.map((trip) =>
+    trip.id === id
+      ? {
+          ...trip,
+          ...input,
+          locationAlerts: input.locationAlerts ?? trip.locationAlerts ?? true,
+          regulationAlerts: input.regulationAlerts ?? trip.regulationAlerts ?? true,
+        }
+      : trip,
+  );
+  const updated = tripsState.find((trip) => trip.id === id);
+  if (!updated) throw new Error('Không tìm thấy chuyến đi');
+  return delay(updated);
 }
 
 export async function setCurrentTrip(id: string) {

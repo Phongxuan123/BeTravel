@@ -23,6 +23,7 @@ export const fetchArticle = USE_MOCKS ? mock.fetchArticle : content.fetchArticle
 export const searchArticles = USE_MOCKS ? mock.searchArticles : content.searchArticles;
 export const fetchTrips = USE_MOCKS ? mock.fetchTrips : content.fetchTrips;
 export const createTrip = USE_MOCKS ? mock.createTrip : content.createTrip;
+export const updateTrip = USE_MOCKS ? mock.updateTrip : content.updateTrip;
 export const setCurrentTrip = USE_MOCKS ? mock.setCurrentTrip : content.setCurrentTrip;
 export const deleteTrip = USE_MOCKS ? mock.deleteTrip : content.deleteTrip;
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
+import { useQuery } from '@tanstack/react-query';
 import {
   IdCard,
   CreditCard,
@@ -26,6 +27,7 @@ import { TextField } from '@/components/ui/TextField';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
+import { fetchTrips } from '@/lib/data';
 import { useEmergencyContacts } from '@/features/profile/useEmergencyContacts';
 import { useDocumentStatus, type DocumentKey } from '@/features/profile/useDocumentStatus';
 
@@ -39,6 +41,11 @@ export default function ProfileScreen() {
   const { user, isGuest, updateProfile } = useAuth();
   const { contacts, addContact, removeContact } = useEmergencyContacts();
   const { status, setDocument } = useDocumentStatus();
+  const tripsQuery = useQuery({
+    queryKey: ['trips'],
+    queryFn: fetchTrips,
+    enabled: !isGuest,
+  });
 
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(user?.name ?? '');
@@ -188,7 +195,12 @@ export default function ProfileScreen() {
         </View>
 
         <View className="overflow-hidden rounded-lg border border-line bg-surface">
-          <MenuRow icon={<Calendar size={20} color={colors.primary} />} label="Chuyến đi của tôi" count="3" onPress={() => router.push('/trips')} />
+          <MenuRow
+            icon={<Calendar size={20} color={colors.primary} />}
+            label="Chuyến đi của tôi"
+            count={tripsQuery.isLoading ? '…' : String(tripsQuery.data?.data.length ?? 0)}
+            onPress={() => router.push('/trips')}
+          />
           <View className="h-px bg-line" />
           <MenuRow icon={<Bookmark size={20} color={colors.warning} />} label="Quy định đã lưu" count="12" onPress={() => router.push('/explore?saved=1' as never)} />
           <View className="h-px bg-line" />

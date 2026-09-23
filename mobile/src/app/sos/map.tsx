@@ -117,7 +117,7 @@ export default function SosMapScreen() {
         </View>
         <View className="flex-row items-center justify-between px-[18px]">
           <Text className="text-xl font-body-bold text-ink">{locations.length} địa điểm gần bạn</Text>
-          <Text className="text-sm text-muted">{country?.currentCity}</Text>
+          <Text className="text-sm text-muted">{country?.currentCity || 'Chưa xác định vị trí'}</Text>
         </View>
         <ScrollView className="mt-3" contentContainerStyle={{ paddingHorizontal: 18, gap: 10 }}>
           {locations.map((loc) => (

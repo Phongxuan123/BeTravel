@@ -10,18 +10,30 @@ export function SegmentedTabs<T extends string>({
   onChange: (next: T) => void;
 }) {
   return (
-    <View accessibilityRole="tablist" className="flex-row rounded-md bg-[#EEF3FA] p-1">
+    <View
+      accessibilityRole="tablist"
+      className="flex-row rounded-md bg-[#EEF3FA] p-1"
+    >
       {options.map((opt) => {
         const active = opt.value === value;
+
         return (
           <Pressable
             key={opt.value}
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(opt.value)}
-            className={`flex-1 items-center rounded-[10px] py-2 ${active ? 'bg-surface shadow-sm' : ''}`}
+            className={`flex-1 items-center rounded-[10px] py-2 ${
+              active ? 'bg-surface' : ''
+            }`}
           >
-            <Text className={`text-[15px] ${active ? 'font-body-bold text-ink' : 'font-body-semibold text-muted'}`}>
+            <Text
+              className={`text-[15px] ${
+                active
+                  ? 'font-body-bold text-ink'
+                  : 'font-body-semibold text-muted'
+              }`}
+            >
               {opt.label}
             </Text>
           </Pressable>

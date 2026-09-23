@@ -1,9 +1,9 @@
-import { useMemo, useReducer, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Info, ArrowRight } from 'lucide-react-native';
+import { Search, Info, ArrowRight, MapPin } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { StepProgress } from '@/components/ui/StepProgress';
@@ -13,29 +13,50 @@ import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { DateRangeCalendar, type DateRange } from '@/components/common/DateRangeCalendar';
 import { colors } from '@/lib/theme';
-import { createTrip, fetchCountries } from '@/lib/data';
+import { createTrip, updateTrip, setCurrentTrip, fetchCountries, fetchTrips } from '@/lib/data';
 import { ApiError } from '@/lib/api/http';
 import { useAuth } from '@/lib/auth';
-import { now } from '@/lib/date';
+import { now, parseISODate } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
+import type { Trip } from '@/mocks/schemas';
 
 type State = {
   countryCode: string | null;
+  destinationCity: string;
+  destinationDetail: string;
   range: DateRange;
   locationAlerts: boolean;
   regulationAlerts: boolean;
 };
 
 type Action =
+  | { type: 'LOAD_TRIP'; trip: Trip }
   | { type: 'SET_COUNTRY'; code: string }
+  | { type: 'SET_DESTINATION_CITY'; value: string }
+  | { type: 'SET_DESTINATION_DETAIL'; value: string }
   | { type: 'SET_RANGE'; range: DateRange }
   | { type: 'TOGGLE_LOCATION' }
   | { type: 'TOGGLE_REGULATION' };
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
+    case 'LOAD_TRIP':
+      return {
+        countryCode: action.trip.countryCode,
+        destinationCity: action.trip.destinationCity,
+        destinationDetail: action.trip.destinationDetail ?? '',
+        range: { start: action.trip.startDate, end: action.trip.endDate },
+        locationAlerts: action.trip.locationAlerts ?? true,
+        regulationAlerts: action.trip.regulationAlerts ?? true,
+      };
     case 'SET_COUNTRY':
-      return { ...state, countryCode: action.code };
+      return state.countryCode === action.code
+        ? state
+        : { ...state, countryCode: action.code, destinationCity: '', destinationDetail: '' };
+    case 'SET_DESTINATION_CITY':
+      return { ...state, destinationCity: action.value };
+    case 'SET_DESTINATION_DETAIL':
+      return { ...state, destinationDetail: action.value };
     case 'SET_RANGE':
       return { ...state, range: action.range };
     case 'TOGGLE_LOCATION':
@@ -51,10 +72,13 @@ function stripDiacritics(input: string): string {
 
 export default function TripWizardScreen() {
   const insets = useSafeAreaInsets();
-  const params = useLocalSearchParams<{ step?: string }>();
+  const params = useLocalSearchParams<{ step?: string; tripId?: string }>();
+  const editingTripId = typeof params.tripId === 'string' ? params.tripId : undefined;
   const [step, setStep] = useState(() => Math.min(Math.max(Number(params.step) || 1, 1), 4));
   const [state, dispatch] = useReducer(reducer, {
     countryCode: null,
+    destinationCity: '',
+    destinationDetail: '',
     range: { start: null, end: null },
     locationAlerts: true,
     regulationAlerts: true,
@@ -63,6 +87,7 @@ export default function TripWizardScreen() {
   const [month, setMonth] = useState(() => now());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hydratedTripRef = useRef<string | null>(null);
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
 
@@ -70,6 +95,21 @@ export default function TripWizardScreen() {
 
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const countries = useMemo(() => countriesQuery.data?.data ?? [], [countriesQuery.data]);
+  const editTripsQuery = useQuery({
+    queryKey: ['trips'],
+    queryFn: fetchTrips,
+    enabled: !!editingTripId && !isGuest,
+  });
+  const tripToEdit = editingTripId
+    ? editTripsQuery.data?.data.find((trip) => trip.id === editingTripId)
+    : undefined;
+
+  useEffect(() => {
+    if (!editingTripId || !tripToEdit || hydratedTripRef.current === editingTripId) return;
+    dispatch({ type: 'LOAD_TRIP', trip: tripToEdit });
+    setMonth(parseISODate(tripToEdit.startDate));
+    hydratedTripRef.current = editingTripId;
+  }, [editingTripId, tripToEdit]);
 
   const country = countries.find((c) => c.code === state.countryCode);
 
@@ -78,18 +118,21 @@ export default function TripWizardScreen() {
     return countries.filter((c) => stripDiacritics(c.name).includes(q));
   }, [query, countries]);
 
-  const canContinue =
-    (step === 1 && !!state.countryCode) ||
+  const editReady = !editingTripId || hydratedTripRef.current === editingTripId;
+
+  const canContinue = editReady && (
+    (step === 1 && !!state.countryCode && state.destinationCity.trim().length > 0) ||
     (step === 2 && !!state.range.start && !!state.range.end) ||
     step === 3 ||
-    step === 4;
+    step === 4
+  );
 
   const onContinue = async () => {
     if (step < 4) {
       goStep(step + 1);
       return;
     }
-    if (!state.countryCode || !state.range.start || !state.range.end) return;
+    if (!state.countryCode || !state.destinationCity.trim() || !state.range.start || !state.range.end) return;
 
     // Chuyen di thuoc ve mot user dang nhap (backend co /api/users/trips
     // yeu cau authenticateToken) -- khach chua dang nhap khong tao duoc,
@@ -105,10 +148,43 @@ export default function TripWizardScreen() {
     setError(null);
     setSubmitting(true);
     try {
-      await createTrip({ countryCode: state.countryCode, startDate: state.range.start, endDate: state.range.end });
-      // Home/Trips van dang mo trong tab bar (khong remount khi quay lai) --
-      // phai tu tay bao React Query cache ['trips'] da cu, khong thi man
-      // hinh cu se khong bao gio thay chuyen di vua tao.
+      const payload = {
+        countryCode: state.countryCode,
+        destinationCity: state.destinationCity.trim(),
+        destinationDetail: state.destinationDetail.trim(),
+        locationAlerts: state.locationAlerts,
+        regulationAlerts: state.regulationAlerts,
+        startDate: state.range.start,
+        endDate: state.range.end,
+      };
+
+      if (editingTripId) {
+        await updateTrip(editingTripId, payload);
+        await queryClient.invalidateQueries({ queryKey: ['trips'] });
+        Alert.alert('Đã lưu thay đổi', 'Thông tin chuyến đi đã được cập nhật.');
+        router.replace('/trips');
+        return;
+      }
+
+      const created = await createTrip(payload);
+
+      // Chuyến vừa tạo vẫn được đặt làm chuyến đi chính theo hành vi hiện tại.
+      // Màn Home/Trips sẽ ưu tiên hiển thị chuyến đang diễn ra theo ngày; nếu
+      // không có chuyến đang diễn ra thì mới ưu tiên chuyến sắp tới.
+      try {
+        await setCurrentTrip(created.data.id);
+      } catch (currentError) {
+        await queryClient.invalidateQueries({ queryKey: ['trips'] });
+        Alert.alert(
+          'Chuyến đi đã được tạo',
+          currentError instanceof ApiError
+            ? `Chưa thể đặt làm chuyến đi chính: ${currentError.message}`
+            : 'Chưa thể đặt làm chuyến đi chính. Bạn có thể chọn lại trong Chuyến đi của tôi.',
+        );
+        router.replace('/trips');
+        return;
+      }
+
       await queryClient.invalidateQueries({ queryKey: ['trips'] });
       router.replace('/');
     } catch (err) {
@@ -125,13 +201,24 @@ export default function TripWizardScreen() {
   return (
     <View className="flex-1 bg-bg">
       <PageHeader
-        title="Tạo chuyến đi"
+        title={editingTripId ? "Sửa chuyến đi" : "Tạo chuyến đi"}
         right={<Text className="text-sm font-body-semibold text-muted">Bước {step}/4</Text>}
         onBack={() => (step > 1 ? goStep(step - 1) : router.back())}
       />
       <View className="px-[18px] pt-4">
         <StepProgress total={4} current={step} />
       </View>
+
+      {editingTripId && editTripsQuery.isLoading && (
+        <View className="px-[18px] pt-5">
+          <Text className="text-center text-sm text-muted">Đang tải chuyến đi...</Text>
+        </View>
+      )}
+      {editingTripId && !editTripsQuery.isLoading && editTripsQuery.data && !tripToEdit && (
+        <View className="px-[18px] pt-5">
+          <Text className="text-center text-sm text-danger">Không tìm thấy chuyến đi cần sửa.</Text>
+        </View>
+      )}
 
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}>
         {step === 1 && (
@@ -214,6 +301,41 @@ export default function TripWizardScreen() {
                 );
               })}
             </View>
+
+            {country && (
+              <View className="mt-6 rounded-lg border border-line bg-surface p-4">
+                <View className="flex-row items-center" style={{ gap: 8 }}>
+                  <MapPin size={18} color={colors.primary} />
+                  <Text className="text-base font-body-bold text-ink">Điểm đến chính</Text>
+                </View>
+                <Text className="mt-1 text-sm text-muted">
+                  Nhập nơi bạn thực sự sẽ ở hoặc ghé đến. Ứng dụng sẽ không tự suy ra thủ đô.
+                </Text>
+
+                <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Thành phố / khu vực *</Text>
+                <TextInput
+                  className="h-14 rounded-md border border-line bg-[#F9FBFD] px-4 text-base text-ink"
+                  placeholder="Ví dụ: Seoul, Busan, Jeju..."
+                  placeholderTextColor={colors.subtle}
+                  value={state.destinationCity}
+                  onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_CITY', value })}
+                  autoCapitalize="words"
+                  maxLength={100}
+                />
+
+                <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Địa điểm cụ thể (không bắt buộc)</Text>
+                <TextInput
+                  className="min-h-[56px] rounded-md border border-line bg-[#F9FBFD] px-4 py-3 text-base text-ink"
+                  placeholder="Ví dụ: Gangnam-gu, tên khách sạn, địa chỉ..."
+                  placeholderTextColor={colors.subtle}
+                  value={state.destinationDetail}
+                  onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_DETAIL', value })}
+                  autoCapitalize="sentences"
+                  maxLength={240}
+                  multiline
+                />
+              </View>
+            )}
           </View>
         )}
 
@@ -285,7 +407,7 @@ export default function TripWizardScreen() {
         {step === 4 && country && state.range.start && state.range.end && (
           <View className="px-[18px] pt-5">
             <Text className="font-display text-ink" style={{ fontSize: 26 }}>
-              Xác nhận chuyến đi
+              {editingTripId ? 'Xác nhận thay đổi' : 'Xác nhận chuyến đi'}
             </Text>
 
             <View className="mt-5 rounded-lg border border-line bg-surface p-[18px]">
@@ -301,6 +423,18 @@ export default function TripWizardScreen() {
                   <Text className="text-[15px] font-body-bold text-primary">Sửa</Text>
                 </Pressable>
               </View>
+
+              <View className="mt-4 rounded-md bg-[#F4F8FF] p-3">
+                <View className="flex-row items-center" style={{ gap: 8 }}>
+                  <MapPin size={17} color={colors.primary} />
+                  <Text className="text-[13px] font-body-semibold text-muted">Điểm đến chính</Text>
+                </View>
+                <Text className="mt-1 text-lg font-body-bold text-ink">{state.destinationCity}</Text>
+                {!!state.destinationDetail && (
+                  <Text className="mt-0.5 text-sm text-muted">{state.destinationDetail}</Text>
+                )}
+              </View>
+
               <View className="my-4 h-px bg-line" />
               <View className="flex-row items-center justify-between">
                 <View>
@@ -322,7 +456,7 @@ export default function TripWizardScreen() {
               </View>
               <View className="mt-3 flex-row" style={{ gap: 8 }}>
                 <Badge label={`${tripDurationDays(state.range.start, state.range.end)} ngày`} tone="info" />
-                <Badge label="Sẽ là chuyến đi chính" tone="success" />
+                <Badge label={editingTripId ? (tripToEdit?.isCurrent ? 'Chuyến đi chính' : 'Đang chỉnh sửa') : 'Sẽ là chuyến đi chính'} tone="success" />
               </View>
             </View>
 
@@ -344,7 +478,7 @@ export default function TripWizardScreen() {
 
             <View className="mt-4 flex-row items-start gap-2 rounded-md bg-[#F0F5FD] p-3">
               <Info size={18} color={colors.primary} />
-              <Text className="flex-1 text-sm text-[#3B4A63]">Bạn có thể chỉnh sửa, chuyển quốc gia hoặc tạo thêm chuyến đi bất cứ lúc nào.</Text>
+              <Text className="flex-1 text-sm text-[#3B4A63]">{editingTripId ? 'Các thay đổi sẽ được lưu vào chuyến đi hiện tại.' : 'Bạn có thể chỉnh sửa, chuyển quốc gia hoặc tạo thêm chuyến đi bất cứ lúc nào.'}</Text>
             </View>
           </View>
         )}
@@ -357,7 +491,7 @@ export default function TripWizardScreen() {
               <Text className="text-sm text-danger">{error}</Text>
             </View>
           )}
-          <Button label={step === 4 ? 'Xác nhận chuyến đi' : 'Tiếp tục →'} onPress={onContinue} disabled={!canContinue} loading={submitting} />
+          <Button label={step === 4 ? (editingTripId ? 'Lưu thay đổi' : 'Xác nhận chuyến đi') : 'Tiếp tục →'} onPress={onContinue} disabled={!canContinue} loading={submitting} />
           {step === 4 && (
             <Pressable className="mt-2 items-center py-1" onPress={() => router.push('/trips')}>
               <Text className="text-[15px] font-body-semibold text-muted">Xem tất cả chuyến đi</Text>

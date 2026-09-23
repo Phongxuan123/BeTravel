@@ -25,20 +25,58 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { useAuth } from '@/lib/auth';
-import { fetchTrips, fetchAlerts, fetchArticles } from '@/lib/data';
+import { fetchTrips, fetchAlerts, fetchArticles, fetchCountries } from '@/lib/data';
 import { formatTripRange } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
-  const { country, countryCode } = useCountry();
-  const { user, isGuest } = useAuth();
+  const { country: selectedCountry, countryCode: selectedCountryCode } = useCountry();
+  const { user, isGuest, isLoading: authLoading } = useAuth();
 
-  const tripsQuery = useQuery({ queryKey: ['trips'], queryFn: fetchTrips });
+  // /users/trips là endpoint có auth; khách chưa đăng nhập không nên gọi rồi
+  // hiện banner lỗi mạng vì 401 là hành vi đúng của backend.
+  const tripsQuery = useQuery({
+    queryKey: ['trips'],
+    queryFn: fetchTrips,
+    enabled: !isGuest && !authLoading,
+  });
+  const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const alertsQuery = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
-  const articlesQuery = useQuery({ queryKey: ['articles', countryCode], queryFn: () => fetchArticles(countryCode) });
 
-  const currentTrip = tripsQuery.data?.data.find((t) => t.isCurrent);
+  const trips = tripsQuery.data?.data ?? [];
+  const today = now();
+  const ongoingTrips = trips.filter((trip) => {
+    const start = parseISODate(trip.startDate);
+    const end = parseISODate(trip.endDate);
+    return today >= start && today <= end;
+  });
+  const upcomingTrips = trips
+    .filter((trip) => today < parseISODate(trip.startDate))
+    .sort((a, b) => parseISODate(a.startDate).getTime() - parseISODate(b.startDate).getTime());
+  const pastTrips = trips
+    .filter((trip) => today > parseISODate(trip.endDate))
+    .sort((a, b) => parseISODate(b.endDate).getTime() - parseISODate(a.endDate).getTime());
+
+  // Ưu tiên đúng theo trạng thái thời gian: chuyến đang diễn ra trước. Nếu
+  // không có chuyến nào đang diễn ra thì hiển thị chuyến sắp tới gần nhất.
+  // isCurrent chỉ dùng làm tie-breaker trong cùng một nhóm, không được khiến
+  // một chuyến tương lai che mất chuyến đang diễn ra.
+  const currentTrip =
+    ongoingTrips.find((trip) => trip.isCurrent) ??
+    ongoingTrips[0] ??
+    upcomingTrips.find((trip) => trip.isCurrent) ??
+    upcomingTrips[0] ??
+    pastTrips.find((trip) => trip.isCurrent) ??
+    pastTrips[0];
+
+  const countryCode = currentTrip?.countryCode ?? selectedCountryCode;
+  const country = countriesQuery.data?.data.find((c) => c.code === countryCode) ?? selectedCountry;
+  const articlesQuery = useQuery({
+    queryKey: ['articles', countryCode],
+    queryFn: () => fetchArticles(countryCode),
+    enabled: !!countryCode,
+  });
   const unreadAlerts = alertsQuery.data?.data.filter((a) => !a.read).length ?? 0;
 
   const initials = user ? user.name.slice(0, 2).toUpperCase() : '';
@@ -71,7 +109,7 @@ export default function HomeScreen() {
               <View className="mt-0.5 flex-row items-center" style={{ gap: 6 }}>
                 <CountryFlag code={countryCode} width={22} height={16} />
                 <Text className="text-[17px] font-body-bold text-ink">{country?.name}</Text>
-                <Badge label="Đang ở đây" tone="success" />
+                <Badge label={currentTrip ? (currentTrip.isCurrent ? "Chuyến đi chính" : "Theo lịch trình") : "Đang chọn"} tone="success" />
               </View>
             </View>
           </View>
@@ -105,6 +143,9 @@ export default function HomeScreen() {
           ) : currentTrip ? (
             <CurrentTripCard
               countryCode={currentTrip.countryCode}
+              countryName={country?.name}
+              destinationCity={currentTrip.destinationCity}
+              destinationDetail={currentTrip.destinationDetail}
               startDate={currentTrip.startDate}
               endDate={currentTrip.endDate}
             />
@@ -183,33 +224,57 @@ export default function HomeScreen() {
   );
 }
 
-function CurrentTripCard({ countryCode, startDate, endDate }: { countryCode: string; startDate: string; endDate: string }) {
-  const { country } = useCountry();
+function CurrentTripCard({
+  countryCode,
+  countryName,
+  destinationCity,
+  destinationDetail,
+  startDate,
+  endDate,
+}: {
+  countryCode: string;
+  countryName?: string;
+  destinationCity: string;
+  destinationDetail?: string;
+  startDate: string;
+  endDate: string;
+}) {
   const today = now();
   const start = parseISODate(startDate);
   const end = parseISODate(endDate);
   const totalDays = Math.max(1, daysBetween(start, end));
   const elapsed = Math.min(Math.max(daysBetween(start, today), 0), totalDays);
+  const upcoming = today < start;
+  const past = today > end;
   const remaining = Math.max(daysBetween(today, end), 0);
-  const progress = elapsed / totalDays;
+  const daysUntilStart = Math.max(daysBetween(today, start), 0);
+  const progress = upcoming ? 0 : past ? 1 : elapsed / totalDays;
+  const statusLabel = upcoming ? 'Sắp tới' : past ? 'Đã kết thúc' : 'Đang diễn ra';
+  const statusColor = upcoming ? colors.warning : past ? colors.muted : colors.success;
+  const timingLabel = upcoming ? `Khởi hành sau ${daysUntilStart} ngày` : past ? 'Đã kết thúc' : `Còn ${remaining} ngày`;
 
   return (
     <View className="rounded-xl bg-primary p-5" style={{ shadowColor: 'rgba(15,91,215,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
       <View className="flex-row items-start justify-between">
         <Text className="text-xs font-body-bold text-white/75">CHUYẾN ĐI HIỆN TẠI</Text>
         <View className="flex-row items-center gap-1.5 rounded-full bg-white px-2.5 py-1">
-          <View className="h-1.5 w-1.5 rounded-full bg-success" />
-          <Text className="text-[13px] font-body-bold text-success">Đang diễn ra</Text>
+          <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
+          <Text className="text-[13px] font-body-bold" style={{ color: statusColor }}>{statusLabel}</Text>
         </View>
       </View>
       <Text className="mt-2 font-display text-white" style={{ fontSize: 24 }}>
-        {country?.currentCity}
+        {destinationCity || countryName || countryCode}
       </Text>
+      {!!destinationDetail && (
+        <Text className="mt-1 text-sm font-body-semibold text-white/80" numberOfLines={1}>
+          {destinationDetail}
+        </Text>
+      )}
       <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
         <Calendar size={16} color="#fff" />
         <Text className="text-[15px] font-body-semibold text-white">{formatTripRange(startDate, endDate)}</Text>
         <Text className="text-white/60">·</Text>
-        <Text className="text-white/85">Còn {remaining} ngày</Text>
+        <Text className="text-white/85">{timingLabel}</Text>
       </View>
       <View className="mt-4 h-1.5 rounded-full bg-white/30">
         <View className="h-1.5 rounded-full bg-white" style={{ width: `${Math.round(progress * 100)}%` }} />
