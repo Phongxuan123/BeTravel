@@ -170,13 +170,22 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
     Script seed CHỈ backfill bodyMd khi phát hiện còn đúng placeholder cũ
     (`bodyMd === summaryVi`), không ghi đè nếu admin đã tự sửa qua Portal. Đã
     chạy thật trên Atlas — cả 8 bài (kể cả 2 bài `published`) đã có bodyMd mới.
-32. **Smoke test Gemini thật thất bại: key được cấp trả về `401
+32. **Smoke test Gemini thật (lần 1) thất bại: key được cấp trả về `401
     ACCESS_TOKEN_TYPE_UNSUPPORTED`** — định dạng key (`AQ.Ab8...`) không phải
     API key chuẩn của Gemini Developer API (thường bắt đầu `AIzaSy...`). Toàn
     bộ pipeline vẫn được xác nhận chạy đúng end-to-end bằng `LLM_PROVIDER=mock`
     + `EMBEDDING_PROVIDER=mock` qua job worker thật trên Atlas (reindex 2 bài
     published, sinh đúng số chunk, gọi `/api/chat/...` trả lời có trích dẫn
-    đúng bài). `.env` đã trả về `mock`/`mock` sau khi test — xem "Đang vướng".
+    đúng bài). `.env` đã trả về `mock`/`mock` sau khi test.
+33. **Smoke test Gemini thật (lần 2, key đúng định dạng) thành công** —
+    xác nhận key `AIzaSy...`. Phát hiện `LLM_MODEL=gemini-2.5-flash` (default
+    cũ) bị Google trả `404` với key mới ("no longer available to new users"),
+    đổi default sang `gemini-3.6-flash` (model còn hoạt động, xác nhận bằng
+    gọi REST thật) ở `backend/.env` và `backend/.env.example`. Chốt để
+    `.env` chạy `LLM_PROVIDER=gemini`/`EMBEDDING_PROVIDER=gemini` làm mặc định
+    dev thay vì mock, vì mock chỉ bắt buộc cho code/test/CI theo CLAUDE.md
+    §4.1, không bắt buộc cho `.env` cục bộ khi đã có key thật hoạt động.
+    Chi tiết ở "Đang vướng".
 
 ### Đợt rà soát tương tác toàn mobile (23/09/2026, ngoài lộ trình batch — người dùng yêu cầu trực tiếp: "kiểm tra lại từ đầu đến cuối, tìm và fix")
 
@@ -229,17 +238,24 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
 
 ## Đang vướng
 
-- **[B4, MỚI] Gemini API key được cấp KHÔNG hoạt động với REST API key auth
-  (`?key=...`)** — Google trả `401 ACCESS_TOKEN_TYPE_UNSUPPORTED`, định dạng
-  key (`AQ.Ab8...`) không giống API key chuẩn của Gemini Developer API
-  (thường bắt đầu `AIzaSy...`, lấy tại aistudio.google.com/apikey → nút "Create
-  API key", KHÔNG phải mục khác trong AI Studio). Cần người lấy lại đúng loại
-  key rồi điền vào `backend/.env` (`GEMINI_API_KEY`), đổi `LLM_PROVIDER=gemini`
-  và `EMBEDDING_PROVIDER=gemini`, sau đó gọi lại
-  `POST /api/admin/rag/reindex-country {countryCode:"KR"}` (role admin) để
-  index lại 2 bài đã published bằng embedding thật. Hiện `.env` đang để
-  `mock`/`mock` (an toàn, đúng yêu cầu batch) — pipeline đã xác nhận chạy
-  đúng end-to-end ở chế độ này, chỉ chưa xác nhận được với AI thật.
+- **[B4, ĐÃ XONG] Smoke test Gemini thật đã xác nhận chạy đúng end-to-end**
+  (2026-09-23) — key mới (`AIzaSy...`, đúng định dạng REST API key) hoạt động.
+  Phát hiện thêm: `LLM_MODEL=gemini-2.5-flash` (giá trị mặc định cũ trong
+  `.env.example`) bị Google trả `404 NOT_FOUND` với key mới ("no longer
+  available to new users"), đã đổi default sang `gemini-3.6-flash` ở cả
+  `backend/.env` và `backend/.env.example`. Đã reindex 2 bài KR bằng
+  `gemini-embedding-001` thật (`POST /api/admin/rag/reindex-country`), gửi
+  câu hỏi thật qua `/api/chat/sessions/:id/messages` — trả lời đúng, trích
+  dẫn đúng bài (`[S3][S4][S7]`), guard không phải can thiệp (không có marker
+  bịa/tuyên bố không nguồn). `.env` hiện để `LLM_PROVIDER=gemini` +
+  `EMBEDDING_PROVIDER=gemini` (dùng AI thật cho dev thực tế); test/golden
+  test KHÔNG bị ảnh hưởng vì ép override bằng `__setLlmProviderForTest`/
+  `__setEmbeddingProviderForTest` trong code, không đọc từ `.env` — đã chạy
+  lại `npm run test` (78/78) và `npm run test:golden` (25/25) sau khi đổi,
+  vẫn xanh. Gặp 1 lần lỗi `503 UNAVAILABLE` (Google quá tải tạm thời, không
+  phải bug) khi gọi LLM lần đầu — retry thành công ngay sau đó; guard đã xử lý
+  đúng bằng cách hạ xuống `fallbackReason:PROVIDER_ERROR` thay vì crash, đúng
+  thiết kế.
 - **[B4, MỚI] Chat backend đã xong nhưng CHƯA có UI mobile** (đúng phạm vi
   B4 — UI chat thuộc B5). `/api/chat/*` đã có thể gọi thẳng qua Postman/curl
   để demo cho giảng viên nếu cần trước khi làm B5.
