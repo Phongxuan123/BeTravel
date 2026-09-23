@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken, clearTokens } from './tokenStore';
 
 /** Mã lỗi đóng -- phải khớp tuyệt đối với backend/src/core/errors.js (10 giá trị). */
@@ -29,7 +30,21 @@ export class ApiError extends Error {
 
 type Envelope<T> = { ok: true; data: T; meta?: unknown } | { ok: false; error: { code: ErrorCode; message: string; details?: unknown } };
 
+/*
+ * IP LAN của máy dev đổi mỗi khi đổi mạng (wifi nhà, quán, hotspot...) -- gõ tay
+ * vào .env sẽ vỡ ngay khi đổi môi trường. Khi chạy dev qua Expo Go/dev client,
+ * Metro đã tự biết chính xác IP nó đang phục vụ (chính là IP hiện trong QR code
+ * / hostUri) nên suy ra host API từ đó thay vì đọc .env, chỉ giữ cổng qua env.
+ * Build production (không có Metro) thì bắt buộc phải khai EXPO_PUBLIC_API_URL.
+ */
 function getApiBaseUrl(): string {
+  const hostUri = Constants.expoConfig?.hostUri ?? Constants.expoGoConfig?.debuggerHost;
+  if (__DEV__ && hostUri) {
+    const devHost = hostUri.split(':')[0];
+    const apiPort = process.env.EXPO_PUBLIC_API_PORT || '3000';
+    return `http://${devHost}:${apiPort}/api`;
+  }
+
   const url = process.env.EXPO_PUBLIC_API_URL;
   if (!url) {
     throw new Error('EXPO_PUBLIC_API_URL chưa được cấu hình trong mobile/.env');
