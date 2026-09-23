@@ -1,4 +1,4 @@
-import { apiRequest } from './http';
+import { apiRequest, ApiError } from './http';
 import { setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from './tokenStore';
 
 export type ApiUser = {
@@ -21,11 +21,18 @@ type Session = {
   user: ApiUser;
 };
 
-async function persistSession(session: Session): Promise<void> {
+async function persistSession(session: Session, rememberMe: boolean): Promise<void> {
   setAccessToken(session.accessToken);
-  if (session.refreshToken) {
-    await setRefreshToken(session.refreshToken);
+
+  if (!session.refreshToken) {
+    throw new ApiError(
+      'INTERNAL_ERROR',
+      'Máy chủ không trả refresh token cho ứng dụng di động. Hãy kiểm tra AUTH_TRANSPORT của backend.',
+      500,
+    );
   }
+
+  await setRefreshToken(session.refreshToken, rememberMe);
 }
 
 export async function register(input: {
@@ -44,37 +51,82 @@ export async function login(input: {
   password: string;
   rememberMe?: boolean;
 }): Promise<Session> {
+  const rememberMe = input.rememberMe === true;
+
   const session = await apiRequest<Session>('/auth/login', {
     method: 'POST',
-    body: input,
+    body: { ...input, rememberMe },
     skipAuth: true,
   });
-  await persistSession(session);
+
+  await persistSession(session, rememberMe);
   return session;
 }
 
+let restoreInFlight: Promise<ApiUser | null> | null = null;
+
+/**
+ * Khôi phục phiên sau khi app mở lại.
+ *
+ * Chỉ token nằm trong SecureStore mới tồn tại qua restart, nên hàm này đồng nghĩa
+ * với việc khôi phục một phiên đã chọn "Ghi nhớ đăng nhập".
+ *
+ * Lỗi mạng tạm thời KHÔNG được phép xóa refresh token. Nếu backend chưa chạy hoặc
+ * BlueStacks vừa mất kết nối, AuthProvider sẽ giữ cached user và request sau có
+ * thể tự refresh lại khi mạng hoạt động.
+ */
 export async function restoreSession(): Promise<ApiUser | null> {
-  const refreshToken = await getRefreshToken();
-  if (!refreshToken) return null;
+  if (restoreInFlight) {
+    return restoreInFlight;
+  }
+
+  restoreInFlight = (async () => {
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) return null;
+
+    try {
+      const session = await apiRequest<Session>('/auth/refresh', {
+        method: 'POST',
+        body: { refreshToken },
+        skipAuth: true,
+      });
+
+      // Phiên có thể khôi phục được chỉ vì refresh token đã tồn tại từ SecureStore,
+      // vì vậy token xoay vòng mới cũng phải tiếp tục được lưu persistent.
+      setAccessToken(session.accessToken);
+      if (session.refreshToken) {
+        await setRefreshToken(session.refreshToken, true);
+      }
+
+      return session.user;
+    } catch (error) {
+      // Không biến một lỗi mạng tạm thời thành logout vĩnh viễn.
+      if (error instanceof ApiError && (error.code === 'UPSTREAM_ERROR' || error.status === 0)) {
+        throw error;
+      }
+
+      // Token thực sự không hợp lệ/hết hạn/bị revoke -> xóa phiên local.
+      await clearTokens();
+      return null;
+    }
+  })();
 
   try {
-    const session = await apiRequest<Session>('/auth/refresh', {
-      method: 'POST',
-      body: { refreshToken },
-      skipAuth: true,
-    });
-    await persistSession(session);
-    return session.user;
-  } catch {
-    await clearTokens();
-    return null;
+    return await restoreInFlight;
+  } finally {
+    restoreInFlight = null;
   }
 }
 
 export async function logout(): Promise<void> {
   const refreshToken = await getRefreshToken();
+
   try {
-    await apiRequest('/auth/logout', { method: 'POST', body: { refreshToken }, skipAuth: true });
+    await apiRequest('/auth/logout', {
+      method: 'POST',
+      body: { refreshToken },
+      skipAuth: true,
+    });
   } finally {
     await clearTokens();
   }

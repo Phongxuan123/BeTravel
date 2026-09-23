@@ -30,6 +30,7 @@ export default function LoginScreen() {
 
     setError(null);
     setLoading(true);
+
     try {
       await login(identifier.trim(), password, remember);
       router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
@@ -43,7 +44,11 @@ export default function LoginScreen() {
   return (
     <ScrollView
       className="flex-1 bg-surface"
-      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
+      contentContainerStyle={{
+        paddingHorizontal: 24,
+        paddingTop: insets.top + 16,
+        paddingBottom: insets.bottom + 24,
+      }}
       keyboardShouldPersistTaps="handled"
     >
       <View className="absolute -right-24 rounded-full bg-[#F0F5FD]" style={{ width: 340, height: 340, top: -60 }} />
@@ -65,6 +70,7 @@ export default function LoginScreen() {
           autoCapitalize="none"
           autoCorrect={false}
         />
+
         <TextField
           label="Mật khẩu"
           value={password}
@@ -85,12 +91,17 @@ export default function LoginScreen() {
         )}
 
         <View className="flex-row items-center justify-between">
-          <Pressable className="flex-row items-center" style={{ gap: 8 }} onPress={() => setRemember((v) => !v)}>
+          {/* Không lồng Checkbox (Pressable) bên trong một Pressable khác.
+              Hai Pressable lồng nhau có thể khiến một lần chạm bị xử lý hai lần. */}
+          <View className="flex-row items-center" style={{ gap: 8 }}>
             <Checkbox checked={remember} onChange={setRemember} accessibilityLabel="Ghi nhớ đăng nhập" />
-            <Text className="text-[15px] text-[#3B4A63]" numberOfLines={1}>
-              Ghi nhớ đăng nhập
-            </Text>
-          </Pressable>
+            <Pressable accessibilityRole="button" onPress={() => setRemember((value) => !value)} hitSlop={8}>
+              <Text className="text-[15px] text-[#3B4A63]" numberOfLines={1}>
+                Ghi nhớ đăng nhập
+              </Text>
+            </Pressable>
+          </View>
+
           <Pressable accessibilityRole="button" onPress={() => router.push('/forgot-password' as never)}>
             <Text className="text-[15px] font-body-bold text-primary">Quên mật khẩu?</Text>
           </Pressable>

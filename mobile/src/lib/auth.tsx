@@ -22,7 +22,11 @@ function toAuthUser(apiUser: authApi.ApiUser): AuthUser {
   return { name: apiUser.fullName, email: apiUser.email, phone: apiUser.phone || undefined };
 }
 
-function useMockAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) => void, isLoading: boolean): AuthContextValue {
+function useMockAuthValue(
+  user: AuthUser | null,
+  setUser: (u: AuthUser | null) => void,
+  isLoading: boolean,
+): AuthContextValue {
   return useMemo<AuthContextValue>(
     () => ({
       user,
@@ -55,7 +59,11 @@ function useMockAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) =
   );
 }
 
-function useRealAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) => void, isLoading: boolean): AuthContextValue {
+function useRealAuthValue(
+  user: AuthUser | null,
+  setUser: (u: AuthUser | null) => void,
+  isLoading: boolean,
+): AuthContextValue {
   return useMemo<AuthContextValue>(
     () => ({
       user,
@@ -64,6 +72,9 @@ function useRealAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) =
       login: async (identifier, password, rememberMe = false) => {
         const session = await authApi.login({ identifier, password, rememberMe });
         const nextUser = toAuthUser(session.user);
+
+        // authUser chỉ là cache để render nhanh/offline. Quyền khôi phục phiên thật
+        // vẫn do refresh token trong SecureStore quyết định.
         await setJSON(StorageKeys.authUser, nextUser);
         setUser(nextUser);
       },
@@ -76,6 +87,8 @@ function useRealAuthValue(user: AuthUser | null, setUser: (u: AuthUser | null) =
           confirmPassword: password,
           termsAccepted: true,
         });
+
+        // Sau đăng ký, app đang tự đăng nhập. Giữ hành vi hiện tại là nhớ phiên.
         const session = await authApi.login({ identifier: email, password, rememberMe: true });
         const nextUser = toAuthUser(session.user);
         await setJSON(StorageKeys.authUser, nextUser);
@@ -109,30 +122,65 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
+
     if (USE_MOCKS) {
       getJSON<AuthUser>(StorageKeys.authUser).then((saved) => {
+        if (cancelled) return;
         setUser(saved);
         setIsLoading(false);
       });
-      return;
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     (async () => {
       const cachedUser = await getJSON<AuthUser>(StorageKeys.authUser);
-      if (cachedUser) setUser(cachedUser);
 
-      const restoredUser = await authApi.restoreSession();
-      if (restoredUser) {
-        const nextUser = toAuthUser(restoredUser);
-        await setJSON(StorageKeys.authUser, nextUser);
-        setUser(nextUser);
-      } else if (cachedUser) {
-        await removeKey(StorageKeys.authUser);
-        setUser(null);
+      if (!cancelled && cachedUser) {
+        setUser(cachedUser);
       }
 
-      setIsLoading(false);
+      try {
+        const restoredUser = await authApi.restoreSession();
+
+        if (cancelled) return;
+
+        if (restoredUser) {
+          const nextUser = toAuthUser(restoredUser);
+          await setJSON(StorageKeys.authUser, nextUser);
+          if (!cancelled) setUser(nextUser);
+          return;
+        }
+
+        // Không có refresh token hoặc token đã hết hạn/revoke.
+        if (cachedUser) {
+          await removeKey(StorageKeys.authUser);
+        }
+        if (!cancelled) setUser(null);
+      } catch (error) {
+        // Lỗi mạng lúc app vừa mở không được biến thành logout. Nếu đây là phiên
+        // remembered, cachedUser vẫn cho UI giữ trạng thái đăng nhập; request API
+        // sau đó sẽ tự refresh khi backend/mạng hoạt động trở lại.
+        if (__DEV__) {
+          console.warn('[auth] Chưa thể khôi phục phiên vì lỗi kết nối', error);
+        }
+
+        if (!cancelled) {
+          setUser(cachedUser ?? null);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const mockValue = useMockAuthValue(user, setUser, isLoading);
