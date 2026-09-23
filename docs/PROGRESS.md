@@ -1,6 +1,6 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-23 · Phiên: B4 (RAG + guardrails)
+Cập nhật lần cuối: 2026-09-23 · Phiên: B5 (Chat mobile + feedback)
 
 | Batch | Trạng thái | Ngày | Ghi chú |
 |---|---|---|---|
@@ -8,7 +8,7 @@ Cập nhật lần cuối: 2026-09-23 · Phiên: B4 (RAG + guardrails)
 | B2 Content + Admin      | xong | 2026-09-22 | Models + admin API + máy trạng thái + admin SPA (Vite/React/TS/Tailwind) |
 | B3 Public content       | xong | 2026-09-22 | API công khai countries/topics/articles/search + trips thật, seed 4 nước + 6 chủ đề + 8 bài draft KR có nguồn thật, mobile nối API thật |
 | B4 RAG + guardrails     | xong | 2026-09-23 | Embedding/LLM provider (mock bắt buộc + Gemini/OpenAI), chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm, chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 |
-| B5 Chat + feedback      | chưa làm | | |
+| B5 Chat + feedback      | xong | 2026-09-23 | Mobile chat nối RAG thật (session/lịch sử/feedback/báo sai/marker bấm được/focusArticleId), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI, sửa 3 bug thật qua smoke test (mongoose deprecation, validateQuery không coerce được req.query, topFallbackQuestions null) |
 | B6 SOS                  | chưa làm | | |
 | B7 Incidents + dịch     | chưa làm | | |
 | B8 Alerts + profile     | chưa làm | | |
@@ -187,6 +187,57 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
     §4.1, không bắt buộc cho `.env` cục bộ khi đã có key thật hoạt động.
     Chi tiết ở "Đang vướng".
 
+### B5 (Chat mobile + feedback, 23/09/2026)
+
+34. **`askLegalAssistant()` giữ NGUYÊN kiểu trả về `Promise<ChatAnswer>`** (đúng
+    spec B5 mục 1) dù cần trả thêm `sessionId`/`messageId` cho màn hình dùng ở
+    feedback/báo sai — giải quyết bằng 2 getter riêng
+    `getActiveChatSessionId()`/`getLastChatMessageId()` (`lib/api/chat.ts`),
+    đọc ngay sau khi `askLegalAssistant()` resolve. An toàn vì mỗi lượt hỏi
+    luôn `await` tuần tự, input bị khoá trong lúc chờ — không có race.
+35. **Disclaimer bị lặp nếu không xử lý**: backend (`rag/guard.js`) gắn cố định
+    `\n\n---\n${DISCLAIMER}` vào CUỐI câu trả lời thật, còn màn hình chat đã có
+    disclaimer cố định riêng ở chân khung chat (spec mục 5). `chat.ts` cắt bỏ
+    khối này (`stripTrailingDisclaimer`) trước khi hiển thị, tránh hiện 2 lần.
+36. **Quản lý session bằng state module-level trong `lib/api/chat.ts`**, không
+    phải Context/Redux — mở màn hình chat tự tiếp tục phiên gần nhất của quốc
+    gia đang chọn (gọi `GET /chat/sessions`, lọc theo `countryCode`, lấy phiên
+    mới nhất vì backend đã sort `updatedAt desc`); CTA "Hỏi AI về bài này"
+    (có `focusArticleId`) luôn bắt đầu phiên MỚI thay vì tiếp tục phiên cũ,
+    vì câu hỏi đó tập trung vào 1 bài luật cụ thể, trộn vào lịch sử cũ sẽ gây
+    nhiễu ngữ cảnh.
+37. **Module feedback (`Feedback` model, `/api/feedback`, A08) TÁCH RIÊNG với
+    `ChatMessage.feedback`** (thumbs nhanh, không note, đã có từ B4) — thumbs
+    lên/xuống chỉ ghi 1 field, còn "Báo sai" cần note + vào hàng đợi cho đội
+    nội dung xem xét (câu hỏi, câu trả lời, chunk đã truy hồi kèm score).
+    `targetId` được xác minh thuộc đúng user gọi (qua `sessionId.userId`),
+    không tin client — chặn 1 user báo cáo/spam trên tin nhắn người khác.
+38. **`AiEvent` thêm field `question`** (lưu nguyên văn, không chỉ hash) — "Top
+    câu hỏi bị fallback" (A01 Dashboard) cần hiển thị được cho đội nội dung
+    đọc, hash một chiều không dùng được cho việc này.
+39. **[BUG THẬT, phát hiện qua smoke test Atlas] `validateQuery` middleware
+    không thực sự coerce được giá trị vào `req.query`** — thực nghiệm xác nhận
+    `req.query === req.query` là `false` trong Express bản đang dùng (mỗi lần
+    đọc `req.query` trả về MỘT OBJECT MỚI), nên `Object.assign(req.query, parsed)`
+    trong `validate.middleware.js` ghi vào một bản sao rồi mất ngay — controller
+    đọc `req.query` sau đó luôn thấy giá trị string gốc chưa qua coerce. Bug này
+    có từ B2 (dùng chung cho mọi `validateQuery`) nhưng vô hại tới giờ vì mọi
+    nơi khác hoặc tự parse lại (`pagination.js#parsePagination` dùng
+    `Number.parseInt` riêng) hoặc chỉ dùng field kiểu string. Lộ ra lần đầu ở
+    `GET /admin/analytics/overview?days=` (field `days` trả về `"7"` thay vì
+    `7`). Sửa CỤC BỘ trong `adminAnalytics.controller.js` (tự `Number()` lại,
+    không tin middleware) để không đụng vào file dùng chung — xem "Nợ kỹ thuật"
+    để sửa gốc ở B9.
+40. **[BUG THẬT] `topFallbackQuestions` hiện `question: null`** cho các
+    `AiEvent` cũ tạo TRƯỚC khi thêm field `question` (dữ liệu smoke test B4) —
+    filter `question: { $ne: "" }` không loại được trường hợp field bị THIẾU
+    HẲN (khác với rỗng). Sửa thành `{ $exists: true, $ne: "" }`.
+41. **Sửa 2 lần dùng `{ new: true }` (API cũ, phát cảnh báo deprecated) thành
+    `{ returnDocument: "after" }`** ở `chat.service.js#setMessageFeedback`
+    (file B5 có đụng tới, dù code cũ từ B4) và `feedback.service.js` mới, để
+    đồng bộ 1 kiểu trong cùng codebase thay vì để 2 API khác nhau cho cùng một
+    việc.
+
 ### Đợt rà soát tương tác toàn mobile (23/09/2026, ngoài lộ trình batch — người dùng yêu cầu trực tiếp: "kiểm tra lại từ đầu đến cuối, tìm và fix")
 
 Sau khi B3 nối API thật, người dùng phát hiện nhiều nút/chip không phản hồi
@@ -363,6 +414,13 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
 
 ## Nợ kỹ thuật
 
+- **[23/09/2026, phát hiện khi kiểm tra trước B5] `npx expo lint` báo 9 lỗi
+  `react-hooks/refs` trong `mobile/src/app/trips/new.tsx` (dòng 121, 123,
+  494)** — truy cập `.current` của ref lúc render trong nút xác nhận bước 4
+  của form tạo/sửa chuyến đi. Đã có từ PR #10 (trip-management), không liên
+  quan B4/B5, không chặn `npx tsc --noEmit` hay `npm test` (61/61 xanh). Để
+  nguyên vì đây là code người khác đang phát triển tính năng trips, không
+  thuộc phạm vi B5 — báo lại cho người phụ trách trips hoặc xử lý ở B9.
 - **[23/09/2026, sau đợt rà soát] 6/12 chỗ thiếu trạng thái lỗi mạng rõ ràng
   chưa xử lý** — `alerts/index.tsx` và `incidents/index.tsx` (còn 100% mock,
   rủi ro thấp vì mock không thể lỗi mạng thật), `settings/index.tsx` (danh
@@ -386,11 +444,24 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
   Google (không chỉ email), cần thêm hạng mục tích hợp `expo-auth-session` +
   OAuth client ID cho iOS/Android — ngoài phạm vi B1, cần thông tin từ Google
   Cloud Console.
-- **[GIẢI QUYẾT MỘT PHẦN ở B3]** `mobile/src/lib/data.ts`: countries/topics/
-  legal articles/search/trips đã đổi sang mẫu `USE_MOCKS ? mock.fn : real.fn`.
-  Phần còn lại (incidents/alerts/quick-phrases/support-locations/chat/
-  translate) vẫn 100% mock — sẽ đổi dần ở B5/B6/B7 khi backend có endpoint
-  tương ứng.
+- **[GIẢI QUYẾT MỘT PHẦN, B3 + B5]** `mobile/src/lib/data.ts`: countries/
+  topics/legal articles/search/trips (B3) và chat/feedback (B5) đã đổi sang
+  mẫu `USE_MOCKS ? mock.fn : real.fn`. Phần còn lại (incidents/alerts/
+  quick-phrases/support-locations/translate) vẫn 100% mock — sẽ đổi dần ở
+  B6/B7 khi backend có endpoint tương ứng.
+- **[23/09/2026, B5] `validateQuery` middleware (`middleware/validate.middleware.js`)
+  không thực sự coerce được giá trị vào `req.query`** — root cause: `req.query`
+  trả về MỘT OBJECT MỚI mỗi lần đọc trong Express bản đang dùng (`req.query ===
+  req.query` là `false`), nên cách sửa hiện tại (mutate field trong object đọc
+  được) ghi vào bản sao rồi mất ngay. Ảnh hưởng: MỌI endpoint dùng
+  `validateQuery` với field có `z.coerce.number()`/`z.coerce.date()` (page,
+  limit, days, from, to...) nhận về kiểu STRING thay vì đã coerce — vô hại tới
+  giờ vì `pagination.js#parsePagination` tự parse lại độc lập và Mongoose tự
+  cast string khi query, nhưng là bẫy cho code mới (đã lộ ra ở
+  `adminAnalytics.controller.js`, sửa cục bộ bằng `Number()` lại, xem quyết
+  định 39). Cần sửa TẬN GỐC ở B9 (Hardening) — ví dụ đổi cách tiếp cận sang
+  gán `req.query` qua `Object.defineProperty` hoặc để controller luôn tự đọc
+  giá trị đã coerce từ kết quả `schema.parse()` thay vì từ `req.query`.
 - **B3**: tính năng "đã lưu quy định" (`saved`/`savedOnly`) thuộc B8
   (favorites), chưa có API. `adaptArticle` luôn trả `saved:false`;
   `fetchArticles(..., {savedOnly:true})` ở `lib/api/content.ts` trả mảng rỗng

@@ -6,6 +6,8 @@ import {
   RiskLevel,
   SourceKind,
   CountryStatus,
+  FeedbackRating,
+  FeedbackStatusValues,
 } from "../core/constants.js";
 
 /*
@@ -188,4 +190,21 @@ export const ragReindexCountrySchema = z.object({
 
 export const ragStatusQuerySchema = z.object({
   countryCode: countryCodeSchema.optional(),
+});
+
+// ── Feedback queue (B5, A08) ────────────────────────────────────────────
+export const feedbackListQuerySchema = paginationQuerySchema.extend({
+  rating: z.enum(Object.values(FeedbackRating)).optional(),
+  status: z.enum(FeedbackStatusValues).optional(),
+  countryCode: countryCodeSchema.optional(),
+});
+
+export const feedbackStatusUpdateSchema = z.object({
+  status: z.enum(FeedbackStatusValues),
+  reviewerNote: z.string().trim().max(1000).optional(),
+});
+
+// ── Analytics (B5, A01 nang cap) ────────────────────────────────────────
+export const analyticsOverviewQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(90).optional(),
 });

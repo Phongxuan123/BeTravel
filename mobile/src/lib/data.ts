@@ -5,11 +5,15 @@
  * B1: auth đã nối API thật (qua lib/auth.tsx, không đi qua file này -- auth
  * có vòng đời riêng: token, refresh, khôi phục phiên).
  * B3: countries/topics/legal articles/search/trips đã nối API thật -- đổi
- * theo EXPO_PUBLIC_USE_MOCKS. Phần còn lại (incidents/alerts/sos/chat/
- * translate) vẫn 100% mock cho tới khi backend có endpoint tương ứng.
+ * theo EXPO_PUBLIC_USE_MOCKS.
+ * B5: chat + feedback đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
+ * Phần còn lại (incidents/alerts/sos/translate) vẫn 100% mock cho tới khi
+ * backend có endpoint tương ứng.
  */
 import * as mock from '@/mocks/client';
 import * as content from '@/lib/api/content';
+import * as chatApi from '@/lib/api/chat';
+import * as feedbackApi from '@/lib/api/feedback';
 
 // Cung quy uoc voi lib/auth.tsx: chi mock khi dat DUNG 'true', mac dinh la
 // API that (khac voi doc chu thich cu o day, da sua lai cho dung).
@@ -27,6 +31,18 @@ export const updateTrip = USE_MOCKS ? mock.updateTrip : content.updateTrip;
 export const setCurrentTrip = USE_MOCKS ? mock.setCurrentTrip : content.setCurrentTrip;
 export const deleteTrip = USE_MOCKS ? mock.deleteTrip : content.deleteTrip;
 
+export const askLegalAssistant = USE_MOCKS ? mock.askLegalAssistant : chatApi.askLegalAssistant;
+export const listChatSessions = USE_MOCKS ? mock.listChatSessions : chatApi.listChatSessions;
+export const createChatSession = USE_MOCKS ? mock.createChatSession : chatApi.createChatSession;
+export const deleteChatSession = USE_MOCKS ? mock.deleteChatSession : chatApi.deleteChatSession;
+export const loadChatSessionMessages = USE_MOCKS ? mock.loadChatSessionMessages : chatApi.loadChatSessionMessages;
+export const setChatMessageFeedback = USE_MOCKS ? mock.setChatMessageFeedback : chatApi.setChatMessageFeedback;
+export const reportWrongAnswer = USE_MOCKS ? mock.reportWrongAnswer : feedbackApi.reportWrongAnswer;
+export const startNewChatSession = USE_MOCKS ? (): void => {} : chatApi.startNewSession;
+export const setActiveChatSession = USE_MOCKS ? (_sessionId: string, _countryCode: string): void => {} : chatApi.setActiveSession;
+export const getActiveChatSessionId = USE_MOCKS ? mock.getActiveSessionId : chatApi.getActiveSessionId;
+export const getLastChatMessageId = USE_MOCKS ? mock.getLastMessageId : chatApi.getLastMessageId;
+
 export const {
   fetchIncidents,
   fetchIncident,
@@ -35,8 +51,7 @@ export const {
   markAllAlertsRead,
   fetchQuickPhrases,
   fetchSupportLocations,
-  askLegalAssistant,
   translateText,
 } = mock;
 
-export type { ChatAnswer } from '@/mocks/client';
+export type { ChatAnswer, ChatSession, ChatUiMessage } from '@/mocks/client';

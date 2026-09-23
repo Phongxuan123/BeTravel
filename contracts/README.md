@@ -395,19 +395,22 @@ voi `LegalArticle`), cong voi logic tuan tu o service layer. Goi
 `:id` khong thuoc ve user dang goi --> `404 NOT_FOUND` (khong lo ra `403`
 de tranh do thong tin ID cua nguoi khac ton tai).
 
-## 9. ENDPOINT CHAT AI — `/api/chat/*` (B4, can dang nhap)
+## 9. ENDPOINT CHAT AI — `/api/chat/*` (B4 backend + B5 mobile, can dang nhap)
 
-★ Chua co UI mobile (thuoc B5) -- muc nay chi ghi lai contract phia backend de
-B5 noi vao dung. Toan bo pipeline (retrieval + guard chong ao giac) xem
-`backend/src/rag/`, `docs/atlas-indexes.md`.
+Mobile noi qua `mobile/src/lib/api/chat.ts` (xem `mobile/src/app/chat/index.tsx`).
+Toan bo pipeline (retrieval + guard chong ao giac) xem `backend/src/rag/`,
+`docs/atlas-indexes.md`.
 
 ```
 GET    /chat/sessions                              200, danh sach phien CUA CHINH user
 POST   /chat/sessions            {countryCode}      201, tao phien moi
 DELETE /chat/sessions/:id                           200 { deleted: true }
 GET    /chat/sessions/:id/messages                  200, lich su tin nhan cua phien
-POST   /chat/sessions/:id/messages {question}        201 { sessionId, message } -- ★ TRA MOT LAN,
-                                                      KHONG STREAMING (master plan B.7)
+POST   /chat/sessions/:id/messages {question, focusArticleId?}  201 { sessionId, message } --
+                                                      ★ TRA MOT LAN, KHONG STREAMING (master plan B.7).
+                                                      focusArticleId (B5): CTA "Hoi AI ve bai nay" tu man
+                                                      hinh chi tiet bai luat -- uu tien chunk cua bai do
+                                                      trong RRF (xem rag/retrieval.js FOCUS_ARTICLE_WEIGHT).
 POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  200
 ```
 
@@ -415,7 +418,7 @@ POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  2
 ```jsonc
 {
   "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer",
-  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading", "authority", "effectiveFrom", "updatedAt" }],
+  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading" }],
   "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
   "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR"
   "confidence": "medium",
@@ -439,4 +442,48 @@ chi phi vi khong reset khi server restart.
 ```
 GET  /admin/rag/status?countryCode=            200, trang thai index tung bai published+isCurrent
 POST /admin/rag/reindex-country {countryCode}   200 { queued: N }, xep lai job reindex_article
+```
+
+## 11. ENDPOINT FEEDBACK — `/api/feedback` (B5, can dang nhap)
+
+Rieng voi thumbs nhanh o muc 9 (`ChatMessage.feedback`, khong note). Day la
+feedback CO NOTE, sinh tu nut "Bao sai" trong AnswerCard.tsx, vao hang doi A08
+cho admin xu ly. `targetId` phai la 1 `ChatMessage` role=assistant CUA CHINH
+user goi (backend xac minh qua `sessionId.userId`, khong tin client).
+
+```
+POST /feedback {targetType:'chat_message', targetId, rating:'up'|'down', note?, context?:{countryCode,question}}
+     201, { ..., status:'pending', reviewerId:null, reviewerNote:'' }
+```
+
+## 12. ENDPOINT ADMIN FEEDBACK — `/api/admin/feedback/*` (B5, A08, role admin)
+
+```
+GET   /admin/feedback?rating=&status=&countryCode=&page=&limit=   200, {data:[...], meta:{page,limit,total}}
+GET   /admin/feedback/:id                                          200, { feedback, message } --
+                                                                     message la ChatMessage lien quan
+                                                                     (text, citations, retrieval, model)
+                                                                     de reviewer thay LY DO AI tra loi vay
+PATCH /admin/feedback/:id {status:'pending'|'resolved'|'dismissed', reviewerNote?}  200
+```
+
+★ Feedback KHONG tu dong sua knowledge base -- doi trang thai chi de theo doi,
+sua bai luat (neu can) van la thao tac rieng qua `/admin/legal/articles/:id`.
+
+## 13. ENDPOINT ADMIN ANALYTICS — `/api/admin/analytics/overview` (B5, A01 nang cap, role admin)
+
+```
+GET /admin/analytics/overview?days=7   200
+```
+```jsonc
+{
+  "days": 7,
+  "totalChats": 42,
+  "fallbackCount": 10,
+  "fallbackRate": 0.238,
+  "avgLatencyMs": 1450,
+  "costEstimateUsd": 0,  // ★ luon 0 -- provider Gemini/OpenAI chua tra usage tokens, xem docs/PROGRESS.md muc "No ky thuat"
+  "pendingFeedbackCount": 3,
+  "topFallbackQuestions": [{ "question": "...", "count": 4 }]
+}
 ```

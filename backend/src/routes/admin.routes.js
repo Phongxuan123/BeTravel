@@ -11,6 +11,8 @@ import * as articlesController from "../controllers/adminArticles.controller.js"
 import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
 import * as ragController from "../controllers/adminRag.controller.js";
+import * as feedbackController from "../controllers/adminFeedback.controller.js";
+import * as analyticsController from "../controllers/adminAnalytics.controller.js";
 
 import {
   countryCreateSchema,
@@ -29,6 +31,9 @@ import {
   auditListQuerySchema,
   ragReindexCountrySchema,
   ragStatusQuerySchema,
+  feedbackListQuerySchema,
+  feedbackStatusUpdateSchema,
+  analyticsOverviewQuerySchema,
 } from "../validators/admin.validator.js";
 
 const router = express.Router();
@@ -74,5 +79,11 @@ router.get("/audit", validateQuery(auditListQuerySchema), auditController.list);
 
 router.post("/rag/reindex-country", validateBody(ragReindexCountrySchema), ragController.reindexCountry);
 router.get("/rag/status", validateQuery(ragStatusQuerySchema), ragController.status);
+
+router.get("/feedback", validateQuery(feedbackListQuerySchema), feedbackController.list);
+router.get("/feedback/:id", feedbackController.get);
+router.patch("/feedback/:id", validateBody(feedbackStatusUpdateSchema), feedbackController.updateStatus);
+
+router.get("/analytics/overview", validateQuery(analyticsOverviewQuerySchema), analyticsController.overview);
 
 export default router;
