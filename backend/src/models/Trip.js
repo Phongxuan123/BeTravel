@@ -15,6 +15,8 @@ const tripSchema = new mongoose.Schema(
     // tu thu do quoc gia (vi du KR != mac dinh Seoul).
     destinationCity: { type: String, required: true, trim: true, maxlength: 100 },
     destinationDetail: { type: String, trim: true, maxlength: 240, default: "" },
+    locationAlerts: { type: Boolean, default: true },
+    regulationAlerts: { type: Boolean, default: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     isCurrent: { type: Boolean, default: false },

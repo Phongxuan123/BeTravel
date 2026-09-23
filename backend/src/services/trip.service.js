@@ -27,6 +27,22 @@ const getOwnedTrip = async (userId, tripId) => {
  * 2 ban ghi isCurrent:true (partial unique index o Trip.js la lop phong thu
  * thu hai neu race dieu kien xay ra).
  */
+
+export const updateTrip = async (userId, tripId, data) => {
+  const trip = await getOwnedTrip(userId, tripId);
+
+  trip.countryCode = data.countryCode;
+  trip.destinationCity = data.destinationCity;
+  trip.destinationDetail = data.destinationDetail ?? "";
+  trip.startDate = data.startDate;
+  trip.endDate = data.endDate;
+  trip.locationAlerts = data.locationAlerts;
+  trip.regulationAlerts = data.regulationAlerts;
+
+  await trip.save();
+  return trip;
+};
+
 export const setCurrentTrip = async (userId, tripId) => {
   await getOwnedTrip(userId, tripId);
   await Trip.updateMany({ userId, isCurrent: true }, { $set: { isCurrent: false } });

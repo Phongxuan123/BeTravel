@@ -79,6 +79,8 @@ export const tripSchema = z.object({
   countryCode: z.string(),
   destinationCity: z.string(),
   destinationDetail: z.string().optional(),
+  locationAlerts: z.boolean().default(true),
+  regulationAlerts: z.boolean().default(true),
   startDate: z.string(),
   endDate: z.string(),
   isCurrent: z.boolean(),

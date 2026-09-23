@@ -44,7 +44,32 @@ export default function HomeScreen() {
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const alertsQuery = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
 
-  const currentTrip = tripsQuery.data?.data.find((t) => t.isCurrent);
+  const trips = tripsQuery.data?.data ?? [];
+  const today = now();
+  const ongoingTrips = trips.filter((trip) => {
+    const start = parseISODate(trip.startDate);
+    const end = parseISODate(trip.endDate);
+    return today >= start && today <= end;
+  });
+  const upcomingTrips = trips
+    .filter((trip) => today < parseISODate(trip.startDate))
+    .sort((a, b) => parseISODate(a.startDate).getTime() - parseISODate(b.startDate).getTime());
+  const pastTrips = trips
+    .filter((trip) => today > parseISODate(trip.endDate))
+    .sort((a, b) => parseISODate(b.endDate).getTime() - parseISODate(a.endDate).getTime());
+
+  // Ưu tiên đúng theo trạng thái thời gian: chuyến đang diễn ra trước. Nếu
+  // không có chuyến nào đang diễn ra thì hiển thị chuyến sắp tới gần nhất.
+  // isCurrent chỉ dùng làm tie-breaker trong cùng một nhóm, không được khiến
+  // một chuyến tương lai che mất chuyến đang diễn ra.
+  const currentTrip =
+    ongoingTrips.find((trip) => trip.isCurrent) ??
+    ongoingTrips[0] ??
+    upcomingTrips.find((trip) => trip.isCurrent) ??
+    upcomingTrips[0] ??
+    pastTrips.find((trip) => trip.isCurrent) ??
+    pastTrips[0];
+
   const countryCode = currentTrip?.countryCode ?? selectedCountryCode;
   const country = countriesQuery.data?.data.find((c) => c.code === countryCode) ?? selectedCountry;
   const articlesQuery = useQuery({
@@ -84,7 +109,7 @@ export default function HomeScreen() {
               <View className="mt-0.5 flex-row items-center" style={{ gap: 6 }}>
                 <CountryFlag code={countryCode} width={22} height={16} />
                 <Text className="text-[17px] font-body-bold text-ink">{country?.name}</Text>
-                <Badge label={currentTrip ? "Chuyến đi chính" : "Đang chọn"} tone="success" />
+                <Badge label={currentTrip ? (currentTrip.isCurrent ? "Chuyến đi chính" : "Theo lịch trình") : "Đang chọn"} tone="success" />
               </View>
             </View>
           </View>

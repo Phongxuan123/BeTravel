@@ -66,6 +66,8 @@ export type ApiTrip = {
   countryCode: string;
   destinationCity?: string;
   destinationDetail?: string;
+  locationAlerts?: boolean;
+  regulationAlerts?: boolean;
   startDate: string;
   endDate: string;
   isCurrent: boolean;
@@ -201,6 +203,8 @@ export function adaptTrip(api: ApiTrip): Trip {
     countryCode: api.countryCode,
     destinationCity: api.destinationCity ?? '',
     destinationDetail: api.destinationDetail ?? '',
+    locationAlerts: api.locationAlerts ?? true,
+    regulationAlerts: api.regulationAlerts ?? true,
     startDate: toDateOnly(api.startDate),
     endDate: toDateOnly(api.endDate),
     isCurrent: api.isCurrent,
