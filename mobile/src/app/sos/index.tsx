@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
@@ -34,7 +34,7 @@ export default function SosHubScreen() {
               accessibilityLabel="Tăng tương phản màn hình"
               variant="outline"
               icon={<Sun size={18} color={colors.ink} />}
-              onPress={() => Alert.alert('Tăng tương phản', 'Tính năng hỗ trợ hiển thị sẽ có ở bản cập nhật sau.')}
+              onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Tăng tương phản' } })}
             />
           </View>
 
@@ -44,7 +44,7 @@ export default function SosHubScreen() {
               {country.currentCity}
             </Text>
             <Pressable
-              onPress={() => Alert.alert('Cập nhật vị trí', 'Tự động xác định vị trí (GPS) sẽ có ở bản cập nhật sau.')}
+              onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Cập nhật vị trí (GPS)' } })}
             >
               <Text className="font-body-bold text-primary">Cập nhật</Text>
             </Pressable>

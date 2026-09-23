@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren, Search } from 'lucide-react-native';
@@ -24,7 +24,7 @@ export default function IncidentsScreen() {
             accessibilityLabel="Tìm sự cố"
             variant="soft"
             icon={<Search size={18} color={colors.primary} />}
-            onPress={() => Alert.alert('Tìm sự cố', 'Tính năng tìm kiếm trong danh sách sự cố sẽ có ở bản cập nhật sau.')}
+            onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Tìm sự cố' } })}
           />
         }
       />

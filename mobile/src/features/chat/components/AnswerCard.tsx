@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Linking, Alert } from 'react-native';
+import { View, Text, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { ThumbsUp, ThumbsDown, Flag, BookOpen, Phone } from 'lucide-react-native';
 import { Badge } from '@/components/ui/Badge';
@@ -86,10 +86,13 @@ export function AnswerCard({
             <Pressable
               className="h-11 flex-1 items-center justify-center rounded-md border border-line bg-surface"
               onPress={() =>
-                Alert.alert(
-                  'Xem chi tiết',
-                  'Liên kết trực tiếp tới bài luật trong Cẩm nang cho câu trả lời AI sẽ có ở bản cập nhật sau. Bạn có thể dùng "Xem nguồn" để đọc văn bản gốc ngay bây giờ.',
-                )
+                router.push({
+                  pathname: '/coming-soon',
+                  params: {
+                    title: 'Xem chi tiết',
+                    detail: 'Bạn có thể dùng "Xem nguồn" để đọc văn bản gốc ngay bây giờ.',
+                  },
+                })
               }
             >
               <Text className="font-body-semibold text-ink">Xem chi tiết</Text>
@@ -123,9 +126,7 @@ function FeedbackRow({ feedback, onFeedback, showReport }: { feedback?: 'up' | '
         <Pressable
           className="flex-row items-center rounded-md border border-danger-line bg-surface px-3 py-2.5"
           style={{ gap: 6 }}
-          onPress={() =>
-            Alert.alert('Báo sai câu trả lời', 'Tính năng gửi báo cáo cho đội ngũ nội dung sẽ có ở bản cập nhật sau.')
-          }
+          onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Báo sai câu trả lời' } })}
         >
           <Flag size={16} color={colors.danger} />
           <Text className="text-[15px] font-body-bold text-danger">Báo sai</Text>

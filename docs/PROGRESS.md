@@ -1,6 +1,6 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-23 · Phiên: B3 + đợt rà soát tương tác toàn mobile (ngoài lộ trình batch, theo yêu cầu trực tiếp)
+Cập nhật lần cuối: 2026-09-23 · Phiên: B3 + đợt rà soát tương tác toàn mobile + màn chặn "đang hoàn thiện" (ngoài lộ trình batch, theo yêu cầu trực tiếp)
 
 | Batch | Trạng thái | Ngày | Ghi chú |
 |---|---|---|---|
@@ -261,6 +261,24 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
   với `EXPO_PUBLIC_USE_MOCKS=false` và thử qua: xem Home/Explore quốc gia KR,
   tạo chuyến đi (thử chọn JP để thấy trạng thái "Sắp ra mắt"), tìm kiếm
   "qua han" sau khi publish thử 1 bài qua Admin Portal.
+
+## Quyết định phát sinh (tiếp)
+
+25. **[23/09/2026, theo yêu cầu trực tiếp] Thêm màn chặn dùng chung
+    `ComingSoonScreen` (route `app/coming-soon.tsx`) thay cho `Alert.alert`
+    rời rạc ở 6 điểm tính năng chưa triển khai** — lý do: Alert biến mất ngay
+    sau khi đóng, không rõ ràng bằng một màn hình riêng khi cần phân biệt
+    "đã xong" và "đang làm" trong lúc test. Thông điệp cố định: "Tính năng
+    đang trong quá trình nâng cấp và hoàn thiện." Áp dụng cho: lịch sử phiên
+    chat (`chat/index.tsx`), tìm trong danh sách sự cố (`incidents/index.tsx`),
+    tăng tương phản + cập nhật vị trí GPS (`sos/index.tsx`), "Xem chi tiết"
+    + "Báo sai" ở câu trả lời AI (`features/chat/components/AnswerCard.tsx`).
+    Không áp dụng cho toàn bộ màn hình nào (không có màn hình nào ở mobile
+    hiện tại là "hoàn toàn chưa làm" — 21 màn hình đều chạy được, chỉ một số
+    nút/thao tác lẻ bên trong là stub) — chỉ áp dụng đúng ở các nút stub đã
+    liệt kê. `login-phone.tsx` KHÔNG còn là màn chặn tĩnh — PR #8
+    (`feature/backend`, merge sau phiên B3) đã làm thật đăng nhập bằng số
+    điện thoại, ghi đè quyết định B1 cũ (mục 2 ở trên, nay đã lỗi thời).
 
 ## Nợ kỹ thuật
 
