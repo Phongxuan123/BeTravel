@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, MessageCircle, Send, TriangleAlert } from 'lucide-react-native';
@@ -80,7 +80,7 @@ export default function ChatScreen() {
             accessibilityLabel="Lịch sử phiên chat"
             variant="outline"
             icon={<Clock size={18} color={colors.ink} />}
-            onPress={() => Alert.alert('Lịch sử phiên chat', 'Tính năng đang phát triển, sẽ có ở bản cập nhật sau.')}
+            onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Lịch sử phiên chat' } })}
           />
         }
       />
