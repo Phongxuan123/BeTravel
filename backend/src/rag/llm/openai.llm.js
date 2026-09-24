@@ -1,3 +1,5 @@
+import { env } from "../../core/env.js";
+
 const API_URL = "https://api.openai.com/v1/chat/completions";
 
 // Provider du phong (master plan B.6) -- dung khi Gemini het quota/tam ngung.
@@ -12,6 +14,7 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
     async complete({ systemPrompt, userPrompt }) {
       const res = await fetch(API_URL, {
         method: "POST",
+        signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           model,

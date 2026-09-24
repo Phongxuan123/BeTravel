@@ -7,6 +7,10 @@ import mongoose from "mongoose";
  * cho Vector Search / Atlas Search ở B4 trở đi.
  */
 process.env.NODE_ENV = "test";
+// Cô lập test khỏi provider thật và dịch vụ ngoài, kể cả shell có sẵn env.
+process.env.LLM_PROVIDER = "mock";
+process.env.EMBEDDING_PROVIDER = "mock";
+process.env.SEARCH_DRIVER = "memory";
 process.env.JWT_ACCESS_SECRET ??= "test-only-secret-please-change-in-real-env";
 process.env.AUTH_TRANSPORT ??= "both";
 // Nhỏ có chủ đích: env.js đóng băng giá trị này lúc import đầu tiên nên test

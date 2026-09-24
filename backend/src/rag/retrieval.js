@@ -11,10 +11,14 @@ const FOCUS_ARTICLE_WEIGHT = 0.5;
 const VECTOR_WEIGHT = 0.7;
 const KEYWORD_WEIGHT = 0.3;
 
-async function fetchFocusArticleChunks(focusArticleId) {
+async function fetchFocusArticleChunks(focusArticleId, countryCode) {
   if (!focusArticleId) return [];
 
-  const chunks = await LegalChunk.find({ articleId: focusArticleId, status: ContentStatus.PUBLISHED })
+  const chunks = await LegalChunk.find({
+    articleId: focusArticleId,
+    countryCode,
+    status: ContentStatus.PUBLISHED,
+  })
     .sort({ order: 1 })
     .lean();
 
@@ -40,7 +44,7 @@ async function fetchFocusArticleChunks(focusArticleId) {
  * published + isCurrent, va lay luon sources/title de dung citation
  * (CLAUDE.md muc 4.2, buoc 2).
  */
-async function verifyAgainstArticles(chunks) {
+async function verifyAgainstArticles(chunks, countryCode) {
   const articleIds = [...new Set(chunks.map((c) => c.articleId))];
   if (articleIds.length === 0) return { verifiedChunks: [], articleById: new Map() };
 
@@ -48,12 +52,15 @@ async function verifyAgainstArticles(chunks) {
     _id: { $in: articleIds },
     status: ContentStatus.PUBLISHED,
     isCurrent: true,
+    countryCode,
   })
-    .select("title sources effectiveFrom updatedAt")
+    .select("title sources effectiveFrom updatedAt version")
     .lean();
 
   const articleById = new Map(articles.map((a) => [String(a._id), a]));
-  const verifiedChunks = chunks.filter((c) => articleById.has(c.articleId));
+  const verifiedChunks = chunks.filter(
+    (c) => articleById.get(c.articleId)?.version === c.articleVersion,
+  );
 
   return { verifiedChunks, articleById };
 }
@@ -62,6 +69,7 @@ function toCitation(chunk, article, marker) {
   const primarySource = article.sources?.[0];
   return {
     marker,
+    chunkId: String(chunk._id),
     articleId: chunk.articleId,
     articleSlug: chunk.articleSlug,
     title: article.title,
@@ -95,26 +103,43 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
 
   // ★ Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
   // (fusedScore chi co y nghia tuong doi giua cac chunk, khong tuyet doi).
-  const topScore = vectorHits[0]?.score ?? 0;
-  const countAboveSoft = vectorHits.filter((h) => h.score >= env.RAG_MIN_SOFT_SCORE).length;
+  // Chunk bị gỡ không được góp điểm giúp tập bằng chứng vượt ngưỡng.
+  const { verifiedChunks: verifiedVectorHits } = await verifyAgainstArticles(
+    vectorHits,
+    countryCode,
+  );
+  const topScore = verifiedVectorHits[0]?.score ?? 0;
+  const countAboveSoft = verifiedVectorHits.filter((h) => h.score >= env.RAG_MIN_SOFT_SCORE).length;
   const passed = topScore >= env.RAG_MIN_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
 
   if (!passed) {
-    return { passed: false, reason: FallbackReason.INSUFFICIENT_EVIDENCE, topScore, chunks: [], retrievedMap: new Map() };
+    return {
+      passed: false,
+      reason: FallbackReason.INSUFFICIENT_EVIDENCE,
+      topScore,
+      chunks: [],
+      retrievedMap: new Map(),
+    };
   }
 
-  const focusChunks = await fetchFocusArticleChunks(focusArticleId);
+  const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
   const fusedLists = [
-    { items: vectorHits, weight: VECTOR_WEIGHT },
+    { items: verifiedVectorHits, weight: VECTOR_WEIGHT },
     { items: keywordHits, weight: KEYWORD_WEIGHT },
     ...(focusChunks.length ? [{ items: focusChunks, weight: FOCUS_ARTICLE_WEIGHT }] : []),
   ];
   const fused = rrf(fusedLists).slice(0, env.RAG_TOP_K);
 
-  const { verifiedChunks, articleById } = await verifyAgainstArticles(fused);
+  const { verifiedChunks, articleById } = await verifyAgainstArticles(fused, countryCode);
 
   if (verifiedChunks.length === 0) {
-    return { passed: false, reason: FallbackReason.INSUFFICIENT_EVIDENCE, topScore, chunks: [], retrievedMap: new Map() };
+    return {
+      passed: false,
+      reason: FallbackReason.INSUFFICIENT_EVIDENCE,
+      topScore,
+      chunks: [],
+      retrievedMap: new Map(),
+    };
   }
 
   const retrievedMap = new Map();

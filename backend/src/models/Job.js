@@ -23,6 +23,7 @@ const jobSchema = new mongoose.Schema(
     maxAttempts: { type: Number, default: 3 },
 
     lastError: { type: String, default: "" },
+    lockToken: { type: String, default: null },
     lockedAt: { type: Date, default: null },
     runAt: { type: Date, default: Date.now }, // cho phep lui lich retry
   },

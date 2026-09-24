@@ -1,20 +1,119 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-24 · Phiên: B6 (SOS locations + map)
+Cập nhật lần cuối: 2026-09-24 · Phiên: rà soát và sửa lỗi toàn hệ thống
+Nhánh: `feature/system-audit-fixes`.
 
-| Batch | Trạng thái | Ngày | Ghi chú |
-|---|---|---|---|
-| B1 Auth thật            | xong | 2026-09-22 | Envelope {ok,data}, auth thật nối mobile, refresh xoay vòng + ân hạn |
-| B2 Content + Admin      | xong | 2026-09-22 | Models + admin API + máy trạng thái + admin SPA (Vite/React/TS/Tailwind) |
-| B3 Public content       | xong | 2026-09-22 | API công khai countries/topics/articles/search + trips thật, seed 4 nước + 6 chủ đề + 8 bài draft KR có nguồn thật, mobile nối API thật |
-| B4 RAG + guardrails     | xong | 2026-09-23 | Embedding/LLM provider (mock bắt buộc + Gemini/OpenAI), chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm, chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 |
-| B5 Chat + feedback      | xong | 2026-09-23 | Mobile chat nối RAG thật (session/lịch sử/feedback/báo sai/marker bấm được/focusArticleId), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI, sửa 3 bug thật qua smoke test (mongoose deprecation, validateQuery không coerce được req.query, topFallbackQuestions null) |
-| B6 SOS                  | xong một phần | 2026-09-24 | Backend $geoNear thật + admin CRUD/bulk import/verify + mobile map/hub nối API thật đều XONG và đã smoke test thật trên Atlas. **Còn thiếu 1 điều kiện nghiệm thu của master plan**: chưa có `support_locations` nào đã verify trong DB thật (không tự bịa toạ độ GPS — rủi ro an toàn). Xem "Đang vướng". |
-| B7 Incidents + dịch     | chưa làm | | |
-| B8 Alerts + profile     | chưa làm | | |
-| B9 Hardening            | chưa làm | | |
+## Trạng thái hiện hành — đọc mục này trước
 
-Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một phần`
+Các quyết định phía cuối là lịch sử theo ngày, không phải danh sách việc còn lỗi.
+Kết luận mới ở phần này thay thế những ghi chú cũ mâu thuẫn với mã nguồn.
+
+| Batch | Trạng thái | Ghi chú |
+|---|---|---|
+| B1 Auth thật | xong | Email hoặc số điện thoại + mật khẩu; refresh rotation, kiểm quyền hiện hành |
+| B2 Content + Admin | xong | Kiểm duyệt, version, chống ghi đè, lọc HTML preview |
+| B3 Public content + trips | xong | API thật, contract fixtures |
+| B4 RAG + guardrails | xong | Truy hồi, cache theo bằng chứng, quota nguyên tử, fallback, golden test |
+| B5 Chat + feedback | xong | Mobile đã có UI/API chat, feedback và lịch sử |
+| B6 SOS | xong một phần | Mã nguồn đã triển khai; còn cần dữ liệu địa điểm được người phụ trách xác minh |
+| B7 Incidents + dịch | chưa làm | UI còn mock; chưa triển khai backend của batch này |
+| B8 Alerts + profile/favorites | chưa làm | Alerts mock; liên hệ/giấy tờ/favorites cục bộ, đã tách tài khoản |
+| B9 Hardening, build, demo/deploy | xong một phần | Đã sửa lỗi và kiểm tra bundle; chưa ký native build, triển khai, kịch bản demo |
+| Rà soát 24/09 | xong | Các lỗi phát hiện trong phạm vi đã sửa và có kiểm tra; phần cần dữ liệu/thiết bị được tách riêng |
+
+Tiến độ đợt rà soát: `[######] 6/6` — khảo sát, tái hiện, sửa, kiểm thử,
+kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phần trăm hoàn thành toàn sản phẩm.
+
+## Kết quả kiểm tra phiên 24/09
+
+- Backend: lint sạch; 110/110 test, bao gồm 25 ca golden KR và hồi quy mới.
+- Mobile: lint/typecheck sạch; 74/74 test; Expo Doctor 21/21.
+- Admin: lint/typecheck sạch; 8/8 test; production build thành công.
+- Expo export iOS và Android: thành công, output tạm ngoài repo.
+- Dependency: backend/admin 0 advisory; mobile đã vá 15 cảnh báo phụ thuộc từ
+  2 advisory gốc (`uuid`, `decode-uri-component`), npm install báo 0 vulnerability.
+- Không dùng DB Atlas thật, không gọi AI trả phí, không seed/publish dữ liệu trong phiên.
+- Export bundle không tương đương thử GPS/cuộc gọi/MapView trên điện thoại hay EAS build đã ký.
+
+## Những thay đổi cần người/AI tiếp theo biết
+
+1. Giữ kiến trúc ba workspace độc lập, Express/service/model, Expo Router và
+   design system hiện có. Đây là đợt sửa lỗi được người dùng yêu cầu trực tiếp;
+   không triển khai thay B7/B8, không coi thiếu dữ liệu thật là lỗi cần tự bịa.
+2. `validateQuery` dùng property riêng trên request để giữ kết quả Zod; bỏ
+   cách mutate getter Express 5. JSON/ID sai trả 400; xung đột DB trả 409.
+3. Backend kiểm role/isActive hiện tại trong DB ở mỗi request được xác thực.
+   Refresh chỉ một request thắng CAS; OTP/reset token dùng một lần và không
+   mở khóa tài khoản đã vô hiệu hóa. Client giữ token khi mạng/5xx tạm lỗi.
+4. Quota global chuyển sang `aiquotas` (khóa ngày UTC, TTL); khởi tạo theo
+   AiEvent đã có trong ngày để không reset ngân sách khi triển khai. User quota
+   vẫn ở `users.aiUsage`. Cả hai tăng có điều kiện nguyên tử tại DB.
+5. Job có lease token, heartbeat, nhận lại job `running` quá hạn, giới hạn
+   attempts và backoff. Job không có handler báo failed, không giả thành công.
+6. RAG giới hạn focusArticle cùng quốc gia; kiểm bài/phiên bản trước khi tính
+   ngưỡng. Cache dùng chunkId, marker có thứ tự, nội dung, updatedAt, model;
+   tự kiểm expiresAt và upsert khi request đồng thời. Giữ confidence/needsOfficialHelp.
+7. Lỗi embedding/search cũng trả fallback. Các request provider có timeout
+   `AI_PROVIDER_TIMEOUT_MS=30000` (đã thêm .env.example). Guard so số tiền
+   với nguồn được dẫn và chặn khối định lượng thiếu marker; vẫn không phải
+   bộ chứng minh ngữ nghĩa pháp lý, không hứa chính xác tuyệt đối.
+8. Bài đã publish/supersede/archive không sửa nội dung trực tiếp: tạo bản nháp
+   mới hoặc đổi về trạng thái biên tập. Quốc gia/slug không đổi giữa phiên bản.
+   Điều kiện updatedAt đi cùng lệnh ghi DB. Admin giải thích ngay tại nút lưu.
+9. CSV kiểm từng dòng bằng cùng schema tạo địa điểm; dòng sai không hỏng cả
+   file. PATCH không được xóa hết phone/website. Nguồn/website chỉ HTTP(S).
+10. Admin dùng DOMPurify sau Markdown; bản nháp chia theo tài khoản/bài,
+    không autosave đè bản đang chờ khôi phục, remount khi đổi bài. Query cache
+    được xóa khi đổi tài khoản ở cả admin/mobile.
+11. Mobile sửa refs khi render ở form chuyến đi. Favorites/liên hệ/giấy tờ
+    lưu theo email + mode mock/real và chia sẻ state giữa màn hình.
+    Khóa local cũ không có chủ sở hữu không tự chuyển sang tài khoản đang mở
+    (tránh gán nhầm dữ liệu). Không xóa dữ liệu cũ; chưa có đồng bộ cloud.
+12. SOS không báo mở cửa/chia sẻ vị trí giả; không chỉ đường tới 0,0 khi thiếu
+    tọa độ; dùng địa chỉ có sẵn hoặc vô hiệu hóa thao tác thiếu dữ liệu. Thông
+    báo xin GPS nói đúng việc gửi tọa độ tới API tìm điểm gần, không theo dõi nền.
+    Cache tách bộ lọc và tính lại khoảng cách khi người dùng di chuyển.
+13. Quốc gia mặc định chọn từ dữ liệu active, không hard-code JP. URL API được
+    khai báo rõ sẽ ưu tiên cả dev; bỏ URL để suy IP LAN từ Metro. Node >=22.13.
+14. Mobile giữ Expo 57/React 19.2.3. Pin test-renderer 1.2.0 (React 19.2),
+    override uuid 11.1.1 và decoder 0.5.0. `patch-package` sửa đúng một dòng
+    CommonJS query-string để đọc `.default` của decoder ESM; postinstall tự áp.
+    Jest cho phép transform decoder. Có test parse/stringify và bundle thật.
+15. Đính chính tài liệu cũ: `login-phone.tsx` hiện đăng nhập bằng số điện thoại
+    + mật khẩu thật; OTP SMS và Google UI chưa làm. Chat và SOS đã nối API.
+
+## Đang vướng — cần dữ liệu, tài khoản hoặc thiết bị thật
+
+- Theo sổ B6 trước phiên này, chưa có điểm SOS thật đã xác minh; cần người
+  phụ trách cung cấp tọa độ, số liên lạc, xác minh địa điểm/giờ mở cửa.
+  Mẫu: `docs/sos-locations-template.csv`. Không suy đoán để điền cho đủ.
+- Kho pháp lý KR cần rà soát chuyên môn, bổ sung nguồn/ngày hiệu lực và duyệt
+  các bài draft. Số lượng trong sổ lịch sử chưa được truy vấn lại trên Atlas.
+- Google OAuth/SMTP/Android Maps key và cấu hình quota cần kiểm chứng trên
+  tài khoản dịch vụ thực tế trước phát hành. Không in hay thay secret trong phiên.
+- Tên database trong MONGODB_URI cần người sở hữu xác nhận nếu muốn đổi;
+  giữ nguyên cấu hình đang có, không di chuyển dữ liệu.
+- Cần nghiệm thu người dùng trên thiết bị thật: gọi điện, GPS/từ chối quyền,
+  MapView khi mất mạng và thao tác soạn/khôi phục bản nháp trong trình duyệt.
+
+## Giới hạn còn lại / công việc tiếp theo
+
+- B7/B8 là tính năng chưa triển khai, không phải hồi quy của đợt sửa lỗi.
+- Chat chưa dùng lịch sử làm ngữ cảnh multi-turn; chi phí/tokens analytics
+  chưa tích hợp usage thật. Tìm kiếm công khai còn regex trên bài, chưa thay
+  bằng Atlas Search. Không đánh dấu các hạng mục này là đã hoàn thành.
+- Atlas Search/Vector Search không chạy được trên MongoDB memory test;
+  cần kiểm chứng index thật khi triển khai. Golden mock kiểm pipeline,
+  không đo chất lượng hay độ chính xác của model thật.
+- Lưu trữ cục bộ chưa mã hóa giấy tờ theo cơ chế vault; hiện chỉ lưu trạng
+  thái/ghi chú như phạm vi MVP, không ảnh tài liệu. Chưa đồng bộ nhiều máy.
+- Sau khi dữ liệu B6 đủ: nghiệm thu B6, rồi B7/B8. B9 còn demo/deploy,
+  build ký và kiểm tra người dùng thực tế; không coi bundle export là APK/IPA.
+
+## Lịch sử quyết định (giữ để truy vết)
+
+Các ghi chú "mới", "chưa có", "đang vướng" dưới đây thuộc thời điểm lịch sử.
+Đọc trạng thái hiện hành phía trên trước khi lên kế hoạch.
 
 ## Quyết định phát sinh
 
@@ -349,130 +448,6 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
     cố. 6 chỗ còn lại (Alerts, Incidents danh sách, Settings/Trips-cards đọc
     quốc gia trong picker) CHƯA làm — xem "Nợ kỹ thuật".
 
-## Đang vướng
-
-- **[B6, MỚI] Chưa có `support_locations` nào đã VERIFY trong DB thật —
-  master plan (`docs/00_...` mục B.6/dòng "B6 không nghiệm thu được nếu chưa
-  có support_locations đã verify") coi đây là điều kiện nghiệm thu bắt buộc.**
-  Toàn bộ pipeline (backend `$geoNear`, admin CRUD/bulk import/bulk verify,
-  mobile map/hub) đã XONG và đã smoke test thật trên Atlas (tạo — xác minh —
-  xoá dữ liệu test, xem quyết định 42-53) — chỉ riêng dữ liệu THẬT thì chưa có
-  vì KHÔNG được tự đoán toạ độ GPS (nếu sai, tính năng SOS chỉ sai đường tới
-  đại sứ quán/bệnh viện đúng lúc khẩn cấp — không phải rủi ro có thể chấp
-  nhận được để tiết kiệm thời gian). Đã chuẩn bị sẵn
-  `docs/sos-locations-template.csv` với tên/địa chỉ/SĐT ĐÃ CÓ NGUỒN thật của
-  Đại sứ quán VN tại Seoul (lấy lại từ `scripts/seed-content.js#COUNTRIES`,
-  cùng nguồn `docs/06_Legal_Content_Seed_KR.md`), chỉ để trống cột `lat`/`lng`.
-  **Việc cần người làm**: mở Google Maps/Naver Map, tra toạ độ thật của tối
-  thiểu vài điểm quan trọng (đại sứ quán, 1-2 bệnh viện, đồn công an gần khu
-  du khách hay tới ở Seoul), điền vào file CSV, rồi vào Admin Portal →
-  "Điểm hỗ trợ" → nút "Nhập CSV" để tải lên; sau đó tick chọn các điểm đã gọi
-  điện xác minh thật rồi bấm "Xác minh đã chọn". Không cần biết code.
-- **[B4, ĐÃ XONG] Smoke test Gemini thật đã xác nhận chạy đúng end-to-end**
-  (2026-09-23) — key mới (`AIzaSy...`, đúng định dạng REST API key) hoạt động.
-  Phát hiện thêm: `LLM_MODEL=gemini-2.5-flash` (giá trị mặc định cũ trong
-  `.env.example`) bị Google trả `404 NOT_FOUND` với key mới ("no longer
-  available to new users"), đã đổi default sang `gemini-3.6-flash` ở cả
-  `backend/.env` và `backend/.env.example`. Đã reindex 2 bài KR bằng
-  `gemini-embedding-001` thật (`POST /api/admin/rag/reindex-country`), gửi
-  câu hỏi thật qua `/api/chat/sessions/:id/messages` — trả lời đúng, trích
-  dẫn đúng bài (`[S3][S4][S7]`), guard không phải can thiệp (không có marker
-  bịa/tuyên bố không nguồn). `.env` hiện để `LLM_PROVIDER=gemini` +
-  `EMBEDDING_PROVIDER=gemini` (dùng AI thật cho dev thực tế); test/golden
-  test KHÔNG bị ảnh hưởng vì ép override bằng `__setLlmProviderForTest`/
-  `__setEmbeddingProviderForTest` trong code, không đọc từ `.env` — đã chạy
-  lại `npm run test` (78/78) và `npm run test:golden` (25/25) sau khi đổi,
-  vẫn xanh. Gặp 1 lần lỗi `503 UNAVAILABLE` (Google quá tải tạm thời, không
-  phải bug) khi gọi LLM lần đầu — retry thành công ngay sau đó; guard đã xử lý
-  đúng bằng cách hạ xuống `fallbackReason:PROVIDER_ERROR` thay vì crash, đúng
-  thiết kế.
-- **[B4, MỚI] Chat backend đã xong nhưng CHƯA có UI mobile** (đúng phạm vi
-  B4 — UI chat thuộc B5). `/api/chat/*` đã có thể gọi thẳng qua Postman/curl
-  để demo cho giảng viên nếu cần trước khi làm B5.
-- **[B3, ĐÃ SEED, 2/8 ĐÃ PUBLISH theo yêu cầu người dùng] Đã có 8 bài luật KR
-  có nguồn thật trong Atlas** (chạy `npm run seed` — idempotent, chạy lại
-  không tạo trùng), theo đúng nội dung `docs/06_Legal_Content_Seed_KR.md`:
-  nhập cảnh/visa (K-ETA vs C-3), quá hạn lưu trú, bằng lái nước ngoài/IDP, ma
-  túy (cảnh báo, thiếu trích dẫn điều luật — ưu tiên thấp nhất để publish),
-  hải quan, lao động EPS/lương tối thiểu 2026, số khẩn cấp, mất hộ chiếu/Đại
-  sứ quán VN tại Seoul.
-  **Trạng thái hiện tại (23/09/2026):** 2 bài đã `published` theo yêu cầu
-  trực tiếp của người dùng để xem app với dữ liệu thật ngay — `qua-han-luu-tru`
-  (Nhập cảnh) và `lao-dong-eps-luong-toi-thieu` (Lao động), cả hai đều đủ
-  điều kiện CƠ HỌC (có `effectiveFrom` + ít nhất 1 nguồn đủ url/authority/
-  publishedAt). **Đây KHÔNG đồng nghĩa nội dung đã được người có chuyên môn
-  kiểm chứng đầy đủ** — chỉ là đủ điều kiện kỹ thuật để xuất bản, một số
-  nguồn trong 2 bài này vẫn là `kind:'secondary'` (xem `foreignerNotes` từng
-  bài) — nên đối chiếu lại với `.go.kr` khi có thời gian. 6 bài còn lại vẫn
-  `draft`, thiếu `effectiveFrom` hoặc nguồn có ngày công bố — cần người
-  (CPO/nhóm nội dung) bổ sung qua Admin Portal trước khi publish được.
-  **[CẬP NHẬT B4]** `bodyMd` cả 8 bài đã được viết lại có cấu trúc heading
-  (không còn là bản sao `summaryVi`) — đủ để chunk cho RAG, xem quyết định
-  31. Đã xác nhận thật qua Atlas: cả 2 bài
-  xuất hiện đúng ở `/api/legal/articles`, `/api/legal/articles/KR/:slug`, và
-  đếm đúng ở `/api/legal/topics` (Nhập cảnh: 1, Lao động: 1). Vẫn KHÔNG thay
-  thế việc thu thập đủ 15–20 bài luật KR ở Phần D.2
-  `00_BeTravel_MasterPlan_v2.md`.
-- **[B3, MỚI] `JP`/`TH`/`SG` seed với `status:'coming_soon'` và `embassy: {}`
-  rỗng** (chỉ có `emergencyNumbers` — đây là kiến thức phổ thông đã kiểm
-  chứng, không phải dữ liệu pháp lý cần nguồn riêng). Khi nhóm nội dung mở
-  một trong ba nước này, cần bổ sung `embassy.address/phone` thật qua Admin
-  Portal (Countries) trước khi đổi `status` sang `active`.
-- **[B3, MỚI] Embassy KR trong seed lấy theo nguồn của bài `mat-ho-chieu-ho-tro-cong-dan`**
-  (`123 Bukchon-ro, Jongno-gu, Seoul`), khác địa chỉ cũ trong mock UI trước đây
-  (`28 Dongbinggo-ro, Yongsan-gu, Seoul`). Chưa có tọa độ `lat/lng` đã kiểm
-  chứng cho địa chỉ mới — để trống thay vì đoán; cần người điền qua Admin
-  Portal nếu bản đồ đại sứ quán cần hiển thị chính xác (dùng ở B6/B8).
-
-- **`backend/.env` đã được điền** (MONGODB_URI Atlas thật) và đã SMOKE TEST
-  THÀNH CÔNG bằng `curl` thật: register → login → `/me` → refresh xoay vòng →
-  replay trong cửa sổ ân hạn, cả 5 bước đều đúng kỳ vọng trên Atlas thật (dữ
-  liệu test đã được dọn sạch khỏi DB sau khi xong). Vẫn CHƯA chạy qua Expo Go
-  trên thiết bị/emulator thật (cần `EXPO_PUBLIC_API_URL` trỏ IP LAN từ máy
-  chạy Expo) — người cần tự kiểm bước cuối này.
-- **[!] `MONGODB_URI` trong `.env` hiện không có tên database trong URI**
-  (`.../` thay vì `.../WDPPROJECT01`) → Mongoose tự nối vào database mặc định
-  tên **`test`**, không phải `WDPPROJECT01` như tài liệu mô tả
-  (`docs/00_BeTravel_MasterPlan_v2.md` Phần F). Không tự sửa vì đây có thể là
-  chủ đích (ví dụ đang dùng chung cluster cho môi trường dev/test khác) — cần
-  người xác nhận: nếu muốn đúng `WDPPROJECT01`, thêm `/WDPPROJECT01` vào cuối
-  URI trước dấu `?`.
-- **Google Client ID / SMTP**: chưa rõ đã điền hay chưa trong `.env` mới — các
-  luồng Google login và quên mật khẩu giữ nguyên logic cũ (B1 chỉ đổi envelope
-  bọc ngoài), chưa có test tích hợp riêng cho hai luồng này.
-- **B2: chưa click-test admin SPA trong trình duyệt thật.** Không có công cụ
-  trình duyệt (headless hay có giao diện) trong phiên làm việc này. Đã xác
-  minh: `tsc -b` sạch, `vite build` thành công, `oxlint` sạch (1 warning chấp
-  nhận được), mọi file `.tsx` compile qua Vite dev transform không lỗi cú
-  pháp/import, và toàn bộ API phía sau (login, CRUD, publish, CORS với origin
-  `localhost:5173`) đã smoke test thật bằng `curl` trên Atlas. Nhưng hành vi
-  React runtime thực tế (state, re-render, form UX, bản đồ Leaflet hiển thị
-  đúng vị trí click...) **chưa được người dùng hoặc công cụ trình duyệt xác
-  nhận trực tiếp**. Đề nghị người dùng tự chạy `cd admin && npm run dev` và
-  thử qua ít nhất luồng: đăng nhập → tạo quốc gia → tạo chủ đề → soạn bài
-  luật → thêm nguồn → xuất bản → xem lại nhật ký.
-- **[GIẢI QUYẾT MỘT PHẦN ở B3]** DoD B2 dòng cuối ("nhập thử 1 bài luật KR
-  thật từ đầu đến publish") — đã smoke test bằng `curl` với NỘI DUNG THẬT
-  (bài `qua-han-luu-tru` trong seed B3, có nguồn `.go.kr` thật, publish →
-  xuất hiện đúng ở API công khai → revert lại `draft`). Vẫn CHƯA có ai thao
-  tác qua giao diện Admin Portal thật (chuột/bàn phím qua trình duyệt) — vẫn
-  cần người tự làm ít nhất 1 lần qua UI để xác nhận trải nghiệm soạn thảo
-  (autosave, markdown preview, StatusBar) hoạt động đúng, không chỉ API phía
-  sau.
-- **[B3, MỚI] Chưa click-test mobile app qua Expo Go/emulator thật với API
-  thật trong phiên này** — không có công cụ chạy React Native/thiết bị ảo
-  trong môi trường làm việc. Đã xác minh: `tsc --noEmit` sạch, `expo lint`
-  sạch, 61 test Jest xanh (bao gồm test đối chiếu `contracts/fixtures/` mới
-  cho countries/topics/articles/search/trips), và toàn bộ 8 endpoint mới đã
-  smoke test thật bằng `curl` trên Atlas (bao gồm CRUD trips, publish/revert
-  1 bài luật). Nhưng hành vi runtime thật trên mobile (loading/empty/error
-  state hiển thị đúng, ô "Sắp ra mắt" ở bước 1 tạo chuyến đi không cho chọn
-  được, Explore/Search hiển thị đúng dữ liệu KR) **chưa được xác nhận trực
-  tiếp qua Expo Go**. Đề nghị người dùng chạy `cd mobile && npx expo start -c`
-  với `EXPO_PUBLIC_USE_MOCKS=false` và thử qua: xem Home/Explore quốc gia KR,
-  tạo chuyến đi (thử chọn JP để thấy trạng thái "Sắp ra mắt"), tìm kiếm
-  "qua han" sau khi publish thử 1 bài qua Admin Portal.
-
 ## Quyết định phát sinh (tiếp)
 
 25. **[23/09/2026, theo yêu cầu trực tiếp] Thêm màn chặn dùng chung
@@ -490,118 +465,3 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
     liệt kê. `login-phone.tsx` KHÔNG còn là màn chặn tĩnh — PR #8
     (`feature/backend`, merge sau phiên B3) đã làm thật đăng nhập bằng số
     điện thoại, ghi đè quyết định B1 cũ (mục 2 ở trên, nay đã lỗi thời).
-
-## Nợ kỹ thuật
-
-- **[24/09/2026, B6] "Từ chối GPS → chọn thành phố/khu vực thủ công" được
-  đơn giản hoá thành "xem toàn bộ quốc gia"**, không phải picker chọn từng
-  thành phố/khu vực cụ thể như văn bản gốc prompt B6 mục 10 gợi ý — quyết định
-  phạm vi có chủ đích (một picker thành phố đầy đủ là tính năng riêng, không
-  chỉ vài dòng code), vẫn thoả DoD "vẫn dùng được qua chọn thủ công".
-- **[24/09/2026, B6] `sos/index.tsx`: `openTime`/`closeTime` của đại sứ quán
-  vẫn để rỗng, badge "Đang mở cửa" vẫn hard-code `true`** — không thuộc phạm
-  vi B6 (B6 chỉ giải quyết phần `distanceKm`, xem quyết định 50); cần biết
-  giờ mở cửa thật của đại sứ quán để làm đúng, đây vẫn là dữ liệu chưa có
-  nguồn (giống các field khác đã ghi ở quyết định 17).
-- **[24/09/2026, B6] Nút "Tăng tương phản" ở SOS Hub vẫn là màn chặn
-  `ComingSoonScreen`** — tính năng accessibility riêng, không thuộc phạm vi
-  SOS locations của B6.
-- **[24/09/2026, B6] `ErrorBoundary` quanh `MapView` chưa test được với lỗi
-  native THẬT** (ví dụ thiết bị thiếu Google Play Services) — chỉ xác nhận
-  đúng cơ chế React (`getDerivedStateFromError`) bằng đọc code, DoD yêu cầu
-  "test bằng cách ngắt mạng" chủ yếu kiểm chứng được ở tầng DỮ LIỆU (cache
-  AsyncStorage + banner ngoại tuyến, đã test thật), không phải tầng MapView
-  tự crash — react-native-maps thường không throw JS error khi mất mạng, chỉ
-  hiện bản đồ trống, native module thật sự lỗi là tình huống hiếm cần thiết
-  bị thật để test (không mô phỏng được trong môi trường phát triển này).
-- **[23/09/2026, phát hiện khi kiểm tra trước B5] `npx expo lint` báo 9 lỗi
-  `react-hooks/refs` trong `mobile/src/app/trips/new.tsx` (dòng 121, 123,
-  494)** — truy cập `.current` của ref lúc render trong nút xác nhận bước 4
-  của form tạo/sửa chuyến đi. Đã có từ PR #10 (trip-management), không liên
-  quan B4/B5, không chặn `npx tsc --noEmit` hay `npm test` (61/61 xanh). Để
-  nguyên vì đây là code người khác đang phát triển tính năng trips, không
-  thuộc phạm vi B5 — báo lại cho người phụ trách trips hoặc xử lý ở B9.
-- **[23/09/2026, sau đợt rà soát] 6/12 chỗ thiếu trạng thái lỗi mạng rõ ràng
-  chưa xử lý** — `alerts/index.tsx` và `incidents/index.tsx` (còn 100% mock,
-  rủi ro thấp vì mock không thể lỗi mạng thật), `settings/index.tsx` (danh
-  sách quốc gia trong picker chọn mặc định im lặng rỗng nếu lỗi), và
-  `trips/index.tsx` (`countriesQuery` bên trong từng thẻ chuyến đi — lỗi thì
-  thẻ tự ẩn thay vì báo, chấp nhận được vì không crash, chỉ mất một thẻ).
-  Không chặn vì đều là suy giảm nhẹ nhàng (graceful), không phải treo màn
-  hình hay crash — nên ưu tiên thấp hơn 26 vấn đề đã xử lý cùng đợt.
-- **[23/09/2026] "Lưu quy định" (favorites) hiện là tính năng cục bộ
-  (AsyncStorage), không đồng bộ giữa các thiết bị/khi cài lại app** — B8 cần
-  thay bằng API thật (`/api/users/favorites` hoặc tương tự) và di chuyển dữ
-  liệu cũ trong AsyncStorage lên server khi user đăng nhập, không chỉ thêm
-  API mới song song.
-- **[BUG DA SUA]** `src/config/db.js` import sai đường dẫn (`./env.js` thay vì
-  `../core/env.js`) khiến `npm run dev` crash ngay khi khởi động — không bị
-  test bắt vì test tích hợp kết nối DB trực tiếp qua `test/setup.js`, không đi
-  qua `connectDB()`. Phát hiện khi chạy smoke test thật, đã sửa và xác minh
-  lại bằng `npm run dev` + curl thật.
-- Mobile CHƯA có UI "Đăng nhập bằng Google" (backend đã hỗ trợ `/auth/google`
-  từ trước B1). Nếu muốn `login-phone.tsx` thật sự hướng người dùng sang
-  Google (không chỉ email), cần thêm hạng mục tích hợp `expo-auth-session` +
-  OAuth client ID cho iOS/Android — ngoài phạm vi B1, cần thông tin từ Google
-  Cloud Console.
-- **[GIẢI QUYẾT MỘT PHẦN, B3 + B5]** `mobile/src/lib/data.ts`: countries/
-  topics/legal articles/search/trips (B3) và chat/feedback (B5) đã đổi sang
-  mẫu `USE_MOCKS ? mock.fn : real.fn`. Phần còn lại (incidents/alerts/
-  quick-phrases/support-locations/translate) vẫn 100% mock — sẽ đổi dần ở
-  B6/B7 khi backend có endpoint tương ứng.
-- **[23/09/2026, B5] `validateQuery` middleware (`middleware/validate.middleware.js`)
-  không thực sự coerce được giá trị vào `req.query`** — root cause: `req.query`
-  trả về MỘT OBJECT MỚI mỗi lần đọc trong Express bản đang dùng (`req.query ===
-  req.query` là `false`), nên cách sửa hiện tại (mutate field trong object đọc
-  được) ghi vào bản sao rồi mất ngay. Ảnh hưởng: MỌI endpoint dùng
-  `validateQuery` với field có `z.coerce.number()`/`z.coerce.date()` (page,
-  limit, days, from, to...) nhận về kiểu STRING thay vì đã coerce — vô hại tới
-  giờ vì `pagination.js#parsePagination` tự parse lại độc lập và Mongoose tự
-  cast string khi query, nhưng là bẫy cho code mới (đã lộ ra ở
-  `adminAnalytics.controller.js`, sửa cục bộ bằng `Number()` lại, xem quyết
-  định 39). Cần sửa TẬN GỐC ở B9 (Hardening) — ví dụ đổi cách tiếp cận sang
-  gán `req.query` qua `Object.defineProperty` hoặc để controller luôn tự đọc
-  giá trị đã coerce từ kết quả `schema.parse()` thay vì từ `req.query`.
-- **B3**: tính năng "đã lưu quy định" (`saved`/`savedOnly`) thuộc B8
-  (favorites), chưa có API. `adaptArticle` luôn trả `saved:false`;
-  `fetchArticles(..., {savedOnly:true})` ở `lib/api/content.ts` trả mảng rỗng
-  ngay (không gọi API) để tránh vỡ màn hình Explore khi bấm nút "Đã lưu" —
-  cần thay bằng truy vấn thật khi B8 có API favorites.
-- **B3**: `publicContent.service.js#searchArticles` dùng `$regex` không có
-  index hỗ trợ tốt (chỉ có index thường trên `titleNorm`, không phải text/
-  Atlas Search index) — đủ nhanh với vài chục bài hiện tại, nhưng sẽ chậm dần
-  khi số bài tăng. Đây CHÍNH LÀ điểm B4 sẽ thay bằng Atlas Search trên
-  `legal_chunks` (đã ghi rõ trong code + `contracts/README.md` mục 8.2),
-  không phải nợ kỹ thuật cần xử lý riêng.
-- **[XONG Ở B4]** ~~B2: job worker handler rỗng~~ — `reindex_article`/
-  `purge_chunks` đã có handler thật (`rag/jobs/`), đã smoke test qua Atlas.
-- **[B4, MỚI] `AtlasSearchDriver` (`rag/search/atlas.driver.js`) CHƯA có test
-  tự động** — không chạy được trên `mongodb-memory-server` (không hỗ trợ
-  `$vectorSearch`/`$search`), chỉ xác minh được bằng tay trên Atlas thật sau
-  khi tạo 2 index (`docs/atlas-indexes.md`). `MemorySearchDriver` (dùng trong
-  toàn bộ test + golden test) có test đầy đủ và cùng shape kết quả, nhưng
-  không chứng minh được cú pháp aggregation `$vectorSearch`/`$search` đúng
-  100% cho tới khi chạy thật trên Atlas với index đã ACTIVE.
-- **[B4, MỚI] `chat.service.js` không dùng lịch sử hội thoại (multi-turn)
-  khi build prompt** — mỗi câu hỏi được xử lý độc lập (không có "câu trên nói
-  gì"). Phù hợp cho MVP (câu hỏi pháp lý thường độc lập) nhưng nếu B5 cần hỏi
-  nối tiếp kiểu "còn với trường hợp X thì sao?", cần thêm ngữ cảnh hội thoại
-  vào `buildUserPrompt`.
-- **[B4, MỚI] `promptTokens`/`completionTokens`/`costEstimateUsd` trong
-  `ChatMessage`/`AiEvent` luôn là 0** — provider Gemini/OpenAI trả về usage
-  metadata thật (`usageMetadata`/`usage` trong response) nhưng chưa được đọc
-  và lưu lại. Không chặn chức năng (chỉ là telemetry), nên làm khi cần đối
-  soát chi phí thật.
-- **[B4, MỚI] `AiCache` không phân biệt user** — cache theo
-  `sha256(question+country+chunkIds)` dùng chung cho MỌI user hỏi cùng câu
-  với cùng ngữ cảnh, đúng theo thiết kế (`docs/03_Contracts_v2.md` mục 11).
-  Đây là quyết định có chủ đích (câu trả lời pháp lý không phụ thuộc vào
-  danh tính người hỏi), không phải sơ suất.
-- **B2**: `admin/` chưa có test cho từng trang React (chỉ có test đối chiếu
-  contract ở `lib/schemas.ts`). Với quy mô B2 (form CRUD, không có logic phức
-  tạp phía client — máy trạng thái thật nằm ở backend đã có test), chấp nhận
-  đánh đổi này để không kéo dài batch quá mức; nên bổ sung test component
-  (React Testing Library) nếu về sau `admin/` có thêm logic phía client.
-- Google login (`googleLogin`, `linkGoogle`) và quên mật khẩu chưa có test
-  tích hợp — B1 chỉ đổi envelope bọc ngoài, logic nghiệp vụ giữ nguyên từ
-  trước, rủi ro thấp nhưng nên bổ sung test khi có `GOOGLE_CLIENT_ID`/SMTP thật.

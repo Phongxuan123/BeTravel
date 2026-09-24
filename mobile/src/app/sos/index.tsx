@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -18,14 +18,18 @@ import { useState } from 'react';
 export default function SosHubScreen() {
   const insets = useSafeAreaInsets();
   const { country } = useCountry();
-  const [shareLocation, setShareLocation] = useState(true);
   const [currentCity, setCurrentCity] = useState('');
   const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
   const [locatingGps, setLocatingGps] = useState(false);
 
   if (!country) return null;
 
-  const isOpen = true; // giờ mở cửa đại sứ quán — tính theo dữ liệu, mock luôn "đang mở"
+  const hasEmbassyCoordinates = Number.isFinite(country.embassy.lat) &&
+    Number.isFinite(country.embassy.lng) && (country.embassy.lat !== 0 || country.embassy.lng !== 0);
+  const embassyQuery = hasEmbassyCoordinates
+    ? `${country.embassy.lat},${country.embassy.lng}` : country.embassy.address;
+  const openLink = (url: string) => Linking.openURL(url).catch(() =>
+    Alert.alert('Không mở được ứng dụng', 'Vui lòng thử lại hoặc gọi trực tiếp số hiển thị.'));
 
   const updateLocation = async () => {
     setLocatingGps(true);
@@ -33,13 +37,15 @@ export default function SosHubScreen() {
       const coords = await requestLocationWithExplanation();
       if (!coords) return;
 
-      if (country.embassy.lat && country.embassy.lng) {
+      if (hasEmbassyCoordinates) {
         setEmbassyDistanceKm(haversineKm(coords.latitude, coords.longitude, country.embassy.lat, country.embassy.lng));
       }
 
       const [place] = await Location.reverseGeocodeAsync({ latitude: coords.latitude, longitude: coords.longitude });
       const city = place?.city || place?.subregion || place?.region;
       if (city) setCurrentCity(city);
+    } catch {
+      Alert.alert('Chưa xác định được vị trí', 'Bạn vẫn có thể gọi hỗ trợ hoặc xem bản đồ theo quốc gia.');
     } finally {
       setLocatingGps(false);
     }
@@ -81,7 +87,7 @@ export default function SosHubScreen() {
             </Text>
             <Pressable
               className="mt-4 h-[58px] flex-row items-center justify-center gap-2 rounded-lg bg-white"
-              onPress={() => Linking.openURL(`tel:${country.emergencyNumbers.police}`)}
+              disabled={!country.emergencyNumbers.police} onPress={() => openLink(`tel:${country.emergencyNumbers.police}`)}
               accessibilityLabel={`Gọi cảnh sát số ${country.emergencyNumbers.police}`}
             >
               <Phone size={20} color={colors.danger} />
@@ -103,7 +109,7 @@ export default function SosHubScreen() {
             </View>
             <Text className="mt-2 text-sm text-muted">{country.embassy.address}</Text>
             <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
-              {isOpen ? <Badge label="● Đang mở cửa" tone="success" /> : <Badge label={`Đã đóng cửa · mở lúc ${country.embassy.openTime}`} tone="neutral" />}
+              <Badge label="Gọi để xác nhận giờ mở cửa" tone="neutral" />
               {embassyDistanceKm !== null && (
                 <Text className="text-sm text-muted">
                   Cách bạn {embassyDistanceKm < 1 ? `${Math.round(embassyDistanceKm * 1000)} m` : `${embassyDistanceKm.toFixed(1)} km`}
@@ -111,13 +117,13 @@ export default function SosHubScreen() {
               )}
             </View>
             <View className="mt-3 flex-row" style={{ gap: 10 }}>
-              <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" onPress={() => Linking.openURL(`tel:${country.embassy.phone}`)}>
+              <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" disabled={!country.embassy.phone} onPress={() => openLink(`tel:${country.embassy.phone}`)}>
                 <Phone size={18} color="#fff" />
                 <Text className="font-body-bold text-white">Gọi ngay</Text>
               </Pressable>
               <Pressable
                 className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md border border-line bg-surface"
-                onPress={() => Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${country.embassy.lat},${country.embassy.lng}`)}
+                disabled={!embassyQuery} onPress={() => openLink(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(embassyQuery)}`)}
               >
                 <MapPin size={18} color={colors.ink} />
                 <Text className="font-body-semibold text-ink">Chỉ đường</Text>
@@ -131,9 +137,9 @@ export default function SosHubScreen() {
             </IconTile>
             <View className="flex-1">
               <Text className="text-base font-body-bold text-ink">Chia sẻ vị trí với người thân</Text>
-              <Text className="text-[13px] text-muted">2 liên hệ khẩn cấp đang theo dõi</Text>
+              <Text className="text-[13px] text-muted">Tính năng đang phát triển</Text>
             </View>
-            <Switch value={shareLocation} onValueChange={setShareLocation} accessibilityLabel="Chia sẻ vị trí với người thân" />
+            <Switch value={false} onValueChange={() => router.push({ pathname: '/coming-soon', params: { title: 'Chia sẻ vị trí' } })} accessibilityLabel="Chia sẻ vị trí với người thân" />
           </View>
 
           <View className="mt-6">
@@ -152,13 +158,13 @@ export default function SosHubScreen() {
 function ServiceTile({ label, number, tone, icon }: { label: string; number: string; tone: 'red' | 'orange' | 'blue'; icon: React.ReactNode }) {
   const textColor = tone === 'red' ? colors.danger : tone === 'orange' ? colors.warning : colors.primary;
   return (
-    <Pressable onPress={() => Linking.openURL(`tel:${number}`)} className="h-[104px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface">
+    <Pressable disabled={!number} onPress={() => Linking.openURL(`tel:${number}`).catch(() => Alert.alert('Không gọi được', `Vui lòng gọi trực tiếp số ${number}.`))} className="h-[104px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface">
       <IconTile tone={tone} size={36}>
         {icon}
       </IconTile>
       <Text className="text-[14px] font-body-bold text-ink">{label}</Text>
       <Text className="text-base font-body-bold" style={{ color: textColor }}>
-        {number}
+        {number || 'Chưa có số'}
       </Text>
     </Pressable>
   );

@@ -1,4 +1,8 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
+> Trạng thái hiện hành: xem mục **Rà soát toàn hệ thống 24/09/2026** bên dưới
+> và `PROGRESS.md`. Các mục B1–B6 là lịch sử; không dùng những dòng tồn đọng
+> cũ để kết luận một lỗi vẫn còn sau phiên 24/09.
+
 
 Phiên bản : v0.2.0 --> v0.5.0
 Cập nhật  : 22/09/2026
@@ -281,6 +285,126 @@ Thực hiện : Claude Code
 - `ErrorBoundary` quanh `MapView` chưa test được với lỗi native thật (chỉ xác nhận đúng cơ chế React qua đọc code).
 - `openTime`/`closeTime` đại sứ quán vẫn để rỗng (chưa có nguồn thật, ngoài phạm vi B6).
 
+## Rà soát toàn hệ thống 24/09/2026
+
+Phạm vi: sửa lỗi được người dùng yêu cầu trực tiếp, giữ kiến trúc và bố cục
+mobile. Không thực hiện nâng cấp tính năng B7/B8 hay sửa dữ liệu Atlas thật.
+Nhánh `feature/system-audit-fixes`; xem `git show --stat` và diff commit của
+phiên này để đối chiếu, không sao chép toàn bộ mã trước/sau vào báo cáo.
+
+### Chẩn đoán và phương án đã chọn
+
+| Nhóm | Triệu chứng / nguyên nhân | Phương án và rủi ro được kiểm soát |
+|---|---|---|
+| Môi trường/W3/W5 | Admin thiếu tool, mobile thiếu expo-location; renderer kéo React 19.3; 15 advisory từ 2 dependency | Cài lockfile/Expo; pin renderer 1.2, uuid 11.1.1, decoder 0.5 + patch interop một dòng. Không downgrade Expo theo audit --force. Test + bundle + Expo Doctor kiểm tương thích |
+| API | Getter req.query bỏ kết quả coerce; input lỗi thành 500 | Property query đã parse; error mapper 400/409; test Express thật |
+| Xác thực/W5 | JWT giữ role cũ; refresh/reset đọc-rồi-save bị race; mất mạng bị logout | Kiểm user hiện hành, CAS token, reset một lần, giữ token khi lỗi tạm; test đồng thời và khóa tài khoản |
+| Quota | Request đồng thời cùng thấy quota còn trống | Bộ đếm ngày global và user tăng có điều kiện; không cần transaction/Redis; có test 8 request tranh lượt cuối |
+| Worker | Chỉ lấy pending, running bị gián đoạn kẹt mãi; thiếu handler báo done | Lease token + heartbeat + nhận lại running quá hạn + giới hạn retry; test hai worker |
+| Nội dung | Hai PATCH cùng updatedAt có thể ghi đè; sửa published không reindex | OCC tại lệnh ghi; nội dung published đi qua version nháp; giữ hook normalize của Mongoose |
+| RAG/W5 | Focus khác nước, chunk cũ góp ngưỡng, cache không xét TTL/ID/nội dung, mất metadata | Kiểm lại nguồn/version trước ngưỡng; cache theo bằng chứng có thứ tự; giữ metadata, fallback/timeout. Golden và test không lọt draft/superseded |
+| Guard | Một marker hợp lệ bảo chứng nhầm cho mức tiền bịa hoặc câu phía sau | Đối chiếu số tiền với nguồn của từng khối có marker; bảo thủ có thể từ chối thêm. Không tuyên bố kiểm chứng ngữ nghĩa tuyệt đối |
+| SOS | Badge mở cửa/chia sẻ giả; URL 0,0; GPS disclosure sai; cache trộn filter | Hiển thị tình trạng chưa xác nhận; dùng địa chỉ đã có; không giả định dữ liệu. Cache theo filter, tính lại khoảng cách |
+| CSV | Zod validate toàn mảng làm một dòng hỏng cả file; PATCH xóa hết liên hệ | safeParse từng dòng, trả skipped; kiểm trạng thái ghép khi PATCH; giữ nguyên lý do lỗi tọa độ cũ |
+| Admin/W5 | Raw HTML preview có thể chạy script; bản nháp bị ghi đè/chung tài khoản | DOMPurify sau Markdown; tách key draft và remount theo bài, chờ quyết định restore; test XSS trong jsdom |
+| Mobile state | Ref đọc trong render, dữ liệu user A còn cho user B, favorites lệch màn hình | State có guard; clear cache theo danh tính; local query theo email/mode; không tự gán dữ liệu legacy không biết chủ |
+
+### Chi tiết file
+
+| File | Rule áp dụng | Thay đổi / kiểm tra |
+|---|---|---|
+| `README.md` | 7, 11, 13 | Node tối thiểu, URL API và trạng thái hardening hiện hành |
+| `admin/package-lock.json` | 7, 11, 13 | Khóa dependency; audit 0 advisory |
+| `admin/package.json` | 7, 11, 13 | DOMPurify runtime; jsdom chỉ dev cho test XSS |
+| `admin/src/components/Layout.tsx` | 7, 11, 13 | Cập nhật import hook xác thực sau khi tách Fast Refresh |
+| `admin/src/components/ProtectedRoute.tsx` | 7, 11, 13 | Cập nhật import hook xác thực sau khi tách Fast Refresh |
+| `admin/src/lib/__tests__/markdown.test.ts` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `admin/src/lib/apiClient.ts` | 7, 11, 13 | Refresh mạng lỗi không xóa phiên |
+| `admin/src/lib/auth.ts` | 7, 11, 13 | Single-flight khôi phục phiên StrictMode; chỉ xóa token đã vô hiệu |
+| `admin/src/lib/authContext.tsx` | 7, 11, 13 | Clear cache khi đổi user; logout local trong finally; tách hook Fast Refresh |
+| `admin/src/lib/authState.ts` | 7, 11, 13 | Context/type riêng khỏi file component |
+| `admin/src/lib/markdown.ts` | 7, 11, 13 | Sanitize sau parse Markdown, profile HTML |
+| `admin/src/lib/useAuth.ts` | 7, 11, 13 | Hook riêng, loại warning Fast Refresh |
+| `admin/src/pages/ArticleEditorPage.tsx` | 7, 11, 13 | Preview an toàn; bảo vệ nháp theo user/bài, không ghi đè nháp chờ restore; hướng dẫn tạo version |
+| `admin/src/pages/LoginPage.tsx` | 7, 11, 13 | Cập nhật import hook xác thực sau khi tách Fast Refresh |
+| `backend/.env.example` | 7, 11, 13 | Thêm AI_PROVIDER_TIMEOUT_MS, không chứa secret |
+| `backend/src/controllers/publicSupportLocation.controller.js` | 7, 11, 13 | Bỏ workaround Number() sau khi sửa query middleware |
+| `backend/src/core/env.js` | 7, 11, 13 | Timeout provider hợp lệ; model mặc định đồng nhất .env.example |
+| `backend/src/middleware/auth.middleware.js` | 7, 11, 13 | Đọc role/isActive hiện hành; JWT cũ không giữ quyền đã thu hồi |
+| `backend/src/middleware/error.middleware.js` | 7, 11, 13 | Map JSON lỗi, CastError, duplicate/OCC thành 400/409 |
+| `backend/src/middleware/validate.middleware.js` | 7, 11, 13 | Giữ Zod query bằng property thay getter Express |
+| `backend/src/models/AiQuota.js` | 7, 11, 13 | Bộ đếm global theo ngày UTC với _id duy nhất và TTL |
+| `backend/src/models/Job.js` | 7, 11, 13 | Thêm lockToken chống worker cũ ghi đè worker mới |
+| `backend/src/rag/embedding/gemini.embedding.js` | 7, 11, 13 | Timeout request provider lấy từ env; không đổi model API hay thêm SDK |
+| `backend/src/rag/embedding/openai.embedding.js` | 7, 11, 13 | Timeout request provider lấy từ env; không đổi model API hay thêm SDK |
+| `backend/src/rag/guard.js` | 7, 11, 13 | Kiểm số tiền với nguồn và marker theo khối; bỏ emoji disclaimer |
+| `backend/src/rag/jobs/purgeChunks.job.js` | 7, 11, 13 | Không purge bài đã publish lại vì job cũ |
+| `backend/src/rag/jobs/reindexArticle.job.js` | 7, 11, 13 | Bỏ job draft/cũ; xác minh lại trạng thái và hình dạng vector trước ghi |
+| `backend/src/rag/llm/gemini.llm.js` | 7, 11, 13 | Timeout request provider lấy từ env; không đổi model API hay thêm SDK |
+| `backend/src/rag/llm/openai.llm.js` | 7, 11, 13 | Timeout request provider lấy từ env; không đổi model API hay thêm SDK |
+| `backend/src/rag/prompt.js` | 7, 11, 13 | Validate output JSON, confidence và needsOfficialHelp |
+| `backend/src/rag/retrieval.js` | 7, 11, 13 | Cùng quốc gia/phiên bản; chunk đã bị gỡ không đóng góp ngưỡng; ID chunk thật |
+| `backend/src/services/aiUsage.service.js` | 7, 11, 13 | Cấp quota user/global nguyên tử, trả lượt global nếu user bị từ chối |
+| `backend/src/services/chat.service.js` | 7, 11, 13 | Cache đúng bằng chứng/TTL, upsert, metadata và fallback khi retrieval lỗi |
+| `backend/src/services/job.service.js` | 7, 11, 13 | Lease/heartbeat, nhận lại job gián đoạn, backoff, failed khi thiếu handler |
+| `backend/src/services/legalArticle.service.js` | 7, 11, 13 | OCC trong lệnh ghi; khóa nội dung bài đã xuất bản; giữ định danh phiên bản |
+| `backend/src/services/passwordReset.service.js` | 7, 11, 13 | OTP/reset token một lần; không tái kích hoạt user bị khóa |
+| `backend/src/services/refreshToken.service.js` | 7, 11, 13 | CAS token cha; xóa token con của request thua để chỉ một nhánh hợp lệ |
+| `backend/src/services/supportLocation.service.js` | 7, 11, 13 | CSV safeParse từng dòng, giữ reason cũ, PATCH giữ kênh liên lạc |
+| `backend/src/validators/admin.validator.js` | 7, 11, 13 | URL HTTP(S), tọa độ giới hạn, CSV validate độc lập từng dòng |
+| `backend/src/validators/chat.validator.js` | 7, 11, 13 | Validate focusArticleId là ObjectId trước truy vấn |
+| `backend/test/hardening.test.js` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `backend/test/rag.guard.test.js` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `backend/test/setup.js` | 3, 13 | Ép mock/search memory trong test, không gọi API trả phí |
+| `contracts/README.md` | 7, 11, 13 | Ghi rõ contract lỗi, sửa bài đã publish, quota và metadata RAG |
+| `docs/PROGRESS.md` | 7, 11, 13 | Viết lại phần hiện hành, giữ lịch sử quyết định, loại danh sách lỗi đã sửa khỏi tồn đọng |
+| `mobile/.env.example` | 7, 11, 13 | Phân biệt explicit API URL với LAN tự suy; cập nhật phạm vi mock |
+| `mobile/package-lock.json` | 7, 11, 13 | Khóa cây dependency đã kiểm chứng, 0 advisory |
+| `mobile/package.json` | 7, 11, 13 | Override vá bảo mật, pin renderer React 19.2, postinstall patch, Jest ESM, Node 22.13 |
+| `mobile/patches/query-string+7.1.3.patch` | 7, 11, 13 | Interop CommonJS với default export của decoder 0.5 đã vá DoS |
+| `mobile/src/app/sos/index.tsx` | 7, 11, 13 | Bỏ trạng thái mở cửa/chia sẻ giả; chặn gọi số rỗng, directions 0,0, bắt lỗi GPS/link |
+| `mobile/src/app/trips/new.tsx` | 7, 11, 13 | Thay ref dùng lúc render bằng state có guard khi đổi chuyến cần sửa |
+| `mobile/src/features/explore/useSavedArticles.ts` | 7, 11, 13 | Dùng store chung để favorites đồng bộ giữa màn hình |
+| `mobile/src/features/profile/useDocumentStatus.ts` | 7, 11, 13 | Tách trạng thái giấy tờ theo tài khoản |
+| `mobile/src/features/profile/useEmergencyContacts.ts` | 7, 11, 13 | Không gán người liên hệ giả; ID không lặp sau restart; store theo user |
+| `mobile/src/lib/__tests__/dependencyCompatibility.test.ts` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `mobile/src/lib/__tests__/userStorage.test.tsx` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `mobile/src/lib/api/__tests__/http.test.ts` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `mobile/src/lib/api/__tests__/sos.test.ts` | 3, 13 | Test hồi quy/contract cho thay đổi tương ứng |
+| `mobile/src/lib/api/auth.ts` | 7, 11, 13 | Chỉ xóa phiên khi backend xác nhận token không hợp lệ |
+| `mobile/src/lib/api/http.ts` | 7, 11, 13 | Giữ phiên khi refresh mạng/5xx lỗi; URL khai báo được ưu tiên |
+| `mobile/src/lib/api/sos.ts` | 7, 11, 13 | Cache theo country/type; tính lại khoảng cách khi offline |
+| `mobile/src/lib/auth.tsx` | 7, 11, 13 | Clear query/chat khi đổi danh tính; sửa profile không reset chat |
+| `mobile/src/lib/countryContext.tsx` | 7, 11, 13 | Mặc định quốc gia active từ dữ liệu, bỏ hard-code JP |
+| `mobile/src/lib/locationPermission.ts` | 7, 11, 13 | Thông báo đúng việc gửi tọa độ; xử lý dismiss/không thể hỏi quyền lại |
+| `mobile/src/lib/useUserStorage.ts` | 7, 11, 13 | State lưu cục bộ chia theo tài khoản/mode và đồng bộ qua QueryClient |
+
+### Nghiệm thu
+
+- 66 file thay đổi/thêm mới (gồm source, test, lockfile và tài liệu).
+- Thêm 26 test hồi quy: backend +20, mobile +5, admin +1; tổng 192 test đạt.
+- Xử lý 11 lỗi lint mobile ban đầu, 1 warning Fast Refresh admin và
+  15 cảnh báo dependency (2 advisory gốc); lint hiện không còn warning.
+
+- Backend lint sạch; 110/110 test, trong đó có 25 ca golden KR.
+- Mobile lint/typecheck sạch, 74/74 test (14 suites).
+- Admin lint/typecheck sạch, 8/8 test, build production thành công.
+- Expo Doctor 21/21; export iOS/Android thành công. Chưa là native build đã ký.
+- npm audit cả ba workspace: 0 vulnerability sau sửa. Đã kiểm parse/stringify
+  URI, generator UUID của xcode và load module ngrok sau override.
+- Warning môi trường NO_COLOR/FORCE_COLOR khi Metro export đầu tiên: loại xung
+  đột bằng `env -u NO_COLOR`; không sửa code app hay che cảnh báo của test.
+- Không commit .env, node_modules, output build hay log /tmp.
+
+### Tồn đọng hiện hành
+
+Đối chiếu `PROGRESS.md` mục Đang vướng và Giới hạn còn lại. Cần người phụ trách
+xác minh dữ liệu SOS/pháp lý, cấu hình dịch vụ thật và kiểm thử trên thiết bị.
+B7/B8, multi-turn, usage/cost AI thật, nâng cấp tìm kiếm công khai và triển khai
+vẫn là công việc lộ trình; không được coi là đã hoàn thành bởi đợt sửa lỗi này.
+Patch dependency là giải pháp tương thích có test, cần rà lại khi nâng Expo
+Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
+
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
@@ -293,3 +417,4 @@ Thực hiện : Claude Code
 | v0.6.1    | 23/09/2026 | B4 (điều chỉnh) | Smoke test Gemini thật thành công với key đúng định dạng; phát hiện `gemini-2.5-flash` (default cũ) bị Google trả 404 cho key mới, đổi default `LLM_MODEL` sang `gemini-3.6-flash`; `.env` chốt dùng `LLM_PROVIDER=gemini`/`EMBEDDING_PROVIDER=gemini` cho dev thật, xác nhận test (78/78) và golden test (25/25) không phụ thuộc `.env` nên không bị ảnh hưởng |
 | v0.7.0    | 24/09/2026 | B5 | Chat mobile nối RAG thật (session/lịch sử/marker bấm được/focusArticleId/quota), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI; sửa 3 bug qua smoke test thật trên Atlas (bug `validateQuery` không coerce `req.query`, `topFallbackQuestions` null, 2 API Mongoose deprecated) |
 | v0.8.0    | 24/09/2026 | B6 | SOS: `$geoNear` thật (backend) + admin CRUD/bulk import CSV/bulk verify + mobile map/hub nối API thật, disable Places API đúng CLAUDE.md; sửa 4 bug (2 qua smoke test Atlas, 2 qua tự viết test TRƯỚC khi ảnh hưởng dữ liệu thật); chưa đạt điều kiện nghiệm thu "có support_locations đã verify" của master plan -- cần người điền toạ độ thật |
+| v0.8.1 | 24/09/2026 | Rà soát toàn hệ thống | Sửa API/auth/quota/job/RAG/SOS/admin/mobile; dependency 0 advisory; kiểm tra và bàn giao |

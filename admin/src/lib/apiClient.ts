@@ -60,6 +60,9 @@ async function refreshAccessToken(): Promise<string | null> {
       const body = (await res.json()) as Envelope<{ accessToken: string; refreshToken?: string }>;
 
       if (!body.ok) {
+        if (body.error.code !== 'UNAUTHORIZED' && body.error.code !== 'FORBIDDEN') {
+          throw new ApiError(body.error.code, body.error.message, res.status);
+        }
         clearTokens();
         return null;
       }
@@ -67,8 +70,10 @@ async function refreshAccessToken(): Promise<string | null> {
       setAccessToken(body.data.accessToken);
       if (body.data.refreshToken) setRefreshToken(body.data.refreshToken);
       return body.data.accessToken;
-    } catch {
-      return null;
+    } catch (error) {
+      // Mất mạng/5xx khi refresh không được xóa phiên đã ghi nhớ.
+      if (error instanceof ApiError) throw error;
+      throw new ApiError('UPSTREAM_ERROR', 'Chưa thể khôi phục phiên. Vui lòng thử lại.', 0);
     }
   })();
 

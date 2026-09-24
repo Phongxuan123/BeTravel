@@ -1,3 +1,4 @@
+import User from "../models/User.js";
 import { fail } from "../core/envelope.js";
 import { ErrorCode } from "../core/errors.js";
 import { verifyAccessToken } from "../utils/token.js";
@@ -12,7 +13,7 @@ const extractBearerToken = (authorization) => {
   return scheme === "Bearer" && token ? token : null;
 };
 
-export const authenticateToken = (req, res, next) => {
+export const authenticateToken = async (req, res, next) => {
   try {
     const token = extractBearerToken(req.headers.authorization);
 
@@ -26,7 +27,11 @@ export const authenticateToken = (req, res, next) => {
       return fail(res, ErrorCode.UNAUTHORIZED, "Token không hợp lệ");
     }
 
-    req.user = { userId: payload.sub, role: payload.role };
+    // Role/trạng thái trong JWT có thể cũ sau khi admin khóa hoặc hạ quyền.
+    const user = await User.findById(payload.sub).select("role isActive").lean();
+    if (!user) return fail(res, ErrorCode.UNAUTHORIZED, "Tài khoản không còn tồn tại");
+    if (!user.isActive) return fail(res, ErrorCode.FORBIDDEN, "Tài khoản đã bị vô hiệu hóa");
+    req.user = { userId: payload.sub, role: user.role };
 
     next();
   } catch (error) {

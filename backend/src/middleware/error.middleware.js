@@ -30,6 +30,22 @@ export const errorHandler = (error, req, res, next) => {
     return fail(res, error.code, error.message, error.details);
   }
 
+  if (
+    error?.name === "CastError" ||
+    error?.name === "ValidationError" ||
+    error?.type === "entity.parse.failed" ||
+    error?.type === "entity.too.large"
+  ) {
+    return fail(res, ErrorCode.VALIDATION_ERROR, "Dữ liệu không hợp lệ");
+  }
+  if (
+    error?.code === 11000 ||
+    error?.name === "VersionError" ||
+    error?.name === "DocumentNotFoundError"
+  ) {
+    return fail(res, ErrorCode.CONFLICT, "Dữ liệu đã thay đổi hoặc bị trùng. Vui lòng tải lại.");
+  }
+
   console.error("Lỗi không lường trước:", error);
 
   return fail(

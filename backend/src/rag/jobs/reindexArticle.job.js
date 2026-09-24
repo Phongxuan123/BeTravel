@@ -5,7 +5,7 @@ import LegalChunk from "../../models/LegalChunk.js";
 import { chunkArticle } from "../chunking.js";
 import { getEmbeddingProvider } from "../embedding/index.js";
 import { invalidateMemorySearchCache } from "../search/memory.driver.js";
-import { IndexStateStatus } from "../../core/constants.js";
+import { ContentStatus, IndexStateStatus } from "../../core/constants.js";
 
 /*
  * Handler that cho job 'reindex_article' (B4). Idempotent: xoa het chunk CU
@@ -15,7 +15,7 @@ import { IndexStateStatus } from "../../core/constants.js";
  */
 export async function reindexArticleHandler({ articleId }) {
   const article = await LegalArticle.findById(articleId);
-  if (!article) return; // bai da bi xoa that su khoi DB, khong con gi de index
+  if (!article || article.status !== ContentStatus.PUBLISHED || !article.isCurrent) return; // bai da bi xoa that su khoi DB, khong con gi de index
 
   article.indexState.status = IndexStateStatus.INDEXING;
   await article.save();
@@ -34,6 +34,24 @@ export async function reindexArticleHandler({ articleId }) {
     const provider = getEmbeddingProvider();
     const embeddings = await provider.embedBatch(pieces.map((p) => p.textForEmbedding));
 
+    // Publish/unpublish có thể xảy ra trong lúc chờ embedding từ provider.
+    const stillPublished = await LegalArticle.exists({
+      _id: article._id,
+      status: ContentStatus.PUBLISHED,
+      isCurrent: true,
+    });
+    if (!stillPublished) return;
+    if (
+      embeddings.length !== pieces.length ||
+      embeddings.some(
+        (vector) =>
+          !Array.isArray(vector) ||
+          vector.length !== provider.dims ||
+          !vector.every(Number.isFinite),
+      )
+    ) {
+      throw new Error("Embedding trả về số chiều hoặc số lượng không hợp lệ");
+    }
     await LegalChunk.deleteMany({ articleId: article._id, articleVersion: article.version });
 
     await LegalChunk.insertMany(

@@ -1,7 +1,7 @@
 import LegalArticle from "../../models/LegalArticle.js";
 import LegalChunk from "../../models/LegalChunk.js";
 import { invalidateMemorySearchCache } from "../search/memory.driver.js";
-import { IndexStateStatus } from "../../core/constants.js";
+import { ContentStatus, IndexStateStatus } from "../../core/constants.js";
 
 /*
  * Handler that cho job 'purge_chunks' (B4). Chay khi bai roi khoi 'published'
@@ -15,6 +15,8 @@ import { IndexStateStatus } from "../../core/constants.js";
  */
 export async function purgeChunksHandler({ articleId }) {
   const article = await LegalArticle.findById(articleId);
+  // Job purge cũ có thể chạy sau khi bài đã được xuất bản lại.
+  if (article?.status === ContentStatus.PUBLISHED && article.isCurrent) return;
 
   await LegalChunk.deleteMany({ articleId });
 

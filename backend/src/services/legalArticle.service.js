@@ -78,6 +78,23 @@ export const updateArticle = async (id, data, actorId) => {
     );
   }
 
+  if (![ContentStatus.DRAFT, ContentStatus.PENDING_REVIEW].includes(article.status)) {
+    throw new AppError(
+      ErrorCode.CONFLICT,
+      "Hãy tạo phiên bản nháp mới trước khi sửa bài đã xuất bản",
+    );
+  }
+  if (
+    (fields.countryCode && fields.countryCode !== article.countryCode) ||
+    (fields.slug && fields.slug !== article.slug)
+  ) {
+    throw new AppError(
+      ErrorCode.CONFLICT,
+      "Không đổi quốc gia hoặc slug của một phiên bản bài luật",
+    );
+  }
+  // Điều kiện đi cùng lệnh UPDATE, không chỉ so sánh bản đọc trước đó.
+  article.$where = { updatedAt: new Date(clientUpdatedAt) };
   Object.assign(article, fields);
   article.updatedBy = actorId;
   await article.save();

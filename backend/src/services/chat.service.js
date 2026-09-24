@@ -18,7 +18,12 @@ import { AppError, ErrorCode } from "../core/errors.js";
 
 const CACHE_TTL_MS = env.AI_CACHE_TTL_HOURS * 60 * 60 * 1000;
 
-export const createSession = async (userId, countryCode) => ChatSession.create({ userId, countryCode });
+export const createSession = async (userId, countryCode) => {
+  if (!(await Country.exists({ code: countryCode, status: "active" }))) {
+    throw new AppError(ErrorCode.VALIDATION_ERROR, "Quốc gia chưa hỗ trợ trợ lý AI");
+  }
+  return ChatSession.create({ userId, countryCode });
+};
 
 export const listSessions = async (userId) =>
   ChatSession.find({ userId }).sort({ updatedAt: -1 }).lean();
@@ -50,10 +55,20 @@ export const setMessageFeedback = async (userId, sessionId, messageId, feedback)
   return message;
 };
 
-const buildCacheKey = (question, countryCode, chunkIds) => {
+const buildCacheKey = (question, countryCode, chunks, model) => {
   const normalized = normalizeVi(question);
-  const sortedIds = [...chunkIds].sort().join(",");
-  return crypto.createHash("sha256").update(`${normalized}|${countryCode}|${sortedIds}`).digest("hex");
+  // Giữ thứ tự marker và nội dung thực tế: cùng bài nhưng chunk thay đổi
+  // hoặc reindex phải có key khác. Không dùng articleId thay chunkId.
+  const evidence = chunks.map(({ chunkId, marker, text, updatedAt }) => ({
+    chunkId,
+    marker,
+    text,
+    updatedAt,
+  }));
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify({ normalized, countryCode, evidence, model }))
+    .digest("hex");
 };
 
 /*
@@ -64,7 +79,9 @@ const buildCacheKey = (question, countryCode, chunkIds) => {
  * chuan hoa (khong dau), khong phai suy luan ngu nghia.
  */
 async function detectOtherCountryMention(question, currentCountry) {
-  const otherCountries = await Country.find({ code: { $ne: currentCountry.code } }).select("code name").lean();
+  const otherCountries = await Country.find({ code: { $ne: currentCountry.code } })
+    .select("code name")
+    .lean();
   const normalizedQuestion = normalizeVi(question);
   return otherCountries.find((c) => normalizedQuestion.includes(normalizeVi(c.name))) ?? null;
 }
@@ -84,7 +101,17 @@ async function persistAssistantMessage({ sessionId, result, model, latencyMs }) 
   });
 }
 
-async function logAiEvent({ userId, sessionId, countryCode, question, result, model, embeddingModel, latencyMs, cacheHit }) {
+async function logAiEvent({
+  userId,
+  sessionId,
+  countryCode,
+  question,
+  result,
+  model,
+  embeddingModel,
+  latencyMs,
+  cacheHit,
+}) {
   await AiEvent.create({
     userId,
     sessionId,
@@ -134,12 +161,33 @@ export const sendMessage = async ({ userId, sessionId, question, focusArticleId 
       fallbackReason: null,
       retrieval: { topScore: 0, chunkIds: [], passed: false },
     };
-    const message = await persistAssistantMessage({ sessionId: session._id, result, model: "none", latencyMs: Date.now() - startedAt });
-    await logAiEvent({ userId, sessionId: session._id, countryCode, question, result, model: "none", embeddingModel: "none", latencyMs: Date.now() - startedAt, cacheHit: false });
+    const message = await persistAssistantMessage({
+      sessionId: session._id,
+      result,
+      model: "none",
+      latencyMs: Date.now() - startedAt,
+    });
+    await logAiEvent({
+      userId,
+      sessionId: session._id,
+      countryCode,
+      question,
+      result,
+      model: "none",
+      embeddingModel: "none",
+      latencyMs: Date.now() - startedAt,
+      cacheHit: false,
+    });
     return { session, message };
   }
 
-  const retrieval = await retrieve({ question, countryCode, focusArticleId });
+  let retrieval;
+  try {
+    retrieval = await retrieve({ question, countryCode, focusArticleId });
+  } catch (error) {
+    console.error("[chat] Truy hồi thất bại:", error.name);
+    retrieval = { passed: false, reason: FallbackReason.PROVIDER_ERROR, topScore: 0, chunks: [] };
+  }
 
   if (!retrieval.passed) {
     const result = {
@@ -147,19 +195,35 @@ export const sendMessage = async ({ userId, sessionId, question, focusArticleId 
       citations: [],
       confidence: "low",
       needsOfficialHelp: false,
-      fallbackReason: FallbackReason.INSUFFICIENT_EVIDENCE,
+      fallbackReason: retrieval.reason ?? FallbackReason.INSUFFICIENT_EVIDENCE,
       retrieval: { topScore: retrieval.topScore, chunkIds: [], passed: false },
     };
-    const message = await persistAssistantMessage({ sessionId: session._id, result, model: "none", latencyMs: Date.now() - startedAt });
-    await logAiEvent({ userId, sessionId: session._id, countryCode, question, result, model: "none", embeddingModel: getEmbeddingProvider().model, latencyMs: Date.now() - startedAt, cacheHit: false });
+    const message = await persistAssistantMessage({
+      sessionId: session._id,
+      result,
+      model: "none",
+      latencyMs: Date.now() - startedAt,
+    });
+    await logAiEvent({
+      userId,
+      sessionId: session._id,
+      countryCode,
+      question,
+      result,
+      model: "none",
+      embeddingModel: getEmbeddingProvider().model,
+      latencyMs: Date.now() - startedAt,
+      cacheHit: false,
+    });
     return { session, message };
   }
 
-  const chunkIds = retrieval.chunks.map((c) => c.articleId + ":" + c.marker);
-  const cacheKey = buildCacheKey(question, countryCode, chunkIds);
-  const cached = await AiCache.findOne({ key: cacheKey }).lean();
-
   const llm = getLlmProvider();
+  const cacheKey = buildCacheKey(question, countryCode, retrieval.chunks, llm.model);
+  // TTL Mongo dọn theo chu kỳ, do đó phải tự lọc thời điểm hết hạn khi đọc.
+  const cached = await AiCache.findOne({ key: cacheKey, expiresAt: { $gt: new Date() } }).lean();
+  let confidence = cached?.confidence ?? "low";
+  let needsOfficialHelp = cached?.needsOfficialHelp ?? false;
   let guarded;
   const cacheHit = Boolean(cached);
 
@@ -180,28 +244,45 @@ export const sendMessage = async ({ userId, sessionId, question, focusArticleId 
 
     let rawJson;
     try {
-      const rawText = await llm.complete({ systemPrompt, userPrompt, chunks: retrieval.chunks, question });
+      const rawText = await llm.complete({
+        systemPrompt,
+        userPrompt,
+        chunks: retrieval.chunks,
+        question,
+      });
       rawJson = parseLlmJson(rawText);
     } catch {
       rawJson = null;
     }
 
     if (!rawJson) {
-      guarded = { answer: FALLBACK_MESSAGE, citations: [], fallbackReason: FallbackReason.PROVIDER_ERROR, violations: [] };
+      guarded = {
+        answer: FALLBACK_MESSAGE,
+        citations: [],
+        fallbackReason: FallbackReason.PROVIDER_ERROR,
+        violations: [],
+      };
     } else {
       guarded = guardAnswer(rawJson, retrieval.retrievedMap);
+      confidence = guarded.fallbackReason ? "low" : rawJson.confidence;
+      needsOfficialHelp = rawJson.needsOfficialHelp;
     }
 
     if (!guarded.fallbackReason) {
-      await AiCache.create({
-        key: cacheKey,
+      const cacheValue = {
         answer: guarded.answer,
         citations: guarded.citations,
-        confidence: cached?.confidence ?? "medium",
-        needsOfficialHelp: false,
+        confidence,
+        needsOfficialHelp,
         fallbackReason: null,
         expiresAt: new Date(Date.now() + CACHE_TTL_MS),
-      });
+      };
+      try {
+        await AiCache.updateOne({ key: cacheKey }, { $set: cacheValue }, { upsert: true });
+      } catch (error) {
+        // Hai request cùng câu hỏi có thể cùng tạo cache; câu trả lời vẫn hợp lệ.
+        if (error.code !== 11000) throw error;
+      }
     }
   }
 
@@ -209,14 +290,33 @@ export const sendMessage = async ({ userId, sessionId, question, focusArticleId 
   const result = {
     answer: guarded.answer,
     citations: guarded.citations,
-    confidence: "medium",
-    needsOfficialHelp: false,
+    confidence,
+    needsOfficialHelp,
     fallbackReason: guarded.fallbackReason,
-    retrieval: { topScore: retrieval.topScore, chunkIds: retrieval.chunks.map((c) => c.articleId), passed: true },
+    retrieval: {
+      topScore: retrieval.topScore,
+      chunkIds: retrieval.chunks.map((c) => c.chunkId),
+      passed: true,
+    },
   };
 
-  const message = await persistAssistantMessage({ sessionId: session._id, result, model: llm.model, latencyMs });
-  await logAiEvent({ userId, sessionId: session._id, countryCode, question, result, model: llm.model, embeddingModel: getEmbeddingProvider().model, latencyMs, cacheHit });
+  const message = await persistAssistantMessage({
+    sessionId: session._id,
+    result,
+    model: llm.model,
+    latencyMs,
+  });
+  await logAiEvent({
+    userId,
+    sessionId: session._id,
+    countryCode,
+    question,
+    result,
+    model: llm.model,
+    embeddingModel: getEmbeddingProvider().model,
+    latencyMs,
+    cacheHit,
+  });
 
   return { session, message };
 };

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { marked } from 'marked';
+import { renderSafeMarkdown } from '../lib/markdown';
+import { useAuth } from '../lib/useAuth';
 import { ArrowLeft, Save } from 'lucide-react';
 import { articlesApi, countriesApi, topicsApi } from '../lib/api';
 import type { ArticleSource, KeyPoint, Penalty, RiskLevel, ContentStatus } from '../lib/types';
@@ -69,6 +70,12 @@ const DRAFT_SAVE_INTERVAL_MS = 10_000;
 
 export default function ArticleEditorPage() {
   const { id } = useParams<{ id: string }>();
+  return <ArticleEditor key={id ?? 'new'} />;
+}
+
+function ArticleEditor() {
+  const { user } = useAuth();
+  const { id } = useParams<{ id: string }>();
   const isNew = !id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -80,8 +87,11 @@ export default function ArticleEditorPage() {
     queryKey: ['admin', 'articles', id],
     queryFn: () => articlesApi.get(id!),
     enabled: !isNew,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const article = articleRes?.data;
+  const canEdit = isNew || article?.status === 'draft' || article?.status === 'pending_review';
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [slugTouched, setSlugTouched] = useState(false);
@@ -96,7 +106,7 @@ export default function ArticleEditorPage() {
   });
   const topics = topicsRes?.data ?? [];
 
-  const draftKey = `bt_admin_article_draft_${id ?? 'new'}`;
+  const draftKey = `bt_admin_article_draft_${user?.id ?? 'guest'}_${id ?? 'new'}`;
 
   // Nap du lieu tu server vao form khi mo bai da co san.
   useEffect(() => {
@@ -127,14 +137,16 @@ export default function ArticleEditorPage() {
     if (!isNew && articleLoading) return;
     checkedDraftOnce.current = true;
 
-    const saved = localStorage.getItem(draftKey);
-    if (saved) setDraftBanner(true);
+    try { if (localStorage.getItem(draftKey)) setDraftBanner(true); }
+    catch { setSaveError('Trình duyệt không cho phép lưu bản nháp cục bộ.'); }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleLoading]);
 
   // Nhap mot bai luat mat khoang 30 phut -- tu dong luu nhap moi 10 giay de
   // khong mat cong khi mat mang / dong tab nham.
   useEffect(() => {
+    // Chưa chọn khôi phục/bỏ bản nháp thì không được ghi đè bản đang chờ.
+    if (draftBanner || (!isNew && !article)) return;
     const timer = setInterval(() => {
       try {
         localStorage.setItem(draftKey, JSON.stringify(form));
@@ -143,7 +155,7 @@ export default function ArticleEditorPage() {
       }
     }, DRAFT_SAVE_INTERVAL_MS);
     return () => clearInterval(timer);
-  }, [form, draftKey]);
+  }, [form, draftKey, draftBanner, isNew, article]);
 
   const restoreDraft = () => {
     const saved = localStorage.getItem(draftKey);
@@ -216,6 +228,7 @@ export default function ArticleEditorPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'articles'] });
       navigate(`/articles/${res.data._id}`);
     },
+    onError: (err) => setStatusError(err instanceof ApiError ? err.message : 'Không tạo được phiên bản mới'),
   });
 
   const onSubmit = (e: React.FormEvent) => {
@@ -225,7 +238,7 @@ export default function ArticleEditorPage() {
     else updateMutation.mutate();
   };
 
-  const bodyPreviewHtml = useMemo(() => marked.parse(form.bodyMd || '', { async: false }) as string, [form.bodyMd]);
+  const bodyPreviewHtml = useMemo(() => renderSafeMarkdown(form.bodyMd || ''), [form.bodyMd]);
 
   if (!isNew && articleLoading) return <LoadingState label="Đang tải bài luật..." />;
   if (!isNew && articleError) {
@@ -379,9 +392,10 @@ export default function ArticleEditorPage() {
             </div>
           </section>
 
+          {!canEdit && <p className="text-sm text-muted">Tạo phiên bản nháp mới để sửa nội dung đã xuất bản.</p>}
           {saveError && <ErrorState message={saveError} />}
 
-          <Button type="submit" iconLeft={<Save size={16} />} loading={createMutation.isPending || updateMutation.isPending} className="w-full">
+          <Button type="submit" disabled={!canEdit} iconLeft={<Save size={16} />} loading={createMutation.isPending || updateMutation.isPending} className="w-full">
             {isNew ? 'Tạo bản nháp' : 'Lưu thay đổi'}
           </Button>
         </div>

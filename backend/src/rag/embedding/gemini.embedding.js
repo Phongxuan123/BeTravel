@@ -1,3 +1,5 @@
+import { env } from "../../core/env.js";
+
 const API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 const MAX_BATCH_SIZE = 50;
 const MAX_RETRIES = 3;
@@ -22,6 +24,7 @@ async function embedChunkWithRetry({ apiKey, model, dims, texts }, attempt = 1) 
 
   const res = await fetch(url, {
     method: "POST",
+    signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });

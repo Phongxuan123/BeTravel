@@ -524,3 +524,20 @@ POST /admin/locations/bulk-verify {ids:[...]}   200 { verifiedCount }
 `name` + `address` bat buoc, toa do phai hop le (lat [-90,90], lng [-180,180]),
 va can IT NHAT 1 trong 2: `phone` hoac `website` -- diem chi co ten+dia chi
 khong "Goi ngay" duoc, giam gia tri tinh nang SOS.
+
+## 16. Rà soát tính đúng đắn (24/09/2026)
+
+- Query đã validate giữ nguyên kiểu/default của Zod trên Express 5. ID sai định
+  dạng hoặc JSON lỗi trả `VALIDATION_ERROR`; xung đột ghi DB trả `CONFLICT`.
+- Bài `published`/`superseded`/`archived` không sửa nội dung trực tiếp: tạo
+  phiên bản nháp mới hoặc chuyển về `draft`/`pending_review` trước. PATCH trả
+  `409 CONFLICT` nếu không thỏa; `countryCode` và `slug` giữ nguyên qua các phiên bản.
+- PATCH bài kiểm tra `updatedAt` nguyên tử tại DB, kể cả hai request đồng thời.
+- Chat chỉ tạo session cho quốc gia tồn tại và đang active. `focusArticleId`
+  phải là ObjectId hợp lệ; nội dung ưu tiên vẫn phải cùng quốc gia session.
+- Retrieval `chunkIds` là ID chunk thật; citation nội bộ có `chunkId` để tạo cache; shape citation công khai giữ nguyên.
+  Cache phụ thuộc thứ tự marker/nội dung/model và kiểm tra expiresAt khi đọc.
+- Lỗi embedding/search được trả thành câu trả lời fallback `PROVIDER_ERROR`,
+  giống lỗi LLM. `confidence` và `needsOfficialHelp` giữ kết quả đã validate.
+- Quota global cấp lượt nguyên tử trong collection `aiquotas` theo ngày UTC;
+  quota user vẫn tại `users.aiUsage`. Request đồng thời không vượt trần.
