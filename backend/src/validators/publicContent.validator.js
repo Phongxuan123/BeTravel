@@ -74,3 +74,18 @@ export const tripCreateSchema = z
 // Edit chuyến đi dùng cùng contract với create để tránh partial update làm dữ liệu
 // nửa cũ/nửa mới. isCurrent được quản lý bằng endpoint /:id/current riêng.
 export const tripUpdateSchema = tripCreateSchema;
+
+// ── Incidents cong khai (/api/incidents, B7) ────────────────────────────
+export const incidentListQuerySchema = z.object({
+  country: countryCodeSchema.optional(),
+});
+
+// ── Incident progress (/api/users/incident-progress/:incidentId, B7) ────
+export const incidentProgressUpdateSchema = z.object({
+  completedSteps: z.array(z.number().int().min(0)).max(200),
+});
+
+// ── Quick phrases cong khai (/api/quick-phrases, B7) ────────────────────
+export const quickPhraseListQuerySchema = z.object({
+  country: countryCodeSchema,
+});

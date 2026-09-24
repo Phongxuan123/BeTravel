@@ -53,3 +53,11 @@ export const feedbackRateLimit = buildRateLimit({
   limit: 30,
   message: "Bạn đang gửi báo cáo quá nhanh. Vui lòng chờ một chút rồi thử lại.",
 });
+
+// Dich (B7) cung goi LLM nhu chat nen can lop 1 chong spam burst tuong tu.
+// Khong co quota DB rieng nhu chat vi cau dich ngan (<=500 ky tu, khong co
+// nguy co retrieval/embedding ton kem) -- rate limit RAM la du cho MVP.
+export const translateRateLimit = buildRateLimit({
+  limit: 30,
+  message: "Bạn đang dịch quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});

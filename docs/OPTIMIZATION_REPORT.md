@@ -1,7 +1,7 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
-> Trạng thái hiện hành: xem mục **Rà soát toàn hệ thống 24/09/2026** bên dưới
-> và `PROGRESS.md`. Các mục B1–B6 là lịch sử; không dùng những dòng tồn đọng
-> cũ để kết luận một lỗi vẫn còn sau phiên 24/09.
+> Trạng thái hiện hành: xem mục **B7 — INCIDENTS + TRANSLATOR** bên dưới và
+> `PROGRESS.md`. Các mục B1–B6 và "Rà soát toàn hệ thống 24/09/2026" là lịch
+> sử; không dùng những dòng tồn đọng cũ để kết luận một lỗi vẫn còn sau B7.
 
 
 Phiên bản : v0.2.0 --> v0.5.0
@@ -285,6 +285,50 @@ Thực hiện : Claude Code
 - `ErrorBoundary` quanh `MapView` chưa test được với lỗi native thật (chỉ xác nhận đúng cơ chế React qua đọc code).
 - `openTime`/`closeTime` đại sứ quán vẫn để rỗng (chưa có nguồn thật, ngoài phạm vi B6).
 
+## B7 — INCIDENTS + TRANSLATOR (v0.8.1 --> v0.9.0)
+
+### B7.1. Tong quan
+- Tổng số file mới        : 15 backend (`models/IncidentType.js`, `models/UserIncidentProgress.js`, `models/QuickPhrase.js`, `services/incident.service.js`, `services/quickPhrase.service.js`, `services/translate.service.js`, `controllers/publicIncident.controller.js`, `controllers/incidentProgress.controller.js`, `controllers/adminIncidents.controller.js`, `controllers/publicQuickPhrase.controller.js`, `controllers/adminQuickPhrases.controller.js`, `controllers/translate.controller.js`, `routes/translate.routes.js`, `routes/incidentProgress.routes.js`, `validators/translate.validator.js`) + 3 test (`test/incident.test.js`, `test/translate.test.js`) + 3 fixtures (`public.incident.json`, `public.quickPhrase.json`, `translate.json`) + 5 mobile (`lib/api/incidents.ts`, `lib/api/translate.ts`, `lib/api/__tests__/incidents.test.ts`, `lib/api/__tests__/translate.test.ts`) + 4 admin (`pages/IncidentsPage.tsx`, `pages/IncidentEditorPage.tsx`, `pages/QuickPhrasesPage.tsx`, `components/incident-editor/StepsEditor.tsx`)
+- Tổng số file chỉnh sửa  : backend (`validators/admin.validator.js`, `validators/publicContent.validator.js`, `core/domainErrors.js`, `middleware/rateLimit.middleware.js`, `rag/llm/mock.llm.js`, `routes/admin.routes.js`, `routes/public.routes.js`, `app.js`, `test/admin.test.js`, `test/contracts.test.js`, `contracts/README.md`) + mobile (`app/incidents/index.tsx`, `app/incidents/[slug].tsx`, `app/translate/index.tsx`, `app/sos/map.tsx`, `lib/data.ts`, `lib/storage.ts`, `mocks/client.ts`, `mocks/schemas.ts`, `mocks/fixtures/incidents.ts`, `lib/api/__tests__/adapters.test.ts`) + admin (`App.tsx`, `components/Layout.tsx`, `lib/api.ts`, `lib/types.ts`)
+- Warning xử lý           : 0 mới
+- Bug fix                 : 0 (viết mới hoàn toàn, không sửa hồi quy)
+
+### B7.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/src/services/incident.service.js` | 2, 7 | `setProgress` lọc bỏ `step.order` không còn tồn tại trong workflow hiện hành trước khi lưu -- tránh tiến độ hiển thị sai lệch sau khi admin sửa bước |
+| `backend/src/rag/llm/mock.llm.js` | 3, 9 | Tái dùng CÙNG provider abstraction của RAG (B4) cho dịch thuật, thêm nhánh đọc `task:'translate'` thay vì viết provider dịch riêng |
+| `admin/src/components/incident-editor/StepsEditor.tsx` | 2, 9 | Nút lên/xuống thay kéo-thả (không thêm thư viện DnD mới cho một thao tác đổi thứ tự mảng); server luôn chuẩn hoá lại `order` khi lưu |
+| `mobile/src/lib/api/translate.ts` | 1, 4 | Cache-aside offline cho quick phrases CÙNG pattern với `lib/api/sos.ts` (B6) -- không phát minh cơ chế mới |
+| `mobile/src/app/incidents/[slug].tsx` | 2, 7 | Tách rõ 2 khái niệm: tick checklist (state cục bộ, không đồng bộ) và đánh dấu bước hoàn thành (lưu server qua `completedSteps`) |
+
+### B7.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md muc 26-35)
+
+- `IncidentType.status: 'draft'|'published'` -- áp dụng lại nguyên tắc pre-filter nội dung công khai của CLAUDE.md mục 4.1 dù prompt B7 không yêu cầu.
+- Tiến độ lưu theo `step.order` (mảng số), không lưu theo từng dòng checklist -- khớp đúng với `StepProgress` (thanh theo BƯỚC).
+- CTA (`map`/`call`/`ai`/`link`) dùng `payload` tự do (`Record<string,unknown>`) thay vì schema cứng theo từng loại -- dễ mở rộng thêm loại CTA mới mà không phải đổi contract.
+- Dịch bắt buộc đăng nhập, dùng rate limit RAM giống chat, KHÔNG có lớp quota DB riêng (câu dịch ngắn, không tốn retrieval/embedding như RAG).
+- A07 Incident Workflow Builder: picker chọn contact/article là ô lọc + checkbox list tải sẵn (không phải combobox chuyên dụng) -- cùng lý do KISS ở trên.
+
+### B7.4. Warning & Bug da xu ly
+
+Không phát sinh bug trong lúc viết (batch mới hoàn toàn, không sửa code cũ).
+127 test backend + 80 test mobile + 8 test admin đều xanh sau khi thêm B7
+(14 test backend mới: `incident.test.js` 8 + `translate.test.js` 6; 6 test
+mobile mới: `incidents.test.ts` 3 + `translate.test.ts` 2 + 1 bổ sung ở
+`adapters.test.ts`).
+
+### B7.5. Van de con ton dong
+
+- `POST /api/translate` nhận `mode:'text'|'phrase'` nhưng chưa xử lý khác
+  nhau giữa hai mode (field tồn tại theo đúng contract B7, hành vi giống hệt
+  nhau ở service/prompt hiện tại).
+- CTA loại `ai` chỉ prefill một câu hỏi cố định, không mang theo ngữ cảnh
+  nhiều lượt của bước đang xem (giới hạn chung của chat B4/B5, chưa multi-turn).
+- Chưa có dữ liệu `IncidentType`/`QuickPhrase` thật trong Atlas (chưa seed) --
+  cần B9 hoặc người phụ trách nhập qua Admin trước khi demo.
+
 ## Rà soát toàn hệ thống 24/09/2026
 
 Phạm vi: sửa lỗi được người dùng yêu cầu trực tiếp, giữ kiến trúc và bố cục
@@ -418,3 +462,4 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 | v0.7.0    | 24/09/2026 | B5 | Chat mobile nối RAG thật (session/lịch sử/marker bấm được/focusArticleId/quota), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI; sửa 3 bug qua smoke test thật trên Atlas (bug `validateQuery` không coerce `req.query`, `topFallbackQuestions` null, 2 API Mongoose deprecated) |
 | v0.8.0    | 24/09/2026 | B6 | SOS: `$geoNear` thật (backend) + admin CRUD/bulk import CSV/bulk verify + mobile map/hub nối API thật, disable Places API đúng CLAUDE.md; sửa 4 bug (2 qua smoke test Atlas, 2 qua tự viết test TRƯỚC khi ảnh hưởng dữ liệu thật); chưa đạt điều kiện nghiệm thu "có support_locations đã verify" của master plan -- cần người điền toạ độ thật |
 | v0.8.1 | 24/09/2026 | Rà soát toàn hệ thống | Sửa API/auth/quota/job/RAG/SOS/admin/mobile; dependency 0 advisory; kiểm tra và bàn giao |
+| v0.9.0 | 25/09/2026 | B7 | Incidents (backend CRUD + workflow công khai + tiến độ theo user + CTA ngữ cảnh) và Translator (`/api/translate` tái dùng provider RAG + quick phrases offline) nối API thật ở mobile; Admin A07 Incident Workflow Builder + trang Câu dịch sẵn; 127 test backend, 80 test mobile, 8 test admin xanh |

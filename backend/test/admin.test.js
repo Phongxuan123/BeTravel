@@ -27,6 +27,8 @@ test("non-admin goi /api/admin/* bi tra ve 403 FORBIDDEN", async () => {
     ["get", "/api/admin/legal/articles"],
     ["get", "/api/admin/locations"],
     ["get", "/api/admin/audit"],
+    ["get", "/api/admin/incidents"],
+    ["get", "/api/admin/quick-phrases"],
   ];
 
   for (const [method, path] of endpoints) {

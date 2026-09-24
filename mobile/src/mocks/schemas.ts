@@ -87,15 +87,35 @@ export const tripSchema = z.object({
 });
 export type Trip = z.infer<typeof tripSchema>;
 
+// cta.type: 'map' (mo SOS map da loc theo payload.locationType) · 'call'
+// (goi payload.phone, rong = dung SDT dai su quan) · 'ai' (prefill man hinh
+// chat voi payload.question) · 'link' (mo payload.url). Them cho B7.
+export const incidentCtaSchema = z.object({
+  type: z.enum(['map', 'call', 'ai', 'link']),
+  label: z.string(),
+  payload: z.record(z.string(), z.unknown()),
+});
+
 export const incidentStepSchema = z.object({
+  // order + contactRefs/articleRefs/ctas la field MO RONG cho B7 (tien do
+  // luu server theo step.order, CTA ngu canh tung buoc) -- optional de fixture
+  // cu (neu con) khong vo type, nhung du lieu that/moi luon co day du.
+  order: z.number().optional(),
   title: z.string(),
   body: z.array(z.string()),
-  checklist: z.array(z.object({ label: z.string(), checked: z.boolean() })).optional(),
+  checklist: z.array(z.object({ label: z.string() })).optional(),
+  contactRefs: z.array(z.string()).optional(),
+  articleRefs: z.array(z.string()).optional(),
+  ctas: z.array(incidentCtaSchema).optional(),
 });
 
 export const incidentSchema = z.object({
   __mock: z.literal(true).optional(),
+  // _id can cho API tien do (/users/incident-progress/:incidentId) -- rong o
+  // du lieu gia lap cu, luon co that o API/fixture moi.
+  _id: z.string().optional(),
   slug: z.string(),
+  countryCode: z.string().nullable().optional(),
   title: z.string(),
   iconKey: z.string(),
   tone: z.enum(['blue', 'red', 'orange', 'green']),

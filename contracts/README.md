@@ -541,3 +541,60 @@ khong "Goi ngay" duoc, giam gia tri tinh nang SOS.
   giống lỗi LLM. `confidence` và `needsOfficialHelp` giữ kết quả đã validate.
 - Quota global cấp lượt nguyên tử trong collection `aiquotas` theo ngày UTC;
   quota user vẫn tại `users.aiUsage`. Request đồng thời không vượt trần.
+
+## 17. ENDPOINT INCIDENTS CONG KHAI — `/api/incidents/*` (B7)
+
+```
+GET /incidents?country=   200 -- gop workflow toan cuc (countryCode:null) +
+     workflow rieng cua country. Quoc gia chua co workflow rieng van thay
+     nhom toan cuc, KHONG tra mang rong. CHI tra status:'published'.
+GET /incidents/:slug   200 | 404 NOT_FOUND (draft hoac khong ton tai)
+```
+
+`IncidentType` (moi item) co dang:
+```jsonc
+{
+  "_id": "...", "slug": "mat-ho-chieu", "countryCode": null,
+  "title": "Mất hộ chiếu", "iconKey": "IdCard", "tone": "red", "urgent": true,
+  "reassurance": "...", "status": "published",
+  "steps": [
+    {
+      "order": 0, "title": "Trình báo công an", "body": ["..."],
+      "checklist": [{ "label": "..." }],
+      "contactRefs": ["<SupportLocation._id>"], "articleRefs": ["<LegalArticle._id>"],
+      "ctas": [{ "type": "map", "label": "Đồn gần nhất", "payload": { "locationType": "police" } }]
+    }
+  ]
+}
+```
+`cta.type`: `map` (payload.locationType loc SOS map) · `call` (payload.phone,
+rong = dung SDT dai su quan cua country dang chon) · `ai` (payload.question
+prefill man hinh chat) · `link` (payload.url mo ngoai).
+
+## 18. ENDPOINT TIEN DO SU CO — `/api/users/incident-progress/:incidentId` (B7, can dang nhap)
+
+```
+GET /users/incident-progress/:incidentId   200 { completedSteps: number[] }
+PUT /users/incident-progress/:incidentId {completedSteps:[...]}   200
+     -- step.order khong con ton tai trong workflow hien hanh bi LOC BO am
+        tham lang (workflow co the da duoc admin sua sau lan tick truoc do).
+     -- rieng tung user, KHONG chia se giua 2 tai khoan.
+```
+Guest (chua dang nhap) xem workflow qua `/api/incidents` binh thuong nhung
+KHONG goi duoc endpoint nay (401 UNAUTHORIZED) -- man hinh tu chan, hien
+banner moi dang nhap thay vi goi API roi nhan loi.
+
+## 19. ENDPOINT TRANSLATOR — `/api/translate`, `/api/quick-phrases/*` (B7)
+
+```
+POST /translate {text, from, to, mode:'text'|'phrase'}   can dang nhap
+     200 { translated, phonetic } -- text toi da 500 ky tu, rong hoac qua dai
+     bi VALIDATION_ERROR. Loi provider -> UPSTREAM_ERROR (KHONG bao gio tra
+     loi cau hoi trong text, prompt CHI DICH).
+GET  /quick-phrases?country=   200 -- cong khai, sap xep theo `order` tang dan.
+GET/POST/PATCH/DELETE /admin/quick-phrases[/:id]   role admin, CRUD don gian.
+GET/POST/PATCH/DELETE /admin/incidents[/:id]        role admin, A07 Incident
+     Workflow Builder. PATCH gui LAI TRON VEN mang `steps` -- server chuan
+     hoa lai `order` theo dung vi tri trong mang gui len (khong tu dien so
+     order o client).
+```

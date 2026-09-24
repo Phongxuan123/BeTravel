@@ -87,6 +87,15 @@ const DOMAIN_ERROR_MAP = Object.freeze({
     ErrorCode.NOT_FOUND,
     "Không tìm thấy tin nhắn được báo cáo, hoặc bạn không có quyền báo cáo tin nhắn này",
   ],
+
+  // Incidents (B7)
+  INCIDENT_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy hướng dẫn xử lý sự cố"],
+
+  // Translator (B7)
+  TRANSLATE_UPSTREAM_FAILED: [
+    ErrorCode.UPSTREAM_ERROR,
+    "Không thể dịch lúc này. Vui lòng thử lại sau.",
+  ],
 });
 
 /*

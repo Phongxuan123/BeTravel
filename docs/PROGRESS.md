@@ -1,7 +1,7 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-24 · Phiên: rà soát và sửa lỗi toàn hệ thống
-Nhánh: `feature/system-audit-fixes`.
+Cập nhật lần cuối: 2026-09-25 · Phiên: B7 Incidents + Translator
+Nhánh: `feature/b7-incidents-translator`.
 
 ## Trạng thái hiện hành — đọc mục này trước
 
@@ -16,7 +16,7 @@ Kết luận mới ở phần này thay thế những ghi chú cũ mâu thuẫn 
 | B4 RAG + guardrails | xong | Truy hồi, cache theo bằng chứng, quota nguyên tử, fallback, golden test |
 | B5 Chat + feedback | xong | Mobile đã có UI/API chat, feedback và lịch sử |
 | B6 SOS | xong một phần | Mã nguồn đã triển khai; còn cần dữ liệu địa điểm được người phụ trách xác minh |
-| B7 Incidents + dịch | chưa làm | UI còn mock; chưa triển khai backend của batch này |
+| B7 Incidents + dịch | xong | Backend + mobile + admin (A07 Workflow Builder) đã nối API thật |
 | B8 Alerts + profile/favorites | chưa làm | Alerts mock; liên hệ/giấy tờ/favorites cục bộ, đã tách tài khoản |
 | B9 Hardening, build, demo/deploy | xong một phần | Đã sửa lỗi và kiểm tra bundle; chưa ký native build, triển khai, kịch bản demo |
 | Rà soát 24/09 | xong | Các lỗi phát hiện trong phạm vi đã sửa và có kiểm tra; phần cần dữ liệu/thiết bị được tách riêng |
@@ -98,7 +98,8 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
 
 ## Giới hạn còn lại / công việc tiếp theo
 
-- B7/B8 là tính năng chưa triển khai, không phải hồi quy của đợt sửa lỗi.
+- B8 là tính năng chưa triển khai, không phải hồi quy của đợt sửa lỗi. B7 đã
+  xong (xem "Quyết định phát sinh (B7)").
 - Chat chưa dùng lịch sử làm ngữ cảnh multi-turn; chi phí/tokens analytics
   chưa tích hợp usage thật. Tìm kiếm công khai còn regex trên bài, chưa thay
   bằng Atlas Search. Không đánh dấu các hạng mục này là đã hoàn thành.
@@ -107,7 +108,14 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
   không đo chất lượng hay độ chính xác của model thật.
 - Lưu trữ cục bộ chưa mã hóa giấy tờ theo cơ chế vault; hiện chỉ lưu trạng
   thái/ghi chú như phạm vi MVP, không ảnh tài liệu. Chưa đồng bộ nhiều máy.
-- Sau khi dữ liệu B6 đủ: nghiệm thu B6, rồi B7/B8. B9 còn demo/deploy,
+- (B7) `POST /api/translate` nhận `mode:'text'|'phrase'` theo đúng contract
+  nhưng service/prompt CHƯA phân biệt hành vi giữa hai mode -- trường tồn tại
+  để tương thích tương lai (vd `phrase` có thể rút gọn/formal hơn), hiện xử
+  lý giống hệt nhau. Không đánh dấu đây là đã hoàn thiện phân biệt 2 mode.
+- (B7) CTA loại `ai` chỉ prefill MỘT câu hỏi cố định vào ô nhập của màn hình
+  chat (không kèm ngữ cảnh nhiều lượt của bước đang xem) -- giống hạn chế đã
+  ghi ở trên về chat chưa dùng lịch sử làm ngữ cảnh multi-turn.
+- Sau khi dữ liệu B6 đủ: nghiệm thu B6, rồi B8. B9 còn demo/deploy,
   build ký và kiểm tra người dùng thực tế; không coi bundle export là APK/IPA.
 
 ## Lịch sử quyết định (giữ để truy vết)
@@ -465,3 +473,77 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
     liệt kê. `login-phone.tsx` KHÔNG còn là màn chặn tĩnh — PR #8
     (`feature/backend`, merge sau phiên B3) đã làm thật đăng nhập bằng số
     điện thoại, ghi đè quyết định B1 cũ (mục 2 ở trên, nay đã lỗi thời).
+
+## Quyết định phát sinh (B7)
+
+26. **`IncidentType.status: 'draft'|'published'`, dù prompt B7 không yêu cầu
+    máy trạng thái** -- áp dụng nguyên tắc "Pre-filter nội dung" ở CLAUDE.md
+    mục 4.1 (vốn viết cho `legal_articles`) sang incidents: workflow admin
+    đang soạn dở không được lọt ra `/api/incidents` công khai. Không có bước
+    duyệt/phân quyền riêng như bài luật -- admin tự đổi trạng thái trực tiếp
+    trên form, đơn giản hơn máy trạng thái 5 bước của LegalArticle vì rủi ro
+    thấp hơn nhiều (không phải nội dung pháp lý cần kiểm chứng nguồn).
+27. **Tiến độ xử lý sự cố lưu theo `step.order` (mảng số), KHÔNG lưu theo
+    từng mục checklist** -- mô hình đơn giản nhất khớp với `StepProgress`
+    (thanh tiến độ theo BƯỚC, không phải theo dòng checklist). Mỗi bước có
+    một checkbox "Đánh dấu đã xong" duy nhất; việc tick từng dòng checklist
+    bên trong bước (nếu có) vẫn là state cục bộ, không đồng bộ server -- tách
+    biệt hai khái niệm để giữ hợp đồng API đơn giản (Rule 9 KISS).
+28. **`setProgress` lọc bỏ `step.order` không còn tồn tại trong workflow hiện
+    hành** -- admin có thể sửa/xoá bước sau khi người dùng đã tick; giữ
+    nguyên số cũ sẽ làm sai lệch `completedSteps.length` so với
+    `steps.length` hiển thị trên `StepProgress`. Đánh đổi: nếu admin xoá một
+    bước ĐÃ ĐƯỢC nhiều người tick, tiến độ của họ với đúng bước đó bị mất --
+    chấp nhận được vì workflow sự cố ít khi sửa sau khi đã publish.
+29. **Guest xem được toàn bộ nội dung `/api/incidents` (không cần đăng
+    nhập), chỉ endpoint tiến độ (`/api/users/incident-progress/*`) yêu cầu
+    đăng nhập** -- đúng theo PROMPT B7 mục 6 ("Guest xem được workflow
+    nhưng không lưu progress"). Màn hình mobile không chặn toàn màn hình như
+    `chat/index.tsx` (nơi cả nội dung LẪN thao tác đều cần đăng nhập) mà chỉ
+    thay vùng checkbox tiến độ bằng banner mời đăng nhập.
+30. **CTA từng bước (`map`/`call`/`ai`/`link`) lưu `payload` dạng
+    `Record<string, unknown>` tự do thay vì tách field cứng theo từng loại**
+    -- một schema cứng (vd `mapPayload{locationType}`, `callPayload{phone}`)
+    sẽ phải đổi mỗi khi thêm loại CTA mới; `payload` tự do đơn giản hơn,
+    validate ở tầng Zod chỉ ép `type`/`label` bắt buộc, còn nội dung
+    `payload` do từng loại CTA tự diễn giải phía client (xem
+    `mobile/src/app/incidents/[slug].tsx#runCta`).
+31. **Dịch (`/api/translate`) tái dùng `getLlmProvider()` của RAG (B4) thay
+    vì thêm provider dịch thuật riêng** -- một endpoint dịch duy nhất, prompt
+    "CHỈ DỊCH, không trả lời câu hỏi trong văn bản" (tránh trường hợp người
+    dùng dán một câu hỏi và LLM trả lời thay vì dịch). `MockLlm.complete()`
+    mở rộng thêm nhánh đọc field `task:'translate'` để test/CI không cần
+    `GEMINI_API_KEY` (bắt buộc theo CLAUDE.md mục 4.1).
+32. **Dịch bắt buộc đăng nhập, cùng mức rate limit RAM như chat (`chatRateLimit`
+    pattern), không có quota DB riêng** -- câu dịch tối đa 500 ký tự, không
+    có bước truy hồi/embedding tốn kém như RAG nên rate limit RAM (reset khi
+    restart server) được coi là đủ cho MVP; khác với chat vốn cần lớp quota
+    DB thứ hai vì retrieval + LLM tốn nhiều hơn hẳn.
+33. **Admin A07 Incident Workflow Builder dùng nút lên/xuống để sắp xếp lại
+    bước, KHÔNG dùng thư viện kéo thả (drag-and-drop)** -- dù prompt B7 mục 3
+    viết "kéo thả sắp xếp bước". Project chưa có sẵn thư viện DnD nào; thêm
+    một dependency mới chỉ để đổi thứ tự mảng là không cân xứng (Rule 9
+    KISS). Nút lên/xuống đạt cùng mục tiêu nghiệp vụ (đổi thứ tự bước) với
+    ít rủi ro hơn. Server luôn chuẩn hoá lại `order` theo đúng vị trí trong
+    mảng `steps` gửi lên khi lưu, bất kể client sắp xếp bằng cách nào.
+34. **Picker chọn `contactRefs`/`articleRefs` trong A07 là ô lọc-tìm-kiếm +
+    danh sách checkbox cuộn được, KHÔNG phải combobox/autocomplete chuyên
+    dụng** -- cùng lý do Rule 9 KISS ở trên, không thêm thư viện UI mới cho
+    một thao tác chọn nhiều mục từ danh sách đã tải sẵn (tối đa 100 mục theo
+    `limit` hiện có của `locationsApi`/`articlesApi`).
+35. **`mocks/schemas.ts#incidentStepSchema` bỏ field `checked` trên từng mục
+    checklist (trước đây fixture set sẵn `true`/`false`)** -- server thật
+    không có khái niệm "checklist item đã tick sẵn từ trước", tick luôn bắt
+    đầu từ trạng thái trống theo từng phiên xem của người dùng. Giữ field cũ
+    sẽ tạo cảm giác sai rằng máy chủ nhớ được trạng thái này.
+36. **Smoke test thật trên Atlas + Gemini (14/15 việc kiểm tra xanh)**: tạo
+    admin/user thật, tạo incident + quick phrase qua API admin, xác nhận
+    public list/get đúng, tiến độ tách riêng theo user, RBAC chặn non-admin,
+    dịch >500 ký tự bị chặn -- tất cả đúng như thiết kế. Việc còn lại
+    (`POST /api/translate` với văn bản hợp lệ) trả `UPSTREAM_ERROR` do chính
+    Gemini báo `503 UNAVAILABLE` ("high demand") tại thời điểm test, không
+    phải lỗi code -- đã thêm `console.error` log nguyên nhân thật ở
+    `translate.service.js` (trước đó nuốt lỗi hoàn toàn) để dễ chẩn đoán lần
+    sau. Toàn bộ 127 test tự động (dùng `LLM_PROVIDER=mock` theo CLAUDE.md
+    mục 4.1) không phụ thuộc tình trạng Gemini nên không bị ảnh hưởng.
+    Dữ liệu smoke test đã được xoá sạch khỏi Atlas ngay sau khi kiểm tra.

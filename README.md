@@ -77,7 +77,7 @@ npm run dev
 | B4 | RAG engine + guardrail chống ảo giác | ✅ |
 | B5 | Chat mobile + feedback | ✅ |
 | B6 | SOS: bản đồ + điểm hỗ trợ | ✅ (chờ dữ liệu thật đã xác minh) |
-| B7 | Incidents + dịch khẩn cấp | chưa làm |
+| B7 | Incidents + dịch khẩn cấp | ✅ |
 | B8 | Cảnh báo vị trí + hồ sơ cá nhân | chưa làm |
 | B9 | Hardening, seed, build, demo | một phần: đã rà soát/sửa lỗi và kiểm tra build; còn phát hành/demo |
 

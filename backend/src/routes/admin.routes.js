@@ -13,6 +13,8 @@ import * as dashboardController from "../controllers/adminDashboard.controller.j
 import * as ragController from "../controllers/adminRag.controller.js";
 import * as feedbackController from "../controllers/adminFeedback.controller.js";
 import * as analyticsController from "../controllers/adminAnalytics.controller.js";
+import { incidentsController } from "../controllers/adminIncidents.controller.js";
+import { quickPhrasesController } from "../controllers/adminQuickPhrases.controller.js";
 
 import {
   countryCreateSchema,
@@ -36,6 +38,12 @@ import {
   feedbackListQuerySchema,
   feedbackStatusUpdateSchema,
   analyticsOverviewQuerySchema,
+  incidentCreateSchema,
+  incidentUpdateSchema,
+  incidentListQuerySchema,
+  quickPhraseCreateSchema,
+  quickPhraseUpdateSchema,
+  quickPhraseListQuerySchema,
 } from "../validators/admin.validator.js";
 
 const router = express.Router();
@@ -89,5 +97,17 @@ router.get("/feedback/:id", feedbackController.get);
 router.patch("/feedback/:id", validateBody(feedbackStatusUpdateSchema), feedbackController.updateStatus);
 
 router.get("/analytics/overview", validateQuery(analyticsOverviewQuerySchema), analyticsController.overview);
+
+router.get("/incidents", validateQuery(incidentListQuerySchema), incidentsController.list);
+router.post("/incidents", validateBody(incidentCreateSchema), incidentsController.create);
+router.get("/incidents/:id", incidentsController.get);
+router.patch("/incidents/:id", validateBody(incidentUpdateSchema), incidentsController.update);
+router.delete("/incidents/:id", incidentsController.remove);
+
+router.get("/quick-phrases", validateQuery(quickPhraseListQuerySchema), quickPhrasesController.list);
+router.post("/quick-phrases", validateBody(quickPhraseCreateSchema), quickPhrasesController.create);
+router.get("/quick-phrases/:id", quickPhrasesController.get);
+router.patch("/quick-phrases/:id", validateBody(quickPhraseUpdateSchema), quickPhrasesController.update);
+router.delete("/quick-phrases/:id", quickPhrasesController.remove);
 
 export default router;

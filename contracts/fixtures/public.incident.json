@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "_id": "66f0a1b2c3d4e5f607182960",
+      "slug": "mat-ho-chieu",
+      "countryCode": null,
+      "title": "Mất hộ chiếu",
+      "iconKey": "IdCard",
+      "tone": "red",
+      "urgent": true,
+      "reassurance": "Giữ bình tĩnh.",
+      "steps": [
+        {
+          "order": 0,
+          "title": "Trình báo công an",
+          "body": ["Xin giấy xác nhận"],
+          "checklist": [],
+          "contactRefs": [],
+          "articleRefs": [],
+          "ctas": []
+        }
+      ],
+      "status": "published",
+      "createdBy": "66f0a1b2c3d4e5f607182900",
+      "updatedBy": "66f0a1b2c3d4e5f607182900",
+      "createdAt": "2026-09-25T00:00:00.000Z",
+      "updatedAt": "2026-09-25T00:00:00.000Z",
+      "__v": 0
+    }
+  ]
+}
