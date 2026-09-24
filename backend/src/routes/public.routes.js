@@ -2,10 +2,13 @@ import express from "express";
 
 import { validateQuery } from "../middleware/validate.middleware.js";
 import * as contentController from "../controllers/publicContent.controller.js";
+import * as locationController from "../controllers/publicSupportLocation.controller.js";
 import {
   topicListQuerySchema,
   articleListQuerySchema,
   articleSearchQuerySchema,
+  supportLocationNearbyQuerySchema,
+  supportLocationListQuerySchema,
 } from "../validators/publicContent.validator.js";
 
 /*
@@ -29,6 +32,17 @@ router.get(
   "/legal/search",
   validateQuery(articleSearchQuerySchema),
   contentController.searchArticles,
+);
+
+router.get(
+  "/support-locations/nearby",
+  validateQuery(supportLocationNearbyQuerySchema),
+  locationController.nearby,
+);
+router.get(
+  "/support-locations",
+  validateQuery(supportLocationListQuerySchema),
+  locationController.list,
 );
 
 export default router;

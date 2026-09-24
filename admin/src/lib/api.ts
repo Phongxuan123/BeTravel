@@ -14,11 +14,20 @@ import type {
   FeedbackRating,
   FeedbackStatus,
   AnalyticsOverview,
+  LocationBulkImportResult,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
 export const topicsApi = createAdminResource<LegalTopic>('/admin/topics');
-export const locationsApi = createAdminResource<SupportLocation>('/admin/locations');
+export const locationsApi = {
+  ...createAdminResource<SupportLocation>('/admin/locations'),
+
+  bulkImport: (rows: Partial<SupportLocation>[]) =>
+    apiRequest<LocationBulkImportResult>('/admin/locations/bulk-import', { method: 'POST', body: { rows } }),
+
+  bulkVerify: (ids: string[]) =>
+    apiRequest<{ verifiedCount: number }>('/admin/locations/bulk-verify', { method: 'POST', body: { ids } }),
+};
 
 /**
  * LegalArticle KHONG dung factory chung: co logic rieng (optimistic

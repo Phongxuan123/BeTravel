@@ -4,7 +4,7 @@
  * không sửa component (CLAUDE.md B3 mục 8). Hàm pure, có test đối chiếu
  * contracts/fixtures/ ở __tests__/adapters.test.ts.
  */
-import type { Article, Country, QuickPhrase, SearchResultItem, Topic, Trip } from '@/mocks/schemas';
+import type { Article, Country, QuickPhrase, SearchResultItem, SupportLocation, Topic, Trip } from '@/mocks/schemas';
 
 // ── Raw API shapes (khớp backend/src/models + publicContent.service.js) ──
 export type ApiEmergencyNumbers = { police?: string; ambulance?: string; fire?: string; marine?: string };
@@ -208,6 +208,61 @@ export function adaptTrip(api: ApiTrip): Trip {
     startDate: toDateOnly(api.startDate),
     endDate: toDateOnly(api.endDate),
     isCurrent: api.isCurrent,
+  };
+}
+
+// ── SupportLocation (B6) ────────────────────────────────────────────────
+export type ApiSupportLocation = {
+  _id: string;
+  countryCode: string;
+  type: 'embassy' | 'hospital' | 'police' | 'pharmacy' | 'other';
+  name: string;
+  nameLocal?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  openHours?: string;
+  location: { type: 'Point'; coordinates: [number, number] };
+  verified: boolean;
+  verifiedAt?: string | null;
+  distanceMeters?: number; // chi co khi tra ve tu /support-locations/nearby
+};
+
+const LOCATION_TYPE_LABEL: Record<ApiSupportLocation['type'], string> = {
+  embassy: 'Đại sứ quán',
+  hospital: 'Bệnh viện',
+  police: 'Công an',
+  pharmacy: 'Nhà thuốc',
+  other: 'Hỗ trợ',
+};
+
+// `meta` la dong mo ta ngan hien trong danh sach ban do (man hinh khong tu
+// ghep chuoi -- giu nguyen quy uoc cu tu ban mock, chi doi nguon du lieu).
+function buildLocationMeta(api: ApiSupportLocation, distanceKm?: number): string {
+  const parts = [LOCATION_TYPE_LABEL[api.type]];
+  if (distanceKm !== undefined) parts.push(`${distanceKm < 1 ? Math.round(distanceKm * 1000) + ' m' : distanceKm.toFixed(1) + ' km'}`);
+  if (api.openHours) parts.push(api.openHours);
+  return parts.join(' · ');
+}
+
+export function adaptSupportLocation(api: ApiSupportLocation): SupportLocation {
+  const distanceKm = api.distanceMeters !== undefined ? api.distanceMeters / 1000 : undefined;
+  return {
+    id: api._id,
+    type: api.type,
+    name: api.name,
+    nameLocal: api.nameLocal ?? '',
+    meta: buildLocationMeta(api, distanceKm),
+    address: api.address ?? '',
+    openHours: api.openHours ?? '',
+    website: api.website ?? '',
+    verified: api.verified,
+    verifiedAt: api.verifiedAt ?? null,
+    distanceKm,
+    phone: api.phone ?? '',
+    lat: api.location.coordinates[1],
+    lng: api.location.coordinates[0],
+    featured: api.type === 'embassy',
   };
 }
 

@@ -6,7 +6,7 @@ import { UserRole } from "../core/constants.js";
 
 import { countriesController } from "../controllers/adminCountries.controller.js";
 import { topicsController } from "../controllers/adminTopics.controller.js";
-import { locationsController } from "../controllers/adminLocations.controller.js";
+import { locationsController, bulkImport as locationsBulkImport, bulkVerify as locationsBulkVerify } from "../controllers/adminLocations.controller.js";
 import * as articlesController from "../controllers/adminArticles.controller.js";
 import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
@@ -28,6 +28,8 @@ import {
   locationCreateSchema,
   locationUpdateSchema,
   locationListQuerySchema,
+  locationBulkImportSchema,
+  locationBulkVerifySchema,
   auditListQuerySchema,
   ragReindexCountrySchema,
   ragStatusQuerySchema,
@@ -71,6 +73,8 @@ router.post("/legal/articles/:id/new-version", articlesController.newVersion);
 
 router.get("/locations", validateQuery(locationListQuerySchema), locationsController.list);
 router.post("/locations", validateBody(locationCreateSchema), locationsController.create);
+router.post("/locations/bulk-import", validateBody(locationBulkImportSchema), locationsBulkImport);
+router.post("/locations/bulk-verify", validateBody(locationBulkVerifySchema), locationsBulkVerify);
 router.get("/locations/:id", locationsController.get);
 router.patch("/locations/:id", validateBody(locationUpdateSchema), locationsController.update);
 router.delete("/locations/:id", locationsController.remove);

@@ -92,8 +92,10 @@ export type SupportLocation = {
   countryCode: string;
   type: LocationType;
   name: string;
+  nameLocal?: string;
   address?: string;
   phone?: string;
+  website?: string;
   openHours?: string;
   location: { type: 'Point'; coordinates: [number, number] };
   verified: boolean;
@@ -101,6 +103,13 @@ export type SupportLocation = {
   source?: string;
   createdAt: string;
   updatedAt: string;
+};
+
+// B6 -- ket qua bulk import CSV (backend/src/services/supportLocation.service.js#bulkImportLocations).
+export type LocationBulkImportResult = {
+  createdCount: number;
+  createdIds: string[];
+  skipped: { index: number; name: string; reason: string }[];
 };
 
 export type AuditLog = {

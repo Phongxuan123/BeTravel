@@ -7,13 +7,15 @@
  * B3: countries/topics/legal articles/search/trips đã nối API thật -- đổi
  * theo EXPO_PUBLIC_USE_MOCKS.
  * B5: chat + feedback đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
- * Phần còn lại (incidents/alerts/sos/translate) vẫn 100% mock cho tới khi
- * backend có endpoint tương ứng.
+ * B6: SOS support-locations đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
+ * Phần còn lại (incidents/alerts/translate) vẫn 100% mock cho tới khi backend
+ * có endpoint tương ứng.
  */
 import * as mock from '@/mocks/client';
 import * as content from '@/lib/api/content';
 import * as chatApi from '@/lib/api/chat';
 import * as feedbackApi from '@/lib/api/feedback';
+import * as sosApi from '@/lib/api/sos';
 
 // Cung quy uoc voi lib/auth.tsx: chi mock khi dat DUNG 'true', mac dinh la
 // API that (khac voi doc chu thich cu o day, da sua lai cho dung).
@@ -43,6 +45,9 @@ export const setActiveChatSession = USE_MOCKS ? (_sessionId: string, _countryCod
 export const getActiveChatSessionId = USE_MOCKS ? mock.getActiveSessionId : chatApi.getActiveSessionId;
 export const getLastChatMessageId = USE_MOCKS ? mock.getLastMessageId : chatApi.getLastMessageId;
 
+export const fetchSupportLocations = USE_MOCKS ? mock.fetchSupportLocations : sosApi.fetchSupportLocations;
+export const fetchNearbyLocations = USE_MOCKS ? mock.fetchNearbyLocations : sosApi.fetchNearbyLocations;
+
 export const {
   fetchIncidents,
   fetchIncident,
@@ -50,7 +55,6 @@ export const {
   markAlertRead,
   markAllAlertsRead,
   fetchQuickPhrases,
-  fetchSupportLocations,
   translateText,
 } = mock;
 

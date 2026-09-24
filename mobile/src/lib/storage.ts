@@ -9,6 +9,9 @@ export const StorageKeys = {
   emergencyContacts: 'bt_emergency_contacts',
   documentStatus: 'bt_document_status',
   savedArticles: 'bt_saved_articles',
+  // Prefix -- ghep them countryCode de cache danh sach diem SOS theo tung nuoc
+  // (xem lib/api/sos.ts). Tinh huong SOS rat hay mat mang (CLAUDE.md B6 muc 11).
+  sosLocationsCachePrefix: 'bt_sos_locations_',
 } as const;
 
 export async function getJSON<T>(key: string): Promise<T | null> {

@@ -127,13 +127,23 @@ export const quickPhraseSchema = z.object({
 });
 export type QuickPhrase = z.infer<typeof quickPhraseSchema>;
 
+// nameLocal/address/openHours/website/verified/verifiedAt la field MO RONG cho
+// B6 (man hinh chi tiet diem SOS) -- optional de khong pha vo du lieu gia lap cu.
+// distanceKm chuyen thanh optional vi API that co endpoint KHONG gan voi vi tri
+// nguoi dung (GET /support-locations theo quoc gia, khong co khai niem "khoang cach").
 export const supportLocationSchema = z.object({
   __mock: z.literal(true).optional(),
   id: z.string(),
-  type: z.enum(['police', 'hospital', 'embassy', 'other']),
+  type: z.enum(['police', 'hospital', 'embassy', 'pharmacy', 'other']),
   name: z.string(),
+  nameLocal: z.string().optional(),
   meta: z.string(),
-  distanceKm: z.number(),
+  address: z.string().optional(),
+  openHours: z.string().optional(),
+  website: z.string().optional(),
+  verified: z.boolean().optional(),
+  verifiedAt: z.string().nullable().optional(),
+  distanceKm: z.number().optional(),
   phone: z.string().optional(),
   lat: z.number(),
   lng: z.number(),

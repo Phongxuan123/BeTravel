@@ -31,8 +31,13 @@ const supportLocationSchema = new mongoose.Schema(
     },
 
     name: { type: String, required: true, trim: true },
+    // Ten theo ngon ngu ban dia (vi du tieng Han) -- huu ich khi dua man hinh
+    // cho tai xe taxi/nguoi dia phuong xem, khong phai luc nao ten tieng Viet
+    // cung nhan ra duoc dia diem.
+    nameLocal: { type: String, default: "" },
     address: { type: String, default: "" },
     phone: { type: String, default: "" },
+    website: { type: String, default: "" },
     openHours: { type: String, default: "" },
 
     location: { type: locationPointSchema, required: true },

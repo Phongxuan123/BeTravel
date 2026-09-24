@@ -487,3 +487,40 @@ GET /admin/analytics/overview?days=7   200
   "topFallbackQuestions": [{ "question": "...", "count": 4 }]
 }
 ```
+
+## 14. ENDPOINT SOS LOCATIONS CONG KHAI — `/api/support-locations/*` (B6)
+
+```
+GET /support-locations/nearby?lat&lng&country=&type=&radiusKm=&limit=   200
+     -- $geoNear, tra kem distanceMeters. Khong co diem trong radiusKm ->
+        TU DONG mo rong het toan bo quoc gia (khong tra mang rong, SOS khong
+        duoc phep "khong tim thay gi"). Toa do GeoJSON [lng, lat].
+GET /support-locations?country=&type=   200 -- fallback khi tu choi GPS,
+     sap xep verified truoc, khong co distanceMeters.
+```
+
+`location` (moi item) co dang:
+```jsonc
+{
+  "_id": "...", "countryCode": "KR", "type": "embassy",
+  "name": "...", "nameLocal": "...", "address": "...", "phone": "...",
+  "website": "", "openHours": "08:30 - 17:00",
+  "location": { "type": "Point", "coordinates": [127.0016, 37.5407] },
+  "verified": true, "verifiedAt": "...", "distanceMeters": 450  // chi co o /nearby
+}
+```
+
+## 15. ENDPOINT ADMIN LOCATIONS BULK — `/api/admin/locations/bulk-*` (B6, role admin)
+
+```
+POST /admin/locations/bulk-import {rows:[LocationInput...]}   200
+     { createdCount, createdIds, skipped:[{index,name,reason}] } --
+     ★ moi dong xu ly DOC LAP, dong loi bi bo qua kem ly do thay vi lam hong
+       ca file (Rule 7 -- khong "tat ca hoac khong gi" voi du lieu nguoi go tay).
+POST /admin/locations/bulk-verify {ids:[...]}   200 { verifiedCount }
+```
+
+★ Validate khi tao/sua 1 diem (khong ap dung cho tung dong bulk-import, xem tren):
+`name` + `address` bat buoc, toa do phai hop le (lat [-90,90], lng [-180,180]),
+va can IT NHAT 1 trong 2: `phone` hoac `website` -- diem chi co ten+dia chi
+khong "Goi ngay" duoc, giam gia tri tinh nang SOS.

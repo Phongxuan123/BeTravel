@@ -150,29 +150,56 @@ export const articleStatusChangeSchema = z.object({
   note: z.string().trim().optional(),
 });
 
-// ── SupportLocation ──────────────────────────────────────────────────────
+// ── SupportLocation (B2 CRUD + B6 publish validate/bulk) ────────────────
+const LOCATION_TYPES = ["embassy", "hospital", "police", "pharmacy", "other"];
+
 const geoPointSchema = z.object({
   type: z.literal("Point").default("Point"),
-  coordinates: z.tuple([z.number(), z.number()]).describe("[lng, lat] -- KHONG phai [lat, lng]"),
+  // [lng, lat] -- KHONG phai [lat, lng]. Chan luon toa do vo ly (vi du dao
+  // thu tu lat/lng se ra gia tri ngoai khoang, bat duoc ngay o day.
+  coordinates: z
+    .tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])
+    .describe("[lng, lat] -- KHONG phai [lat, lng]"),
 });
 
-export const locationCreateSchema = z.object({
+const locationBaseSchema = z.object({
   countryCode: countryCodeSchema,
-  type: z.enum(["embassy", "hospital", "police", "pharmacy", "other"]),
+  type: z.enum(LOCATION_TYPES),
   name: z.string().trim().min(1, "Ten dia diem khong duoc de trong"),
-  address: z.string().trim().optional(),
+  nameLocal: z.string().trim().optional(),
+  address: z.string().trim().min(1, "Dia chi khong duoc de trong"),
   phone: z.string().trim().optional(),
+  website: z.string().trim().url("Website khong hop le").optional().or(z.literal("")),
   openHours: z.string().trim().optional(),
   location: geoPointSchema,
   verified: z.boolean().optional(),
   source: z.string().trim().optional(),
 });
 
-export const locationUpdateSchema = locationCreateSchema.partial();
+// Diem hien thi cho nguoi dung PHAI co it nhat 1 kenh lien lac (goi hoac tra
+// cuu website) -- mot dia diem chi co ten+dia chi thi khong the "Goi ngay"
+// duoc, giam gia tri cua tinh nang SOS (CLAUDE.md B6 prompt muc 3).
+export const locationCreateSchema = locationBaseSchema.refine(
+  (data) => Boolean(data.phone?.trim()) || Boolean(data.website?.trim()),
+  { message: "Can it nhat 1 trong 2: so dien thoai hoac website", path: ["phone"] },
+);
+
+export const locationUpdateSchema = locationBaseSchema.partial();
 
 export const locationListQuerySchema = paginationQuerySchema.extend({
   countryCode: countryCodeSchema.optional(),
-  type: z.enum(["embassy", "hospital", "police", "pharmacy", "other"]).optional(),
+  type: z.enum(LOCATION_TYPES).optional(),
+});
+
+// Moi dong CSV co the thieu truong (nguoi nhap lieu go tay) -- de tat ca
+// optional o tang schema, phan xu ly rieng tung dong o service quyet dinh
+// tao hay bo qua + ghi ly do, thay vi 1 dong sai lam VALIDATION_ERROR ca file.
+export const locationBulkImportSchema = z.object({
+  rows: z.array(locationBaseSchema.partial()).min(1).max(200),
+});
+
+export const locationBulkVerifySchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(500),
 });
 
 // ── AuditLog ─────────────────────────────────────────────────────────────

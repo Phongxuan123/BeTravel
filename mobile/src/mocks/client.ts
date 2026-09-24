@@ -8,7 +8,8 @@ import { incidents, getIncidentBySlug } from './fixtures/incidents';
 import { alerts as alertsFixture } from './fixtures/alerts';
 import { getQuickPhrasesByCountry } from './fixtures/quick-phrases';
 import { supportLocations } from './fixtures/support-locations';
-import type { Article, SearchResultItem, Trip } from './schemas';
+import type { Article, SearchResultItem, SupportLocation, Trip } from './schemas';
+import { haversineKm } from '@/lib/geo';
 
 export const IS_MOCK = true;
 
@@ -152,8 +153,28 @@ export async function fetchQuickPhrases(countryCode: string) {
   return delay(getQuickPhrasesByCountry(countryCode));
 }
 
-export async function fetchSupportLocations() {
-  return delay(supportLocations);
+// fromCache khai bao san (luon undefined o mock) chi de khop kieu tra ve voi
+// lib/api/sos.ts -- cong tac USE_MOCKS can ca 2 nhanh CUNG mot shape.
+type LocationsEnvelope = Promise<{ ok: true; data: SupportLocation[]; fromCache?: boolean }>;
+
+export async function fetchSupportLocations(opts?: { country?: string; type?: SupportLocation['type'] }): LocationsEnvelope {
+  const data = opts?.type ? supportLocations.filter((l) => l.type === opts.type) : supportLocations;
+  return delay(data);
+}
+
+export async function fetchNearbyLocations(
+  lat: number,
+  lng: number,
+  opts?: { country?: string; type?: SupportLocation['type']; radiusKm?: number; limit?: number },
+): LocationsEnvelope {
+  // distanceKm khai bao optional o schema (API that co endpoint khong gan GPS)
+  // -- ep kieu tra ve khop voi lib/api/sos.ts de cong tac USE_MOCKS type-check duoc.
+  const withDistance: SupportLocation[] = supportLocations
+    .filter((l) => !opts?.type || l.type === opts.type)
+    .map((l) => ({ ...l, distanceKm: haversineKm(lat, lng, l.lat, l.lng) }))
+    .sort((a, b) => (a.distanceKm ?? 0) - (b.distanceKm ?? 0))
+    .slice(0, opts?.limit ?? 10);
+  return delay(withDistance);
 }
 
 // AI Legal Assistant — trả lời giả lập theo 2 biến thể của spec mục 6.10.

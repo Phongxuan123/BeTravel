@@ -3,8 +3,18 @@ import topicFixture from '../../../../../contracts/fixtures/public.legalTopic.js
 import articleFixture from '../../../../../contracts/fixtures/public.legalArticle.json';
 import searchFixture from '../../../../../contracts/fixtures/public.legalSearch.json';
 import tripFixture from '../../../../../contracts/fixtures/trip.json';
-import { adaptArticle, adaptCountry, adaptSearchHit, adaptTopic, adaptTrip, type ApiCountry } from '../adapters';
-import { articleSchema, countrySchema, searchResultSchema, topicSchema, tripSchema } from '@/mocks/schemas';
+import supportLocationFixture from '../../../../../contracts/fixtures/public.supportLocation.json';
+import {
+  adaptArticle,
+  adaptCountry,
+  adaptSearchHit,
+  adaptSupportLocation,
+  adaptTopic,
+  adaptTrip,
+  type ApiCountry,
+  type ApiSupportLocation,
+} from '../adapters';
+import { articleSchema, countrySchema, searchResultSchema, supportLocationSchema, topicSchema, tripSchema } from '@/mocks/schemas';
 
 // Doi chieu adapters.ts voi fixture dung chung o contracts/fixtures/ -- backend
 // co test tuong ung trong backend/test/contracts.test.js doi chieu CUNG cac
@@ -43,5 +53,22 @@ describe('adapters.ts chuyen du lieu API that sang dung shape man hinh dang dung
     expect(trip.destinationDetail).toBe('Gangnam-gu');
     expect(trip.startDate).toBe('2026-10-01');
     expect(trip.endDate).toBe('2026-10-10');
+  });
+
+  it('adaptSupportLocation(public.supportLocation.json) khop supportLocationSchema, dao dung [lng,lat] -> {lat,lng}', () => {
+    const api = supportLocationFixture.data[0] as unknown as ApiSupportLocation;
+    const location = adaptSupportLocation(api);
+    expect(supportLocationSchema.parse(location)).toBeTruthy();
+    expect(location.lat).toBe(37.5407);
+    expect(location.lng).toBe(127.0016);
+    expect(location.verified).toBe(true);
+    expect(location.distanceKm).toBeUndefined();
+  });
+
+  it('adaptSupportLocation gan distanceKm tu distanceMeters khi tra ve tu /nearby', () => {
+    const api = supportLocationFixture.data[0] as unknown as ApiSupportLocation;
+    const location = adaptSupportLocation({ ...api, distanceMeters: 450 });
+    expect(location.distanceKm).toBeCloseTo(0.45);
+    expect(location.meta).toContain('450 m');
   });
 });
