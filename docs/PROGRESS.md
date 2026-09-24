@@ -1,6 +1,6 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-23 · Phiên: B5 (Chat mobile + feedback)
+Cập nhật lần cuối: 2026-09-24 · Phiên: B6 (SOS locations + map)
 
 | Batch | Trạng thái | Ngày | Ghi chú |
 |---|---|---|---|
@@ -9,7 +9,7 @@ Cập nhật lần cuối: 2026-09-23 · Phiên: B5 (Chat mobile + feedback)
 | B3 Public content       | xong | 2026-09-22 | API công khai countries/topics/articles/search + trips thật, seed 4 nước + 6 chủ đề + 8 bài draft KR có nguồn thật, mobile nối API thật |
 | B4 RAG + guardrails     | xong | 2026-09-23 | Embedding/LLM provider (mock bắt buộc + Gemini/OpenAI), chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm, chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 |
 | B5 Chat + feedback      | xong | 2026-09-23 | Mobile chat nối RAG thật (session/lịch sử/feedback/báo sai/marker bấm được/focusArticleId), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI, sửa 3 bug thật qua smoke test (mongoose deprecation, validateQuery không coerce được req.query, topFallbackQuestions null) |
-| B6 SOS                  | chưa làm | | |
+| B6 SOS                  | xong một phần | 2026-09-24 | Backend $geoNear thật + admin CRUD/bulk import/verify + mobile map/hub nối API thật đều XONG và đã smoke test thật trên Atlas. **Còn thiếu 1 điều kiện nghiệm thu của master plan**: chưa có `support_locations` nào đã verify trong DB thật (không tự bịa toạ độ GPS — rủi ro an toàn). Xem "Đang vướng". |
 | B7 Incidents + dịch     | chưa làm | | |
 | B8 Alerts + profile     | chưa làm | | |
 | B9 Hardening            | chưa làm | | |
@@ -238,6 +238,68 @@ Trạng thái hợp lệ: `chưa làm` · `đang làm` · `xong` · `xong một 
     đồng bộ 1 kiểu trong cùng codebase thay vì để 2 API khác nhau cho cùng một
     việc.
 
+### B6 (SOS locations + map, 24/09/2026)
+
+42. **Validate "publish location" bắt buộc `address` + ÍT NHẤT 1 trong
+    `phone`/`website`** (`locationCreateSchema.refine`, tách khỏi
+    `locationBaseSchema` để `locationUpdateSchema`/`.partial()` không bị kẹt
+    theo ràng buộc refine của Zod) — đúng yêu cầu prompt B6 mục 3. Sửa kèm test
+    `admin.test.js` cũ (tạo location không có `address`/`phone`) cho khớp quy
+    tắc mới.
+43. **Bulk import CSV xử lý TỪNG DÒNG độc lập, dòng lỗi bị bỏ qua kèm lý do
+    thay vì làm hỏng cả file** (`bulkImportLocations`) — dữ liệu CSV do người
+    tự gõ tay, khả năng cao có vài dòng lỗi; "tất cả hoặc không gì" sẽ buộc
+    sửa lại toàn bộ file chỉ vì 1 dòng sai.
+44. **Public `/support-locations/nearby` không tự tin `req.query.lat/lng/...`
+    đã là number sau `validateQuery`** — áp dụng đúng cách né bug đã ghi ở
+    quyết định 39 (B5): tự `Number()` lại trong controller.
+45. **`/support-locations/nearby` sắp xếp theo KHOẢNG CÁCH tăng dần là chính,
+    `verified` chỉ là tiêu chí phụ khi bằng khoảng cách** — đọc sát nghĩa đen
+    câu spec "sắp xếp tăng dần. verified=true ưu tiên", và vì tình huống SOS
+    thì điểm THẬT SỰ gần nhất quan trọng hơn nhãn "đã kiểm chứng".
+46. **Không có điểm trong bán kính → 1 lần fallback KHÔNG giới hạn khoảng
+    cách (toàn bộ quốc gia)**, không phải vòng lặp mở rộng dần nhiều lần —
+    đơn giản hơn (Rule 9 KISS) mà vẫn đúng yêu cầu "SOS không được phép
+    'không tìm thấy gì'".
+47. **[BUG THẬT, phát hiện qua test] `$geoNear` báo lỗi "requires a 2d or
+    2dsphere index"` khi chạy test đầu tiên** — Mongoose xây index nền
+    (`autoIndex`) không đồng bộ với `mongoose.connect()`, nên test gọi
+    `$geoNear` ngay sau khi kết nối có thể chạy TRƯỚC khi index dựng xong.
+    Sửa bằng `await SupportLocation.init()` trong `before()` của
+    `supportLocation.test.js` trước khi test.
+48. **`askLegalAssistant`-style "cùng chữ ký + mở rộng optional" áp dụng lại
+    cho `fetchSupportLocations`/`fetchNearbyLocations`** (`lib/api/sos.ts`) —
+    nhất quán với quyết định 34 (B5).
+49. **Cache offline lưu Ở TẦNG DATA (`lib/api/sos.ts`), không phải ở màn
+    hình** — `fromCache?: boolean` là field mở rộng optional trên envelope,
+    màn hình chỉ đọc cờ này để hiện banner, không tự quản lý AsyncStorage.
+50. **Khoảng cách đại sứ quán ở SOS Hub (`sos/index.tsx`) tính bằng Haversine
+    phía client** thay vì gọi lại `/support-locations/nearby` — dữ liệu
+    `Country.embassy` là sub-document riêng trên `Country`, KHÔNG phải một
+    `SupportLocation`; hợp nhất 2 mô hình này là thay đổi kiến trúc lớn hơn
+    phạm vi B6, để dành cho batch sau nếu cần. Giải quyết đúng phần đã bị
+    flag ở quyết định 17 ("dự kiến B6").
+51. **[BUG THẬT, phát hiện qua test tự viết] `Number('')` bằng `0`, không
+    phải `NaN`** trong `admin/src/lib/csv.ts#parseLocationsCsv` — dòng CSV bỏ
+    trống cột `lat`/`lng` bị gán nhầm toạ độ `[0,0]` ("null island") thay vì
+    được coi là "chưa có toạ độ". Sửa bằng kiểm tra chuỗi rỗng trước khi gọi
+    `Number()`. Phát hiện TRƯỚC khi đưa vào dùng thật nhờ viết test cho parser.
+52. **Parser CSV tự viết (không thêm thư viện, Rule 9 KISS) phải xử lý field
+    bọc trong `"..."` chứa dấu phẩy bên trong** (địa chỉ thật luôn có dấu
+    phẩy) — bản đầu chỉ `split(',')` đơn giản sẽ cắt sai cột ngay với dòng dữ
+    liệu thật đầu tiên (`docs/sos-locations-template.csv`). Tách hẳn logic
+    parse CSV sang `admin/src/lib/csv.ts` (không phải trong `LocationsPage.tsx`)
+    để test được bằng Vitest mà không phải nạp Leaflet (cần `window`, môi
+    trường test admin không có `jsdom`).
+53. **KHÔNG tự seed toạ độ GPS cho `support_locations`** dù đã có sẵn tên/địa
+    chỉ/SĐT đã có nguồn thật của Đại sứ quán VN tại Seoul (từ
+    `scripts/seed-content.js#COUNTRIES`, trước đó cũng cố tình để trống toạ độ
+    — xem quyết định 17) — đoán sai toạ độ GPS cho tính năng SOS có thể gây
+    hại thật (chỉ sai đường tới đại sứ quán/bệnh viện lúc khẩn cấp). Tạo
+    `docs/sos-locations-template.csv` với dữ liệu ĐÃ CÓ NGUỒN, để trống
+    `lat`/`lng` cho người có bản đồ điền, import qua tính năng "Nhập CSV" mới
+    xây. Xem "Đang vướng".
+
 ### Đợt rà soát tương tác toàn mobile (23/09/2026, ngoài lộ trình batch — người dùng yêu cầu trực tiếp: "kiểm tra lại từ đầu đến cuối, tìm và fix")
 
 Sau khi B3 nối API thật, người dùng phát hiện nhiều nút/chip không phản hồi
@@ -289,6 +351,23 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
 
 ## Đang vướng
 
+- **[B6, MỚI] Chưa có `support_locations` nào đã VERIFY trong DB thật —
+  master plan (`docs/00_...` mục B.6/dòng "B6 không nghiệm thu được nếu chưa
+  có support_locations đã verify") coi đây là điều kiện nghiệm thu bắt buộc.**
+  Toàn bộ pipeline (backend `$geoNear`, admin CRUD/bulk import/bulk verify,
+  mobile map/hub) đã XONG và đã smoke test thật trên Atlas (tạo — xác minh —
+  xoá dữ liệu test, xem quyết định 42-53) — chỉ riêng dữ liệu THẬT thì chưa có
+  vì KHÔNG được tự đoán toạ độ GPS (nếu sai, tính năng SOS chỉ sai đường tới
+  đại sứ quán/bệnh viện đúng lúc khẩn cấp — không phải rủi ro có thể chấp
+  nhận được để tiết kiệm thời gian). Đã chuẩn bị sẵn
+  `docs/sos-locations-template.csv` với tên/địa chỉ/SĐT ĐÃ CÓ NGUỒN thật của
+  Đại sứ quán VN tại Seoul (lấy lại từ `scripts/seed-content.js#COUNTRIES`,
+  cùng nguồn `docs/06_Legal_Content_Seed_KR.md`), chỉ để trống cột `lat`/`lng`.
+  **Việc cần người làm**: mở Google Maps/Naver Map, tra toạ độ thật của tối
+  thiểu vài điểm quan trọng (đại sứ quán, 1-2 bệnh viện, đồn công an gần khu
+  du khách hay tới ở Seoul), điền vào file CSV, rồi vào Admin Portal →
+  "Điểm hỗ trợ" → nút "Nhập CSV" để tải lên; sau đó tick chọn các điểm đã gọi
+  điện xác minh thật rồi bấm "Xác minh đã chọn". Không cần biết code.
 - **[B4, ĐÃ XONG] Smoke test Gemini thật đã xác nhận chạy đúng end-to-end**
   (2026-09-23) — key mới (`AIzaSy...`, đúng định dạng REST API key) hoạt động.
   Phát hiện thêm: `LLM_MODEL=gemini-2.5-flash` (giá trị mặc định cũ trong
@@ -414,6 +493,27 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
 
 ## Nợ kỹ thuật
 
+- **[24/09/2026, B6] "Từ chối GPS → chọn thành phố/khu vực thủ công" được
+  đơn giản hoá thành "xem toàn bộ quốc gia"**, không phải picker chọn từng
+  thành phố/khu vực cụ thể như văn bản gốc prompt B6 mục 10 gợi ý — quyết định
+  phạm vi có chủ đích (một picker thành phố đầy đủ là tính năng riêng, không
+  chỉ vài dòng code), vẫn thoả DoD "vẫn dùng được qua chọn thủ công".
+- **[24/09/2026, B6] `sos/index.tsx`: `openTime`/`closeTime` của đại sứ quán
+  vẫn để rỗng, badge "Đang mở cửa" vẫn hard-code `true`** — không thuộc phạm
+  vi B6 (B6 chỉ giải quyết phần `distanceKm`, xem quyết định 50); cần biết
+  giờ mở cửa thật của đại sứ quán để làm đúng, đây vẫn là dữ liệu chưa có
+  nguồn (giống các field khác đã ghi ở quyết định 17).
+- **[24/09/2026, B6] Nút "Tăng tương phản" ở SOS Hub vẫn là màn chặn
+  `ComingSoonScreen`** — tính năng accessibility riêng, không thuộc phạm vi
+  SOS locations của B6.
+- **[24/09/2026, B6] `ErrorBoundary` quanh `MapView` chưa test được với lỗi
+  native THẬT** (ví dụ thiết bị thiếu Google Play Services) — chỉ xác nhận
+  đúng cơ chế React (`getDerivedStateFromError`) bằng đọc code, DoD yêu cầu
+  "test bằng cách ngắt mạng" chủ yếu kiểm chứng được ở tầng DỮ LIỆU (cache
+  AsyncStorage + banner ngoại tuyến, đã test thật), không phải tầng MapView
+  tự crash — react-native-maps thường không throw JS error khi mất mạng, chỉ
+  hiện bản đồ trống, native module thật sự lỗi là tình huống hiếm cần thiết
+  bị thật để test (không mô phỏng được trong môi trường phát triển này).
 - **[23/09/2026, phát hiện khi kiểm tra trước B5] `npx expo lint` báo 9 lỗi
   `react-hooks/refs` trong `mobile/src/app/trips/new.tsx` (dòng 121, 123,
   494)** — truy cập `.current` của ref lúc render trong nút xác nhận bước 4

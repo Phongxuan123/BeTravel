@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Location from 'expo-location';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
 import { IconButton } from '@/components/ui/IconButton';
@@ -10,16 +11,39 @@ import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
+import { requestLocationWithExplanation } from '@/lib/locationPermission';
+import { haversineKm } from '@/lib/geo';
 import { useState } from 'react';
 
 export default function SosHubScreen() {
   const insets = useSafeAreaInsets();
   const { country } = useCountry();
   const [shareLocation, setShareLocation] = useState(true);
+  const [currentCity, setCurrentCity] = useState('');
+  const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
+  const [locatingGps, setLocatingGps] = useState(false);
 
   if (!country) return null;
 
   const isOpen = true; // giờ mở cửa đại sứ quán — tính theo dữ liệu, mock luôn "đang mở"
+
+  const updateLocation = async () => {
+    setLocatingGps(true);
+    try {
+      const coords = await requestLocationWithExplanation();
+      if (!coords) return;
+
+      if (country.embassy.lat && country.embassy.lng) {
+        setEmbassyDistanceKm(haversineKm(coords.latitude, coords.longitude, country.embassy.lat, country.embassy.lng));
+      }
+
+      const [place] = await Location.reverseGeocodeAsync({ latitude: coords.latitude, longitude: coords.longitude });
+      const city = place?.city || place?.subregion || place?.region;
+      if (city) setCurrentCity(city);
+    } finally {
+      setLocatingGps(false);
+    }
+  };
 
   return (
     <AppShell active="sos">
@@ -41,12 +65,10 @@ export default function SosHubScreen() {
           <View className="mt-4 h-[52px] flex-row items-center rounded-lg bg-surface px-3.5" style={{ gap: 8 }}>
             <MapPin size={18} color={colors.danger} />
             <Text className="flex-1 text-base font-body-semibold text-ink" numberOfLines={1}>
-              {country.currentCity || 'Chưa xác định vị trí'}
+              {currentCity || country.currentCity || 'Chưa xác định vị trí'}
             </Text>
-            <Pressable
-              onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Cập nhật vị trí (GPS)' } })}
-            >
-              <Text className="font-body-bold text-primary">Cập nhật</Text>
+            <Pressable onPress={updateLocation} disabled={locatingGps}>
+              <Text className="font-body-bold text-primary">{locatingGps ? 'Đang tìm...' : 'Cập nhật'}</Text>
             </Pressable>
           </View>
         </View>
@@ -82,7 +104,11 @@ export default function SosHubScreen() {
             <Text className="mt-2 text-sm text-muted">{country.embassy.address}</Text>
             <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
               {isOpen ? <Badge label="● Đang mở cửa" tone="success" /> : <Badge label={`Đã đóng cửa · mở lúc ${country.embassy.openTime}`} tone="neutral" />}
-              <Text className="text-sm text-muted">Cách bạn {country.embassy.distanceKm.toLocaleString('vi-VN')} km</Text>
+              {embassyDistanceKm !== null && (
+                <Text className="text-sm text-muted">
+                  Cách bạn {embassyDistanceKm < 1 ? `${Math.round(embassyDistanceKm * 1000)} m` : `${embassyDistanceKm.toFixed(1)} km`}
+                </Text>
+              )}
             </View>
             <View className="mt-3 flex-row" style={{ gap: 10 }}>
               <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" onPress={() => Linking.openURL(`tel:${country.embassy.phone}`)}>

@@ -30,7 +30,13 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Be.Travel cần vị trí của bạn để tìm đại sứ quán, bệnh viện, đồn công an gần nhất khi bạn cần hỗ trợ khẩn cấp."
+        }
+      ]
     ]
   }
 }

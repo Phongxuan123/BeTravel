@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, BadgeCheck } from 'lucide-react';
+import { Plus, Pencil, Trash2, BadgeCheck, Upload } from 'lucide-react';
 import { locationsApi, countriesApi } from '../lib/api';
 import type { SupportLocation, LocationType } from '../lib/types';
 import { ApiError } from '../lib/apiClient';
@@ -11,6 +11,7 @@ import { Modal } from '../components/ui/Modal';
 import { Table, Thead, Th, Tbody, Td } from '../components/ui/Table';
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/Feedback';
 import { MapPicker } from '../components/MapPicker';
+import { parseLocationsCsv } from '../lib/csv';
 
 const LOCATION_TYPE_LABEL: Record<LocationType, string> = {
   embassy: 'Đại sứ quán',
@@ -24,8 +25,10 @@ type FormState = {
   countryCode: string;
   type: LocationType;
   name: string;
+  nameLocal: string;
   address: string;
   phone: string;
+  website: string;
   verified: boolean;
   coordinates: [number, number] | null;
 };
@@ -34,8 +37,10 @@ const emptyForm = (defaultCountry: string): FormState => ({
   countryCode: defaultCountry,
   type: 'embassy',
   name: '',
+  nameLocal: '',
   address: '',
   phone: '',
+  website: '',
   verified: false,
   coordinates: null,
 });
@@ -54,6 +59,8 @@ export default function LocationsPage() {
   const [form, setForm] = useState<FormState>(emptyForm(''));
   const [modalOpen, setModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'locations'] });
 
@@ -61,11 +68,43 @@ export default function LocationsPage() {
     countryCode: state.countryCode,
     type: state.type,
     name: state.name,
+    nameLocal: state.nameLocal || undefined,
     address: state.address,
-    phone: state.phone,
+    phone: state.phone || undefined,
+    website: state.website || undefined,
     verified: state.verified,
     location: { type: 'Point' as const, coordinates: state.coordinates as [number, number] },
   });
+
+  const bulkImportMutation = useMutation({
+    mutationFn: (rows: Partial<SupportLocation>[]) => locationsApi.bulkImport(rows),
+    onSuccess: invalidate,
+  });
+
+  const bulkVerifyMutation = useMutation({
+    mutationFn: (ids: string[]) => locationsApi.bulkVerify(ids),
+    onSuccess: () => {
+      invalidate();
+      setSelectedIds(new Set());
+    },
+  });
+
+  const onCsvSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // cho phep chon lai dung file nay lan nua neu can
+    if (!file) return;
+    const rows = parseLocationsCsv(await file.text());
+    if (rows.length > 0) bulkImportMutation.mutate(rows);
+  };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   const createMutation = useMutation({
     mutationFn: (state: FormState) => locationsApi.create(buildPayload(state)),
@@ -100,8 +139,10 @@ export default function LocationsPage() {
       countryCode: location.countryCode,
       type: location.type,
       name: location.name,
+      nameLocal: location.nameLocal ?? '',
       address: location.address ?? '',
       phone: location.phone ?? '',
+      website: location.website ?? '',
       verified: location.verified,
       coordinates: location.location.coordinates,
     });
@@ -117,6 +158,10 @@ export default function LocationsPage() {
       setFormError('Hãy click trên bản đồ để đặt vị trí');
       return;
     }
+    if (!form.phone.trim() && !form.website.trim()) {
+      setFormError('Cần ít nhất 1 trong 2: số điện thoại hoặc website');
+      return;
+    }
 
     if (editing) updateMutation.mutate(form);
     else createMutation.mutate(form);
@@ -130,11 +175,44 @@ export default function LocationsPage() {
         title="Điểm hỗ trợ"
         description="Đại sứ quán, bệnh viện, công an... dùng cho SOS map. Toạ độ [kinh độ, vĩ độ]."
         actions={
-          <Button iconLeft={<Plus size={16} />} onClick={openCreate}>
-            Thêm điểm
-          </Button>
+          <div className="flex gap-2">
+            <input ref={fileInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={onCsvSelected} />
+            <Button variant="secondary" iconLeft={<Upload size={16} />} onClick={() => fileInputRef.current?.click()} loading={bulkImportMutation.isPending}>
+              Nhập CSV
+            </Button>
+            <Button
+              variant="secondary"
+              iconLeft={<BadgeCheck size={16} />}
+              disabled={selectedIds.size === 0}
+              loading={bulkVerifyMutation.isPending}
+              onClick={() => bulkVerifyMutation.mutate([...selectedIds])}
+            >
+              Xác minh đã chọn ({selectedIds.size})
+            </Button>
+            <Button iconLeft={<Plus size={16} />} onClick={openCreate}>
+              Thêm điểm
+            </Button>
+          </div>
         }
       />
+
+      {bulkImportMutation.isError && (
+        <div className="mb-4 rounded-md border border-danger-line bg-red-50 px-3 py-2 text-sm text-danger">
+          {bulkImportMutation.error instanceof ApiError ? bulkImportMutation.error.message : 'Không nhập được file CSV'}
+        </div>
+      )}
+      {bulkImportMutation.isSuccess && (
+        <div className="mb-4 rounded-md border border-line bg-blue-50 px-3 py-2 text-sm text-ink">
+          Đã tạo {bulkImportMutation.data.data.createdCount} điểm.
+          {bulkImportMutation.data.data.skipped.length > 0 && (
+            <>
+              {' '}
+              Bỏ qua {bulkImportMutation.data.data.skipped.length} dòng:{' '}
+              {bulkImportMutation.data.data.skipped.map((s) => `#${s.index + 1} ${s.name || '(không tên)'} -- ${s.reason}`).join('; ')}
+            </>
+          )}
+        </div>
+      )}
 
       {isLoading && <LoadingState />}
       {error && <ErrorState message={error instanceof ApiError ? error.message : 'Không tải được dữ liệu'} />}
@@ -143,6 +221,7 @@ export default function LocationsPage() {
       {locations.length > 0 && (
         <Table>
           <Thead>
+            <Th></Th>
             <Th>Quốc gia</Th>
             <Th>Loại</Th>
             <Th>Tên</Th>
@@ -152,6 +231,14 @@ export default function LocationsPage() {
           <Tbody>
             {locations.map((location) => (
               <tr key={location._id}>
+                <Td>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(location._id)}
+                    onChange={() => toggleSelected(location._id)}
+                    aria-label={`Chọn ${location.name}`}
+                  />
+                </Td>
                 <Td className="font-mono">{location.countryCode}</Td>
                 <Td>{LOCATION_TYPE_LABEL[location.type]}</Td>
                 <Td>{location.name}</Td>
@@ -198,9 +285,16 @@ export default function LocationsPage() {
             </Select>
           </div>
 
-          <Input label="Tên" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
-          <Input label="Địa chỉ" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-          <Input label="Số điện thoại" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Tên" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+            <Input label="Tên bản địa" value={form.nameLocal} onChange={(e) => setForm({ ...form, nameLocal: e.target.value })} hint="Vd: tiếng Hàn -- giúp tài xế taxi/người địa phương nhận ra" />
+          </div>
+          <Input label="Địa chỉ" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} required />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Số điện thoại" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+            <Input label="Website" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
+          </div>
+          <p className="text-xs text-muted">Cần ít nhất 1 trong 2: số điện thoại hoặc website.</p>
 
           <div>
             <span className="mb-1 block text-sm font-medium text-ink">Vị trí trên bản đồ (click để đặt)</span>

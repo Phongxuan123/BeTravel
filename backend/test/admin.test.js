@@ -308,6 +308,8 @@ test("admin tao SupportLocation voi GeoJSON [lng, lat]", async () => {
       countryCode: "KR",
       type: "embassy",
       name: "Dai su quan Viet Nam tai Seoul",
+      address: "123 Yeongdong-daero, Gangnam-gu, Seoul",
+      phone: "+82234181400",
       location: { type: "Point", coordinates: [127.0016, 37.5407] },
       verified: true,
     });

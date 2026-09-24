@@ -240,6 +240,47 @@ Thực hiện : Claude Code
 - Session chat chỉ resume được phiên GẦN NHẤT theo quốc gia -- chưa có tìm kiếm/lọc lịch sử theo ngày hay từ khoá, đủ dùng cho MVP.
 - `costEstimateUsd` trong A01 Dashboard luôn 0 (kế thừa từ B4 -- provider chưa trả usage tokens thật).
 
+## B6 — SOS LOCATIONS + MAP (v0.7.0 --> v0.8.0)
+
+### B6.1. Tong quan
+- Tổng số file mới        : 8 backend (`services/publicSupportLocation.service.js`, `controllers/publicSupportLocation.controller.js`, `test/supportLocation.test.js`, `contracts/fixtures/public.supportLocation.json`, `docs/sos-locations-template.csv`) + 5 mobile (`lib/api/sos.ts`, `lib/geo.ts`, `lib/locationPermission.ts`, `components/common/ErrorBoundary.tsx`, `lib/__tests__/geo.test.ts`) + 2 admin (`lib/csv.ts`, `lib/__tests__/csv.test.ts`)
+- Tổng số file chỉnh sửa  : backend (`models/SupportLocation.js`, `validators/admin.validator.js`, `validators/publicContent.validator.js`, `services/supportLocation.service.js`, `controllers/adminLocations.controller.js`, `routes/admin.routes.js`, `routes/public.routes.js`, `test/admin.test.js`, `test/contracts.test.js`, `contracts/README.md`) + mobile (`app/sos/index.tsx`, `app/sos/map.tsx`, `lib/data.ts`, `mocks/client.ts`, `mocks/schemas.ts`, `lib/api/adapters.ts`, `lib/storage.ts`, `app.json`, `lib/api/__tests__/adapters.test.ts`) + admin (`pages/LocationsPage.tsx`, `lib/api.ts`, `lib/types.ts`)
+- Warning xử lý           : 0 mới
+- Bug fix                 : 4 (chi tiết ở B6.4 -- 2 phát hiện qua smoke test Atlas, 2 phát hiện TRƯỚC khi ảnh hưởng thật nhờ tự viết test cho logic mới)
+
+### B6.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/src/services/publicSupportLocation.service.js` | 1, 2, 6 | `$geoNear` PHẢI là stage đầu tiên, filter trong `query` của chính nó (CLAUDE.md "Cạm bẫy đã biết"); không có điểm trong bán kính -> 1 lần fallback không giới hạn khoảng cách thay vì mảng rỗng |
+| `backend/src/services/supportLocation.service.js` | 3, 7 | `bulkImportLocations` xử lý từng dòng độc lập, dòng lỗi bị bỏ qua kèm lý do thay vì làm hỏng cả file import |
+| `mobile/src/lib/api/sos.ts` | 1, 4, 9 | Cache offline ở TẦNG DATA (`fromCache` là field mở rộng optional trên envelope), không phải màn hình tự quản lý AsyncStorage |
+| `mobile/src/app/sos/map.tsx` | 2, 7 | `ErrorBoundary` quanh `MapView`, banner ngoại tuyến, sheet chi tiết điểm (gọi/chỉ đường/copy địa chỉ), fallback GPS bị từ chối -> danh sách theo quốc gia |
+| `admin/src/lib/csv.ts` | 2, 3 | Tách RIÊNG khỏi `LocationsPage.tsx` (không phải chỉ để gọn) -- để test được bằng Vitest mà không phải nạp Leaflet (cần `window`, môi trường test admin không có `jsdom`) |
+
+### B6.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md muc 42-53)
+
+- Validate "publish location" bắt buộc `address` + ít nhất 1 trong `phone`/`website` -- tách `locationBaseSchema` khỏi `.refine()` để `locationUpdateSchema.partial()` không bị vướng.
+- `/support-locations/nearby` sắp xếp theo khoảng cách tăng dần là chính (đọc sát nghĩa đen spec), `verified` chỉ là tiêu chí phụ.
+- KHÔNG tự seed toạ độ GPS cho `support_locations` dù đã có sẵn tên/địa chỉ/SĐT có nguồn thật -- đoán sai toạ độ có thể gây hại thật cho tính năng SOS. Chuẩn bị `docs/sos-locations-template.csv` để trống toạ độ, chờ người có bản đồ điền.
+- Khoảng cách đại sứ quán ở SOS Hub tính bằng Haversine phía client (không hợp nhất `Country.embassy` với `SupportLocation` -- thay đổi kiến trúc lớn hơn phạm vi B6).
+
+### B6.4. Warning & Bug da xu ly
+
+| Loại | Mô tả | File | Cách fix |
+|------|-------|------|----------|
+| Bug (phát hiện qua test tự viết, TRƯỚC khi ảnh hưởng dữ liệu thật) | `Number('')` bằng `0`, không phải `NaN` -- dòng CSV bỏ trống `lat`/`lng` bị gán nhầm toạ độ `[0,0]` ("null island") thay vì bị coi là thiếu | `admin/src/lib/csv.ts` | Kiểm tra chuỗi rỗng trước khi gọi `Number()` |
+| Bug (phát hiện qua test tự viết) | Parser CSV tự viết (không thêm thư viện) chỉ `split(',')` đơn giản, cắt sai cột với địa chỉ thật chứa dấu phẩy trong ngoặc kép | `admin/src/lib/csv.ts` | Viết `splitCsvLine` xử lý đúng trường bọc `"..."` |
+| Bug (phát hiện qua smoke test/test $geoNear) | `$geoNear` báo lỗi "requires a 2d or 2dsphere index" ở test đầu tiên -- Mongoose xây index nền không đồng bộ với `connect()` | `test/supportLocation.test.js` | `await SupportLocation.init()` trước khi test trong `before()` |
+| Bug (kế thừa từ B5, phát hiện lại ở endpoint mới) | `validateQuery` không coerce được `req.query` (đã ghi nhận quyết định 39) -- áp dụng lại cách né cho `/support-locations/nearby` | `controllers/publicSupportLocation.controller.js` | Tự `Number()` lại trong controller |
+
+### B6.5. Van de con ton dong
+
+- Chưa có `support_locations` nào đã verify trong DB thật -- điều kiện nghiệm thu của master plan chưa đạt, cần người có bản đồ điền toạ độ thật vào `docs/sos-locations-template.csv` rồi nhập qua Admin (xem docs/PROGRESS.md "Đang vướng").
+- "Từ chối GPS -> chọn thành phố/khu vực thủ công" đơn giản hoá thành "xem toàn bộ quốc gia", không phải picker theo từng thành phố.
+- `ErrorBoundary` quanh `MapView` chưa test được với lỗi native thật (chỉ xác nhận đúng cơ chế React qua đọc code).
+- `openTime`/`closeTime` đại sứ quán vẫn để rỗng (chưa có nguồn thật, ngoài phạm vi B6).
+
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
@@ -251,3 +292,4 @@ Thực hiện : Claude Code
 | v0.6.0    | 23/09/2026 | B4 | RAG engine đầy đủ (embedding/LLM provider + mock bắt buộc, chunking, retrieval 2 lớp phòng thủ, guard.js hậu kiểm), chat API backend, job reindex/purge thật, admin A04 RAG Index, golden test 25/25 (15 must_answer + 6 must_refuse + 4 country_isolation); sửa 2 bug (1 qua smoke test Atlas, 1 qua viết golden test) |
 | v0.6.1    | 23/09/2026 | B4 (điều chỉnh) | Smoke test Gemini thật thành công với key đúng định dạng; phát hiện `gemini-2.5-flash` (default cũ) bị Google trả 404 cho key mới, đổi default `LLM_MODEL` sang `gemini-3.6-flash`; `.env` chốt dùng `LLM_PROVIDER=gemini`/`EMBEDDING_PROVIDER=gemini` cho dev thật, xác nhận test (78/78) và golden test (25/25) không phụ thuộc `.env` nên không bị ảnh hưởng |
 | v0.7.0    | 24/09/2026 | B5 | Chat mobile nối RAG thật (session/lịch sử/marker bấm được/focusArticleId/quota), module feedback + A08 Feedback Queue, A01 Dashboard nâng cấp số liệu AI; sửa 3 bug qua smoke test thật trên Atlas (bug `validateQuery` không coerce `req.query`, `topFallbackQuestions` null, 2 API Mongoose deprecated) |
+| v0.8.0    | 24/09/2026 | B6 | SOS: `$geoNear` thật (backend) + admin CRUD/bulk import CSV/bulk verify + mobile map/hub nối API thật, disable Places API đúng CLAUDE.md; sửa 4 bug (2 qua smoke test Atlas, 2 qua tự viết test TRƯỚC khi ảnh hưởng dữ liệu thật); chưa đạt điều kiện nghiệm thu "có support_locations đã verify" của master plan -- cần người điền toạ độ thật |

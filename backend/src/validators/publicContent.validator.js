@@ -38,6 +38,23 @@ export const articleSearchQuerySchema = paginationQuerySchema.extend({
   topic: slugSchema.optional(),
 });
 
+// ── SupportLocation cong khai (/api/support-locations, B6) ──────────────
+const locationTypeSchema = z.enum(["embassy", "hospital", "police", "pharmacy", "other"]);
+
+export const supportLocationNearbyQuerySchema = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180),
+  country: countryCodeSchema.optional(),
+  type: locationTypeSchema.optional(),
+  radiusKm: z.coerce.number().positive().max(200).optional(),
+  limit: z.coerce.number().int().positive().max(50).optional(),
+});
+
+export const supportLocationListQuerySchema = z.object({
+  country: countryCodeSchema.optional(),
+  type: locationTypeSchema.optional(),
+});
+
 // ── Trips (/api/users/trips) ────────────────────────────────────────────
 export const tripCreateSchema = z
   .object({

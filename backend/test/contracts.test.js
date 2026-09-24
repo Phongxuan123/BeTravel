@@ -185,3 +185,28 @@ test("response cua POST /api/users/trips khop fixture trip.json", async () => {
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data, fixture.data, "trip");
 });
+
+// ── B6: SOS support locations ───────────────────────────────────────────
+test("response cua GET /api/support-locations khop fixture public.supportLocation.json", async () => {
+  const fixture = readFixture("public.supportLocation.json");
+  const SupportLocation = (await import("../src/models/SupportLocation.js")).default;
+  const { registerAndLogin } = await import("./helpers.js");
+  const { user } = await registerAndLogin(app);
+
+  await SupportLocation.create({
+    countryCode: "KR",
+    type: "embassy",
+    name: "Đại sứ quán Việt Nam tại Hàn Quốc",
+    address: "123 Yeongdong-daero, Gangnam-gu, Seoul",
+    phone: "+82234181400",
+    location: { type: "Point", coordinates: [127.0016, 37.5407] },
+    verified: true,
+    createdBy: user.id,
+    updatedBy: user.id,
+  });
+
+  const res = await request(app).get("/api/support-locations").query({ country: "KR" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.supportLocation");
+});
