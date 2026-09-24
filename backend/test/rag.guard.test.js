@@ -10,7 +10,11 @@ import { createHallucinatingMockLlmProvider } from "../src/rag/llm/mock.llm.js";
  */
 
 test("guard xoa marker khong nam trong tap da truy hoi", () => {
-  const raw = { answer: "Đây là thông tin tham khảo [S9].", usedSources: ["S9"], confidence: "high" };
+  const raw = {
+    answer: "Đây là thông tin tham khảo [S9].",
+    usedSources: ["S9"],
+    confidence: "high",
+  };
   const retrieved = new Map([["S1", { marker: "S1", text: "nội dung thật" }]]);
 
   const result = guardAnswer(raw, retrieved);
@@ -49,4 +53,20 @@ test("guard giữ nguyên câu trả lời có nguồn hợp lệ, luôn gắn d
   assert.match(result.answer, /\[S1\]/);
   assert.match(result.answer, /Thông tin dựa trên nguồn/);
   assert.equal(result.citations.length, 1);
+});
+
+test("marker hợp lệ không bảo chứng con số bịa", () => {
+  const result = guardAnswer(
+    { answer: "Phạt 500.000 KRW [S1].", usedSources: ["S1"] },
+    new Map([["S1", { text: "Nguồn chỉ nêu 100.000 KRW" }]]),
+  );
+  assert.equal(result.fallbackReason, "GUARD_REJECTED");
+});
+
+test("marker ở câu trước không bảo chứng mức phạt phía sau", () => {
+  const result = guardAnswer(
+    { answer: "Thông tin chung [S1]. Phạt 500.000 KRW.", usedSources: ["S1"] },
+    new Map([["S1", { text: "Thông tin chung" }]]),
+  );
+  assert.equal(result.fallbackReason, "GUARD_REJECTED");
 });

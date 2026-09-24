@@ -101,7 +101,7 @@ export async function restoreSession(): Promise<ApiUser | null> {
       return session.user;
     } catch (error) {
       // Không biến một lỗi mạng tạm thời thành logout vĩnh viễn.
-      if (error instanceof ApiError && (error.code === 'UPSTREAM_ERROR' || error.status === 0)) {
+      if (!(error instanceof ApiError) || !['UNAUTHORIZED', 'FORBIDDEN'].includes(error.code)) {
         throw error;
       }
 

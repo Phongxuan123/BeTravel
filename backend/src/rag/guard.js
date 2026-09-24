@@ -28,7 +28,7 @@ export const FALLBACK_MESSAGE =
   "Đại sứ quán/Tổng lãnh sự quán Việt Nam, hoặc gọi đường dây bảo hộ công dân.";
 
 export const DEFAULT_DISCLAIMER =
-  "⚠️ Thông tin dựa trên nguồn đã kiểm chứng trong kho dữ liệu của Be.Travel " +
+  "Thông tin dựa trên nguồn đã kiểm chứng trong kho dữ liệu của Be.Travel " +
   "và chỉ mang tính hỗ trợ tham khảo. Đây không phải tư vấn pháp lý chính thức. " +
   "Với tình huống nghiêm trọng, hãy liên hệ cơ quan bảo hộ công dân Việt Nam " +
   "hoặc cơ quan chức năng sở tại.";
@@ -59,7 +59,45 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
   // khong con dang tin, ha cap xuong fallback an toan).
   if (QUANTITATIVE_CLAIM.test(answer) && found.size === 0) {
     violations.push("UNSOURCED_QUANTITATIVE_CLAIM");
-    return { answer: FALLBACK_MESSAGE, citations: [], fallbackReason: FallbackReason.GUARD_REJECTED, violations };
+    return {
+      answer: FALLBACK_MESSAGE,
+      citations: [],
+      fallbackReason: FallbackReason.GUARD_REJECTED,
+      violations,
+    };
+  }
+
+  // Marker hợp lệ ở đầu câu trả lời không bảo chứng cho con số ở phần sau.
+  // Kiểm tra từng khối kết thúc bằng citation và đối chiếu số định lượng với
+  // chính nguồn được viện dẫn. Đây là kiểm tra cú pháp, không thay chuyên gia.
+  const blocks = answer.match(/[^]*?\[S\d+\](?:\s*\[S\d+\])*|[^]+$/g) ?? [];
+  for (const block of blocks) {
+    const prose = block.replace(MARKER, "");
+    if (!QUANTITATIVE_CLAIM.test(prose)) continue;
+    const markers = [...block.matchAll(/\[S(\d+)\]/g)].map((match) => `S${match[1]}`);
+    const sourceText = markers.map((marker) => retrieved.get(marker)?.text ?? "").join(" ");
+    const amounts = [
+      ...prose.matchAll(
+        /\d[\d.,]*\s*(?:KRW|won|원|THB|baht|USD|SGD|JPY|yen|VNĐ|VND|đồng|triệu|nghìn)/giu,
+      ),
+    ].map(([amount]) =>
+      amount
+        .match(/^[\d.,]+/)[0]
+        .replace(/[.,]+$/g, "")
+        .replace(/[.,]/g, ""),
+    );
+    const sourceNumbers = new Set(
+      [...sourceText.matchAll(/\d[\d.,]*/g)].map(([number]) => number.replace(/[.,]/g, "")),
+    );
+    if (!markers.length || amounts.some((amount) => !sourceNumbers.has(amount))) {
+      violations.push("UNSUPPORTED_QUANTITATIVE_CLAIM");
+      return {
+        answer: FALLBACK_MESSAGE,
+        citations: [],
+        fallbackReason: FallbackReason.GUARD_REJECTED,
+        violations,
+      };
+    }
   }
 
   // (c) Disclaimer LUON duoc gan, khong co ngoai le.

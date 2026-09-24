@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useMemo, useReducer, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -87,7 +87,7 @@ export default function TripWizardScreen() {
   const [month, setMonth] = useState(() => now());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const hydratedTripRef = useRef<string | null>(null);
+  const [hydratedTripId, setHydratedTripId] = useState<string | null>(null);
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
 
@@ -104,12 +104,13 @@ export default function TripWizardScreen() {
     ? editTripsQuery.data?.data.find((trip) => trip.id === editingTripId)
     : undefined;
 
-  useEffect(() => {
-    if (!editingTripId || !tripToEdit || hydratedTripRef.current === editingTripId) return;
+  // Đồng bộ một lần khi đổi bài đang sửa; state có guard nên không ghi đè
+  // thay đổi của người dùng khi React Query refetch cùng chuyến đi.
+  if (editingTripId && tripToEdit && hydratedTripId !== editingTripId) {
     dispatch({ type: 'LOAD_TRIP', trip: tripToEdit });
     setMonth(parseISODate(tripToEdit.startDate));
-    hydratedTripRef.current = editingTripId;
-  }, [editingTripId, tripToEdit]);
+    setHydratedTripId(editingTripId);
+  }
 
   const country = countries.find((c) => c.code === state.countryCode);
 
@@ -118,7 +119,7 @@ export default function TripWizardScreen() {
     return countries.filter((c) => stripDiacritics(c.name).includes(q));
   }, [query, countries]);
 
-  const editReady = !editingTripId || hydratedTripRef.current === editingTripId;
+  const editReady = !editingTripId || hydratedTripId === editingTripId;
 
   const canContinue = editReady && (
     (step === 1 && !!state.countryCode && state.destinationCity.trim().length > 0) ||

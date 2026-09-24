@@ -1,4 +1,4 @@
-import { apiRequest } from './apiClient';
+import { apiRequest, ApiError } from './apiClient';
 import { setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from './tokenStore';
 
 export type AdminUser = {
@@ -28,7 +28,7 @@ export async function login(identifier: string, password: string): Promise<Admin
 }
 
 /** Khoi phuc phien khi mo lai trang admin (F5). */
-export async function restoreSession(): Promise<AdminUser | null> {
+async function restoreSessionOnce(): Promise<AdminUser | null> {
   try {
     const { data } = await apiRequest<Session>('/auth/refresh', {
       method: 'POST',
@@ -37,8 +37,8 @@ export async function restoreSession(): Promise<AdminUser | null> {
     });
     await persistSession(data);
     return data.user;
-  } catch {
-    clearTokens();
+  } catch (error) {
+    if (error instanceof ApiError && ['UNAUTHORIZED', 'FORBIDDEN'].includes(error.code)) clearTokens();
     return null;
   }
 }
@@ -58,4 +58,11 @@ export async function logout(): Promise<void> {
 export async function me(): Promise<AdminUser> {
   const { data } = await apiRequest<{ user: AdminUser }>('/auth/me');
   return data.user;
+}
+
+let restoreInFlight: Promise<AdminUser | null> | null = null;
+export async function restoreSession(): Promise<AdminUser | null> {
+  if (!restoreInFlight) restoreInFlight = restoreSessionOnce();
+  try { return await restoreInFlight; }
+  finally { restoreInFlight = null; }
 }

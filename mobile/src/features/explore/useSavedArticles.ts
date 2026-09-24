@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { getJSON, setJSON, StorageKeys } from '@/lib/storage';
+import { useUserStorage } from '@/lib/useUserStorage';
+import { StorageKeys } from '@/lib/storage';
 
 /*
  * "Đã lưu quy định" -- luu cuc bo (AsyncStorage), CHUA co backend that (tinh
@@ -12,21 +12,11 @@ function articleKey(countryCode: string, slug: string): string {
 }
 
 export function useSavedArticles() {
-  const [savedKeys, setSavedKeys] = useState<string[]>([]);
-
-  useEffect(() => {
-    getJSON<string[]>(StorageKeys.savedArticles).then((saved) => {
-      if (saved) setSavedKeys(saved);
-    });
-  }, []);
-
+  const { value: savedKeys, update } = useUserStorage<string[]>(StorageKeys.savedArticles, []);
   const isSaved = (countryCode: string, slug: string) => savedKeys.includes(articleKey(countryCode, slug));
-
-  const toggleSaved = async (countryCode: string, slug: string) => {
+  const toggleSaved = (countryCode: string, slug: string) => {
     const key = articleKey(countryCode, slug);
-    const next = savedKeys.includes(key) ? savedKeys.filter((k) => k !== key) : [...savedKeys, key];
-    setSavedKeys(next);
-    await setJSON(StorageKeys.savedArticles, next);
+    return update((current) => current.includes(key) ? current.filter((item) => item !== key) : [...current, key]);
   };
 
   return { savedKeys, isSaved, toggleSaved };

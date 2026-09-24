@@ -143,18 +143,31 @@ export const verifyPasswordResetOtp = async ({ email, otp }) => {
   }
 
   if (hashValue(otp) !== resetRequest.otpHash) {
-    resetRequest.attempts += 1;
-    await resetRequest.save();
+    await PasswordReset.updateOne(
+      { _id: resetRequest._id, verified: false, attempts: { $lt: MAX_OTP_ATTEMPTS } },
+      { $inc: { attempts: 1 } },
+    );
     throw new Error("RESET_OTP_INVALID");
   }
 
   const resetToken = generateResetToken();
 
-  resetRequest.verified = true;
-  resetRequest.resetTokenHash = hashValue(resetToken);
-  resetRequest.resetTokenExpiresAt = new Date(Date.now() + RESET_TOKEN_EXPIRES_MS);
-
-  await resetRequest.save();
+  const claimed = await PasswordReset.findOneAndUpdate(
+    {
+      _id: resetRequest._id,
+      verified: false,
+      attempts: { $lt: MAX_OTP_ATTEMPTS },
+      otpExpiresAt: { $gt: new Date() },
+    },
+    {
+      $set: {
+        verified: true,
+        resetTokenHash: hashValue(resetToken),
+        resetTokenExpiresAt: new Date(Date.now() + RESET_TOKEN_EXPIRES_MS),
+      },
+    },
+  );
+  if (!claimed) throw new Error("RESET_OTP_ALREADY_VERIFIED");
 
   return { resetToken };
 };
@@ -204,10 +217,16 @@ export const resetPassword = async ({ resetToken, password }) => {
     }
   }
 
-  user.password = await bcrypt.hash(password, 12);
-  user.isActive = true;
-
-  await user.save();
+  if (!user.isActive) throw new Error("ACCOUNT_NOT_ACTIVE");
+  const passwordHash = await bcrypt.hash(password, 12);
+  // Token reset dùng đúng một lần, kể cả hai request cùng vượt qua bước đọc.
+  const consumed = await PasswordReset.findOneAndDelete({
+    _id: resetRequest._id,
+    resetTokenHash: hashValue(resetToken),
+    resetTokenExpiresAt: { $gt: new Date() },
+  });
+  if (!consumed) throw new Error("RESET_TOKEN_INVALID");
+  await User.updateOne({ _id: user._id, isActive: true }, { $set: { password: passwordHash } });
 
   /* Revoke all existing sessions after password reset. */
   await RefreshToken.deleteMany({

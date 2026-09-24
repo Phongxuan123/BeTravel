@@ -137,10 +137,25 @@ export const refreshAccessToken = async (rawRefreshToken, context = {}) => {
     context,
   });
 
-  activeToken.revokedAt = new Date();
-  activeToken.revokedReason = "rotated";
-  activeToken.replacedByHash = hashToken(nextRawToken);
-  await activeToken.save();
+  // Chỉ một request được quyền thay token cha. Request thua cuộc xóa token
+  // con vừa tạo để không để lại hai refresh token hợp lệ trong cùng nhánh.
+  const claimed = await RefreshToken.findOneAndUpdate(
+    { _id: activeToken._id, revokedAt: null },
+    {
+      $set: {
+        revokedAt: new Date(),
+        revokedReason: "rotated",
+        replacedByHash: hashToken(nextRawToken),
+      },
+    },
+  );
+  if (!claimed) {
+    await RefreshToken.deleteOne({ tokenHash: hashToken(nextRawToken) });
+    const latest = await RefreshToken.findById(activeToken._id);
+    if (!latest) throw new AppError(ErrorCode.UNAUTHORIZED, "Phiên không còn hợp lệ");
+    const current = await resolveRevokedToken(latest);
+    return { ...buildSession(user, null, current.expiresAt), rotated: false };
+  }
 
   return { ...buildSession(user, nextRawToken, expiresAt), rotated: true };
 };

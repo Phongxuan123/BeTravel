@@ -1,82 +1,94 @@
+import crypto from "node:crypto";
 import Job from "../models/Job.js";
 import { JobStatus } from "../core/constants.js";
 
-// Them mot job vao hang doi. payload la du lieu handler can (vi du articleId).
 export const enqueueJob = async (name, payload = {}) => Job.create({ name, payload });
-
-/*
- * Worker skeleton: chay dinh ky, LOCK dung findOneAndUpdate (atomic) de nhieu
- * tien trinh backend (neu scale ngang) khong cung xu ly mot job. Handler that
- * (goi embedding, xoa chunk...) lam o B4 -- gio chi log ra de chung minh
- * luong hoat dong dung.
- */
 const LOCK_STALE_MS = 60_000;
 const DEFAULT_POLL_INTERVAL_MS = 3000;
-
-// Dang ky handler theo ten job -- B4 se them 'reindex_article'/'purge_chunks' that.
 const handlers = new Map();
+export const registerJobHandler = (name, handler) => handlers.set(name, handler);
 
-export const registerJobHandler = (name, handler) => {
-  handlers.set(name, handler);
-};
-
-const claimNextJob = async () => {
-  const staleBefore = new Date(Date.now() - LOCK_STALE_MS);
-
+async function claimNextJob() {
+  const expired = {
+    status: JobStatus.RUNNING,
+    lockedAt: { $lt: new Date(Date.now() - LOCK_STALE_MS) },
+  };
+  // Job bị gián đoạn nhiều lần cũng phải dừng ở maxAttempts, không retry vô hạn.
+  await Job.updateMany(
+    { ...expired, $expr: { $gte: ["$attempts", "$maxAttempts"] } },
+    {
+      $set: {
+        status: JobStatus.FAILED,
+        lockedAt: null,
+        lockToken: null,
+        lastError: "Worker bị gián đoạn quá số lần cho phép",
+      },
+    },
+  );
   return Job.findOneAndUpdate(
     {
-      status: JobStatus.PENDING,
-      runAt: { $lte: new Date() },
-      $or: [{ lockedAt: null }, { lockedAt: { $lt: staleBefore } }],
+      $or: [{ status: JobStatus.PENDING, runAt: { $lte: new Date() } }, expired],
+      $expr: { $lt: ["$attempts", "$maxAttempts"] },
     },
-    { $set: { status: JobStatus.RUNNING, lockedAt: new Date() } },
+    {
+      $set: { status: JobStatus.RUNNING, lockedAt: new Date(), lockToken: crypto.randomUUID() },
+      $inc: { attempts: 1 },
+    },
     { sort: { runAt: 1 }, returnDocument: "after" },
   );
-};
+}
 
-const runJob = async (job) => {
-  const handler = handlers.get(job.name);
-
-  if (!handler) {
-    // Chua co handler that (B4) -- danh dau done de khong ket qua doi vo han,
-    // nhung ghi ro trong log de khong bi lang quen.
-    console.log(`[job] '${job.name}' chua co handler, bo qua (se lam o B4).`, job.payload);
-    job.status = JobStatus.DONE;
-    await job.save();
-    return;
-  }
-
+// Lease có heartbeat và mã sở hữu: worker cũ không được ghi kết quả đè
+// worker mới sau khi lease hết hạn. Handler RAG vẫn phải idempotent.
+export async function runNextJob() {
+  const job = await claimNextJob();
+  if (!job) return false;
+  const ownership = { _id: job._id, status: JobStatus.RUNNING, lockToken: job.lockToken };
+  const heartbeat = setInterval(() => {
+    Job.updateOne(ownership, { $set: { lockedAt: new Date() } }).catch((error) =>
+      console.error("[job] Không gia hạn lease:", error.message),
+    );
+  }, LOCK_STALE_MS / 3);
   try {
+    const handler = handlers.get(job.name);
+    if (!handler) throw new Error(`Chưa đăng ký handler: ${job.name}`);
     await handler(job.payload);
-    job.status = JobStatus.DONE;
-    await job.save();
+    await Job.updateOne(ownership, {
+      $set: { status: JobStatus.DONE, lockedAt: null, lockToken: null, lastError: "" },
+    });
   } catch (error) {
-    job.attempts += 1;
-    job.lastError = String(error?.message ?? error);
-
-    const hasAttemptsLeft = job.attempts < job.maxAttempts;
-    job.status = hasAttemptsLeft ? JobStatus.PENDING : JobStatus.FAILED;
-    job.lockedAt = null;
-
-    await job.save();
+    const status = job.attempts < job.maxAttempts ? JobStatus.PENDING : JobStatus.FAILED;
+    await Job.updateOne(ownership, {
+      $set: {
+        status,
+        lockedAt: null,
+        lockToken: null,
+        lastError: String(error?.message ?? error),
+        runAt: new Date(Date.now() + DEFAULT_POLL_INTERVAL_MS * job.attempts),
+      },
+    });
+  } finally {
+    clearInterval(heartbeat);
   }
-};
+  return true;
+}
 
 let pollTimer = null;
-
+let polling = false;
 export const startJobWorker = (intervalMs = DEFAULT_POLL_INTERVAL_MS) => {
   if (pollTimer) return;
-
   pollTimer = setInterval(async () => {
+    if (polling) return;
+    polling = true;
     try {
-      const job = await claimNextJob();
-      if (job) await runJob(job);
+      await runNextJob();
     } catch (error) {
-      console.error("[job] loi vong lap worker:", error);
+      console.error("[job] Lỗi vòng worker:", error);
+    } finally {
+      polling = false;
     }
   }, intervalMs);
 };
-
 export const stopJobWorker = () => {
   clearInterval(pollTimer);
   pollTimer = null;

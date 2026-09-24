@@ -13,23 +13,27 @@ const CountryContext = createContext<CountryContextValue | null>(null);
 
 /*
  * Quốc gia hiện tại của người dùng (theo chuyến đi đang diễn ra). Mặc định
- * Nhật Bản để khớp mock. Đi qua fetchCountries() của lib/data.ts (KHÔNG import
+ * chọn quốc gia đang hoạt động từ dữ liệu. Đi qua fetchCountries() của lib/data.ts (KHÔNG import
  * thẳng mocks/fixtures) để tôn trọng công tắc EXPO_PUBLIC_USE_MOCKS -- trước
  * B3, file này bỏ qua công tắc đó nên khi bật API thật, context vẫn hiện dữ
  * liệu quốc gia giả lập trong toàn bộ app (bug thực sự, không phải khác biệt
  * cosmetics -- đây là lý do sửa file này dù nó không phải "màn hình").
  */
 export function CountryProvider({ children }: { children: ReactNode }) {
-  const [countryCode, setCountryCode] = useState('JP');
+  const [countryCode, setCountryCode] = useState('');
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
+
+  const available = countriesQuery.data?.data ?? [];
+  const selectedCode = available.find((item) => item.code === countryCode)?.code
+    ?? available.find((item) => item.status !== 'coming_soon')?.code ?? available[0]?.code ?? '';
 
   const value = useMemo(
     () => ({
-      countryCode,
-      country: countriesQuery.data?.data.find((c) => c.code === countryCode),
+      countryCode: selectedCode,
+      country: countriesQuery.data?.data.find((c) => c.code === selectedCode),
       setCountryCode,
     }),
-    [countryCode, countriesQuery.data],
+    [selectedCode, countriesQuery.data],
   );
 
   return <CountryContext.Provider value={value}>{children}</CountryContext.Provider>;

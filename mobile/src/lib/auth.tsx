@@ -1,4 +1,6 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { startNewSession } from './api/chat';
 import * as authApi from './api/auth';
 import { getJSON, setJSON, removeKey, StorageKeys } from './storage';
 
@@ -118,7 +120,19 @@ function useRealAuthValue(
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUserState] = useState<AuthUser | null>(null);
+  const queryClient = useQueryClient();
+  const ownerRef = useRef<string | null>(null);
+  const setUser = useCallback((next: AuthUser | null) => {
+    // Cache trips/chat không được dùng lại sau khi chuyển tài khoản.
+    const owner = next?.email ?? null;
+    if (owner !== ownerRef.current) {
+      queryClient.clear();
+      startNewSession();
+      ownerRef.current = owner;
+    }
+    setUserState(next);
+  }, [queryClient]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -181,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [setUser]);
 
   const mockValue = useMockAuthValue(user, setUser, isLoading);
   const realValue = useRealAuthValue(user, setUser, isLoading);

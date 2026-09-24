@@ -1,3 +1,4 @@
+import { locationCreateSchema } from "../validators/admin.validator.js";
 import SupportLocation from "../models/SupportLocation.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
 
@@ -27,6 +28,10 @@ export const createLocation = async (data, actorId) => {
 };
 
 export const updateLocation = async (id, data, actorId) => {
+  const existing = await SupportLocation.findById(id);
+  if (!existing) return null;
+  // PATCH cũng phải giữ ít nhất một kênh liên lạc sau khi ghép với dữ liệu cũ.
+  locationCreateSchema.parse({ ...existing.toObject(), ...data });
   const payload = { ...data, updatedBy: actorId };
 
   if (data.verified === true) payload.verifiedAt = new Date();
@@ -49,24 +54,20 @@ export const bulkImportLocations = async (rows, actorId) => {
   const skipped = [];
 
   for (const [index, row] of rows.entries()) {
-    const hasContact = Boolean(row.phone?.trim()) || Boolean(row.website?.trim());
-    const hasCoordinates = Array.isArray(row.location?.coordinates) && row.location.coordinates.length === 2;
-
-    if (!row.name?.trim() || !row.address?.trim() || !hasCoordinates || !hasContact) {
+    const parsed = locationCreateSchema.safeParse(row);
+    if (!parsed.success) {
       skipped.push({
         index,
-        name: row.name ?? "",
-        reason: !hasCoordinates
+        name: typeof row?.name === "string" ? row.name : "",
+        reason: parsed.error.issues.some((issue) => issue.path[0] === "location")
           ? "Thieu toa do hop le"
-          : !hasContact
-            ? "Thieu ca so dien thoai va website"
-            : "Thieu ten hoac dia chi",
+          : parsed.error.issues.map((issue) => issue.message).join("; "),
       });
       continue;
     }
 
     try {
-      const payload = { ...row, createdBy: actorId, updatedBy: actorId };
+      const payload = { ...parsed.data, createdBy: actorId, updatedBy: actorId };
       if (payload.verified) payload.verifiedAt = new Date();
       const doc = await SupportLocation.create(payload);
       createdIds.push(doc._id);

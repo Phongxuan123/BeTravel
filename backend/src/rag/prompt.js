@@ -76,7 +76,15 @@ export function parseLlmJson(rawText) {
       .trim();
     const parsed = JSON.parse(cleaned);
 
-    if (typeof parsed.answer !== "string" || !Array.isArray(parsed.usedSources)) {
+    if (
+      !parsed ||
+      typeof parsed.answer !== "string" ||
+      !parsed.answer.trim() ||
+      !Array.isArray(parsed.usedSources) ||
+      !parsed.usedSources.every((source) => typeof source === "string") ||
+      !["high", "medium", "low"].includes(parsed.confidence) ||
+      typeof parsed.needsOfficialHelp !== "boolean"
+    ) {
       return null;
     }
     return parsed;

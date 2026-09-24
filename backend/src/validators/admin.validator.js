@@ -49,8 +49,8 @@ const embassySchema = z
     name: z.string().optional(),
     address: z.string().optional(),
     phone: z.string().optional(),
-    lat: z.number().optional(),
-    lng: z.number().optional(),
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
   })
   .partial()
   .optional();
@@ -105,7 +105,11 @@ const penaltySchema = z.object({
 
 const sourceSchema = z.object({
   title: z.string().trim().min(1),
-  url: z.string().trim().url("URL nguon khong hop le"),
+  url: z
+    .string()
+    .trim()
+    .url("URL nguon khong hop le")
+    .regex(/^https?:\/\//i, "Nguồn phải dùng HTTP hoặc HTTPS"),
   authority: z.string().trim().min(1),
   kind: z.enum(Object.values(SourceKind)).default(SourceKind.OTHER),
   publishedAt: z.coerce.date().optional(),
@@ -169,7 +173,13 @@ const locationBaseSchema = z.object({
   nameLocal: z.string().trim().optional(),
   address: z.string().trim().min(1, "Dia chi khong duoc de trong"),
   phone: z.string().trim().optional(),
-  website: z.string().trim().url("Website khong hop le").optional().or(z.literal("")),
+  website: z
+    .string()
+    .trim()
+    .url("Website khong hop le")
+    .regex(/^https?:\/\//i, "Website phải dùng HTTP hoặc HTTPS")
+    .optional()
+    .or(z.literal("")),
   openHours: z.string().trim().optional(),
   location: geoPointSchema,
   verified: z.boolean().optional(),
@@ -195,7 +205,7 @@ export const locationListQuerySchema = paginationQuerySchema.extend({
 // optional o tang schema, phan xu ly rieng tung dong o service quyet dinh
 // tao hay bo qua + ghi ly do, thay vi 1 dong sai lam VALIDATION_ERROR ca file.
 export const locationBulkImportSchema = z.object({
-  rows: z.array(locationBaseSchema.partial()).min(1).max(200),
+  rows: z.array(z.unknown()).min(1).max(200),
 });
 
 export const locationBulkVerifySchema = z.object({

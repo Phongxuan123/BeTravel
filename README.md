@@ -26,7 +26,7 @@ Backend dùng MongoDB Atlas (bắt buộc, kể cả lúc dev — Atlas Search/V
 
 ## Bắt đầu
 
-Yêu cầu: Node.js 20+, một cluster MongoDB Atlas (free tier M0 là đủ), Expo Go trên điện thoại (hoặc simulator) để chạy mobile.
+Yêu cầu: Node.js 22.13+, một cluster MongoDB Atlas (free tier M0 là đủ), Expo Go trên điện thoại (hoặc simulator) để chạy mobile.
 
 ### Backend
 
@@ -48,7 +48,7 @@ cp .env.example .env
 npx expo start
 ```
 
-Quét mã QR bằng Expo Go. Backend chạy trên máy dev thì app tự suy ra IP LAN từ Metro — không cần sửa `.env` mỗi khi đổi mạng. Muốn chạy nhanh không cần backend: đặt `EXPO_PUBLIC_USE_MOCKS=true` để dùng dữ liệu giả lập sẵn có trong `src/mocks/`.
+Quét mã QR bằng Expo Go. Khi không khai báo `EXPO_PUBLIC_API_URL`, app dev tự suy ra IP LAN từ Metro. Nếu khai báo, URL này được ưu tiên cả dev và production. Muốn chạy nhanh không cần backend: đặt `EXPO_PUBLIC_USE_MOCKS=true` để dùng dữ liệu giả lập sẵn có trong `src/mocks/`.
 
 ### Admin Portal
 
@@ -79,6 +79,16 @@ npm run dev
 | B6 | SOS: bản đồ + điểm hỗ trợ | ✅ (chờ dữ liệu thật đã xác minh) |
 | B7 | Incidents + dịch khẩn cấp | chưa làm |
 | B8 | Cảnh báo vị trí + hồ sơ cá nhân | chưa làm |
-| B9 | Hardening, seed, build, demo | chưa làm |
+| B9 | Hardening, seed, build, demo | một phần: đã rà soát/sửa lỗi và kiểm tra build; còn phát hành/demo |
 
 Chi tiết từng quyết định kỹ thuật và việc còn tồn đọng: xem [`docs/PROGRESS.md`](docs/PROGRESS.md).
+
+## Rà soát 24/09/2026
+
+Đã sửa các lỗi phát hiện ở API, auth, quota/job/RAG, SOS, admin và mobile.
+Kết quả nghiệm thu và những việc cần người phụ trách dữ liệu được ghi ở đầu
+[`docs/PROGRESS.md`](docs/PROGRESS.md); nguyên nhân và thay đổi từng file ở
+[`docs/OPTIMIZATION_REPORT.md`](docs/OPTIMIZATION_REPORT.md).
+
+Mobile có `patch-package` chạy trong postinstall để giữ Expo Router tương thích
+với decoder đã vá bảo mật. Giữ thư mục `mobile/patches/` khi cài đặt lại.

@@ -10,15 +10,17 @@ import * as Location from 'expo-location';
 export async function requestLocationWithExplanation(): Promise<Location.LocationObjectCoords | null> {
   const existing = await Location.getForegroundPermissionsAsync();
 
+  if (existing.status !== 'granted' && !existing.canAskAgain) return null;
   if (existing.status !== 'granted' && existing.canAskAgain) {
     const proceed = await new Promise<boolean>((resolve) => {
       Alert.alert(
         'Cho phép truy cập vị trí',
-        'Be.Travel dùng vị trí của bạn để tìm đại sứ quán, bệnh viện, đồn công an GẦN NHẤT khi cần hỗ trợ khẩn cấp. Vị trí không được gửi lên máy chủ hay lưu lại.',
+        'Be.Travel dùng vị trí của bạn để tìm đại sứ quán, bệnh viện, đồn công an GẦN NHẤT khi cần hỗ trợ khẩn cấp. Tọa độ được gửi tới máy chủ Be.Travel để tìm điểm gần bạn; ứng dụng không theo dõi vị trí nền.',
         [
           { text: 'Để sau', style: 'cancel', onPress: () => resolve(false) },
           { text: 'Cho phép', onPress: () => resolve(true) },
         ],
+        { cancelable: true, onDismiss: () => resolve(false) },
       );
     });
     if (!proceed) return null;

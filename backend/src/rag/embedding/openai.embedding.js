@@ -1,3 +1,5 @@
+import { env } from "../../core/env.js";
+
 const API_URL = "https://api.openai.com/v1/embeddings";
 const MAX_BATCH_SIZE = 50;
 
@@ -26,6 +28,7 @@ export function createOpenAiEmbeddingProvider({ apiKey, model, dims = 768 }) {
       for (const batch of chunkArray(texts, MAX_BATCH_SIZE)) {
         const res = await fetch(API_URL, {
           method: "POST",
+          signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
           body: JSON.stringify({ model, input: batch, dimensions: dims }),
         });
