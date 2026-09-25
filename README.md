@@ -37,7 +37,7 @@ cp .env.example .env   # điền MONGODB_URI, JWT secret, GEMINI_API_KEY...
 npm run dev
 ```
 
-Lệnh hữu ích khác: `npm run test` (unit + integration), `npm run test:golden` (kiểm tra chất lượng RAG bằng bộ câu hỏi cố định), `npm run seed` (nạp dữ liệu mẫu 4 quốc gia + nội dung pháp lý KR), `npm run create-admin` (tạo tài khoản admin đầu tiên).
+Lệnh hữu ích khác: `npm run test` (unit + integration), `npm run test:golden` (kiểm tra chất lượng RAG bằng bộ câu hỏi cố định), `npm run seed` (nạp dữ liệu mẫu: 4 quốc gia, 8 bài luật KR có nguồn thật ở trạng thái nháp, 1 admin, 5 hướng dẫn xử lý sự cố, 25 câu dịch sẵn — **không** seed điểm SOS/cảnh báo vị trí, xem `docs/PROGRESS.md`), `npm run seed:demo` (seed + reindex bài đã xuất bản), `npm run create-admin` (tạo/nâng quyền admin theo email tuỳ chỉnh).
 
 ### Mobile
 
@@ -59,6 +59,16 @@ cp .env.example .env
 npm run dev
 ```
 
+## Thêm một quốc gia mới
+
+Không hard-code quốc gia vào business logic — mọi thứ đi qua dữ liệu:
+
+1. Admin Portal → **Quốc gia** → thêm bản ghi mới (mã ISO-2, tên, ngôn ngữ, số khẩn cấp, thông tin đại sứ quán). Đặt `status:'coming_soon'` cho tới khi có đủ nội dung.
+2. Thêm **Chủ đề** và **Bài luật** (có nguồn thật, xuất bản qua máy trạng thái draft → pending_review → published) cho quốc gia đó.
+3. Chạy **RAG Index** → Reindex quốc gia để trợ lý AI có dữ liệu.
+4. Nhập **Điểm hỗ trợ** (SOS) qua CSV đã xác minh thật, **Cảnh báo vị trí** nếu cần, **Câu dịch sẵn** cho ngôn ngữ bản địa.
+5. Đổi `status` sang `active` khi nội dung đủ dùng — mobile tự nhận quốc gia mới ở màn hình chọn quốc gia, không cần sửa code.
+
 ## Tài liệu
 
 - [`CLAUDE.md`](CLAUDE.md) — quy trình vận hành, lộ trình batch, 13 quy tắc viết code. Đọc trước khi đóng góp.
@@ -66,6 +76,11 @@ npm run dev
 - [`docs/PROGRESS.md`](docs/PROGRESS.md) — sổ tiến độ theo batch, quyết định kỹ thuật, việc còn vướng.
 - [`docs/OPTIMIZATION_REPORT.md`](docs/OPTIMIZATION_REPORT.md) — sổ tối ưu, bug đã sửa theo từng batch.
 - [`contracts/README.md`](contracts/README.md) — đặc tả toàn bộ API (path, request, response, mã lỗi).
+- [`docs/API.md`](docs/API.md) — bảng tra cứu nhanh mọi endpoint.
+- [`docs/ACCEPTANCE.md`](docs/ACCEPTANCE.md) — đối chiếu AC-01..AC-12 với bằng chứng cụ thể.
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — triển khai từ zero: Atlas → Render → Vercel → EAS.
+- [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) — kịch bản demo + checklist trước demo 30 phút.
+- [`docs/atlas-indexes.md`](docs/atlas-indexes.md) — tạo 2 Atlas Search index cho RAG.
 
 ## Tiến độ
 
@@ -79,7 +94,7 @@ npm run dev
 | B6 | SOS: bản đồ + điểm hỗ trợ | ✅ (chờ dữ liệu thật đã xác minh) |
 | B7 | Incidents + dịch khẩn cấp | ✅ |
 | B8 | Cảnh báo vị trí + hồ sơ cá nhân | ✅ |
-| B9 | Hardening, seed, build, demo | một phần: đã rà soát/sửa lỗi và kiểm tra build; còn phát hành/demo |
+| B9 | Hardening, seed, build, demo | một phần: mã nguồn/seed/QA/tài liệu bàn giao xong; còn triển khai thật (Render/Vercel/EAS) và kiểm tra thiết bị thật |
 
 Chi tiết từng quyết định kỹ thuật và việc còn tồn đọng: xem [`docs/PROGRESS.md`](docs/PROGRESS.md).
 

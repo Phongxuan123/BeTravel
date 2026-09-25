@@ -1,0 +1,31 @@
+# ACCEPTANCE CRITERIA — BE.TRAVEL
+
+Khung bảng lấy từ `docs/03_Contracts_v2.md` mục 14. Mỗi dòng ghi **bằng
+chứng cụ thể đang có trong repo** (tên file test/tài liệu thật, không phải
+mô tả chung chung) và **trạng thái**: `Đạt` (có bằng chứng tự động hoặc đã
+kiểm chứng), `Đạt một phần` (có bằng chứng nhưng còn thiếu một khía cạnh),
+`Cần người xác nhận` (không thể tự động hoá, cần thao tác thủ công trên
+thiết bị/dịch vụ thật).
+
+| AC | Nội dung | Trạng thái | Bằng chứng |
+|---|---|---|---|
+| AC-01 | User thường không vào được route admin | **Đạt** | `backend/test/rbac.sweep.test.js` — đọc `router.stack` của `admin.routes.js` tự động (không hardcode danh sách), assert 401/403 cho toàn bộ ~47 route hiện có. Route mới thêm sau này tự động được quét. |
+| AC-02 | Đổi quốc gia làm đổi đúng handbook/search/AI/SOS | **Đạt một phần** | Mọi query công khai (`legal/articles`, `legal/search`, `support-locations`, `incidents`, `alerts/applicable`) đều lọc theo `countryCode`/`country` — có test riêng cho từng endpoint (`publicContent.test.js`, `supportLocation.test.js`, `incident.test.js`, `alerts.test.js`). Chưa có 1 kịch bản thủ công "đổi quốc gia trên app thật rồi xác nhận cả 4 khu vực đổi theo" — đưa vào `docs/DEMO_SCRIPT.md` bước 1-2 làm checklist thủ công. |
+| AC-03 | Mỗi bài có title, summary, country, topic, source, updated/status | **Đạt** | Schema `LegalArticle` bắt buộc các field này (`backend/src/models/LegalArticle.js`); `articleCreateSchema`/`articleUpdateSchema` validate ở tầng Zod; contract fixture `contracts/fixtures/admin.legalArticle.json` + `public.legalArticle.json` đối chiếu 2 phía (backend `contracts.test.js`, mobile `adapters.test.ts`). |
+| AC-04 | AI có source references; retrieval yếu thì không khẳng định | **Đạt** | `backend/test/golden.test.js` — 25 ca (15 `must_answer` bắt buộc có citation hợp lệ, 6 `must_refuse` bắt buộc trả `INSUFFICIENT_EVIDENCE`, 4 `country_isolation`), chạy với `LLM_PROVIDER=mock` nên tất định, không tốn API. Hậu kiểm bằng code ở `rag/guard.js` (`backend/test/rag.guard.test.js`) chặn cả marker giả lẫn số liệu không nguồn. |
+| AC-05 | Admin cập nhật + re-index → AI dùng dữ liệu mới, không train lại | **Đạt một phần** | `backend/test/admin.test.js` xác nhận publish bài luật tự động `enqueue reindex_article` job; `backend/test/hardening.test.js` xác nhận `reindexArticleHandler` bỏ qua bài không published, không xoá nhầm chunk của bài đã publish lại. Retrieval luôn `$lookup` xác minh `status`/`isCurrent` thật từ `legal_articles` (không tin field copy trên chunk) — xem `rag/retrieval.js`. Chưa có 1 test end-to-end nối liền "publish → reindex → hỏi AI → thấy nội dung mới" trong CÙNG MỘT bài kiểm thử; luồng này nằm trong `docs/DEMO_SCRIPT.md` bước 8 làm minh chứng thủ công. |
+| AC-06 | Map dùng vị trí user, gọi/chỉ đường hoạt động | **Đạt một phần** | `backend/test/supportLocation.test.js` dùng toạ độ thật (Đại sứ quán Seoul, Busan cách ~320km) xác nhận `$geoNear` không đảo `[lat,lng]`. `tel:`/deep link chỉ đường (`openDirections()` ở `mobile/src/app/sos/map.tsx`) là API hệ điều hành, không kiểm được bằng unit test — **cần người bấm thử trên điện thoại thật** (gọi điện thật sẽ tính phí/kết nối thật, không tự động hoá được một cách an toàn). |
+| AC-07 | SOS ≤2 thao tác từ màn hình chính | **Đạt** | Nút SOS đỏ cố định ở `AppShell` (mọi màn hình) → 1 chạm mở SOS Hub → 1 chạm nữa gọi khẩn cấp hoặc mở bản đồ = tối đa 2 thao tác. Xác nhận lại bằng thao tác thật trong `docs/DEMO_SCRIPT.md` bước 6. |
+| AC-08 | Incident workflow đủ bước, checklist, liên hệ | **Đạt** | `backend/test/incident.test.js` (8 test: tạo/chuẩn hoá `order`, gộp toàn cục+quốc gia, loại bỏ draft, tiến độ rieng tung user, loại bỏ `step.order` không còn tồn tại). Mobile: `mobile/src/app/incidents/[slug].tsx` render checklist + CTA (`map`/`call`/`ai`/`link`) theo đúng cấu trúc `steps[]`. |
+| AC-09 | API validate input; rate limit chặn; CORS/Helmet cấu hình | **Đạt** | Zod validate mọi body/query (`validateBody`/`validateQuery`, trả `VALIDATION_ERROR` — test rải khắp `test/*.test.js`). Rate limit riêng từng nhóm tốn tiền/spam (`chatRateLimit`, `translateRateLimit`, `feedbackRateLimit`, `loginRateLimit`, `registerRateLimit`, `resetRateLimit` — `middleware/rateLimit.middleware.js`). `helmet()` + `cors({origin: env.CORS_ORIGINS})` cấu hình ở `app.js`, origin lấy từ env (không hardcode) — production phải set `CORS_ORIGINS` thật (xem `docs/DEPLOY.md`). |
+| AC-10 | Admin CRUD đủ 6+ loại dữ liệu + xem feedback | **Đạt** | Admin Portal có trang CRUD đầy đủ cho: Quốc gia, Chủ đề, Bài luật (máy trạng thái), Điểm hỗ trợ (+ bulk CSV), Hướng dẫn xử lý sự cố (A07), Câu dịch sẵn, Cảnh báo vị trí (A06), cùng Feedback Queue (A08), RAG Index (A04), Dashboard (A01), Nhật ký (audit). `admin/npm run build` xanh, 8/8 test xanh. Chưa có ảnh chụp màn hình thật (cần mở trình duyệt thật) — không phải giới hạn kỹ thuật, chỉ là bước bàn giao thủ công. |
+| AC-11 | Responsive mobile, không tràn ngang | **Cần người xác nhận** | Toàn bộ UI dùng NativeWind (Tailwind responsive theo `%`/`flex`), không có kích thước cố định lớn hơn màn hình nhỏ nhất được biết trong code. Chưa kiểm được trên iPhone SE 375px hay máy Android thật vì môi trường này không có simulator/thiết bị kết nối — cần người chạy `npx expo start` và mở trên thiết bị/simulator thật. |
+| AC-12 | Deploy public, tách biệt, secrets ngoài source | **Cần người xác nhận** | Config đã viết đầy đủ: `backend/render.yaml`, `mobile/eas.json`, `.github/workflows/keepalive.yml`, `docs/DEPLOY.md` (hướng dẫn từng bước). `grep` toàn repo không thấy secret hard-code (xác nhận trong phiên rà soát B9). **Chưa thực sự deploy** — cần người có tài khoản Render/Vercel/EAS thật thực hiện theo `docs/DEPLOY.md`, sau đó xác nhận `/api/health` trả `db:"connected"` trên domain public. |
+
+## Tổng kết
+
+- **Đạt hoàn toàn (tự động hoá được và đã chạy xanh):** AC-01, AC-03, AC-04, AC-07, AC-08, AC-09, AC-10 — 7/12.
+- **Đạt một phần (có bằng chứng code/test, còn thiếu 1 khía cạnh thủ công):** AC-02, AC-05, AC-06 — 3/12.
+- **Cần người xác nhận (ngoài khả năng của phiên làm việc này):** AC-11 (thiết bị thật), AC-12 (tài khoản dịch vụ thật) — 2/12.
+
+Không có mục nào được đánh dấu "Đạt" mà không có bằng chứng cụ thể kèm theo.

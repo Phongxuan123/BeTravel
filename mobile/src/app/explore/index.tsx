@@ -83,6 +83,9 @@ export default function ExploreScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 24 }}>
+        {(topicsQuery.isLoading || articlesQuery.isLoading) && (
+          <Text className="text-center text-sm text-muted">Đang tải…</Text>
+        )}
         {(topicsQuery.isError || articlesQuery.isError) && (
           <View className="rounded-md bg-danger-tint p-3">
             <Text className="text-center text-sm text-danger">Không tải được dữ liệu. Kiểm tra kết nối mạng.</Text>

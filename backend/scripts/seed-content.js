@@ -1,18 +1,28 @@
 /*
- * Seed toi thieu cho B3: 4 quoc gia, 6 chu de phap ly KR, va 8 bai luat KR o
- * trang thai DRAFT co nguon that (xem docs/06_Legal_Content_Seed_KR.md).
+ * Seed cho B3 + B9: 4 quoc gia, 6 chu de phap ly KR, 8 bai luat KR o trang
+ * thai DRAFT co nguon that (xem docs/06_Legal_Content_Seed_KR.md), 1 tai
+ * khoan admin, 5 huong dan xu ly su co (toan cuc), 25 cau dich san KR.
  *
- * [!] Day KHONG phai noi dung da publish. 8 bai duoi day la NGUYEN LIEU THO
- * da co nguon -- nguoi that (CPO/nhom noi dung) phai doc lai, doi chieu nguon,
- * viet bodyMd day du va tu chuyen pending_review -> published qua Admin
- * Portal. Script nay KHONG BAO GIO tu dong publish.
+ * [!] 8 bai luat la NGUYEN LIEU THO da co nguon -- nguoi that (CPO/nhom noi
+ * dung) phai doc lai, doi chieu nguon, viet bodyMd day du va tu chuyen
+ * pending_review -> published qua Admin Portal. Script nay KHONG BAO GIO tu
+ * dong publish noi dung phap ly.
+ *
+ * [!] KHONG seed support_locations (diem SOS) hay geo_alerts (canh bao vi
+ * tri) o day -- ca hai deu la du lieu AN TOAN THOI GIAN THUC (toa do GPS da
+ * xac minh, tinh hinh an ninh hien tai) ma AI khong duoc phep bia (CLAUDE.md
+ * "8 bai co nguon that tot hon 20 bai bia nguon", ap dung nguyen quyet dinh
+ * da chot o B6). Nguoi phu trach nhap qua Admin Portal ("Diem ho tro" ->
+ * "Nhap CSV" da co san, "Canh bao vi tri" -> "Them canh bao" thu cong).
  *
  * Idempotent: chay lai nhieu lan khong tao trung. Neu ban ghi da ton tai,
  * BO QUA (khong ghi de) de khong mat cong suc nguoi dung da chinh sua qua
  * Admin Portal sau lan seed dau.
  *
- * Dung: npm run seed
+ * Dung: npm run seed (seed) hoac npm run seed:demo (seed + reindex bai da
+ * published -- xem scripts/seed-demo.js).
  */
+import bcrypt from "bcrypt";
 import mongoose from "mongoose";
 import { pathToFileURL } from "node:url";
 
@@ -20,7 +30,10 @@ import { env } from "../src/core/env.js";
 import Country from "../src/models/Country.js";
 import LegalTopic from "../src/models/LegalTopic.js";
 import LegalArticle from "../src/models/LegalArticle.js";
-import { CountryStatus, ContentStatus, RiskLevel, KeyPointSeverity } from "../src/core/constants.js";
+import User from "../src/models/User.js";
+import IncidentType from "../src/models/IncidentType.js";
+import QuickPhrase from "../src/models/QuickPhrase.js";
+import { CountryStatus, ContentStatus, RiskLevel, KeyPointSeverity, UserRole } from "../src/core/constants.js";
 
 export const COUNTRIES = [
   {
@@ -316,9 +329,128 @@ export function buildBodyMd(a) {
   return sections.join("\n\n");
 }
 
-const run = async () => {
-  await mongoose.connect(env.MONGODB_URI, { maxPoolSize: env.MONGO_MAX_POOL_SIZE });
+// Huong dan xu ly su co -- noi dung THU TUC chung (goi ai, lam gi truoc/sau),
+// KHONG phai tuyen bo phap ly can trich dan dieu luat (khac ban chat voi
+// KR_ARTICLES) nen seed truc tiep o trang thai published, ap dung TOAN CAU
+// (countryCode: null) vi cac buoc nay giong nhau o hau het quoc gia.
+export const GLOBAL_INCIDENTS = [
+  {
+    slug: "mat-ho-chieu",
+    countryCode: null,
+    title: "Mất hộ chiếu",
+    iconKey: "IdCard",
+    tone: "red",
+    urgent: true,
+    reassurance: "Giữ bình tĩnh. Bạn vẫn được rời khỏi nước sở tại hợp pháp bằng giấy thông hành do Đại sứ quán cấp.",
+    steps: [
+      { title: "Trình báo tại đồn công an gần nhất", body: ["Xin giấy xác nhận mất giấy tờ.", "Giữ số hồ sơ — Đại sứ quán sẽ yêu cầu số này."], ctas: [{ type: "map", label: "Đồn công an gần nhất", payload: { locationType: "police" } }] },
+      { title: "Liên hệ Đại sứ quán Việt Nam", body: ["Gọi trong giờ hành chính, mang theo giấy xác nhận của công an."], ctas: [{ type: "call", label: "Gọi Đại sứ quán", payload: {} }] },
+      { title: "Chuẩn bị giấy tờ", body: [], checklist: [{ label: "Ảnh 4x6 nền trắng (2 tấm)" }, { label: "Bản sao hộ chiếu hoặc ảnh chụp trang thông tin" }, { label: "Vé máy bay hoặc lịch trình về nước" }] },
+      { title: "Nhận giấy thông hành", body: ["Thường mất 1-3 ngày làm việc. Dùng giấy này để về Việt Nam."] },
+    ],
+    status: "published",
+  },
+  {
+    slug: "bi-kiem-tra-giay-to",
+    countryCode: null,
+    title: "Bị công an kiểm tra giấy tờ",
+    iconKey: "ShieldAlert",
+    tone: "blue",
+    urgent: false,
+    reassurance: "Đây thường là việc kiểm tra thông thường. Hợp tác xuất trình giấy tờ để tránh rắc rối không cần thiết.",
+    steps: [
+      { title: "Giữ bình tĩnh, xuất trình giấy tờ", body: ["Đưa hộ chiếu hoặc thẻ lưu trú khi được yêu cầu."] },
+      { title: "Hỏi lý do kiểm tra", body: ["Bạn có quyền hỏi lý do một cách lịch sự."] },
+      { title: "Ghi nhớ tên đồn, số hiệu cán bộ", body: ["Dùng nếu cần khiếu nại sau này."] },
+    ],
+    status: "published",
+  },
+  {
+    slug: "tai-nan-giao-thong",
+    countryCode: null,
+    title: "Tai nạn giao thông",
+    iconKey: "Car",
+    tone: "orange",
+    urgent: true,
+    reassurance: "Ưu tiên an toàn tính mạng trước — gọi cấp cứu ngay nếu có người bị thương.",
+    steps: [
+      { title: "Gọi cấp cứu và công an", body: ["Ưu tiên gọi số cấp cứu y tế nếu có người bị thương, sau đó báo công an nếu có va chạm."] },
+      { title: "Không rời khỏi hiện trường", body: ["Rời hiện trường trước khi công an đến có thể bị coi là bỏ trốn."] },
+      { title: "Chụp ảnh hiện trường", body: ["Ghi lại biển số, vị trí, tình trạng phương tiện."] },
+      { title: "Lấy thông tin liên hệ", body: ["Trao đổi thông tin bảo hiểm với bên còn lại."] },
+      { title: "Báo bảo hiểm du lịch", body: ["Liên hệ công ty bảo hiểm để được hướng dẫn tiếp."] },
+    ],
+    status: "published",
+  },
+  {
+    slug: "mat-do-bi-trom-cap",
+    countryCode: null,
+    title: "Mất đồ hoặc bị trộm cắp",
+    iconKey: "ShoppingBag",
+    tone: "blue",
+    urgent: false,
+    reassurance: "Trình báo sớm giúp tăng khả năng tìm lại đồ và cần thiết cho yêu cầu bảo hiểm.",
+    steps: [
+      { title: "Trình báo tại đồn công an gần nhất", body: ["Xin giấy xác nhận mất đồ."], ctas: [{ type: "map", label: "Đồn công an gần nhất", payload: { locationType: "police" } }] },
+      { title: "Khoá thẻ ngân hàng nếu mất ví", body: ["Gọi ngân hàng để khoá thẻ ngay lập tức."] },
+      { title: "Liên hệ nơi lưu trú", body: ["Hỏi camera an ninh nếu mất đồ tại khách sạn."] },
+      { title: "Báo bảo hiểm du lịch", body: ["Chuẩn bị giấy xác nhận của công an để yêu cầu bồi thường."] },
+    ],
+    status: "published",
+  },
+  {
+    slug: "can-ho-tro-y-te",
+    countryCode: null,
+    title: "Cần hỗ trợ y tế",
+    iconKey: "Plus",
+    tone: "green",
+    urgent: false,
+    reassurance: "Gọi cấp cứu ngay cho tình huống nguy hiểm tính mạng; trường hợp nhẹ có thể tới phòng khám gần nhất.",
+    steps: [
+      { title: "Đánh giá mức độ khẩn cấp", body: ["Gọi số cấp cứu y tế địa phương nếu nguy hiểm tính mạng."] },
+      { title: "Tìm bệnh viện gần bạn", body: ["Dùng SOS Map để tìm cơ sở y tế gần nhất."], ctas: [{ type: "map", label: "Bệnh viện gần nhất", payload: { locationType: "hospital" } }] },
+      { title: "Mang theo bảo hiểm du lịch", body: ["Giữ giấy tờ bảo hiểm để làm thủ tục thanh toán."] },
+    ],
+    status: "published",
+  },
+];
 
+// Cau dich san khan cap KR -- dich AI (cung muc do tin cay voi tinh nang Dich
+// khan cap dang dung), NEN duoc nguoi biet tieng Han ra soat truoc khi dung
+// that trong tinh huong khan cap (xem "Dang vuong" o docs/PROGRESS.md).
+export const KR_QUICK_PHRASES = [
+  { vi: "Tôi cần giúp đỡ", translated: "도와주세요", phonetic: "Dowajuseyo" },
+  { vi: "Làm ơn gọi công an", translated: "경찰을 불러주세요", phonetic: "Gyeongchaleul bulleojuseyo" },
+  { vi: "Làm ơn gọi cấp cứu", translated: "구급차를 불러주세요", phonetic: "Gugeupchaleul bulleojuseyo" },
+  { vi: "Tôi bị mất hộ chiếu", translated: "여권을 잃어버렸어요", phonetic: "Yeogwoneul ireobeoryeosseoyo" },
+  { vi: "Tôi cần bác sĩ", translated: "의사가 필요해요", phonetic: "Uisaga piryohaeyo" },
+  { vi: "Tôi bị đau ở đây", translated: "여기가 아파요", phonetic: "Yeogiga apayo" },
+  { vi: "Tôi không nói được tiếng Hàn", translated: "한국어를 못해요", phonetic: "Hangugeoreul mothaeyo" },
+  { vi: "Tôi cần người phiên dịch", translated: "통역이 필요해요", phonetic: "Tongyeogi piryohaeyo" },
+  { vi: "Tôi là người Việt Nam", translated: "저는 베트남 사람이에요", phonetic: "Jeoneun Beteunam saramieyo" },
+  { vi: "Tôi bị mất cắp đồ", translated: "물건을 도난당했어요", phonetic: "Mulgeoneul donandanghaesseoyo" },
+  { vi: "Xin hãy gọi giúp số này", translated: "이 번호로 전화해 주세요", phonetic: "I beonhoro jeonhwahae juseyo" },
+  { vi: "Đại sứ quán Việt Nam ở đâu?", translated: "베트남 대사관이 어디예요?", phonetic: "Beteunam daesagwani eodiyeyo?" },
+  { vi: "Bệnh viện gần nhất ở đâu?", translated: "가장 가까운 병원이 어디예요?", phonetic: "Gajang gakkaun byeongwoni eodiyeyo?" },
+  { vi: "Đồn công an gần nhất ở đâu?", translated: "가장 가까운 경찰서가 어디예요?", phonetic: "Gajang gakkaun gyeongchalseoga eodiyeyo?" },
+  { vi: "Tôi bị lạc đường", translated: "길을 잃었어요", phonetic: "Gireul ireosseoyo" },
+  { vi: "Xin hãy giúp tôi liên hệ gia đình", translated: "가족에게 연락하는 것을 도와주세요", phonetic: "Gajoge yeollakhaneun geoseul dowajuseyo" },
+  { vi: "Tôi bị tai nạn giao thông", translated: "교통사고가 났어요", phonetic: "Gyotongsagoga nasseoyo" },
+  { vi: "Xin hãy nói chậm hơn", translated: "천천히 말씀해 주세요", phonetic: "Cheoncheonhi malsseumhae juseyo" },
+  { vi: "Tôi bị dị ứng", translated: "저는 알레르기가 있어요", phonetic: "Jeoneun allereugiga isseoyo" },
+  { vi: "Tôi cần thuốc", translated: "약이 필요해요", phonetic: "Yagi piryohaeyo" },
+  { vi: "Tôi muốn về Việt Nam", translated: "베트남으로 돌아가고 싶어요", phonetic: "Beteunameuro doragago sipeoyo" },
+  { vi: "Tôi bị giữ lại, tôi muốn gặp luật sư", translated: "구금되었어요, 변호사를 만나고 싶어요", phonetic: "Gugeumdoeeosseoyo, byeonhosareul mannago sipeoyo" },
+  { vi: "Xin cho tôi xem giấy tờ của anh/chị", translated: "신분증을 보여주세요", phonetic: "Sinbunjeungeul boyeojuseyo" },
+  { vi: "Cảm ơn, tôi ổn rồi", translated: "감사합니다, 저는 괜찮아요", phonetic: "Gamsahamnida, jeoneun gwaenchanayo" },
+  { vi: "Làm ơn đưa tôi đến bệnh viện", translated: "병원에 데려다 주세요", phonetic: "Byeongwone deryeoda juseyo" },
+];
+
+// Khong tu connect/disconnect/exit o day -- de scripts/seed-demo.js goi lai
+// duoc ham nay TRONG CUNG mot ket noi Mongo roi lam tiep buoc reindex, thay
+// vi phai tach tien trinh con. Khoi tu chay ("npm run seed") lo phan
+// connect/disconnect/exit o duoi file.
+export const run = async () => {
   for (const c of COUNTRIES) {
     const existing = await Country.findOne({ code: c.code });
     if (existing) {
@@ -365,17 +497,63 @@ const run = async () => {
     console.log(`[tao moi] LegalArticle KR/${a.slug} (draft)`);
   }
 
-  await mongoose.disconnect();
-  process.exit(0);
+  const adminEmail = env.SEED_ADMIN_EMAIL;
+  const existingAdmin = await User.findOne({ email: adminEmail });
+  if (existingAdmin) {
+    console.log(`[bo qua] Admin ${adminEmail} da ton tai`);
+  } else {
+    const passwordHash = await bcrypt.hash(env.SEED_ADMIN_PASSWORD, 12);
+    await User.create({
+      username: "admin",
+      fullName: "Quản trị viên",
+      email: adminEmail,
+      phone: "",
+      password: passwordHash,
+      role: UserRole.ADMIN,
+      isActive: true,
+    });
+    console.log(`[tao moi] Admin ${adminEmail} -- DOI MAT KHAU NGAY sau khi dang nhap lan dau`);
+  }
+
+  for (const i of GLOBAL_INCIDENTS) {
+    const existing = await IncidentType.findOne({ slug: i.slug });
+    if (existing) {
+      console.log(`[bo qua] IncidentType ${i.slug} da ton tai`);
+      continue;
+    }
+    await IncidentType.create({ ...i, steps: i.steps.map((s, index) => ({ ...s, order: index })) });
+    console.log(`[tao moi] IncidentType ${i.slug} (published)`);
+  }
+
+  for (const p of KR_QUICK_PHRASES) {
+    const existing = await QuickPhrase.findOne({ countryCode: "KR", vi: p.vi });
+    if (existing) {
+      console.log(`[bo qua] QuickPhrase KR "${p.vi}" da ton tai`);
+      continue;
+    }
+    await QuickPhrase.create({ countryCode: "KR", ...p });
+    console.log(`[tao moi] QuickPhrase KR "${p.vi}"`);
+  }
+
+  console.log(
+    "\n[!] KHONG seed support_locations/geo_alerts -- can nguoi phu trach " +
+      "nhap du lieu that qua Admin Portal (xem chu thich dau file).",
+  );
 };
 
 // Chi thuc thi khi chay truc tiep ("node scripts/seed-content.js" / "npm run
 // seed") -- KHONG chay khi file nay duoc import de tai su dung du lieu (vi du
-// test/golden/kr.golden.test.js import KR_ARTICLES/buildBodyMd o tren).
+// test/golden/kr.golden.test.js import KR_ARTICLES/buildBodyMd o tren, hoac
+// scripts/seed-demo.js import `run` de goi lai trong cung 1 ket noi Mongo).
 // pathToFileURL (khong phai ghep chuoi "file://" thu cong) vi Windows dung
 // dau `\` va co the co khoang trang trong duong dan (vi du "K9 WDP").
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  run().catch((error) => {
+  (async () => {
+    await mongoose.connect(env.MONGODB_URI, { maxPoolSize: env.MONGO_MAX_POOL_SIZE });
+    await run();
+    await mongoose.disconnect();
+    process.exit(0);
+  })().catch((error) => {
     console.error("Loi seed noi dung:", error);
     process.exit(1);
   });

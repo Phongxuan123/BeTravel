@@ -1,0 +1,21 @@
+name: Keepalive backend
+
+# Render free tier ngủ sau ~15 phút không có request, lần thức dậy đầu tiên
+# mất tới 50s -- rất tệ khi demo trước hội đồng. Cron này ping /api/health
+# mỗi 10 phút để giữ backend luôn "ấm" (CLAUDE.md Phần 6 "Cạm bẫy đã biết").
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/health
+        run: |
+          if [ -z "${{ secrets.BACKEND_HEALTH_URL }}" ]; then
+            echo "Thiếu secret BACKEND_HEALTH_URL (vd https://betravel-backend.onrender.com/api/health) -- bỏ qua."
+            exit 0
+          fi
+          curl -sf "${{ secrets.BACKEND_HEALTH_URL }}" || echo "Ping thất bại (backend có thể đang khởi động lại)."

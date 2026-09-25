@@ -1,7 +1,7 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-25 · Phiên: B8 Alerts + Profile/Favorites
-Nhánh: `feature/b8-alerts-profile-favorites`.
+Cập nhật lần cuối: 2026-09-25 · Phiên: B9 Hardening, seed, QA, tài liệu bàn giao
+Nhánh: `feature/b9-hardening-seed-handoff`.
 
 ## Trạng thái hiện hành — đọc mục này trước
 
@@ -18,7 +18,7 @@ Kết luận mới ở phần này thay thế những ghi chú cũ mâu thuẫn 
 | B6 SOS | xong một phần | Mã nguồn đã triển khai; còn cần dữ liệu địa điểm được người phụ trách xác minh |
 | B7 Incidents + dịch | xong | Backend + mobile + admin (A07 Workflow Builder) đã nối API thật |
 | B8 Alerts + profile/favorites | xong | GeoAlert + favorites + preferences nối API thật; mobile không còn phụ thuộc `@/mocks/client` hay `@/mocks/fixtures` ở bất kỳ màn hình nào |
-| B9 Hardening, build, demo/deploy | xong một phần | Đã sửa lỗi và kiểm tra bundle; chưa ký native build, triển khai, kịch bản demo |
+| B9 Hardening, build, demo/deploy | xong một phần | Seed/QA/security sweep/tài liệu bàn giao xong; ĐÃ chạy seed thật trên Atlas (xem "Đang vướng"); còn thiếu: triển khai thật (Render/Vercel/EAS), build ký, kiểm tra thiết bị thật |
 | Rà soát 24/09 | xong | Các lỗi phát hiện trong phạm vi đã sửa và có kiểm tra; phần cần dữ liệu/thiết bị được tách riêng |
 
 Tiến độ đợt rà soát: `[######] 6/6` — khảo sát, tái hiện, sửa, kiểm thử,
@@ -95,6 +95,23 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
   giữ nguyên cấu hình đang có, không di chuyển dữ liệu.
 - Cần nghiệm thu người dùng trên thiết bị thật: gọi điện, GPS/từ chối quyền,
   MapView khi mất mạng và thao tác soạn/khôi phục bản nháp trong trình duyệt.
+- **(B9) Đã chạy `npm run seed` VÀ `npm run seed:demo` thật trên Atlas trong
+  phiên này** (không phải test cô lập, dữ liệu còn tồn tại thật): tạo tài
+  khoản admin `admin@betravel.local` (mật khẩu mặc định `Matkhau123` từ
+  `SEED_ADMIN_PASSWORD` -- **PHẢI đổi ngay**), 5 `IncidentType` (published),
+  25 `QuickPhrase` KR (published). KHÔNG tạo `support_locations`/`geo_alerts`
+  (giữ nguyên quyết định không bịa dữ liệu an toàn thời gian thực). Phát
+  hiện thêm: Atlas đã có sẵn 4 countries/6 topics/8 legal articles (draft) từ
+  trước, và 3 tài khoản người dùng thật KHÔNG do AI tạo (email
+  `doraemondat0605@gmail.com`, `admin123@betravel.local`,
+  `phong123@gmail.com`) -- không đụng tới các bản ghi này.
+- **(B9) Chưa triển khai thật** lên Render/Vercel/EAS -- `docs/DEPLOY.md`,
+  `backend/render.yaml`, `mobile/eas.json`, `.github/workflows/keepalive.yml`
+  đã viết đầy đủ nhưng cần tài khoản dịch vụ thật của người phụ trách để
+  thực thi. Xem `docs/ACCEPTANCE.md` AC-12.
+- **(B9) Chưa kiểm tra responsive trên thiết bị thật** (iPhone SE 375px,
+  Android thật) -- không có thiết bị/simulator trong môi trường này. Xem
+  `docs/ACCEPTANCE.md` AC-11.
 
 ## Giới hạn còn lại / công việc tiếp theo
 
@@ -636,3 +653,47 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
     `@react-native-async-storage/async-storage/jest/async-storage-mock.js`)
     thay vì mock riêng lẻ từng file — sửa tận gốc, áp dụng cho mọi test
     tương lai.
+
+## Quyết định phát sinh (B9)
+
+48. **RBAC sweep chuyển từ danh sách route hardcode sang đọc trực tiếp
+    `router.stack` của Express** (`backend/test/rbac.sweep.test.js`) —
+    PROMPT B9 mục 2 yêu cầu rõ "test tự động DUYỆT DANH SÁCH ROUTE, không
+    kiểm thủ công". Xoá 2 test cũ trong `admin.test.js` vì bị test mới thay
+    thế hoàn toàn (tránh trùng lặp, Rule 3 DRY) — test mới quét được ~47
+    route hiện có, tự động bao phủ route admin thêm sau này mà không cần
+    sửa test.
+49. **KHÔNG seed `support_locations`/`geo_alerts` trong `npm run seed`/
+    `seed:demo`** dù PROMPT B9 mục 1 liệt kê "12 support_locations, ... 6
+    geo_alerts" — áp dụng nguyên quyết định đã chốt ở B6 (không suy đoán
+    toạ độ GPS) sang cả `geo_alerts` (không suy đoán tình hình an ninh/thời
+    tiết hiện tại, dữ liệu này về bản chất là thông tin thời gian thực, bịa
+    ra có thể khiến người dùng tin vào một tình huống khẩn cấp không có
+    thật hoặc bỏ qua một tình huống thật). Seed 5 `IncidentType` + 25
+    `QuickPhrase` KR ở trạng thái **published** (không phải draft) vì đây là
+    nội dung THỦ TỤC chung (gọi ai, làm gì trước/sau) không phải tuyên bố
+    pháp lý cần trích dẫn điều luật — khác bản chất với `legal_articles`
+    (bắt buộc nguồn thật, luôn seed draft).
+50. **`scripts/seed-content.js#run` đổi từ tự `connect/disconnect/exit` sang
+    export ra ngoài, không tự quản lý kết nối Mongo** — để
+    `scripts/seed-demo.js` gọi lại được HÀM NÀY trong CÙNG một kết nối rồi
+    làm tiếp bước reindex, thay vì phải spawn tiến trình con hoặc kết nối
+    Mongo 2 lần. Phần connect/disconnect/exit khi chạy độc lập
+    (`npm run seed`) chuyển xuống khối tự thực thi ở cuối file.
+51. **`npm run seed:demo` gọi thẳng `reindexArticleHandler()` cho từng bài
+    published, không qua `enqueueJob()` + hàng đợi** — script chạy một lần
+    rồi thoát, không có worker nền đang chạy để xử lý hàng đợi (Rule 9
+    KISS). Endpoint admin `POST /admin/rag/reindex-country` vẫn dùng hàng
+    đợi như cũ (phù hợp hơn cho thao tác qua UI, không chặn request).
+52. **Test lỗi `INTERNAL_ERROR` không lộ message gốc ở production KHÔNG viết
+    được bằng test tự động** (`isProduction` là hằng số đóng băng lúc
+    import đầu tiên của `env.js`, không đổi được giữa chừng trong cùng tiến
+    trình test — cùng giới hạn kiến trúc đã ghi nhận với
+    `REFRESH_ROTATION_GRACE_SECONDS` ở `test/setup.js`) — xác minh bằng đọc
+    code (`middleware/error.middleware.js`) thay vì test hành vi, ghi rõ ở
+    `docs/ACCEPTANCE.md` AC-09.
+53. **`docs/ACCEPTANCE.md` đánh dấu AC-11/AC-12 là "Cần người xác nhận"
+    thay vì "Đạt"** dù đã viết đầy đủ config/tài liệu triển khai — phân biệt
+    rõ "đã CHUẨN BỊ đủ để triển khai" với "ĐÃ triển khai thật", tránh báo
+    cáo sai một tiêu chí chưa thực sự hoàn thành (nguyên tắc minh bạch nhất
+    quán với toàn bộ sổ tiến độ từ B1).
