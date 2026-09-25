@@ -17,33 +17,8 @@ beforeEach(clearTestDb);
 
 const auth = (token) => `Bearer ${token}`;
 
-test("non-admin goi /api/admin/* bi tra ve 403 FORBIDDEN", async () => {
-  const { accessToken } = await registerAndLogin(app, { role: "user" });
-
-  const endpoints = [
-    ["get", "/api/admin/dashboard"],
-    ["get", "/api/admin/countries"],
-    ["post", "/api/admin/countries"],
-    ["get", "/api/admin/legal/articles"],
-    ["get", "/api/admin/locations"],
-    ["get", "/api/admin/audit"],
-    ["get", "/api/admin/incidents"],
-    ["get", "/api/admin/quick-phrases"],
-    ["get", "/api/admin/geo-alerts"],
-  ];
-
-  for (const [method, path] of endpoints) {
-    const res = await request(app)[method](path).set("Authorization", auth(accessToken));
-    assert.equal(res.status, 403, `${method.toUpperCase()} ${path} phai tra 403`);
-    assert.equal(res.body.error.code, "FORBIDDEN");
-  }
-});
-
-test("chua dang nhap goi /api/admin/* bi tra ve 401 UNAUTHORIZED", async () => {
-  const res = await request(app).get("/api/admin/countries");
-  assert.equal(res.status, 401);
-  assert.equal(res.body.error.code, "UNAUTHORIZED");
-});
+// RBAC cho TOAN BO /api/admin/* duoc quet TU DONG o test/rbac.sweep.test.js
+// (doc thang router.stack, khong hardcode danh sach) -- khong lap lai o day.
 
 test("admin CRUD Country hoat dong dung, ghi audit log", async () => {
   const { accessToken, user } = await registerAndLogin(app, { role: "admin" });

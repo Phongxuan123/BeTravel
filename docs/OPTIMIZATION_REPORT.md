@@ -1,7 +1,8 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
-> Trạng thái hiện hành: xem mục **B8 — ALERTS + PROFILE/FAVORITES** bên dưới
-> và `PROGRESS.md`. Các mục B1–B7 và "Rà soát toàn hệ thống 24/09/2026" là
-> lịch sử; không dùng những dòng tồn đọng cũ để kết luận một lỗi vẫn còn sau B8.
+> Trạng thái hiện hành: xem mục **B9 — HARDENING, SEED, QA, TÀI LIỆU BÀN
+> GIAO** bên dưới và `PROGRESS.md`. Các mục B1–B8 và "Rà soát toàn hệ thống
+> 24/09/2026" là lịch sử; không dùng những dòng tồn đọng cũ để kết luận một
+> lỗi vẫn còn sau B9.
 
 
 Phiên bản : v0.2.0 --> v0.5.0
@@ -368,6 +369,52 @@ mobile mới: `incidents.test.ts` 3 + `translate.test.ts` 2 + 1 bổ sung ở
 - Chưa có dữ liệu `GeoAlert` thật trong Atlas (chưa seed) -- cần B9 hoặc người phụ trách nhập qua Admin trước demo.
 - A06 Geo Alert Builder dùng `<Circle>` tĩnh + ô nhập số cho bán kính, không kéo-thả resize handle trên bản đồ (cùng quyết định KISS với A07 không dùng drag-and-drop).
 
+## B9 — HARDENING, SEED, QA, TÀI LIỆU BÀN GIAO (v1.0.0 --> v1.1.0)
+
+### B9.1. Tong quan
+- Tổng số file mới        : 8 (`backend/test/rbac.sweep.test.js`, `backend/scripts/seed-demo.js`, `backend/render.yaml`, `mobile/eas.json`, `.github/workflows/keepalive.yml`, `docs/DEPLOY.md`, `docs/DEMO_SCRIPT.md`, `docs/API.md`, `docs/ACCEPTANCE.md`)
+- Tổng số file chỉnh sửa  : `backend/scripts/seed-content.js` (thêm admin/incidents/quick-phrases, tách `run` ra export), `backend/src/core/env.js` (`SEED_ADMIN_EMAIL/PASSWORD`), `backend/.env.example`, `backend/package.json` (`seed:demo`), `backend/test/admin.test.js` (xoá 2 test bị thay thế), `mobile/app.json` (`android.config.googleMaps.apiKey`), `mobile/package.json` (patch version bump qua `expo install --fix`), `mobile/src/app/alerts/index.tsx`, `mobile/src/app/incidents/index.tsx`, `mobile/src/app/explore/index.tsx` (thêm loading/error state còn thiếu), `README.md` (mục "Thêm một quốc gia mới" + link tài liệu mới)
+- Warning xử lý           : 0 mới (grep secret/TODO/console.log thừa toàn repo -- không phát hiện gì)
+- Bug fix                 : 0 (không sửa hồi quy; các bug B7/B8 đã ghi nhận ở mục riêng)
+
+### B9.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/test/rbac.sweep.test.js` | 3, 9 | Đọc `router.stack` của `admin.routes.js` để quét MỌI route thay vì hardcode danh sách -- route mới tự động được bao phủ |
+| `backend/scripts/seed-content.js` | 2, 7 | `run()` không tự connect/disconnect/exit nữa -- tách để `seed-demo.js` gọi lại được trong cùng 1 kết nối Mongo |
+| `backend/scripts/seed-demo.js` | 9 | Gọi thẳng `reindexArticleHandler()` cho từng bài, không qua hàng đợi -- script chạy 1 lần không có worker nền xử lý |
+| `docs/ACCEPTANCE.md` | 7, 13B | Phân biệt rõ "Đạt"/"Đạt một phần"/"Cần người xác nhận" với bằng chứng cụ thể (tên file test thật) cho từng AC, không nhận vơ AC-11/AC-12 là đã xong |
+
+### B9.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md muc 48-53)
+
+- KHÔNG seed `support_locations`/`geo_alerts` dù PROMPT B9 liệt kê -- áp dụng lại quyết định "không suy đoán dữ liệu an toàn thời gian thực" đã chốt ở B6, mở rộng sang cảnh báo vị trí.
+- 5 `IncidentType` + 25 `QuickPhrase` KR seed thẳng ở trạng thái `published` (khác bản chất với `legal_articles` luôn seed `draft`) vì là nội dung thủ tục chung, không phải tuyên bố pháp lý cần nguồn.
+- Test lỗi ẩn message production không viết được bằng test tự động (giới hạn kiến trúc `isProduction` đóng băng lúc import) -- xác minh bằng đọc code, ghi rõ trong ACCEPTANCE.md.
+
+### B9.4. Warning & Bug da xu ly
+
+Không phát sinh bug mới trong batch này. `npx expo-doctor` từ 20/21 lên 21/21
+sau khi `npx expo install --fix` (4 gói lệch patch version so với Expo SDK
+57 -- lỗi môi trường, không phải bug code).
+
+### B9.5. Ket qua QA & Security Sweep
+
+- Rà soát MỌI endpoint đọc nội dung công khai (`legal/articles`, `legal/search`, `incidents`, `alerts/applicable`) -- đều có test xác nhận lọc `published`+`isCurrent`/`published`+còn hiệu lực, không có endpoint nào lọt sót (xem `docs/ACCEPTANCE.md` AC-02/AC-04).
+- Rà soát MỌI route `/api/admin/*` bằng test tự động (`rbac.sweep.test.js`) -- không dùng kiểm thủ công.
+- CORS/Helmet đã cấu hình từ env (`CORS_ORIGINS`), không hardcode origin.
+- Rate limit riêng cho từng nhóm tốn tiền/spam (chat/translate/feedback/auth) đã đủ, không thiếu endpoint nào.
+- `grep` toàn repo: không có secret hard-code, không có TODO/FIXME còn sót, `console.log` còn lại đều là log khởi động server có chủ đích (không phải debug log thừa).
+- `error.middleware.js` xác nhận qua đọc code: production không trả message/stack gốc, chỉ "Đã có lỗi xảy ra".
+- `backend/README.md` không còn host cluster thật (đã dùng placeholder `<cluster-host>` từ trước).
+
+### B9.6. Van de con ton dong
+
+- **Chưa triển khai thật** lên Render/Vercel/EAS -- chỉ có config + hướng dẫn (`docs/DEPLOY.md`), cần tài khoản dịch vụ thật của người phụ trách.
+- **Chưa kiểm tra responsive trên thiết bị thật** (iPhone SE 375px, Android thật) -- không có thiết bị/simulator trong môi trường này.
+- `npm run seed` và `npm run seed:demo` **đã chạy thật trên Atlas** trong phiên này (không phải test cô lập) -- tạo tài khoản admin mặc định cần đổi mật khẩu ngay, xem `docs/PROGRESS.md` mục "Đang vướng".
+- `.github/workflows/keepalive.yml` chưa chạy lần nào thật (cần secret `BACKEND_HEALTH_URL` trỏ tới backend đã deploy) -- chỉ xác nhận YAML hợp lệ bằng parser, chưa xác nhận chạy thành công trên GitHub Actions.
+
 ## Rà soát toàn hệ thống 24/09/2026
 
 Phạm vi: sửa lỗi được người dùng yêu cầu trực tiếp, giữ kiến trúc và bố cục
@@ -503,3 +550,4 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 | v0.8.1 | 24/09/2026 | Rà soát toàn hệ thống | Sửa API/auth/quota/job/RAG/SOS/admin/mobile; dependency 0 advisory; kiểm tra và bàn giao |
 | v0.9.0 | 25/09/2026 | B7 | Incidents (backend CRUD + workflow công khai + tiến độ theo user + CTA ngữ cảnh) và Translator (`/api/translate` tái dùng provider RAG + quick phrases offline) nối API thật ở mobile; Admin A07 Incident Workflow Builder + trang Câu dịch sẵn; 127 test backend, 80 test mobile, 8 test admin xanh |
 | v1.0.0 | 25/09/2026 | B8 | GeoAlert + favorites + preferences nối API thật; banner/modal cảnh báo AppShell, màn hình Đã lưu gộp 3 loại, lịch sử chat đổi tên/xoá, khối riêng tư + xoá lịch sử AI; mobile không còn phụ thuộc `@/mocks/client`/`@/mocks/fixtures` ở màn hình nào; sửa 2 bug (1 qua test tự viết trước khi ảnh hưởng thật, 1 khoảng trống cấu hình Jest có sẵn từ trước); 146 test backend, 85 test mobile, 8 test admin xanh |
+| v1.1.0 | 25/09/2026 | B9 | RBAC sweep tự động (đọc `router.stack`), seed mở rộng (admin/incidents/quick-phrases, KHÔNG seed support_locations/geo_alerts), `seed:demo` (seed+reindex), QA/security sweep, mobile polish (loading/error state còn thiếu ở 3 màn hình), render.yaml/eas.json/keepalive.yml, docs/DEPLOY.md + DEMO_SCRIPT.md + API.md + ACCEPTANCE.md; expo-doctor 21/21; 145 test backend, 85 test mobile, 8 test admin xanh; ĐÃ chạy seed thật trên Atlas (tạo admin mặc định cần đổi mật khẩu) |

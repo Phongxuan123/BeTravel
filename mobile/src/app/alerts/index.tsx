@@ -95,6 +95,11 @@ export default function AlertsScreen() {
       </ScrollView>
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 20 }}>
+        {alertsQuery.isLoading && <Text className="mt-8 text-center text-sm text-muted">Đang tải…</Text>}
+        {alertsQuery.isError && <Text className="mt-8 text-center text-sm text-danger">Không tải được cảnh báo. Kiểm tra kết nối mạng.</Text>}
+        {!alertsQuery.isLoading && !alertsQuery.isError && alerts.length === 0 && (
+          <Text className="mt-8 text-center text-sm text-muted">Không có cảnh báo nào.</Text>
+        )}
         {(['today', 'thisWeek', 'earlier'] as const).map((key) => {
           const list = groups[key];
           if (list.length === 0) return null;

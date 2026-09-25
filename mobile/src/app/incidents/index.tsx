@@ -33,6 +33,14 @@ export default function IncidentsScreen() {
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 12 }}>
         <Text className="text-[15px] text-muted">Chọn tình huống bạn đang gặp — mỗi hướng dẫn có các bước làm ngay.</Text>
 
+        {incidentsQuery.isLoading && <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>}
+        {incidentsQuery.isError && (
+          <Text className="py-6 text-center text-sm text-danger">Không tải được danh sách hướng dẫn. Kiểm tra kết nối mạng.</Text>
+        )}
+        {!incidentsQuery.isLoading && !incidentsQuery.isError && (incidentsQuery.data?.data.length ?? 0) === 0 && (
+          <Text className="py-6 text-center text-sm text-muted">Chưa có hướng dẫn xử lý sự cố cho quốc gia này.</Text>
+        )}
+
         {incidentsQuery.data?.data.map((incident) => (
           <IncidentRow key={incident.slug} incident={incident} />
         ))}

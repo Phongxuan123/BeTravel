@@ -14,7 +14,8 @@
     "test": "node --test \"test/**/*.test.js\"",
     "test:golden": "node --test test/golden.test.js",
     "create-admin": "node scripts/create-admin.js",
-    "seed": "node scripts/seed-content.js"
+    "seed": "node scripts/seed-content.js",
+    "seed:demo": "node scripts/seed-demo.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

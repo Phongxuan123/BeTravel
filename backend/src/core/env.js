@@ -98,6 +98,12 @@ const envSchema = z.object({
   AI_DAILY_QUOTA_GLOBAL: numeric(800),
 
   APP_VERSION: z.string().default("1.0.0"),
+
+  // Chi dung boi scripts/seed-content.js (npm run seed) -- tao/nang quyen
+  // 1 tai khoan admin de dang nhap Admin Portal ngay sau khi seed. Doi mat
+  // khau NGAY sau lan dang nhap dau tien, dac biet o moi truong da trien khai.
+  SEED_ADMIN_EMAIL: z.string().optional().default("admin@betravel.local"),
+  SEED_ADMIN_PASSWORD: z.string().optional().default("Matkhau123"),
 });
 
 const parsed = envSchema.safeParse(process.env);
