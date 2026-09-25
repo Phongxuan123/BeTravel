@@ -15,6 +15,7 @@ import * as feedbackController from "../controllers/adminFeedback.controller.js"
 import * as analyticsController from "../controllers/adminAnalytics.controller.js";
 import { incidentsController } from "../controllers/adminIncidents.controller.js";
 import { quickPhrasesController } from "../controllers/adminQuickPhrases.controller.js";
+import { geoAlertsController } from "../controllers/adminGeoAlerts.controller.js";
 
 import {
   countryCreateSchema,
@@ -44,6 +45,9 @@ import {
   quickPhraseCreateSchema,
   quickPhraseUpdateSchema,
   quickPhraseListQuerySchema,
+  geoAlertCreateSchema,
+  geoAlertUpdateSchema,
+  geoAlertListQuerySchema,
 } from "../validators/admin.validator.js";
 
 const router = express.Router();
@@ -109,5 +113,11 @@ router.post("/quick-phrases", validateBody(quickPhraseCreateSchema), quickPhrase
 router.get("/quick-phrases/:id", quickPhrasesController.get);
 router.patch("/quick-phrases/:id", validateBody(quickPhraseUpdateSchema), quickPhrasesController.update);
 router.delete("/quick-phrases/:id", quickPhrasesController.remove);
+
+router.get("/geo-alerts", validateQuery(geoAlertListQuerySchema), geoAlertsController.list);
+router.post("/geo-alerts", validateBody(geoAlertCreateSchema), geoAlertsController.create);
+router.get("/geo-alerts/:id", geoAlertsController.get);
+router.patch("/geo-alerts/:id", validateBody(geoAlertUpdateSchema), geoAlertsController.update);
+router.delete("/geo-alerts/:id", geoAlertsController.remove);
 
 export default router;

@@ -1,7 +1,7 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-25 · Phiên: B7 Incidents + Translator
-Nhánh: `feature/b7-incidents-translator`.
+Cập nhật lần cuối: 2026-09-25 · Phiên: B8 Alerts + Profile/Favorites
+Nhánh: `feature/b8-alerts-profile-favorites`.
 
 ## Trạng thái hiện hành — đọc mục này trước
 
@@ -17,7 +17,7 @@ Kết luận mới ở phần này thay thế những ghi chú cũ mâu thuẫn 
 | B5 Chat + feedback | xong | Mobile đã có UI/API chat, feedback và lịch sử |
 | B6 SOS | xong một phần | Mã nguồn đã triển khai; còn cần dữ liệu địa điểm được người phụ trách xác minh |
 | B7 Incidents + dịch | xong | Backend + mobile + admin (A07 Workflow Builder) đã nối API thật |
-| B8 Alerts + profile/favorites | chưa làm | Alerts mock; liên hệ/giấy tờ/favorites cục bộ, đã tách tài khoản |
+| B8 Alerts + profile/favorites | xong | GeoAlert + favorites + preferences nối API thật; mobile không còn phụ thuộc `@/mocks/client` hay `@/mocks/fixtures` ở bất kỳ màn hình nào |
 | B9 Hardening, build, demo/deploy | xong một phần | Đã sửa lỗi và kiểm tra bundle; chưa ký native build, triển khai, kịch bản demo |
 | Rà soát 24/09 | xong | Các lỗi phát hiện trong phạm vi đã sửa và có kiểm tra; phần cần dữ liệu/thiết bị được tách riêng |
 
@@ -98,8 +98,8 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
 
 ## Giới hạn còn lại / công việc tiếp theo
 
-- B8 là tính năng chưa triển khai, không phải hồi quy của đợt sửa lỗi. B7 đã
-  xong (xem "Quyết định phát sinh (B7)").
+- B7 và B8 đã xong (xem "Quyết định phát sinh (B7)" và "(B8)"). Còn lại B9
+  (hardening/seed/build/demo/deploy).
 - Chat chưa dùng lịch sử làm ngữ cảnh multi-turn; chi phí/tokens analytics
   chưa tích hợp usage thật. Tìm kiếm công khai còn regex trên bài, chưa thay
   bằng Atlas Search. Không đánh dấu các hạng mục này là đã hoàn thành.
@@ -112,11 +112,20 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
   nhưng service/prompt CHƯA phân biệt hành vi giữa hai mode -- trường tồn tại
   để tương thích tương lai (vd `phrase` có thể rút gọn/formal hơn), hiện xử
   lý giống hệt nhau. Không đánh dấu đây là đã hoàn thiện phân biệt 2 mode.
+- (B8) `usePollAlerts` kiểm tra vị trí thay đổi bằng nhịp định kỳ 5 phút (đọc
+  lại vị trí hiện tại mỗi lần), KHÔNG `watchPosition` liên tục để phát hiện
+  đúng lúc di chuyển >500m -- xem quyết định 41. Trường hợp di chuyển nhanh
+  giữa 2 lần đọc có thể trễ tối đa 5 phút trước khi nhận cảnh báo khu vực mới.
+- (B8) "Chia sẻ vị trí khi SOS" (gửi liên hệ khẩn cấp) vẫn là toggle cục bộ,
+  CHƯA nối với `preferences.locationConsent` hay backend nào -- hai khái niệm
+  tách biệt (xem quyết định 42), tính năng "gửi vị trí cho liên hệ khẩn cấp"
+  chưa có trong phạm vi B8.
 - (B7) CTA loại `ai` chỉ prefill MỘT câu hỏi cố định vào ô nhập của màn hình
   chat (không kèm ngữ cảnh nhiều lượt của bước đang xem) -- giống hạn chế đã
   ghi ở trên về chat chưa dùng lịch sử làm ngữ cảnh multi-turn.
-- Sau khi dữ liệu B6 đủ: nghiệm thu B6, rồi B8. B9 còn demo/deploy,
-  build ký và kiểm tra người dùng thực tế; không coi bundle export là APK/IPA.
+- Sau khi dữ liệu B6 đủ (điểm SOS đã xác minh): nghiệm thu B6 hoàn toàn.
+  B9 còn demo/deploy, build ký và kiểm tra người dùng thực tế; không coi
+  bundle export là APK/IPA.
 
 ## Lịch sử quyết định (giữ để truy vết)
 
@@ -547,3 +556,83 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
     sau. Toàn bộ 127 test tự động (dùng `LLM_PROVIDER=mock` theo CLAUDE.md
     mục 4.1) không phụ thuộc tình trạng Gemini nên không bị ảnh hưởng.
     Dữ liệu smoke test đã được xoá sạch khỏi Atlas ngay sau khi kiểm tra.
+
+## Quyết định phát sinh (B8)
+
+37. **`GeoAlert.severity` tái dùng enum `RiskLevel` đã có (`info`/`warn`/
+    `danger`) thay vì định nghĩa enum mới** -- cùng thang đo với
+    `LegalArticle.riskLevel`, tránh 2 khái niệm "mức độ nghiêm trọng" song
+    song trong cùng hệ thống (Rule 3 DRY, Rule 6 không magic string).
+    `GET /api/alerts/applicable` lọc theo bán kính bằng Haversine tính
+    TRONG ỨNG DỤNG (không dùng `$geoWithin`/`$centerSphere` của Mongo) --
+    mỗi `GeoAlert` có bán kính RIÊNG, không phải một bán kính cố định cho cả
+    truy vấn như $centerSphere yêu cầu. Số lượng alert `scope:'area'` đang
+    published của một quốc gia rất nhỏ (vài chục), tính tay trong Node đơn
+    giản hơn hẳn dựng một pipeline aggregate phức tạp cho cùng kết quả
+    (Rule 9 KISS).
+38. **`Favorite.targetId` không dùng `ref` cố định của Mongoose (không phải
+    `ref: 'LegalArticle'` tĩnh)** -- một document có thể trỏ tới 1 trong 3
+    model tuỳ `targetType`; thay vì Mongoose `refPath` (thêm độ phức tạp cho
+    một lần populate), `favorite.service.js` tự truy vấn riêng từng loại rồi
+    ghép lại bằng `Map` theo `targetId` (Rule 9 KISS, dữ liệu không lớn).
+39. **`preferences` là subdocument nhúng trực tiếp trên `User`, không tách
+    collection riêng** -- một user chỉ có đúng một bộ preferences, không có
+    lịch sử/nhiều bản ghi cần truy vấn độc lập, nhúng đơn giản hơn hẳn tách
+    bảng (Rule 9 KISS, giống `aiUsage` đã nhúng sẵn trên User từ B4).
+40. **`PUT /api/users/preferences` chỉ ghi đè field được gửi, không phải PUT
+    thay thế toàn bộ (dù dùng verb PUT)** -- tránh việc client quên gửi một
+    nhóm field (vd gửi `{locationConsent:false}` mà không kèm `alerts`) làm
+    mất toàn bộ preferences khác về giá trị mặc định. Đánh đổi: không đúng
+    ngữ nghĩa REST thuần tuý của PUT, chấp nhận được vì đây là API nội bộ
+    cho đúng 1 client (mobile), không phải API công khai cho bên thứ ba.
+41. **`usePollAlerts` dùng nhịp định kỳ 5 phút (đọc lại vị trí mỗi lần) thay
+    vì `expo-location#watchPosition` liên tục để phát hiện "di chuyển đáng
+    kể >500m"** -- `watchPosition` tốn pin đáng kể khi chạy nền dài, và
+    PROMPT B8 mục 5 tự đặt yêu cầu "KHÔNG poll liên tục (tốn pin, tốn
+    quota)" mạnh hơn yêu cầu phát hiện dịch chuyển tức thời. Đánh đổi: nhận
+    diện di chuyển có độ trễ tối đa 5 phút, ghi rõ ở "Giới hạn còn lại".
+42. **"Chia sẻ vị trí khi SOS" (toggle cũ, gửi 2 liên hệ khẩn cấp) và
+    "Cảnh báo theo vị trí" (`preferences.locationConsent`, mới ở B8) là HAI
+    khái niệm tách biệt, không gộp chung một toggle** -- cái đầu về việc
+    chia sẻ toạ độ cho người thân lúc khẩn cấp (chưa có backend, ngoài phạm
+    vi B8), cái sau về việc `usePollAlerts` có được đọc GPS để tìm cảnh báo
+    khu vực hay không. Gộp chung sẽ khiến người dùng tắt nhầm tính năng này
+    khi chỉ muốn tắt tính năng kia.
+43. **Bookmark bài luật đổi từ khoá cục bộ `countryCode:slug` sang khoá
+    `article.id` (ObjectId thật)** -- `useSavedArticles()` giữ NGUYÊN tên 2
+    hàm `isSaved`/`toggleSaved` (không đổi API bề ngoài với 2 màn hình gọi
+    nó) nhưng đổi THAM SỐ nhận vào, vì backend `Favorite.targetId` bắt buộc
+    là ObjectId thật của bài luật, không suy ra được từ countryCode+slug ở
+    tầng service mà không tốn thêm 1 lượt truy vấn. Đây là thay đổi tối
+    thiểu tại 2 điểm gọi (`explore/index.tsx`, `explore/[country]/[slug].tsx`)
+    bắt buộc phải làm để nối API thật, không phải sửa màn hình tuỳ tiện.
+44. **Bài luật đã lưu (favorite) mà bị thay thế (superseded) điều hướng vẫn
+    dùng CHÍNH `countryCode`+`slug` cũ, không cần `currentArticleId` để mở
+    đúng bản hiện hành** -- API công khai `GET /api/legal/articles/:country/
+    :slug` LUÔN trả bản `isCurrent:true` của đúng slug đó (slug ổn định
+    xuyên suốt các version), nên mở lại đường dẫn cũ tự động ra bản mới nhất.
+    `currentArticleId` trong response favorites chỉ dùng để HIỂN THỊ badge
+    "Đã có bản mới", không dùng để điều hướng.
+45. **`AlertBanner` (banner/modal AppShell) gọi `usePollAlerts()` ở MỌI màn
+    hình bọc `AppShell`, kể cả khi `isGuest`** -- hook tự tắt truy vấn alert
+    khi guest (`enabled: !isGuest`) nên không gọi API thừa, nhưng vẫn gọi
+    hook để giữ SỐ LƯỢNG hook cố định qua các lần render (Rule Rules of
+    Hooks), tương tự mẫu `useMockAuthValue`/`useRealAuthValue` đã dùng trước đó.
+46. **Test `AppShell.test.tsx` mock hẳn `usePollAlerts` thay vì dựng đủ
+    `QueryClientProvider`+`AuthProvider`+`CountryProvider`+network mock** --
+    test này chỉ kiểm tra thanh điều hướng hiển thị đúng, không quan tâm nội
+    dung cảnh báo; dựng đủ 3 provider + mock network cho một thứ không được
+    test tới là công sức thừa (Rule 9 KISS).
+47. **[Sửa lỗi có thật, phát hiện khi thêm B8] `package.json#jest.moduleNameMapper`
+    thiếu ánh xạ mock cho `@react-native-async-storage/async-storage`** --
+    trước B8 chưa có test nào render một cây component chạm tới
+    `lib/storage.ts` MÀ KHÔNG tự `jest.mock('@/lib/storage', ...)` ở file đó
+    (`sos.test.ts`, `translate.test.ts`, `incidents.test.ts` đều tự mock).
+    `AppShell.test.tsx` render `AlertBanner` (qua `lib/data.ts` import
+    TOÀN BỘ module `lib/api/*` ở đầu file, kể cả khi hook liên quan đã được
+    mock) lần đầu tiên chạm tới AsyncStorage native module thật trong Jest,
+    lộ ra khoảng trống cấu hình có sẵn từ trước. Sửa MỘT LẦN ở cấu hình Jest
+    chung (dùng mock chính thức của thư viện,
+    `@react-native-async-storage/async-storage/jest/async-storage-mock.js`)
+    thay vì mock riêng lẻ từng file — sửa tận gốc, áp dụng cho mọi test
+    tương lai.

@@ -17,6 +17,7 @@ import type {
   LocationBulkImportResult,
   IncidentType,
   QuickPhrase,
+  GeoAlert,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -87,3 +88,4 @@ export const analyticsApi = {
 
 export const incidentsApi = createAdminResource<IncidentType>('/admin/incidents');
 export const quickPhrasesApi = createAdminResource<QuickPhrase>('/admin/quick-phrases');
+export const geoAlertsApi = createAdminResource<GeoAlert>('/admin/geo-alerts');

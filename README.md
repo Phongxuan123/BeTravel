@@ -78,7 +78,7 @@ npm run dev
 | B5 | Chat mobile + feedback | ✅ |
 | B6 | SOS: bản đồ + điểm hỗ trợ | ✅ (chờ dữ liệu thật đã xác minh) |
 | B7 | Incidents + dịch khẩn cấp | ✅ |
-| B8 | Cảnh báo vị trí + hồ sơ cá nhân | chưa làm |
+| B8 | Cảnh báo vị trí + hồ sơ cá nhân | ✅ |
 | B9 | Hardening, seed, build, demo | một phần: đã rà soát/sửa lỗi và kiểm tra build; còn phát hành/demo |
 
 Chi tiết từng quyết định kỹ thuật và việc còn tồn đọng: xem [`docs/PROGRESS.md`](docs/PROGRESS.md).

@@ -27,7 +27,7 @@ import { TextField } from '@/components/ui/TextField';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
-import { fetchTrips } from '@/lib/data';
+import { fetchTrips, fetchFavorites } from '@/lib/data';
 import { useEmergencyContacts } from '@/features/profile/useEmergencyContacts';
 import { useDocumentStatus, type DocumentKey } from '@/features/profile/useDocumentStatus';
 
@@ -44,6 +44,11 @@ export default function ProfileScreen() {
   const tripsQuery = useQuery({
     queryKey: ['trips'],
     queryFn: fetchTrips,
+    enabled: !isGuest,
+  });
+  const favoritesQuery = useQuery({
+    queryKey: ['favorites'],
+    queryFn: fetchFavorites,
     enabled: !isGuest,
   });
 
@@ -202,7 +207,12 @@ export default function ProfileScreen() {
             onPress={() => router.push('/trips')}
           />
           <View className="h-px bg-line" />
-          <MenuRow icon={<Bookmark size={20} color={colors.warning} />} label="Quy định đã lưu" count="12" onPress={() => router.push('/explore?saved=1' as never)} />
+          <MenuRow
+            icon={<Bookmark size={20} color={colors.warning} />}
+            label="Đã lưu"
+            count={favoritesQuery.isLoading ? '…' : String(favoritesQuery.data?.data.length ?? 0)}
+            onPress={() => router.push('/favorites' as never)}
+          />
           <View className="h-px bg-line" />
           <MenuRow icon={<MessageCircle size={20} color={colors.primary} />} label="Lịch sử hỏi AI" onPress={() => router.push('/chat')} />
           <View className="h-px bg-line" />

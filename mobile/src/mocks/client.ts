@@ -8,7 +8,7 @@ import { incidents, getIncidentBySlug } from './fixtures/incidents';
 import { alerts as alertsFixture } from './fixtures/alerts';
 import { getQuickPhrasesByCountry } from './fixtures/quick-phrases';
 import { supportLocations } from './fixtures/support-locations';
-import type { Article, QuickPhrase, SearchResultItem, SupportLocation, Trip } from './schemas';
+import type { Article, FavoriteItem, Preferences, QuickPhrase, SearchResultItem, SupportLocation, Trip } from './schemas';
 import { haversineKm } from '@/lib/geo';
 
 export const IS_MOCK = true;
@@ -261,6 +261,10 @@ export async function deleteChatSession(_id: string) {
   return delay<{ deleted: true }>({ deleted: true });
 }
 
+export async function renameChatSession(id: string, title: string) {
+  return delay<ChatSession>({ _id: id, countryCode: '', title, updatedAt: new Date().toISOString() });
+}
+
 export async function loadChatSessionMessages(_sessionId: string, _countryCode: string) {
   return delay<ChatUiMessage[]>([]);
 }
@@ -294,4 +298,44 @@ export async function translateText(
   );
   if (known) return { translated: known.translated, phonetic: known.phonetic };
   return { translated: `[${opts.to}] ${text}`, phonetic: '(chưa dịch được ở bản mẫu)' };
+}
+
+// Preferences (B8) -- luu trong RAM cho phien mock.
+let mockPreferences: Preferences = {
+  locale: 'vi',
+  alerts: { legal: true, safety: true, tripReminder: false },
+  locationConsent: true,
+};
+
+export async function fetchPreferences() {
+  return delay(mockPreferences);
+}
+
+export async function updatePreferences(patch: {
+  locale?: string;
+  alerts?: Partial<Preferences['alerts']>;
+  locationConsent?: boolean;
+}) {
+  mockPreferences = {
+    ...mockPreferences,
+    ...patch,
+    alerts: { ...mockPreferences.alerts, ...(patch.alerts ?? {}) },
+  };
+  return delay(mockPreferences);
+}
+
+// "Da luu" gop 3 loai (B8) -- ban mock CHUA gom du lieu tu useSavedArticles
+// (AsyncStorage rieng theo tung tai khoan, khong doc duoc tu ham thuan tuy o
+// day) nen tra rong; man hinh Favorites o che do mock hien "chua co gi duoc
+// luu". Khong anh huong che do that (lib/api/favorites.ts hoat dong day du).
+export async function fetchFavorites(): Promise<{ ok: true; data: FavoriteItem[] }> {
+  return delay([]);
+}
+
+export async function addFavorite(_targetType: FavoriteItem['targetType'], _targetId: string): Promise<void> {
+  await delay(null);
+}
+
+export async function removeFavorite(_targetType: FavoriteItem['targetType'], _targetId: string): Promise<void> {
+  await delay(null);
 }

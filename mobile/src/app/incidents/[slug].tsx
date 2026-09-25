@@ -12,7 +12,7 @@ import { StepProgress } from '@/components/ui/StepProgress';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { fetchIncident, getIncidentProgress, setIncidentProgress } from '@/lib/data';
+import { fetchIncident, getIncidentProgress, setIncidentProgress, fetchFavorites, addFavorite, removeFavorite } from '@/lib/data';
 import type { Incident } from '@/mocks/schemas';
 
 type IncidentCta = { type: 'map' | 'call' | 'ai' | 'link'; label: string; payload: Record<string, unknown> };
@@ -43,11 +43,21 @@ export default function IncidentDetailScreen() {
   const { country } = useCountry();
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
-  const [saved, setSaved] = useState(false);
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
 
   const incidentQuery = useQuery({ queryKey: ['incident', slug], queryFn: () => fetchIncident(slug) });
   const incident = incidentQuery.data?.data as (Incident & { _id?: string }) | null | undefined;
+
+  const favoritesQuery = useQuery({ queryKey: ['favorites'], queryFn: fetchFavorites, enabled: !isGuest });
+  const saved = Boolean(incident?._id) && (favoritesQuery.data?.data ?? []).some((f) => f.targetType === 'incident' && f.targetId === incident?._id);
+  const favoriteMutation = useMutation({
+    mutationFn: async () => {
+      if (!incident?._id) return;
+      if (saved) await removeFavorite('incident', incident._id);
+      else await addFavorite('incident', incident._id);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
+  });
 
   const progressQuery = useQuery({
     queryKey: ['incident-progress', incident?._id],
@@ -100,7 +110,7 @@ export default function IncidentDetailScreen() {
             accessibilityLabel={saved ? 'Bỏ lưu' : 'Lưu sự cố'}
             variant={saved ? 'warning' : 'outline'}
             icon={<Bookmark size={18} color={saved ? colors.warning : colors.muted} fill={saved ? colors.warning : 'none'} />}
-            onPress={() => setSaved((v) => !v)}
+            onPress={() => !isGuest && favoriteMutation.mutate()}
           />
         }
       />

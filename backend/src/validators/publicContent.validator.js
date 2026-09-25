@@ -89,3 +89,18 @@ export const incidentProgressUpdateSchema = z.object({
 export const quickPhraseListQuerySchema = z.object({
   country: countryCodeSchema,
 });
+
+// ── Geo alerts cong khai (/api/alerts/applicable, B8) ────────────────────
+export const alertsApplicableQuerySchema = z.object({
+  country: countryCodeSchema,
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lng: z.coerce.number().min(-180).max(180).optional(),
+});
+
+// ── Favorites (/api/users/favorites, B8) ─────────────────────────────────
+const objectIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/, "ID không hợp lệ");
+
+export const favoriteCreateSchema = z.object({
+  targetType: z.enum(["article", "location", "incident"]),
+  targetId: objectIdSchema,
+});

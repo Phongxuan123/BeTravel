@@ -10,6 +10,11 @@
       "role": "user",
       "isActive": true,
       "googleLinked": false,
+      "preferences": {
+        "locale": "vi",
+        "alerts": { "legal": true, "safety": true, "tripReminder": false },
+        "locationConsent": true
+      },
       "createdAt": "2026-09-20T10:00:00.000Z",
       "updatedAt": "2026-09-22T08:30:00.000Z"
     }

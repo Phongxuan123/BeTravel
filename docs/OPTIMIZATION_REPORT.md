@@ -1,7 +1,7 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
-> Trạng thái hiện hành: xem mục **B7 — INCIDENTS + TRANSLATOR** bên dưới và
-> `PROGRESS.md`. Các mục B1–B6 và "Rà soát toàn hệ thống 24/09/2026" là lịch
-> sử; không dùng những dòng tồn đọng cũ để kết luận một lỗi vẫn còn sau B7.
+> Trạng thái hiện hành: xem mục **B8 — ALERTS + PROFILE/FAVORITES** bên dưới
+> và `PROGRESS.md`. Các mục B1–B7 và "Rà soát toàn hệ thống 24/09/2026" là
+> lịch sử; không dùng những dòng tồn đọng cũ để kết luận một lỗi vẫn còn sau B8.
 
 
 Phiên bản : v0.2.0 --> v0.5.0
@@ -329,6 +329,45 @@ mobile mới: `incidents.test.ts` 3 + `translate.test.ts` 2 + 1 bổ sung ở
 - Chưa có dữ liệu `IncidentType`/`QuickPhrase` thật trong Atlas (chưa seed) --
   cần B9 hoặc người phụ trách nhập qua Admin trước khi demo.
 
+## B8 — ALERTS + PROFILE/FAVORITES (v0.9.0 --> v1.0.0)
+
+### B8.1. Tong quan
+- Tổng số file mới        : 12 backend (`models/GeoAlert.js`, `models/Favorite.js`, `services/geoAlert.service.js`, `services/favorite.service.js`, `controllers/adminGeoAlerts.controller.js`, `controllers/publicAlerts.controller.js`, `controllers/favorites.controller.js`, `controllers/preferences.controller.js`, `routes/favorites.routes.js`, `routes/preferences.routes.js`, `test/alerts.test.js`, `test/favorites.test.js`, `test/profile.test.js`) + 8 mobile (`lib/api/alerts.ts`, `lib/api/favorites.ts`, `lib/api/preferences.ts`, `features/alerts/usePollAlerts.ts`, `components/common/AlertBanner.tsx`, `app/favorites/index.tsx`, `lib/api/__tests__/alerts.test.ts`, `lib/api/__tests__/favorites.test.ts`) + 2 admin (`pages/GeoAlertsPage.tsx`, `components/CirclePicker.tsx`)
+- Tổng số file chỉnh sửa  : backend (`models/User.js`, `validators/admin.validator.js`, `validators/publicContent.validator.js`, `validators/auth.validator.js`, `validators/chat.validator.js`, `services/auth.service.js`, `services/chat.service.js`, `controllers/auth.controller.js`, `controllers/chat.controller.js`, `routes/admin.routes.js`, `routes/public.routes.js`, `routes/chat.routes.js`, `app.js`, `test/admin.test.js`, `test/contracts.test.js`, `contracts/README.md`) + mobile (`app/settings/index.tsx`, `app/profile/index.tsx`, `app/chat/index.tsx`, `app/incidents/[slug].tsx`, `app/explore/index.tsx`, `app/explore/[country]/[slug].tsx`, `components/common/AppShell.tsx`, `components/common/__tests__/AppShell.test.tsx`, `features/explore/useSavedArticles.ts`, `lib/data.ts`, `lib/storage.ts`, `lib/api/auth.ts`, `lib/api/chat.ts`, `mocks/client.ts`, `mocks/schemas.ts`, `lib/api/__tests__/adapters.test.ts`, `package.json` (jest config)) + admin (`App.tsx`, `components/Layout.tsx`, `lib/api.ts`, `lib/types.ts`)
+- Warning xử lý           : 0 mới
+- Bug fix                 : 2 (1 phát hiện qua test tự viết trước khi ảnh hưởng thật -- tham số `country` vs `countryCode` sai tên ở `geoAlert.service.js`; 1 khoảng trống cấu hình Jest có sẵn từ trước, lộ ra khi thêm test đầu tiên render cây component chạm AsyncStorage thật)
+
+### B8.2. Chi tiet file dang chu y
+
+| File | Rule áp dụng | Ghi chú |
+|------|--------------|---------|
+| `backend/src/services/geoAlert.service.js` | 9 | Lọc bán kính bằng Haversine trong ứng dụng thay vì `$geoWithin`/`$centerSphere` -- mỗi alert có bán kính RIÊNG, không phải một bán kính cố định cho cả truy vấn |
+| `backend/src/services/favorite.service.js` | 3, 9 | Gộp 3 loại đối tượng (article/location/incident) bằng `Map` tra cứu thủ công thay vì Mongoose `refPath`; bài đã superseded vẫn trả về kèm cờ `isOutdated` |
+| `mobile/src/features/explore/useSavedArticles.ts` | 1, 2 | Đổi khoá từ `countryCode:slug` cục bộ sang `article.id` thật (ObjectId) -- bắt buộc để nối `Favorite.targetId`, giữ nguyên tên 2 hàm `isSaved`/`toggleSaved` |
+| `mobile/src/features/alerts/usePollAlerts.ts` | 7, 9 | Nhịp định kỳ 5 phút thay vì `watchPosition` liên tục (tốn pin); tôn trọng `preferences.locationConsent` VÀ quyền hệ thống đã cấp, không tự ý xin quyền |
+| `mobile/package.json` (jest) | 13B | Thêm `moduleNameMapper` cho `@react-native-async-storage/async-storage` -- sửa tận gốc ở cấu hình chung thay vì mock riêng lẻ từng file test mới |
+
+### B8.3. Quyet dinh dang chu y (chi tiet o docs/PROGRESS.md muc 37-47)
+
+- `GeoAlert.severity` tái dùng enum `RiskLevel` đã có, không định nghĩa enum mới.
+- `PUT /api/users/preferences` chỉ ghi đè field được gửi (không phải PUT thay thế toàn bộ) -- tránh mất preferences khác khi client chỉ gửi một phần.
+- "Chia sẻ vị trí khi SOS" (cũ) và "Cảnh báo theo vị trí" (`locationConsent`, mới) là hai khái niệm tách biệt, không gộp chung một toggle.
+- Bookmark bài luật đổi khoá từ `countryCode:slug` sang `article.id` thật -- chạm tối thiểu 2 điểm gọi, bắt buộc để nối API thật.
+
+### B8.4. Warning & Bug da xu ly
+
+| Loại | Mô tả | File | Cách fix |
+|------|-------|------|----------|
+| Bug (phát hiện qua test tự viết `alerts.test.js`, TRƯỚC khi ảnh hưởng thật) | `findApplicable({countryCode,...})` destructure sai tên tham số -- controller truyền `req.query` có field `country` (đúng theo validator + quy ước `publicSupportLocation.service.js`), khiến mọi request thật ném `TypeError` 500 | `backend/src/services/geoAlert.service.js` | Đổi tham số thành `country`, khớp đúng tên field query |
+| Bug (khoảng trống cấu hình có sẵn, lộ ra khi thêm test mới) | Chưa có mapping mock cho `@react-native-async-storage/async-storage` trong Jest -- mọi test trước đó chạm `lib/storage.ts` đều tự `jest.mock('@/lib/storage', ...)` riêng lẻ, `AppShell.test.tsx` (qua `AlertBanner` → `lib/data.ts` import toàn bộ `lib/api/*`) là component đầu tiên chạm thẳng module gốc | `mobile/package.json` | Thêm `moduleNameMapper` trỏ tới mock chính thức của thư viện, áp dụng cho toàn bộ test |
+
+### B8.5. Van de con ton dong
+
+- `usePollAlerts` phát hiện di chuyển >500m có độ trễ tối đa 5 phút (nhịp định kỳ, không `watchPosition` liên tục).
+- "Chia sẻ vị trí khi SOS" (gửi liên hệ khẩn cấp) vẫn cục bộ, chưa có backend -- ngoài phạm vi B8.
+- Chưa có dữ liệu `GeoAlert` thật trong Atlas (chưa seed) -- cần B9 hoặc người phụ trách nhập qua Admin trước demo.
+- A06 Geo Alert Builder dùng `<Circle>` tĩnh + ô nhập số cho bán kính, không kéo-thả resize handle trên bản đồ (cùng quyết định KISS với A07 không dùng drag-and-drop).
+
 ## Rà soát toàn hệ thống 24/09/2026
 
 Phạm vi: sửa lỗi được người dùng yêu cầu trực tiếp, giữ kiến trúc và bố cục
@@ -463,3 +502,4 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 | v0.8.0    | 24/09/2026 | B6 | SOS: `$geoNear` thật (backend) + admin CRUD/bulk import CSV/bulk verify + mobile map/hub nối API thật, disable Places API đúng CLAUDE.md; sửa 4 bug (2 qua smoke test Atlas, 2 qua tự viết test TRƯỚC khi ảnh hưởng dữ liệu thật); chưa đạt điều kiện nghiệm thu "có support_locations đã verify" của master plan -- cần người điền toạ độ thật |
 | v0.8.1 | 24/09/2026 | Rà soát toàn hệ thống | Sửa API/auth/quota/job/RAG/SOS/admin/mobile; dependency 0 advisory; kiểm tra và bàn giao |
 | v0.9.0 | 25/09/2026 | B7 | Incidents (backend CRUD + workflow công khai + tiến độ theo user + CTA ngữ cảnh) và Translator (`/api/translate` tái dùng provider RAG + quick phrases offline) nối API thật ở mobile; Admin A07 Incident Workflow Builder + trang Câu dịch sẵn; 127 test backend, 80 test mobile, 8 test admin xanh |
+| v1.0.0 | 25/09/2026 | B8 | GeoAlert + favorites + preferences nối API thật; banner/modal cảnh báo AppShell, màn hình Đã lưu gộp 3 loại, lịch sử chat đổi tên/xoá, khối riêng tư + xoá lịch sử AI; mobile không còn phụ thuộc `@/mocks/client`/`@/mocks/fixtures` ở màn hình nào; sửa 2 bug (1 qua test tự viết trước khi ảnh hưởng thật, 1 khoảng trống cấu hình Jest có sẵn từ trước); 146 test backend, 85 test mobile, 8 test admin xanh |

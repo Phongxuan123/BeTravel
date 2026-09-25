@@ -301,3 +301,44 @@ export const quickPhraseUpdateSchema = quickPhraseCreateSchema.partial();
 export const quickPhraseListQuerySchema = paginationQuerySchema.extend({
   countryCode: countryCodeSchema.optional(),
 });
+
+// ── GeoAlert (B8, A06) ────────────────────────────────────────────────────
+const geoAlertCenterSchema = z.object({
+  type: z.literal("Point").default("Point"),
+  coordinates: z
+    .tuple([z.number().min(-180).max(180), z.number().min(-90).max(90)])
+    .describe("[lng, lat] -- KHONG phai [lat, lng]"),
+});
+
+const geoAlertBaseSchema = z.object({
+  countryCode: countryCodeSchema,
+  scope: z.enum(["country", "area"]),
+  center: geoAlertCenterSchema.optional(),
+  radiusM: z.coerce.number().positive().max(500_000).optional(),
+  title: z.string().trim().min(1, "Tieu de khong duoc de trong"),
+  message: z.string().trim().min(1, "Noi dung canh bao khong duoc de trong"),
+  severity: z.enum(Object.values(RiskLevel)).optional(),
+  behaviorsToAvoid: z.array(z.string().trim()).optional().default([]),
+  linkedArticleId: z
+    .string()
+    .regex(/^[a-fA-F0-9]{24}$/, "ID bài luật không hợp lệ")
+    .optional()
+    .nullable(),
+  effectiveFrom: z.coerce.date(),
+  effectiveTo: z.coerce.date().optional().nullable(),
+  status: z.enum(["draft", "published"]).optional(),
+});
+
+// Canh bao khu vuc BAT BUOC co tam + ban kinh -- canh bao ca nuoc thi khong
+// can (khong co "khu vuc" de ve tren ban do).
+export const geoAlertCreateSchema = geoAlertBaseSchema.refine(
+  (data) => data.scope !== "area" || Boolean(data.center && data.radiusM),
+  { message: "Cảnh báo khu vực cần chọn tâm và bán kính trên bản đồ", path: ["center"] },
+);
+
+export const geoAlertUpdateSchema = geoAlertBaseSchema.partial();
+
+export const geoAlertListQuerySchema = paginationQuerySchema.extend({
+  countryCode: countryCodeSchema.optional(),
+  status: z.enum(["draft", "published"]).optional(),
+});

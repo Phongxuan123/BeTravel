@@ -14,6 +14,9 @@ export const StorageKeys = {
   // Prefix -- ghep them countryCode de dung offline man hinh Dich khan cap
   // khi mat mang hoac API dich loi (CLAUDE.md B7 muc 16).
   quickPhrasesCachePrefix: 'bt_quick_phrases_',
+  // Map {alertId: ISO date da dismiss} -- khong hien lai canh bao da dismiss
+  // trong 24h (CLAUDE.md B8 muc 7). CUC BO tren may, khong dong bo server.
+  dismissedAlerts: 'bt_dismissed_alerts',
 } as const;
 
 export async function getJSON<T>(key: string): Promise<T | null> {

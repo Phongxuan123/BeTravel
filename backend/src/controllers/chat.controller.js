@@ -43,6 +43,15 @@ export const sendMessage = async (req, res, next) => {
   }
 };
 
+export const renameSession = async (req, res, next) => {
+  try {
+    const session = await chatService.renameSession(req.user.userId, req.params.id, req.body.title);
+    ok(res, session);
+  } catch (error) {
+    next(toAppError(error));
+  }
+};
+
 export const removeSession = async (req, res, next) => {
   try {
     await chatService.deleteSession(req.user.userId, req.params.id);

@@ -15,9 +15,11 @@ import IncidentsPage from './pages/IncidentsPage';
 import IncidentEditorPage from './pages/IncidentEditorPage';
 import QuickPhrasesPage from './pages/QuickPhrasesPage';
 
-// LocationsPage keo theo leaflet/react-leaflet (~150kB) -- tach rieng chunk
-// va chi tai khi nguoi dung thuc su vao trang do (Rule 13A, W4 canh bao bundle qua lon).
+// LocationsPage/GeoAlertsPage keo theo leaflet/react-leaflet (~150kB) -- tach
+// rieng chunk va chi tai khi nguoi dung thuc su vao trang do (Rule 13A, W4
+// canh bao bundle qua lon).
 const LocationsPage = lazy(() => import('./pages/LocationsPage'));
+const GeoAlertsPage = lazy(() => import('./pages/GeoAlertsPage'));
 
 export default function App() {
   return (
@@ -47,6 +49,16 @@ export default function App() {
       <Route path="/incidents/new" element={<ProtectedRoute><IncidentEditorPage /></ProtectedRoute>} />
       <Route path="/incidents/:id" element={<ProtectedRoute><IncidentEditorPage /></ProtectedRoute>} />
       <Route path="/quick-phrases" element={<ProtectedRoute><QuickPhrasesPage /></ProtectedRoute>} />
+      <Route
+        path="/geo-alerts"
+        element={
+          <ProtectedRoute>
+            <Suspense fallback={<LoadingState />}>
+              <GeoAlertsPage />
+            </Suspense>
+          </ProtectedRoute>
+        }
+      />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

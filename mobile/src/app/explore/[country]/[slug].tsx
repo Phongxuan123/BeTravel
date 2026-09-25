@@ -20,7 +20,7 @@ export default function ArticleDetailScreen() {
     queryFn: () => fetchArticle(countryCode, slug),
   });
   const article = articleQuery.data?.data;
-  const saved = isSaved(countryCode, slug);
+  const saved = article ? isSaved(article.id) : false;
 
   const onShare = () => {
     if (!article) return;
@@ -62,7 +62,7 @@ export default function ArticleDetailScreen() {
               accessibilityLabel={saved ? 'Bỏ lưu' : 'Lưu quy định'}
               variant={saved ? 'warning' : 'outline'}
               icon={<Star size={18} color={saved ? colors.warning : colors.muted} fill={saved ? colors.warning : 'none'} />}
-              onPress={() => toggleSaved(countryCode, slug)}
+              onPress={() => toggleSaved(article.id)}
             />
             <IconButton accessibilityLabel="Chia sẻ" variant="outline" icon={<ShareIcon size={18} color={colors.ink} />} onPress={onShare} />
           </>

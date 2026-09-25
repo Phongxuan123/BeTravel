@@ -125,13 +125,18 @@ export const incidentSchema = z.object({
 });
 export type Incident = z.infer<typeof incidentSchema>;
 
+// severity/behaviorsToAvoid la field MO RONG cho B8 (GeoAlert that) -- optional
+// de khong pha du lieu gia lap cu. Nguon that CHI co category 'safety' (GeoAlert
+// khong co khai niem 'legal'/'trip') -- xem lib/api/alerts.ts#adaptAlert.
 export const alertSchema = z.object({
   __mock: z.literal(true).optional(),
   id: z.string(),
   category: z.enum(['legal', 'safety', 'trip']),
+  severity: z.enum(['info', 'warn', 'danger']).optional(),
   title: z.string(),
   body: z.string(),
   meta: z.string(),
+  behaviorsToAvoid: z.array(z.string()).optional(),
   read: z.boolean(),
   createdAt: z.string(),
 });
@@ -170,6 +175,32 @@ export const supportLocationSchema = z.object({
   featured: z.boolean().optional(),
 });
 export type SupportLocation = z.infer<typeof supportLocationSchema>;
+
+// "Da luu" (B8) -- hinh dang PHANG (flatten) du de man hinh Favorites render
+// chung ca 3 loai (article/location/incident) ma khong can biet chi tiet tung
+// loai; lib/api/favorites.ts#adaptFavorite chuyen doi tu response long nhieu
+// tang cua backend sang hinh dang nay.
+export const favoriteItemSchema = z.object({
+  __mock: z.literal(true).optional(),
+  id: z.string(),
+  targetType: z.enum(['article', 'location', 'incident']),
+  targetId: z.string(),
+  title: z.string(),
+  subtitle: z.string(),
+  countryCode: z.string().optional(),
+  slug: z.string().optional(),
+  isOutdated: z.boolean().optional(),
+  currentArticleId: z.string().nullable().optional(),
+  createdAt: z.string(),
+});
+export type FavoriteItem = z.infer<typeof favoriteItemSchema>;
+
+export const preferencesSchema = z.object({
+  locale: z.string(),
+  alerts: z.object({ legal: z.boolean(), safety: z.boolean(), tripReminder: z.boolean() }),
+  locationConsent: z.boolean(),
+});
+export type Preferences = z.infer<typeof preferencesSchema>;
 
 export const searchResultSchema = z.object({
   __mock: z.literal(true).optional(),

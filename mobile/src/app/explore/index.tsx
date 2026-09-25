@@ -38,16 +38,14 @@ export default function ExploreScreen() {
 
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
-  // "Da luu" la trang thai cuc bo (chua co backend favorites, xem
-  // useSavedArticles.ts) nen loc client-side sau khi fetch, KHONG truyen
-  // savedOnly cho API (content.ts luon tra rong cho tham so nay).
+  // "Da luu" duoc loc CLIENT-SIDE sau khi fetch (favorites la mot nguon du
+  // lieu rieng, khong phai tham so loc cua API bai luat) -- content.ts luon
+  // tra rong cho tham so nay.
   const articlesQuery = useQuery({
     queryKey: ['articles', countryCode, topicFilter],
     queryFn: () => fetchArticles(countryCode, { topicKey: topicFilter ?? undefined }),
   });
-  const visibleArticles = (articlesQuery.data?.data ?? []).filter(
-    (a) => !savedOnly || isSaved(a.countryCode, a.slug),
-  );
+  const visibleArticles = (articlesQuery.data?.data ?? []).filter((a) => !savedOnly || isSaved(a.id));
 
   const topicFilterLabel = topicsQuery.data?.data.find((t) => t.key === topicFilter)?.label ?? 'Chủ đề';
 
@@ -143,8 +141,8 @@ export default function ExploreScreen() {
                 article={article}
                 countryCode={countryCode}
                 topicLabel={topicsQuery.data?.data.find((t) => t.key === article.topicKey)?.label}
-                saved={isSaved(article.countryCode, article.slug)}
-                onToggleSaved={() => toggleSaved(article.countryCode, article.slug)}
+                saved={isSaved(article.id)}
+                onToggleSaved={() => toggleSaved(article.id)}
               />
             ))}
           </View>

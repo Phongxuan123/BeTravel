@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { House, Compass, MessageCircle, User } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { colors, shadows } from '@/lib/theme';
+import { AlertBanner } from './AlertBanner';
 
 export type ActiveTab = 'home' | 'explore' | 'sos' | 'chat' | 'profile';
 
@@ -20,6 +21,7 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
   const insets = useSafeAreaInsets();
   return (
     <View className="flex-1 bg-bg">
+      <AlertBanner />
       <View className="flex-1">{children}</View>
       <View
         className="absolute inset-x-0 bottom-0 flex-row border-t border-line bg-surface"

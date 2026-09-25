@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, ToastAndroid, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import { Globe, Flag, ChevronRight, LogOut, Check } from 'lucide-react-native';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Globe, Flag, ChevronRight, LogOut, Check, ShieldCheck, Trash2 } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { IconTile } from '@/components/ui/IconTile';
@@ -14,7 +14,9 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { fetchCountries } from '@/lib/data';
+import { fetchCountries, fetchPreferences, updatePreferences, listChatSessions, deleteChatSession } from '@/lib/data';
+import type { Preferences } from '@/mocks/schemas';
+import type { PreferencesPatch } from '@/lib/api/preferences';
 import { changePassword } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/http';
 import { passwordValidationMessage } from '@/lib/password';
@@ -24,14 +26,27 @@ function toast(message: string) {
   else Alert.alert(message);
 }
 
+const DEFAULT_PREFERENCES: Preferences = {
+  locale: 'vi',
+  alerts: { legal: true, safety: true, tripReminder: false },
+  locationConsent: true,
+};
+
 export default function SettingsScreen() {
   const { logout } = useAuth();
   const { country, countryCode, setCountryCode } = useCountry();
+  const queryClient = useQueryClient();
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const countries = countriesQuery.data?.data ?? [];
-  const [legalAlerts, setLegalAlerts] = useState(true);
-  const [safetyAlerts, setSafetyAlerts] = useState(true);
-  const [tripReminder, setTripReminder] = useState(false);
+
+  const preferencesQuery = useQuery({ queryKey: ['preferences'], queryFn: fetchPreferences });
+  const preferences = preferencesQuery.data?.data ?? DEFAULT_PREFERENCES;
+  const preferencesMutation = useMutation({
+    mutationFn: (patch: PreferencesPatch) => updatePreferences(patch),
+    onSuccess: (res) => {
+      queryClient.setQueryData(['preferences'], res);
+    },
+  });
   const [shareLocation, setShareLocation] = useState(true);
 
   const [pickingCountry, setPickingCountry] = useState(false);
@@ -39,6 +54,29 @@ export default function SettingsScreen() {
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState<string | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [deletingHistory, setDeletingHistory] = useState(false);
+
+  const onDeleteChatHistory = () => {
+    Alert.alert('Xoá lịch sử hỏi AI', 'Toàn bộ cuộc trò chuyện với AI sẽ bị xoá vĩnh viễn. Không thể hoàn tác.', [
+      { text: 'Huỷ', style: 'cancel' },
+      {
+        text: 'Xoá tất cả',
+        style: 'destructive',
+        onPress: async () => {
+          setDeletingHistory(true);
+          try {
+            const { data: sessions } = await listChatSessions();
+            await Promise.all(sessions.map((s) => deleteChatSession(s._id)));
+            toast('Đã xoá lịch sử hỏi AI');
+          } catch {
+            toast('Không xoá được toàn bộ lịch sử. Kiểm tra kết nối mạng và thử lại.');
+          } finally {
+            setDeletingHistory(false);
+          }
+        },
+      },
+    ]);
+  };
 
   const onLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
@@ -100,14 +138,52 @@ export default function SettingsScreen() {
         </SettingsGroup>
 
         <SettingsGroup title="THÔNG BÁO">
-          <SettingsSwitchRow label="Cảnh báo pháp lý" description="Khi quy định ở quốc gia bạn đến thay đổi" value={legalAlerts} onValueChange={setLegalAlerts} />
-          <SettingsSwitchRow label="Cảnh báo an toàn" description="Theo vị trí hiện tại của bạn" value={safetyAlerts} onValueChange={setSafetyAlerts} />
-          <SettingsSwitchRow label="Nhắc chuyến đi" description="Trước ngày khởi hành 3 ngày" value={tripReminder} onValueChange={setTripReminder} />
+          <SettingsSwitchRow
+            label="Cảnh báo pháp lý"
+            description="Khi quy định ở quốc gia bạn đến thay đổi"
+            value={preferences.alerts.legal}
+            onValueChange={(v) => preferencesMutation.mutate({ alerts: { legal: v } })}
+          />
+          <SettingsSwitchRow
+            label="Cảnh báo an toàn"
+            description="Theo vị trí hiện tại của bạn"
+            value={preferences.alerts.safety}
+            onValueChange={(v) => preferencesMutation.mutate({ alerts: { safety: v } })}
+          />
+          <SettingsSwitchRow
+            label="Nhắc chuyến đi"
+            description="Trước ngày khởi hành 3 ngày"
+            value={preferences.alerts.tripReminder}
+            onValueChange={(v) => preferencesMutation.mutate({ alerts: { tripReminder: v } })}
+          />
         </SettingsGroup>
 
         <SettingsGroup title="QUYỀN RIÊNG TƯ">
+          <View className="gap-1.5 px-4 pb-3 pt-4">
+            <View className="flex-row items-center gap-1.5">
+              <ShieldCheck size={14} color={colors.muted} />
+              <Text className="text-[11px] font-body-bold uppercase tracking-wider text-muted">Chúng tôi dùng vị trí của bạn để làm gì</Text>
+            </View>
+            <Text className="text-[13px] leading-5 text-muted">
+              Vị trí GPS (nếu bạn cho phép) chỉ dùng để tìm cảnh báo an toàn và điểm hỗ trợ SOS gần bạn nhất — không được lưu lại
+              hay gửi cho bên thứ ba. Tắt mục dưới đây bất cứ lúc nào để chỉ nhận cảnh báo theo cấp quốc gia.
+            </Text>
+          </View>
+          <View className="h-px bg-line" />
           <SettingsRow label="Truy cập vị trí" value="Khi dùng ứng dụng" onPress={() => toast('Mở cài đặt trình duyệt/hệ thống để thay đổi quyền vị trí')} />
+          <SettingsSwitchRow
+            label="Cảnh báo theo vị trí"
+            description="Dùng GPS để nhận cảnh báo khu vực; tắt vẫn nhận cảnh báo cấp quốc gia"
+            value={preferences.locationConsent}
+            onValueChange={(v) => preferencesMutation.mutate({ locationConsent: v })}
+          />
           <SettingsSwitchRow label="Chia sẻ vị trí khi SOS" description="Gửi cho 2 liên hệ khẩn cấp" value={shareLocation} onValueChange={setShareLocation} />
+          <View className="h-px bg-line" />
+          <SettingsRow
+            icon={<Trash2 size={18} color={colors.danger} />}
+            label={deletingHistory ? 'Đang xoá…' : 'Xoá lịch sử hỏi AI'}
+            onPress={onDeleteChatHistory}
+          />
         </SettingsGroup>
 
         <SettingsGroup title="TÀI KHOẢN">

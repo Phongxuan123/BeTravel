@@ -24,3 +24,7 @@ export const chatMessageCreateSchema = z.object({
 export const chatFeedbackSchema = z.object({
   feedback: z.enum(["up", "down"]),
 });
+
+export const chatSessionRenameSchema = z.object({
+  title: z.string().trim().min(1, "Tên phiên không được để trống").max(100, "Tên phiên quá dài"),
+});

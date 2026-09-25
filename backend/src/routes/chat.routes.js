@@ -4,7 +4,7 @@ import { authenticateToken } from "../middleware/auth.middleware.js";
 import { validateBody } from "../middleware/validate.middleware.js";
 import { chatRateLimit } from "../middleware/rateLimit.middleware.js";
 import * as chatController from "../controllers/chat.controller.js";
-import { chatSessionCreateSchema, chatMessageCreateSchema, chatFeedbackSchema } from "../validators/chat.validator.js";
+import { chatSessionCreateSchema, chatMessageCreateSchema, chatFeedbackSchema, chatSessionRenameSchema } from "../validators/chat.validator.js";
 
 /*
  * Chat la cua rieng tung user da dang nhap -- khong phan biet role, giong
@@ -17,6 +17,7 @@ router.use(authenticateToken);
 
 router.get("/sessions", chatController.listSessions);
 router.post("/sessions", validateBody(chatSessionCreateSchema), chatController.createSession);
+router.patch("/sessions/:id", validateBody(chatSessionRenameSchema), chatController.renameSession);
 router.delete("/sessions/:id", chatController.removeSession);
 
 router.get("/sessions/:id/messages", chatController.listMessages);

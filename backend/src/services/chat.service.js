@@ -40,6 +40,18 @@ export const deleteSession = async (userId, sessionId) => {
   await ChatMessage.deleteMany({ sessionId });
 };
 
+// Doi ten phien chat (B8 muc 16) -- tieu de mac dinh lay tu cau hoi dau tien,
+// nguoi dung co the dat lai ten de de tim trong "Lich su chat".
+export const renameSession = async (userId, sessionId, title) => {
+  const session = await ChatSession.findOneAndUpdate(
+    { _id: sessionId, userId },
+    { $set: { title } },
+    { returnDocument: "after" },
+  );
+  if (!session) throw new Error("CHAT_SESSION_NOT_FOUND");
+  return session;
+};
+
 // Feedback (huu ich/khong huu ich) tren TUNG cau tra loi -- dung o B5 (nut
 // ThumbsUp/ThumbsDown trong AnswerCard.tsx), gan o day de sẵn cho B5 noi vao.
 export const setMessageFeedback = async (userId, sessionId, messageId, feedback) => {
