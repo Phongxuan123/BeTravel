@@ -1,6 +1,12 @@
 import { apiRequest, ApiError } from './http';
 import { setAccessToken, setRefreshToken, getRefreshToken, clearTokens } from './tokenStore';
 
+export type ApiPreferences = {
+  locale: string;
+  alerts: { legal: boolean; safety: boolean; tripReminder: boolean };
+  locationConsent: boolean;
+};
+
 export type ApiUser = {
   id: string;
   username: string;
@@ -9,6 +15,9 @@ export type ApiUser = {
   phone: string;
   role: 'user' | 'admin';
   isActive: boolean;
+  // Chi GET /auth/me tra field nay (register/login/refresh dung serializeUser
+  // rieng, khong kem preferences) -- optional de dung chung 1 type ApiUser.
+  preferences?: ApiPreferences;
   createdAt: string;
   updatedAt: string;
 };

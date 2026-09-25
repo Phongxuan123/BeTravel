@@ -80,6 +80,19 @@ const userSchema = new mongoose.Schema(
       date: { type: String, default: "" },
       count: { type: Number, default: 0 },
     },
+
+    // Tuy chon rieng tung nguoi dung (B8) -- locationConsent dieu khien ca
+    // usePollAlerts o mobile CO goi kem toa do GPS hay khong (tat -> chi
+    // nhan canh bao cap quoc gia, giong nhu tu choi quyen he thong).
+    preferences: {
+      locale: { type: String, default: "vi" },
+      alerts: {
+        legal: { type: Boolean, default: true },
+        safety: { type: Boolean, default: true },
+        tripReminder: { type: Boolean, default: false },
+      },
+      locationConsent: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,

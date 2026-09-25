@@ -136,6 +136,7 @@ export const getProfile = async (req, res, next) => {
         role: user.role,
         isActive: user.isActive,
         googleLinked: Boolean(user.googleId),
+        preferences: user.preferences,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

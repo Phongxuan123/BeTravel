@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "_id": "66f0a1b2c3d4e5f607182980",
+      "countryCode": "KR",
+      "scope": "area",
+      "center": { "type": "Point", "coordinates": [127.0016, 37.5407] },
+      "radiusM": 5000,
+      "title": "Biểu tình gần trung tâm Seoul",
+      "message": "Tránh di chuyển qua khu vực này trong hôm nay",
+      "severity": "danger",
+      "behaviorsToAvoid": ["Không tụ tập đông người", "Không chụp ảnh lực lượng chức năng"],
+      "linkedArticleId": null,
+      "effectiveFrom": "2026-09-25T00:00:00.000Z",
+      "effectiveTo": null,
+      "status": "published",
+      "createdBy": "66f0a1b2c3d4e5f607182900",
+      "updatedBy": "66f0a1b2c3d4e5f607182900",
+      "createdAt": "2026-09-25T00:00:00.000Z",
+      "updatedAt": "2026-09-25T00:00:00.000Z",
+      "__v": 0
+    }
+  ]
+}

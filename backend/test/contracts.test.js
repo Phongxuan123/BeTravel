@@ -254,6 +254,48 @@ test("response cua GET /api/quick-phrases khop fixture public.quickPhrase.json",
   assertSameKeys(res.body.data[0], fixture.data[0], "public.quickPhrase");
 });
 
+// ── B8: Geo alerts ───────────────────────────────────────────────────────
+test("response cua GET /api/alerts/applicable khop fixture public.geoAlert.json", async () => {
+  const fixture = readFixture("public.geoAlert.json");
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+
+  await request(app)
+    .post("/api/admin/geo-alerts")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({
+      countryCode: "KR",
+      scope: "area",
+      center: { type: "Point", coordinates: [127.0016, 37.5407] },
+      radiusM: 5000,
+      title: "Biểu tình gần trung tâm Seoul",
+      message: "Tránh di chuyển qua khu vực này trong hôm nay",
+      severity: "danger",
+      effectiveFrom: "2020-01-01T00:00:00.000Z",
+      status: "published",
+    });
+
+  const res = await request(app).get("/api/alerts/applicable").query({ country: "KR", lat: 37.5407, lng: 127.0016 });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.geoAlert");
+});
+
+// ── B8: Preferences ──────────────────────────────────────────────────────
+test("response cua PUT /api/users/preferences khop fixture preferences.json", async () => {
+  const fixture = readFixture("preferences.json");
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app);
+
+  const res = await request(app)
+    .put("/api/users/preferences")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({ alerts: { safety: false }, locationConsent: false });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data, fixture.data, "preferences");
+});
+
 test("response cua POST /api/translate khop fixture translate.json", async () => {
   const fixture = readFixture("translate.json");
   const { registerAndLogin } = await import("./helpers.js");

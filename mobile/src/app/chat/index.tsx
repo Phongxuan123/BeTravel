@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Clock, MessageCircle, Plus, Send, TriangleAlert } from 'lucide-react-native';
+import { Clock, MessageCircle, Plus, Send, TriangleAlert, Pencil, Trash2, Check, X } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { QuickChip } from '@/components/ui/QuickChip';
@@ -18,6 +18,8 @@ import { ApiError } from '@/lib/api/http';
 import {
   askLegalAssistant,
   listChatSessions,
+  deleteChatSession,
+  renameChatSession,
   loadChatSessionMessages,
   setChatMessageFeedback,
   reportWrongAnswer,
@@ -82,6 +84,8 @@ export default function ChatScreen() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  const [renamingSessionId, setRenamingSessionId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
 
   const [reportTarget, setReportTarget] = useState<{ messageId: string; question: string } | null>(null);
   const [reportNote, setReportNote] = useState('');
@@ -233,6 +237,45 @@ export default function ChatScreen() {
     setFeedback({});
   };
 
+  const startRename = (session: ChatSession) => {
+    setRenamingSessionId(session._id);
+    setRenameDraft(session.title || 'Cuộc trò chuyện');
+  };
+
+  const saveRename = async (session: ChatSession) => {
+    const title = renameDraft.trim();
+    setRenamingSessionId(null);
+    if (!title || title === session.title) return;
+    try {
+      await renameChatSession(session._id, title);
+      setSessions((prev) => prev.map((s) => (s._id === session._id ? { ...s, title } : s)));
+    } catch {
+      // Doi ten that bai khong nen chan man hinh -- ten cu van con nguyen ven.
+    }
+  };
+
+  const removeSession = (session: ChatSession) => {
+    Alert.alert('Xoá cuộc trò chuyện', `Xoá "${session.title || 'Cuộc trò chuyện'}"? Không thể hoàn tác.`, [
+      { text: 'Huỷ', style: 'cancel' },
+      {
+        text: 'Xoá',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteChatSession(session._id);
+            setSessions((prev) => prev.filter((s) => s._id !== session._id));
+            if (getActiveChatSessionId() === session._id) {
+              setMessages([]);
+              setFeedback({});
+            }
+          } catch {
+            // Nuot loi co chu dich -- phien van con trong danh sach de thu lai.
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <View className="flex-1 bg-bg">
       <PageHeader
@@ -329,14 +372,40 @@ export default function ChatScreen() {
           {!loadingSessions && sessions.length === 0 && (
             <Text className="py-3 text-center text-sm text-muted">Chưa có cuộc trò chuyện nào cho {country?.name}.</Text>
           )}
-          {sessions.map((s) => (
-            <Pressable key={s._id} className="rounded-md border border-line px-3.5 py-3" onPress={() => selectSession(s)}>
-              <Text className="font-body-semibold text-ink" numberOfLines={1}>
-                {s.title || 'Cuộc trò chuyện'}
-              </Text>
-              <Text className="mt-0.5 text-xs text-subtle">{new Date(s.updatedAt).toLocaleString('vi-VN')}</Text>
-            </Pressable>
-          ))}
+          {sessions.map((s) =>
+            renamingSessionId === s._id ? (
+              <View key={s._id} className="flex-row items-center gap-2 rounded-md border border-primary px-3.5 py-2">
+                <TextInput
+                  className="flex-1 text-[15px] text-ink"
+                  value={renameDraft}
+                  onChangeText={setRenameDraft}
+                  autoFocus
+                  onSubmitEditing={() => saveRename(s)}
+                />
+                <Pressable accessibilityLabel="Lưu tên" onPress={() => saveRename(s)} hitSlop={8}>
+                  <Check size={18} color={colors.primary} />
+                </Pressable>
+                <Pressable accessibilityLabel="Huỷ đổi tên" onPress={() => setRenamingSessionId(null)} hitSlop={8}>
+                  <X size={18} color={colors.muted} />
+                </Pressable>
+              </View>
+            ) : (
+              <View key={s._id} className="flex-row items-center rounded-md border border-line">
+                <Pressable className="flex-1 px-3.5 py-3" onPress={() => selectSession(s)}>
+                  <Text className="font-body-semibold text-ink" numberOfLines={1}>
+                    {s.title || 'Cuộc trò chuyện'}
+                  </Text>
+                  <Text className="mt-0.5 text-xs text-subtle">{new Date(s.updatedAt).toLocaleString('vi-VN')}</Text>
+                </Pressable>
+                <Pressable accessibilityLabel="Đổi tên" className="px-2.5 py-3" onPress={() => startRename(s)} hitSlop={8}>
+                  <Pencil size={16} color={colors.muted} />
+                </Pressable>
+                <Pressable accessibilityLabel="Xoá" className="px-2.5 py-3" onPress={() => removeSession(s)} hitSlop={8}>
+                  <Trash2 size={16} color={colors.danger} />
+                </Pressable>
+              </View>
+            ),
+          )}
         </View>
       </SimpleSheet>
 

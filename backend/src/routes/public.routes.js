@@ -5,6 +5,7 @@ import * as contentController from "../controllers/publicContent.controller.js";
 import * as locationController from "../controllers/publicSupportLocation.controller.js";
 import * as incidentController from "../controllers/publicIncident.controller.js";
 import * as quickPhraseController from "../controllers/publicQuickPhrase.controller.js";
+import * as alertsController from "../controllers/publicAlerts.controller.js";
 import {
   topicListQuerySchema,
   articleListQuerySchema,
@@ -13,6 +14,7 @@ import {
   supportLocationListQuerySchema,
   incidentListQuerySchema,
   quickPhraseListQuerySchema,
+  alertsApplicableQuerySchema,
 } from "../validators/publicContent.validator.js";
 
 /*
@@ -53,5 +55,7 @@ router.get("/incidents", validateQuery(incidentListQuerySchema), incidentControl
 router.get("/incidents/:slug", incidentController.get);
 
 router.get("/quick-phrases", validateQuery(quickPhraseListQuerySchema), quickPhraseController.list);
+
+router.get("/alerts/applicable", validateQuery(alertsApplicableQuerySchema), alertsController.applicable);
 
 export default router;

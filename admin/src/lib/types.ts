@@ -246,3 +246,25 @@ export type QuickPhrase = {
   createdAt: string;
   updatedAt: string;
 };
+
+// B8 -- A06 Geo Alert (backend/src/models/GeoAlert.js).
+export type GeoAlertScope = 'country' | 'area';
+export type GeoAlertStatus = 'draft' | 'published';
+
+export type GeoAlert = {
+  _id: string;
+  countryCode: string;
+  scope: GeoAlertScope;
+  center?: { type: 'Point'; coordinates: [number, number] };
+  radiusM?: number;
+  title: string;
+  message: string;
+  severity: RiskLevel;
+  behaviorsToAvoid: string[];
+  linkedArticleId: string | null;
+  effectiveFrom: string;
+  effectiveTo: string | null;
+  status: GeoAlertStatus;
+  createdAt: string;
+  updatedAt: string;
+};

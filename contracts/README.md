@@ -598,3 +598,65 @@ GET/POST/PATCH/DELETE /admin/incidents[/:id]        role admin, A07 Incident
      hoa lai `order` theo dung vi tri trong mang gui len (khong tu dien so
      order o client).
 ```
+
+## 20. ENDPOINT GEO ALERTS — `/api/alerts/applicable`, `/api/admin/geo-alerts/*` (B8, A06)
+
+```
+GET /alerts/applicable?country=&lat=&lng=   cong khai
+     200 -- co toa do: alert scope 'area' trong ban kinh + alert scope
+     'country'. Khong co toa do: CHI alert scope 'country' (khong bao gio
+     tra rong tuyet doi chi vi thieu vi tri). LUON loc status:'published' +
+     con hieu luc (effectiveFrom<=now<=effectiveTo hoac effectiveTo rong).
+     Sap xep severity giam dan (danger truoc warn truoc info).
+GET/POST/PATCH/DELETE /admin/geo-alerts[/:id]   role admin, A06 CRUD.
+     scope:'area' BAT BUOC co `center`{Point,[lng,lat]} + `radiusM`; khong co
+     -> VALIDATION_ERROR. scope:'country' khong can hai truong nay.
+```
+
+`GeoAlert` (moi item) co dang:
+```jsonc
+{
+  "_id": "...", "countryCode": "KR", "scope": "area",
+  "center": { "type": "Point", "coordinates": [127.0016, 37.5407] },
+  "radiusM": 5000, "title": "...", "message": "...", "severity": "danger",
+  "behaviorsToAvoid": ["..."], "linkedArticleId": "<LegalArticle._id>",
+  "effectiveFrom": "...", "effectiveTo": null, "status": "published"
+}
+```
+`severity`: dung chung enum `RiskLevel` voi LegalArticle (`info`|`warn`|`danger`).
+Mobile hien `danger` = modal chan, `warn`/`info` = banner (khong chan thao tac).
+
+## 21. ENDPOINT FAVORITES — `/api/users/favorites` (B8, can dang nhap)
+
+```
+GET    /users/favorites                              200 -- gom du 3 loai
+POST   /users/favorites {targetType, targetId}        201 -- targetType:
+       'article'|'location'|'incident'. Luu trung 1 muc khong loi (coi nhu
+       thanh cong), khong tao 2 ban ghi. targetId khong ton tai -> 404.
+DELETE /users/favorites/:targetType/:targetId         200 { deleted: true }
+```
+Moi item tra ve kem NGUYEN VAN doi tuong duoc luu (`article`/`location`/
+`incident`), rieng loai `article`: neu ban da luu KHONG con la ban hien hanh
+(`isCurrent:false`), item them `isOutdated:true` + `currentArticleId` tro toi
+ban dang published hien hanh cung dong lich su -- KHONG bao gio tu am tham
+xoa favorite chi vi noi dung da co ban moi hon.
+
+## 22. ENDPOINT PREFERENCES — `/api/users/preferences` (B8, can dang nhap)
+
+```
+PUT /users/preferences {locale?, alerts?{legal?,safety?,tripReminder?}, locationConsent?}
+     200 -- tra ve TRON VEN object preferences sau khi cap nhat. Chi ghi de
+     dung field duoc gui, cac field khac giu nguyen (khong phai PUT thay the
+     toan bo). Doc preferences hien tai qua `GET /api/auth/me` (da tra kem
+     `user.preferences`), khong co GET rieng.
+```
+Gia tri mac dinh (user moi dang ky): `{locale:'vi', alerts:{legal:true,
+safety:true, tripReminder:false}, locationConsent:true}`.
+
+## 23. ĐỔI TÊN PHIÊN CHAT — `PATCH /api/chat/sessions/:id` (B8 muc 16)
+
+```
+PATCH /chat/sessions/:id {title}   200 -- title 1-100 ky tu, khong duoc rong.
+     Chi doi ten phien CUA CHINH MINH -- phien cua user khac tra 404
+     (khong phai 403, tranh lo phien do co ton tai hay khong).
+```

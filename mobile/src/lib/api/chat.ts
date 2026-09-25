@@ -145,6 +145,11 @@ export async function deleteChatSession(id: string): Promise<{ ok: true; data: {
   return { ok: true, data };
 }
 
+export async function renameChatSession(id: string, title: string): Promise<{ ok: true; data: ChatSession }> {
+  const data = await apiRequest<ChatSession>(`/chat/sessions/${id}`, { method: 'PATCH', body: { title } });
+  return { ok: true, data };
+}
+
 export async function loadChatSessionMessages(
   sessionId: string,
   countryCode: string,

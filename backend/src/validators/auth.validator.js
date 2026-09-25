@@ -62,3 +62,16 @@ export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
   newPassword: strongPasswordSchema,
 });
+
+// ── Preferences (B8) ─────────────────────────────────────────────────────
+export const preferencesUpdateSchema = z.object({
+  locale: z.string().trim().min(1).optional(),
+  alerts: z
+    .object({
+      legal: z.boolean().optional(),
+      safety: z.boolean().optional(),
+      tripReminder: z.boolean().optional(),
+    })
+    .optional(),
+  locationConsent: z.boolean().optional(),
+});

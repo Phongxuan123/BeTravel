@@ -26,7 +26,7 @@ export async function translateText({ text, from, to, mode }) {
     rawText = await llm.complete({ systemPrompt, userPrompt, task: "translate", text, from, to, mode });
   } catch (error) {
     console.error("[translate] Provider that bai:", error.message);
-    throw new Error("TRANSLATE_UPSTREAM_FAILED");
+    throw new Error("TRANSLATE_UPSTREAM_FAILED", { cause: error });
   }
 
   let parsed;

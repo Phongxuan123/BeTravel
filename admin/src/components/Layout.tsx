@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit, MessageSquareWarning, Siren, Languages } from 'lucide-react';
+import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit, MessageSquareWarning, Siren, Languages, TriangleAlert } from 'lucide-react';
 import { useAuth } from '../lib/useAuth';
 
 const NAV_ITEMS = [
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: '/locations', label: 'Điểm hỗ trợ', icon: MapPin },
   { to: '/incidents', label: 'Xử lý sự cố', icon: Siren },
   { to: '/quick-phrases', label: 'Câu dịch sẵn', icon: Languages },
+  { to: '/geo-alerts', label: 'Cảnh báo vị trí', icon: TriangleAlert },
   { to: '/rag', label: 'RAG Index', icon: BrainCircuit },
   { to: '/feedback', label: 'Feedback', icon: MessageSquareWarning },
   { to: '/audit', label: 'Nhật ký', icon: History },
@@ -28,6 +29,7 @@ function useBreadcrumb(): string[] {
     locations: 'Điểm hỗ trợ',
     incidents: 'Xử lý sự cố',
     'quick-phrases': 'Câu dịch sẵn',
+    'geo-alerts': 'Cảnh báo vị trí',
     rag: 'RAG Index',
     feedback: 'Feedback',
     audit: 'Nhật ký',

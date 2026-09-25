@@ -324,6 +324,29 @@ export const updateUserProfile = async ({ userId, fullName, phone }) => {
   return serializeUser(user);
 };
 
+/*
+ * Tuy chon rieng tung nguoi dung (B8) -- moi truong deu optional, chi ghi de
+ * dung field duoc gui len (giong updateUserProfile), khong reset ca khoi
+ * preferences ve default moi lan goi.
+ */
+export const updateUserPreferences = async ({ userId, patch }) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  if (patch.locale !== undefined) user.preferences.locale = patch.locale;
+  if (patch.alerts?.legal !== undefined) user.preferences.alerts.legal = patch.alerts.legal;
+  if (patch.alerts?.safety !== undefined) user.preferences.alerts.safety = patch.alerts.safety;
+  if (patch.alerts?.tripReminder !== undefined) user.preferences.alerts.tripReminder = patch.alerts.tripReminder;
+  if (patch.locationConsent !== undefined) user.preferences.locationConsent = patch.locationConsent;
+
+  await user.save();
+
+  return user.preferences;
+};
+
 export const changeUserPassword = async ({ userId, currentPassword, newPassword }) => {
   const user = await User.findById(userId).select("+password");
 
