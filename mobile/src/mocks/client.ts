@@ -8,7 +8,7 @@ import { incidents, getIncidentBySlug } from './fixtures/incidents';
 import { alerts as alertsFixture } from './fixtures/alerts';
 import { getQuickPhrasesByCountry } from './fixtures/quick-phrases';
 import { supportLocations } from './fixtures/support-locations';
-import type { Article, SearchResultItem, SupportLocation, Trip } from './schemas';
+import type { Article, QuickPhrase, SearchResultItem, SupportLocation, Trip } from './schemas';
 import { haversineKm } from '@/lib/geo';
 
 export const IS_MOCK = true;
@@ -125,12 +125,29 @@ export async function deleteTrip(id: string) {
   return delay(null);
 }
 
-export async function fetchIncidents() {
+// countryCode nhan de KHOP CHU KY voi API that (GET /api/incidents?country=)
+// nhung khong loc gi them o mock -- toan bo fixture da la 'countryCode: null'
+// (ap dung moi noi), khong co du lieu rieng-quoc-gia can mo phong.
+export async function fetchIncidents(_countryCode?: string) {
   return delay(incidents);
 }
 
 export async function fetchIncident(slug: string) {
   return delay(getIncidentBySlug(slug) ?? null);
+}
+
+// Tien do xu ly su co (B7) -- luu trong RAM cho phien mock, du de demo UI
+// resume dung sau khi quay lai man hinh (khong ton tai qua lan mo app moi,
+// chap nhan duoc vi day la mock).
+const mockIncidentProgress = new Map<string, number[]>();
+
+export async function getIncidentProgress(incidentId: string) {
+  return delay({ completedSteps: mockIncidentProgress.get(incidentId) ?? [] });
+}
+
+export async function setIncidentProgress(incidentId: string, completedSteps: number[]) {
+  mockIncidentProgress.set(incidentId, completedSteps);
+  return delay({ completedSteps });
 }
 
 let alertsState = [...alertsFixture];
@@ -149,7 +166,9 @@ export async function markAllAlertsRead() {
   return delay(null);
 }
 
-export async function fetchQuickPhrases(countryCode: string) {
+// fromCache khai bao san (luon undefined o mock) chi de khop kieu tra ve voi
+// lib/api/translate.ts -- cong tac USE_MOCKS can ca 2 nhanh CUNG mot shape.
+export async function fetchQuickPhrases(countryCode: string): Promise<{ ok: true; data: QuickPhrase[]; fromCache?: boolean }> {
   return delay(getQuickPhrasesByCountry(countryCode));
 }
 
@@ -265,9 +284,14 @@ export function getLastMessageId(): string | null {
   return `mock-msg-${mockLastMessageId}`;
 }
 
-export async function translateText(text: string): Promise<{ translated: string; phonetic: string }> {
+export async function translateText(
+  text: string,
+  opts: { countryCode: string; from: string; to: string; mode?: 'text' | 'phrase' },
+): Promise<{ translated: string; phonetic: string }> {
   await new Promise((r) => setTimeout(r, 400));
-  const known = (await fetchQuickPhrases('JP')).data.find((p) => p.vi.toLowerCase() === text.trim().toLowerCase());
+  const known = (await fetchQuickPhrases(opts.countryCode)).data.find(
+    (p) => p.vi.toLowerCase() === text.trim().toLowerCase(),
+  );
   if (known) return { translated: known.translated, phonetic: known.phonetic };
-  return { translated: '（翻訳できませんでした）', phonetic: '(chưa dịch được ở bản mẫu)' };
+  return { translated: `[${opts.to}] ${text}`, phonetic: '(chưa dịch được ở bản mẫu)' };
 }

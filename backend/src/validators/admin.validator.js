@@ -245,3 +245,59 @@ export const feedbackStatusUpdateSchema = z.object({
 export const analyticsOverviewQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(90).optional(),
 });
+
+// ── IncidentType (B7, A07 Incident Workflow Builder) ────────────────────
+const incidentCtaSchema = z.object({
+  type: z.enum(["map", "call", "ai", "link"]),
+  label: z.string().trim().min(1, "Nhan CTA khong duoc de trong"),
+  payload: z.record(z.string(), z.unknown()).optional().default({}),
+});
+
+const incidentChecklistItemSchema = z.object({
+  label: z.string().trim().min(1, "Noi dung checklist khong duoc de trong"),
+});
+
+const incidentStepSchema = z.object({
+  title: z.string().trim().min(1, "Tieu de buoc khong duoc de trong"),
+  body: z.array(z.string().trim()).optional().default([]),
+  checklist: z.array(incidentChecklistItemSchema).optional().default([]),
+  contactRefs: z.array(z.string().min(1)).optional().default([]),
+  articleRefs: z.array(z.string().min(1)).optional().default([]),
+  ctas: z.array(incidentCtaSchema).optional().default([]),
+});
+
+export const incidentCreateSchema = z.object({
+  slug: slugSchema,
+  // null = ap dung cho moi quoc gia -- nullable rieng vi countryCodeSchema
+  // (length 2) khong chap nhan gia tri rong.
+  countryCode: countryCodeSchema.nullable().optional(),
+  title: z.string().trim().min(1, "Tieu de khong duoc de trong"),
+  iconKey: z.string().trim().optional(),
+  tone: z.enum(["blue", "red", "orange", "green"]).optional(),
+  urgent: z.boolean().optional(),
+  reassurance: z.string().trim().optional(),
+  steps: z.array(incidentStepSchema).optional().default([]),
+  status: z.enum(["draft", "published"]).optional(),
+});
+
+export const incidentUpdateSchema = incidentCreateSchema.partial();
+
+export const incidentListQuerySchema = paginationQuerySchema.extend({
+  countryCode: countryCodeSchema.optional(),
+  status: z.enum(["draft", "published"]).optional(),
+});
+
+// ── QuickPhrase (B7 Translator) ──────────────────────────────────────────
+export const quickPhraseCreateSchema = z.object({
+  countryCode: countryCodeSchema,
+  vi: z.string().trim().min(1, "Cau tieng Viet khong duoc de trong"),
+  translated: z.string().trim().min(1, "Ban dich khong duoc de trong"),
+  phonetic: z.string().trim().optional(),
+  order: z.coerce.number().int().optional(),
+});
+
+export const quickPhraseUpdateSchema = quickPhraseCreateSchema.partial();
+
+export const quickPhraseListQuerySchema = paginationQuerySchema.extend({
+  countryCode: countryCodeSchema.optional(),
+});

@@ -4,7 +4,6 @@ export const StorageKeys = {
   onboarded: 'bt_onboarded',
   authUser: 'bt_auth_user',
   recentSearches: 'bt_recent_searches',
-  incidentProgress: 'bt_incident_progress',
   preferences: 'bt_preferences',
   emergencyContacts: 'bt_emergency_contacts',
   documentStatus: 'bt_document_status',
@@ -12,6 +11,9 @@ export const StorageKeys = {
   // Prefix -- ghep them countryCode de cache danh sach diem SOS theo tung nuoc
   // (xem lib/api/sos.ts). Tinh huong SOS rat hay mat mang (CLAUDE.md B6 muc 11).
   sosLocationsCachePrefix: 'bt_sos_locations_',
+  // Prefix -- ghep them countryCode de dung offline man hinh Dich khan cap
+  // khi mat mang hoac API dich loi (CLAUDE.md B7 muc 16).
+  quickPhrasesCachePrefix: 'bt_quick_phrases_',
 } as const;
 
 export async function getJSON<T>(key: string): Promise<T | null> {

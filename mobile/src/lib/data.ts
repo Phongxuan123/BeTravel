@@ -8,14 +8,16 @@
  * theo EXPO_PUBLIC_USE_MOCKS.
  * B5: chat + feedback đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
  * B6: SOS support-locations đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
- * Phần còn lại (incidents/alerts/translate) vẫn 100% mock cho tới khi backend
- * có endpoint tương ứng.
+ * B7: incidents + translator đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
+ * Phần còn lại (alerts) vẫn 100% mock cho tới khi backend có endpoint tương ứng.
  */
 import * as mock from '@/mocks/client';
 import * as content from '@/lib/api/content';
 import * as chatApi from '@/lib/api/chat';
 import * as feedbackApi from '@/lib/api/feedback';
 import * as sosApi from '@/lib/api/sos';
+import * as incidentsApi from '@/lib/api/incidents';
+import * as translateApi from '@/lib/api/translate';
 
 // Cung quy uoc voi lib/auth.tsx: chi mock khi dat DUNG 'true', mac dinh la
 // API that (khac voi doc chu thich cu o day, da sua lai cho dung).
@@ -48,14 +50,14 @@ export const getLastChatMessageId = USE_MOCKS ? mock.getLastMessageId : chatApi.
 export const fetchSupportLocations = USE_MOCKS ? mock.fetchSupportLocations : sosApi.fetchSupportLocations;
 export const fetchNearbyLocations = USE_MOCKS ? mock.fetchNearbyLocations : sosApi.fetchNearbyLocations;
 
-export const {
-  fetchIncidents,
-  fetchIncident,
-  fetchAlerts,
-  markAlertRead,
-  markAllAlertsRead,
-  fetchQuickPhrases,
-  translateText,
-} = mock;
+export const fetchIncidents = USE_MOCKS ? mock.fetchIncidents : incidentsApi.fetchIncidents;
+export const fetchIncident = USE_MOCKS ? mock.fetchIncident : incidentsApi.fetchIncident;
+export const getIncidentProgress = USE_MOCKS ? mock.getIncidentProgress : incidentsApi.getIncidentProgress;
+export const setIncidentProgress = USE_MOCKS ? mock.setIncidentProgress : incidentsApi.setIncidentProgress;
+
+export const fetchQuickPhrases = USE_MOCKS ? mock.fetchQuickPhrases : translateApi.fetchQuickPhrases;
+export const translateText = USE_MOCKS ? mock.translateText : translateApi.translateText;
+
+export const { fetchAlerts, markAlertRead, markAllAlertsRead } = mock;
 
 export type { ChatAnswer, ChatSession, ChatUiMessage } from '@/mocks/client';

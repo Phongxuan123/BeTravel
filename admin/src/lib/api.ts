@@ -15,6 +15,8 @@ import type {
   FeedbackStatus,
   AnalyticsOverview,
   LocationBulkImportResult,
+  IncidentType,
+  QuickPhrase,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -82,3 +84,6 @@ export const feedbackApi = {
 export const analyticsApi = {
   overview: (days?: number) => apiRequest<AnalyticsOverview>('/admin/analytics/overview', { query: { days } }),
 };
+
+export const incidentsApi = createAdminResource<IncidentType>('/admin/incidents');
+export const quickPhrasesApi = createAdminResource<QuickPhrase>('/admin/quick-phrases');

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Linking, Platform } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
@@ -59,10 +59,18 @@ function openDirections(lat: number, lng: number, label: string) {
   Linking.openURL(url).catch(() => Linking.openURL(fallback));
 }
 
+// CTA "Tìm đồn gần nhất" tu man hinh xu ly su co (B7) mo thang man hinh nay
+// da loc san theo loai diem, vd /sos/map?type=police.
+function useInitialFilter(): (typeof FILTERS)[number]['key'] {
+  const params = useLocalSearchParams<{ type?: string }>();
+  const match = FILTERS.find((f) => f.key === params.type);
+  return match?.key ?? 'all';
+}
+
 export default function SosMapScreen() {
   const insets = useSafeAreaInsets();
   const { country } = useCountry();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all');
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(useInitialFilter());
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsDenied, setGpsDenied] = useState(false);
   const [detail, setDetail] = useState<SupportLocation | null>(null);

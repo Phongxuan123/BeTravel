@@ -4,6 +4,7 @@ import articleFixture from '../../../../../contracts/fixtures/public.legalArticl
 import searchFixture from '../../../../../contracts/fixtures/public.legalSearch.json';
 import tripFixture from '../../../../../contracts/fixtures/trip.json';
 import supportLocationFixture from '../../../../../contracts/fixtures/public.supportLocation.json';
+import incidentFixture from '../../../../../contracts/fixtures/public.incident.json';
 import {
   adaptArticle,
   adaptCountry,
@@ -14,7 +15,8 @@ import {
   type ApiCountry,
   type ApiSupportLocation,
 } from '../adapters';
-import { articleSchema, countrySchema, searchResultSchema, supportLocationSchema, topicSchema, tripSchema } from '@/mocks/schemas';
+import { adaptIncident, type ApiIncident } from '../incidents';
+import { articleSchema, countrySchema, incidentSchema, searchResultSchema, supportLocationSchema, topicSchema, tripSchema } from '@/mocks/schemas';
 
 // Doi chieu adapters.ts voi fixture dung chung o contracts/fixtures/ -- backend
 // co test tuong ung trong backend/test/contracts.test.js doi chieu CUNG cac
@@ -70,5 +72,14 @@ describe('adapters.ts chuyen du lieu API that sang dung shape man hinh dang dung
     const location = adaptSupportLocation({ ...api, distanceMeters: 450 });
     expect(location.distanceKm).toBeCloseTo(0.45);
     expect(location.meta).toContain('450 m');
+  });
+
+  it('adaptIncident(public.incident.json) khop incidentSchema, giu nguyen step.order/ctas', () => {
+    const api = incidentFixture.data[0] as unknown as ApiIncident;
+    const incident = adaptIncident(api);
+    expect(incidentSchema.parse(incident)).toBeTruthy();
+    expect(incident.countryCode).toBeNull();
+    expect(incident.steps[0].order).toBe(0);
+    expect(incident.steps[0].ctas).toEqual([]);
   });
 });

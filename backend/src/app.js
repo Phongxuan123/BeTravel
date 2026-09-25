@@ -13,6 +13,8 @@ import publicRoutes from "./routes/public.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
 import chatRoutes from "./routes/chat.routes.js";
 import feedbackRoutes from "./routes/feedback.routes.js";
+import translateRoutes from "./routes/translate.routes.js";
+import incidentProgressRoutes from "./routes/incidentProgress.routes.js";
 import { errorHandler, notFoundHandler } from "./middleware/error.middleware.js";
 
 const app = express();
@@ -57,8 +59,10 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users/trips", tripsRoutes);
+app.use("/api/users/incident-progress", incidentProgressRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/feedback", feedbackRoutes);
+app.use("/api/translate", translateRoutes);
 app.use("/api", publicRoutes);
 
 app.use(notFoundHandler);

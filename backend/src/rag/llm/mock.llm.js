@@ -20,11 +20,22 @@ function pickChunks(chunks, question) {
   return preferred.slice(0, 3);
 }
 
+// Ban dich gia lap CHO PHEP test/dev khong can GEMINI_API_KEY (B7 muc 9) --
+// khong doan nghia, chi ghep nhan ngon ngu dich de phan con lai cua pipeline
+// (gioi han do dai, cache offline...) kiem tra duoc.
+function mockTranslate({ text, to }) {
+  return JSON.stringify({ translated: `[${to}] ${text}`, phonetic: "" });
+}
+
 export function createMockLlmProvider() {
   return {
     provider: "mock",
     model: "mock-llm",
-    async complete({ chunks, question }) {
+    async complete({ task, text, to, chunks, question }) {
+      if (task === "translate") {
+        return mockTranslate({ text, to });
+      }
+
       if (!chunks || chunks.length === 0) {
         return JSON.stringify({
           answer: "",

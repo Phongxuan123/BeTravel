@@ -202,3 +202,47 @@ export type AnalyticsOverview = {
   pendingFeedbackCount: number;
   topFallbackQuestions: { question: string; count: number }[];
 };
+
+// B7 -- A07 Incident Workflow Builder (backend/src/models/IncidentType.js).
+export type IncidentTone = 'blue' | 'red' | 'orange' | 'green';
+export type IncidentCtaType = 'map' | 'call' | 'ai' | 'link';
+export type IncidentStatus = 'draft' | 'published';
+
+export type IncidentCta = { type: IncidentCtaType; label: string; payload: Record<string, unknown> };
+export type IncidentChecklistItem = { label: string };
+export type IncidentStep = {
+  order: number;
+  title: string;
+  body: string[];
+  checklist: IncidentChecklistItem[];
+  contactRefs: string[];
+  articleRefs: string[];
+  ctas: IncidentCta[];
+};
+
+export type IncidentType = {
+  _id: string;
+  slug: string;
+  countryCode: string | null;
+  title: string;
+  iconKey: string;
+  tone: IncidentTone;
+  urgent: boolean;
+  reassurance: string;
+  steps: IncidentStep[];
+  status: IncidentStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+// B7 -- Translator (backend/src/models/QuickPhrase.js).
+export type QuickPhrase = {
+  _id: string;
+  countryCode: string;
+  vi: string;
+  translated: string;
+  phonetic?: string;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+};

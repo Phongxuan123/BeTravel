@@ -210,3 +210,60 @@ test("response cua GET /api/support-locations khop fixture public.supportLocatio
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data[0], fixture.data[0], "public.supportLocation");
 });
+
+// ── B7: Incidents ────────────────────────────────────────────────────────
+test("response cua GET /api/incidents khop fixture public.incident.json", async () => {
+  const fixture = readFixture("public.incident.json");
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+
+  await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({
+      slug: "mat-ho-chieu",
+      countryCode: null,
+      title: "Mất hộ chiếu",
+      urgent: true,
+      reassurance: "Giữ bình tĩnh.",
+      status: "published",
+      steps: [{ title: "Trình báo công an", body: ["Xin giấy xác nhận"] }],
+    });
+
+  const res = await request(app).get("/api/incidents");
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.incident");
+  assertSameKeys(res.body.data[0].steps[0], fixture.data[0].steps[0], "public.incident.steps[0]");
+});
+
+// ── B7: Translator ───────────────────────────────────────────────────────
+test("response cua GET /api/quick-phrases khop fixture public.quickPhrase.json", async () => {
+  const fixture = readFixture("public.quickPhrase.json");
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+
+  await request(app)
+    .post("/api/admin/quick-phrases")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({ countryCode: "KR", vi: "Tôi cần giúp đỡ", translated: "도와주세요", phonetic: "Dowajuseyo" });
+
+  const res = await request(app).get("/api/quick-phrases").query({ country: "KR" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.quickPhrase");
+});
+
+test("response cua POST /api/translate khop fixture translate.json", async () => {
+  const fixture = readFixture("translate.json");
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app);
+
+  const res = await request(app)
+    .post("/api/translate")
+    .set("Authorization", `Bearer ${accessToken}`)
+    .send({ text: "Tôi cần giúp đỡ", from: "Tiếng Việt", to: "Tiếng Hàn", mode: "text" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data, fixture.data, "translate");
+});

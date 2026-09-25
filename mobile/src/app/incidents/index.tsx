@@ -7,13 +7,15 @@ import { IconButton } from '@/components/ui/IconButton';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
+import { useCountry } from '@/lib/countryContext';
 import { fetchIncidents } from '@/lib/data';
 import type { Incident } from '@/mocks/schemas';
 
 const ICONS: Record<string, typeof IdCard> = { IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren };
 
 export default function IncidentsScreen() {
-  const incidentsQuery = useQuery({ queryKey: ['incidents'], queryFn: fetchIncidents });
+  const { countryCode } = useCountry();
+  const incidentsQuery = useQuery({ queryKey: ['incidents', countryCode], queryFn: () => fetchIncidents(countryCode) });
 
   return (
     <View className="flex-1 bg-bg">
