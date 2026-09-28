@@ -22,6 +22,7 @@ type ApiChatMessage = {
   retrieval: { topScore: number; chunkIds: string[]; passed: boolean };
   fallbackReason: string | null;
   confidence: 'high' | 'medium' | 'low' | null;
+  needsOfficialHelp?: boolean;
   feedback: 'up' | 'down' | null;
   createdAt: string;
 };
@@ -61,6 +62,7 @@ export function adaptMessage(message: ApiChatMessage, countryCode: string): Chat
     status: 'answered',
     updatedAt: formatUpdatedAt(message.createdAt),
     content: stripTrailingDisclaimer(message.text),
+    needsOfficialHelp: message.needsOfficialHelp === true,
     sources: message.citations.map((c) => ({
       name: c.heading ? `${c.title} — ${c.heading}` : c.title,
       url: '',

@@ -2,19 +2,25 @@
  * Chuan hoa chuoi tieng Viet de tim khong dau: lowercase + bo dau bang NFD.
  * Dung chung cho titleNorm/summaryNorm cua LegalArticle va cho query search --
  * mot noi duy nhat, tranh lech logic giua luc ghi va luc doc (Rule 3, DRY).
- *
- * "đ" la chu cai rieng (U+0111), NFD KHONG tach duoc thanh "d" + dau, nen
- * phai thay tuong minh -- neu khong, "dang ky" khong bao gio khop "Đăng ký"
- * (docs/03_Contracts_v2.md muc chuan hoa).
  */
 export const normalizeVi = (input) =>
   (input ?? "")
     .toString()
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
-    .replace(/[đĐ]/g, "d")
     .toLowerCase()
     .trim();
+
+/*
+ * NFD KHONG tach duoc "đ" (la mot chu cai rieng, khong phai d + dau) nen
+ * titleNorm/textNorm da luu van giu "đ". Khong doi normalizeVi (se lech voi du
+ * lieu da luu tren Atlas va lam doi vector mock cua golden test) -- thay vao do
+ * gap d/đ luc SO KHOP: nguoi dung go "dai su quan" van ra "Đại sứ quán".
+ */
+export const foldDStroke = (text) => text.replace(/đ/g, "d");
+
+// Chuoi da escape regex --> moi "d"/"đ" khop ca hai dang.
+export const toDStrokeInsensitivePattern = (escapedText) => escapedText.replace(/[dđ]/g, "[dđ]");
 
 const toWordSequence = (text) => ` ${text.replace(/[^\p{L}\p{N}]+/gu, " ").trim()} `;
 const lowerKeepAccents = (input) => (input ?? "").toString().normalize("NFC").toLowerCase();
@@ -33,13 +39,3 @@ export const containsPhrase = (text, phrase) => {
   if (hasVietnameseMarks(text)) return false;
   return toWordSequence(normalizeVi(text)).includes(toWordSequence(normalizeVi(phrase)));
 };
-
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-/*
- * Regex tim mot tu DA chuan hoa trong gia tri *Norm luu trong DB. Du lieu luu
- * truoc khi normalizeVi doi "đ" -> "d" van con "đ" cho toi khi duoc luu lai,
- * nen moi "d" trong tu khoa khop ca "d" lan "đ" -- tranh tim kiem hoi quy.
- */
-export const buildNormalizedWordRegex = (normalizedWord) =>
-  new RegExp(escapeRegex(normalizedWord).replace(/d/g, "[dđ]"), "i");

@@ -110,6 +110,9 @@ export default function TopicsPage() {
 
       {isLoading && <LoadingState />}
       {error && <ErrorState message={error instanceof ApiError ? error.message : 'Không tải được dữ liệu'} />}
+      {deleteMutation.error && (
+        <ErrorState message={deleteMutation.error instanceof ApiError ? deleteMutation.error.message : 'Không xoá được chủ đề'} />
+      )}
       {!isLoading && topics.length === 0 && <EmptyState label="Chưa có chủ đề nào" />}
 
       {topics.length > 0 && (

@@ -24,9 +24,6 @@ const tripSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-tripSchema.index(
-  { userId: 1 },
-  { unique: true, partialFilterExpression: { isCurrent: true } },
-);
+tripSchema.index({ userId: 1 }, { unique: true, partialFilterExpression: { isCurrent: true } });
 
 export default mongoose.model("Trip", tripSchema);

@@ -117,6 +117,105 @@ test("loi UNAUTHORIZED khop hinh dang fixture error.unauthorized.json", async ()
   assert.equal(res.body.error.code, fixture.error.code);
 });
 
+// ── QA-4 (INV-15.1): fixture truoc day chi client kiem, backend chua doi chieu ─
+const registerLogin = async () => {
+  await request(app).post("/api/auth/register").send({
+    fullName: "Nguyen Van A",
+    email: "a@example.com",
+    phone: "0901234567",
+    password: "Matkhau123",
+    confirmPassword: "Matkhau123",
+    termsAccepted: true,
+  });
+  return request(app)
+    .post("/api/auth/login")
+    .send({ identifier: "a@example.com", password: "Matkhau123", rememberMe: true });
+};
+
+test("response cua POST /auth/refresh khop fixture auth.refresh.json", async () => {
+  const fixture = readFixture("auth.refresh.json");
+  const login = await registerLogin();
+  const res = await request(app)
+    .post("/api/auth/refresh")
+    .send({ refreshToken: login.body.data.refreshToken });
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data, fixture.data, "auth.refresh");
+  assertSameKeys(res.body.data.user, fixture.data.user, "auth.refresh.user");
+});
+
+test("loi FORBIDDEN khop hinh dang fixture error.forbidden.json", async () => {
+  const fixture = readFixture("error.forbidden.json");
+  const login = await registerLogin();
+  const res = await request(app)
+    .get("/api/admin/dashboard")
+    .set("Authorization", `Bearer ${login.body.data.accessToken}`);
+  assert.equal(res.status, 403);
+  assertSameKeys(res.body.error, fixture.error, "error.forbidden");
+  assert.equal(res.body.error.code, fixture.error.code);
+});
+
+test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, error.conflict.json", async () => {
+  const { registerAndLogin } = await import("./helpers.js");
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+  const as = { Authorization: `Bearer ${accessToken}` };
+
+  const country = await request(app)
+    .post("/api/admin/countries")
+    .set(as)
+    .send({ code: "KR", name: "Hàn Quốc", status: "active" });
+  const countryRes = await request(app)
+    .get(`/api/admin/countries/${country.body.data._id}`)
+    .set(as);
+  assertSameKeys(countryRes.body.data, readFixture("admin.country.json").data, "admin.country");
+
+  await request(app)
+    .post("/api/admin/topics")
+    .set(as)
+    .send({ countryCode: "KR", slug: "giao-thong", label: "Giao thông" });
+  const draft = await request(app).post("/api/admin/legal/articles").set(as).send({
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bang-lai-nuoc-ngoai",
+    title: "Bằng lái nước ngoài",
+  });
+  const conflict = await request(app)
+    .post(`/api/admin/legal/articles/${draft.body.data._id}/status`)
+    .set(as)
+    .send({ status: "published" });
+  const conflictFixture = readFixture("error.conflict.json");
+  assert.equal(conflict.status, 409);
+  assertSameKeys(conflict.body.error, conflictFixture.error, "error.conflict");
+
+  const patched = await request(app)
+    .patch(`/api/admin/legal/articles/${draft.body.data._id}`)
+    .set(as)
+    .send({
+      summaryVi: "Tóm tắt",
+      effectiveFrom: "2024-01-01",
+      sources: [
+        {
+          title: "Nguồn",
+          url: "https://example.go.kr",
+          authority: "Bộ",
+          publishedAt: "2024-01-01",
+        },
+      ],
+      updatedAt: draft.body.data.updatedAt,
+    });
+  await request(app)
+    .post(`/api/admin/legal/articles/${patched.body.data._id}/status`)
+    .set(as)
+    .send({ status: "published" });
+  const article = await request(app)
+    .get(`/api/admin/legal/articles/${draft.body.data._id}`)
+    .set(as);
+  assertSameKeys(
+    article.body.data,
+    readFixture("admin.legalArticle.json").data,
+    "admin.legalArticle",
+  );
+});
+
 // ── B3: noi dung cong khai + trips ────────────────────────────────────────
 test("response cua GET /api/countries khop fixture public.country.json", async () => {
   const fixture = readFixture("public.country.json");
@@ -144,9 +243,23 @@ test("response cua GET /api/legal/articles/:country/:slug khop fixture public.le
   const fixture = readFixture("public.legalArticle.json");
   const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
   await LegalArticle.create({
-    countryCode: "KR", topicSlug: "giao-thong", slug: "bang-lai-nuoc-ngoai", version: 1, isCurrent: true,
-    status: "published", title: "Bằng lái nước ngoài", summaryVi: "Tóm tắt",
-    sources: [{ title: "Nguồn", url: "https://example.go.kr", authority: "Bộ Tư pháp", kind: "gov", publishedAt: new Date() }],
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bang-lai-nuoc-ngoai",
+    version: 1,
+    isCurrent: true,
+    status: "published",
+    title: "Bằng lái nước ngoài",
+    summaryVi: "Tóm tắt",
+    sources: [
+      {
+        title: "Nguồn",
+        url: "https://example.go.kr",
+        authority: "Bộ Tư pháp",
+        kind: "gov",
+        publishedAt: new Date(),
+      },
+    ],
     effectiveFrom: new Date(),
   });
 
@@ -160,9 +273,23 @@ test("response cua GET /api/legal/search khop fixture public.legalSearch.json", 
   const fixture = readFixture("public.legalSearch.json");
   const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
   await LegalArticle.create({
-    countryCode: "KR", topicSlug: "giao-thong", slug: "bang-lai-nuoc-ngoai", version: 1, isCurrent: true,
-    status: "published", title: "Bằng lái nước ngoài", summaryVi: "Tóm tắt",
-    sources: [{ title: "Nguồn", url: "https://example.go.kr", authority: "Bộ Tư pháp", kind: "gov", publishedAt: new Date() }],
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bang-lai-nuoc-ngoai",
+    version: 1,
+    isCurrent: true,
+    status: "published",
+    title: "Bằng lái nước ngoài",
+    summaryVi: "Tóm tắt",
+    sources: [
+      {
+        title: "Nguồn",
+        url: "https://example.go.kr",
+        authority: "Bộ Tư pháp",
+        kind: "gov",
+        publishedAt: new Date(),
+      },
+    ],
     effectiveFrom: new Date(),
   });
 
@@ -176,11 +303,19 @@ test("response cua POST /api/users/trips khop fixture trip.json", async () => {
   const fixture = readFixture("trip.json");
   const { registerAndLogin } = await import("./helpers.js");
   const { accessToken } = await registerAndLogin(app);
+  const Country = (await import("../src/models/Country.js")).default;
+  await Country.create({ code: "KR", name: "Hàn Quốc", status: "active" });
 
   const res = await request(app)
     .post("/api/users/trips")
     .set("Authorization", `Bearer ${accessToken}`)
-    .send({ countryCode: "KR", destinationCity: "Seoul", destinationDetail: "Gangnam-gu", startDate: "2026-10-01", endDate: "2026-10-10" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Seoul",
+      destinationDetail: "Gangnam-gu",
+      startDate: "2026-10-01",
+      endDate: "2026-10-10",
+    });
 
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data, fixture.data, "trip");
@@ -246,7 +381,12 @@ test("response cua GET /api/quick-phrases khop fixture public.quickPhrase.json",
   await request(app)
     .post("/api/admin/quick-phrases")
     .set("Authorization", `Bearer ${accessToken}`)
-    .send({ countryCode: "KR", vi: "Tôi cần giúp đỡ", translated: "도와주세요", phonetic: "Dowajuseyo" });
+    .send({
+      countryCode: "KR",
+      vi: "Tôi cần giúp đỡ",
+      translated: "도와주세요",
+      phonetic: "Dowajuseyo",
+    });
 
   const res = await request(app).get("/api/quick-phrases").query({ country: "KR" });
 
@@ -275,7 +415,9 @@ test("response cua GET /api/alerts/applicable khop fixture public.geoAlert.json"
       status: "published",
     });
 
-  const res = await request(app).get("/api/alerts/applicable").query({ country: "KR", lat: 37.5407, lng: 127.0016 });
+  const res = await request(app)
+    .get("/api/alerts/applicable")
+    .query({ country: "KR", lat: 37.5407, lng: 127.0016 });
 
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data[0], fixture.data[0], "public.geoAlert");

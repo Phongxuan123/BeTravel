@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, Linking } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Speech from 'expo-speech';
@@ -10,7 +10,9 @@ import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchQuickPhrases, translateText } from '@/lib/data';
-import type { QuickPhrase } from '@/mocks/schemas';
+import type { QuickPhrase } from '@/lib/data';
+import { englishPhrases, phrasebookLicense, phrasebookLicenseUrl } from '@/features/translate/phrasebook';
+import { useAuth } from '@/lib/auth';
 
 const MAX_LENGTH = 500;
 
@@ -24,6 +26,12 @@ const SPEECH_LOCALE_BY_COUNTRY: Record<string, string> = {
 };
 
 export default function TranslatorScreen() {
+  const { countryCode } = useCountry();
+  const { user } = useAuth();
+  return <TranslatorForm key={`${countryCode}:${user?.email ?? 'guest'}`} />;
+}
+
+function TranslatorForm() {
   const { countryCode, country } = useCountry();
   const [input, setInput] = useState('Tôi cần giúp đỡ');
   const [result, setResult] = useState<{ translated: string; phonetic: string } | null>(null);
@@ -32,14 +40,32 @@ export default function TranslatorScreen() {
   const [reversed, setReversed] = useState(false); // false: Việt -> ngôn ngữ nước sở tại
   const [fullscreen, setFullscreen] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
+  const [englishMode, setEnglishMode] = useState(true);
+  const requestId = useRef(0);
+  useEffect(() => () => { requestId.current += 1; void Speech.stop(); }, []);
 
-  const phrasesQuery = useQuery({ queryKey: ['quick-phrases', countryCode], queryFn: () => fetchQuickPhrases(countryCode) });
+  const phrasesQuery = useQuery({ queryKey: ['quick-phrases', countryCode], queryFn: () => fetchQuickPhrases(countryCode), enabled: !englishMode });
   const isOffline = phrasesQuery.data?.fromCache === true;
 
-  const fromLabel = reversed ? country?.language ?? '' : 'Tiếng Việt';
-  const toLabel = reversed ? 'Tiếng Việt' : country?.language ?? '';
+  const otherLanguage = englishMode ? 'Tiếng Anh' : country?.language ?? '';
+  const fromLabel = reversed ? otherLanguage : 'Tiếng Việt';
+  const toLabel = reversed ? 'Tiếng Việt' : otherLanguage;
+  const phrases: QuickPhrase[] = englishMode ? englishPhrases.map((phrase) => ({
+    id: String(phrase.enId), countryCode, vi: phrase.vi, translated: phrase.en, phonetic: '',
+  })) : phrasesQuery.data?.data ?? [];
+
+  const invalidateResult = () => {
+    requestId.current += 1;
+    setLoading(false);
+    setResult(null);
+    setSelectedId(null);
+    setTranslateError(null);
+    setFullscreen(false);
+    void Speech.stop();
+  };
 
   const runTranslate = async (text: string) => {
+    if (loading || !otherLanguage) return;
     const trimmed = text.trim();
     if (!trimmed) {
       setTranslateError('Nhập nội dung cần dịch.');
@@ -50,50 +76,68 @@ export default function TranslatorScreen() {
       return;
     }
     setTranslateError(null);
+    setResult(null);
     setLoading(true);
+    const id = ++requestId.current;
     try {
       const r = await translateText(trimmed, { countryCode, from: fromLabel, to: toLabel, mode: 'text' });
-      setResult(r);
-    } catch {
-      Alert.alert('Không thể dịch', 'Kiểm tra kết nối mạng và thử lại.');
+      if (id === requestId.current) setResult(r);
+    } catch (error) {
+      if (id === requestId.current) setTranslateError(error instanceof Error ? error.message : 'Không thể dịch. Vui lòng thử lại.');
     } finally {
-      setLoading(false);
+      if (id === requestId.current) setLoading(false);
     }
   };
 
   const onSwapDirection = () => {
+    const nextInput = result?.translated ?? '';
+    invalidateResult();
     setReversed((v) => !v);
-    setResult(null);
-    setSelectedId(null);
+    setInput(nextInput);
   };
 
   const onPickPhrase = (phrase: QuickPhrase) => {
+    invalidateResult();
     setSelectedId(phrase.id);
-    setInput(phrase.vi);
+    setInput(reversed ? phrase.translated : phrase.vi);
     setTranslateError(null);
-    setResult({ translated: phrase.translated, phonetic: phrase.phonetic });
+    setResult({ translated: reversed ? phrase.vi : phrase.translated, phonetic: reversed ? '' : phrase.phonetic });
   };
 
   const onCopy = async () => {
     if (!result) return;
-    await Clipboard.setStringAsync(result.translated);
-    Alert.alert('Đã sao chép');
+    try {
+      await Clipboard.setStringAsync(result.translated);
+      Alert.alert('Đã sao chép');
+    } catch { Alert.alert('Không sao chép được', 'Vui lòng thử lại.'); }
   };
 
   const onSpeak = () => {
     if (!result) return;
-    const locale = reversed ? 'vi-VN' : SPEECH_LOCALE_BY_COUNTRY[countryCode] ?? 'en-US';
-    Speech.speak(result.translated, { language: locale });
+    const locale = reversed ? 'vi-VN' : englishMode ? 'en-US' : SPEECH_LOCALE_BY_COUNTRY[countryCode] ?? 'en-US';
+    void Speech.stop().then(() => Speech.speak(result.translated, {
+      language: locale,
+      onError: () => Alert.alert('Không phát âm được', 'Kiểm tra giọng đọc đã cài trên thiết bị.'),
+    })).catch(() => Alert.alert('Không phát âm được', 'Vui lòng thử lại.'));
   };
 
   return (
     <View className="flex-1 bg-bg">
       <PageHeader
         title="Dịch khẩn cấp"
-        subtitle="Hoạt động cả khi ngoại tuyến"
-        right={<Badge label={isOffline ? '● Ngoại tuyến' : '● Đã tải'} tone={isOffline ? 'warning' : 'success'} />}
+        subtitle="Câu mẫu dùng ngoại tuyến; câu tự nhập cần mạng"
+        right={<Badge label={englishMode ? 'Câu mẫu có sẵn' : isOffline ? 'Bản lưu' : phrasesQuery.isLoading ? 'Đang tải' : phrasesQuery.isError ? 'Lỗi tải' : 'Đã tải'} tone={!englishMode && (isOffline || phrasesQuery.isError) ? 'warning' : 'success'} />}
       />
       <ScrollView contentContainerStyle={{ padding: 18, gap: 16, paddingBottom: 48 }}>
+        <View className="flex-row gap-2">
+          {[true, false].map((english) => (
+            <Pressable key={String(english)} accessibilityRole="button" accessibilityState={{ selected: englishMode === english }}
+              onPress={() => { invalidateResult(); setEnglishMode(english); setReversed(false); setInput(''); }}
+              className={`min-h-12 flex-1 items-center justify-center rounded-lg border px-3 ${englishMode === english ? 'border-primary bg-primary-soft' : 'border-line bg-surface'}`}>
+              <Text className="font-body-bold text-primary">{english ? 'Việt - Anh' : 'Ngôn ngữ sở tại'}</Text>
+            </Pressable>
+          ))}
+        </View>
         <View className="h-[76px] flex-row items-center rounded-lg border border-line bg-surface px-4">
           <View className="flex-1">
             <Text className="text-xs text-muted">Từ</Text>
@@ -123,6 +167,7 @@ export default function TranslatorScreen() {
             className="mt-2 text-xl font-body-bold text-ink"
             value={input}
             onChangeText={(t) => {
+              invalidateResult();
               setInput(t);
               setSelectedId(null);
               setTranslateError(null);
@@ -141,6 +186,7 @@ export default function TranslatorScreen() {
               <Pressable
                 accessibilityLabel="Xoá"
                 onPress={() => {
+                  invalidateResult();
                   setInput('');
                   setResult(null);
                   setTranslateError(null);
@@ -152,6 +198,8 @@ export default function TranslatorScreen() {
             </View>
             <Pressable
               accessibilityRole="button"
+              disabled={loading || !input.trim() || !otherLanguage}
+              accessibilityState={{ disabled: loading || !input.trim() || !otherLanguage }}
               onPress={() => runTranslate(input)}
               className="h-[50px] flex-row items-center rounded-lg bg-primary px-5"
             >
@@ -187,26 +235,36 @@ export default function TranslatorScreen() {
 
         <View>
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-body-bold text-ink">Câu khẩn cấp dùng nhiều</Text>
+            <Text className="text-base font-body-bold text-ink">{englishMode ? 'Câu mẫu Việt - Anh' : 'Câu khẩn cấp dùng nhiều'}</Text>
             <Text className="text-[13px] text-muted">Chạm để dịch</Text>
           </View>
           <View className="mt-3" style={{ gap: 10 }}>
-            {phrasesQuery.data?.data.map((phrase) => {
+            {!englishMode && phrasesQuery.isError && <Text className="text-sm text-danger">Không tải được câu mẫu. Vui lòng thử lại khi có mạng.</Text>}
+            {!englishMode && !phrasesQuery.isLoading && !phrasesQuery.isError && phrases.length === 0 && <Text className="text-sm text-muted">Chưa có câu mẫu cho ngôn ngữ này.</Text>}
+            {phrases.map((phrase) => {
               const selected = selectedId === phrase.id;
               return (
                 <Pressable
                   key={phrase.id}
                   onPress={() => onPickPhrase(phrase)}
-                  className={`h-[60px] flex-row items-center gap-3 rounded-lg border px-3 ${selected ? 'border-[1.5px] border-primary' : 'border-line'} bg-surface`}
+                  className={`min-h-[60px] flex-row items-center gap-3 rounded-lg border px-3 py-3 ${selected ? 'border-[1.5px] border-primary' : 'border-line'} bg-surface`}
                 >
                   <View className={`h-10 w-10 items-center justify-center rounded-md ${selected ? 'bg-primary' : 'bg-primary-soft'}`}>
                     <Languages size={18} color={selected ? '#fff' : colors.primary} />
                   </View>
-                  <Text className="flex-1 text-[17px] font-body-bold text-ink">{phrase.vi}</Text>
+                  <Text className="flex-1 text-[17px] font-body-bold text-ink">{reversed ? phrase.translated : phrase.vi}</Text>
                 </Pressable>
               );
             })}
           </View>
+          {englishMode && <View className="mt-3 gap-2">
+            <Text className="text-xs text-muted">Câu mẫu: cộng đồng Tatoeba · {phrasebookLicense}. Không phải bản dịch được chứng nhận.</Text>
+            <Pressable onPress={() => Linking.openURL(phrasebookLicenseUrl).catch(() => Alert.alert('Không mở được liên kết'))}><Text className="text-sm text-primary">Giấy phép và ghi công</Text></Pressable>
+            {englishPhrases.filter((p) => String(p.enId) === selectedId).map((p) => <View key={p.enId} className="flex-row gap-4">
+              <Pressable onPress={() => Linking.openURL(`https://tatoeba.org/en/sentences/show/${p.enId}`).catch(() => Alert.alert('Không mở được nguồn'))}><Text className="text-sm text-primary">Nguồn câu Anh</Text></Pressable>
+              <Pressable onPress={() => Linking.openURL(`https://tatoeba.org/en/sentences/show/${p.viId}`).catch(() => Alert.alert('Không mở được nguồn'))}><Text className="text-sm text-primary">Nguồn câu Việt</Text></Pressable>
+            </View>)}
+          </View>}
         </View>
       </ScrollView>
 

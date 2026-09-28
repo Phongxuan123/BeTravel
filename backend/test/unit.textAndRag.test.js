@@ -2,9 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
-  buildNormalizedWordRegex,
   containsPhrase,
+  foldDStroke,
   normalizeVi,
+  toDStrokeInsensitivePattern,
 } from "../src/utils/textNormalize.js";
 import { chunkArticle } from "../src/rag/chunking.js";
 import { rrf } from "../src/rag/rrf.js";
@@ -26,10 +27,9 @@ test("normalizeVi bo dau, ha chu thuong, cat khoang trang", () => {
   assert.equal(normalizeVi(123), "123");
 });
 
-test("normalizeVi chuyen đ/Đ thanh d (tim 'dang ky' phai khop 'Đăng ký')", () => {
-  assert.equal(normalizeVi("Đăng ký"), "dang ky");
-  assert.equal(normalizeVi("đỗ xe"), "do xe");
-  assert.ok(normalizeVi("Thủ tục đăng ký tạm trú").includes(normalizeVi("dang ky")));
+test("foldDStroke gap đ thanh d de so khop 'dang ky' voi 'Đăng ký'", () => {
+  assert.equal(foldDStroke(normalizeVi("Đăng ký")), "dang ky");
+  assert.ok(foldDStroke(normalizeVi("Thủ tục đăng ký tạm trú")).includes("dang ky"));
 });
 
 test("containsPhrase so khop theo ranh gioi tu, khong theo chuoi con", () => {
@@ -44,12 +44,11 @@ test("containsPhrase so khop theo ranh gioi tu, khong theo chuoi con", () => {
   assert.equal(containsPhrase("NHẬT BẢN có gì", "Nhật Bản"), true);
 });
 
-test("buildNormalizedWordRegex khop ca du lieu cu con 'đ' lan du lieu moi", () => {
-  const regex = buildNormalizedWordRegex(normalizeVi("đăng"));
+test("toDStrokeInsensitivePattern khop ca 'd' lan 'đ' trong gia tri *Norm da luu", () => {
+  const regex = new RegExp(toDStrokeInsensitivePattern("dang"), "i");
   assert.ok(regex.test("thu tuc đang ky"));
   assert.ok(regex.test("thu tuc dang ky"));
-  assert.ok(buildNormalizedWordRegex("a.b").test("a.b"));
-  assert.equal(buildNormalizedWordRegex("a.b").test("axb"), false);
+  assert.ok(new RegExp(toDStrokeInsensitivePattern("đang"), "i").test("dang ky"));
 });
 
 // --- chunkArticle ---

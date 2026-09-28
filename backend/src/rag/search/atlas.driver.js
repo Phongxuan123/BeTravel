@@ -22,6 +22,7 @@ const PROJECT_FIELDS = {
   text: 1,
   textNorm: 1,
   kind: 1,
+  embeddingModel: 1,
   countryCode: 1,
   topicSlug: 1,
 };

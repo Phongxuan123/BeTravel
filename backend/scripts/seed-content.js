@@ -450,6 +450,37 @@ export const KR_QUICK_PHRASES = [
 // duoc ham nay TRONG CUNG mot ket noi Mongo roi lam tiep buoc reindex, thay
 // vi phai tach tien trinh con. Khoi tu chay ("npm run seed") lo phan
 // connect/disconnect/exit o duoi file.
+/*
+ * Repo public: mat khau admin KHONG duoc co gia tri mac dinh viet trong code
+ * hay .env.example -- ai doc repo cung dang nhap duoc Admin Portal cua moi
+ * moi truong quen doi mat khau. Khong khai SEED_ADMIN_PASSWORD --> bo qua tao
+ * admin (dung `npm run create-admin` voi mat khau tu chon).
+ */
+export const ensureSeedAdmin = async ({ email, password }) => {
+  if (!email || !password) {
+    console.log("[bo qua] Chua khai SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD -- khong tao admin");
+    return null;
+  }
+
+  const existingAdmin = await User.findOne({ email });
+  if (existingAdmin) {
+    console.log(`[bo qua] Admin ${email} da ton tai`);
+    return existingAdmin;
+  }
+
+  const admin = await User.create({
+    username: "admin",
+    fullName: "Quản trị viên",
+    email,
+    phone: "",
+    password: await bcrypt.hash(password, 12),
+    role: UserRole.ADMIN,
+    isActive: true,
+  });
+  console.log(`[tao moi] Admin ${email} -- DOI MAT KHAU NGAY sau khi dang nhap lan dau`);
+  return admin;
+};
+
 export const run = async () => {
   for (const c of COUNTRIES) {
     const existing = await Country.findOne({ code: c.code });
@@ -497,23 +528,7 @@ export const run = async () => {
     console.log(`[tao moi] LegalArticle KR/${a.slug} (draft)`);
   }
 
-  const adminEmail = env.SEED_ADMIN_EMAIL;
-  const existingAdmin = await User.findOne({ email: adminEmail });
-  if (existingAdmin) {
-    console.log(`[bo qua] Admin ${adminEmail} da ton tai`);
-  } else {
-    const passwordHash = await bcrypt.hash(env.SEED_ADMIN_PASSWORD, 12);
-    await User.create({
-      username: "admin",
-      fullName: "Quản trị viên",
-      email: adminEmail,
-      phone: "",
-      password: passwordHash,
-      role: UserRole.ADMIN,
-      isActive: true,
-    });
-    console.log(`[tao moi] Admin ${adminEmail} -- DOI MAT KHAU NGAY sau khi dang nhap lan dau`);
-  }
+  await ensureSeedAdmin({ email: env.SEED_ADMIN_EMAIL, password: env.SEED_ADMIN_PASSWORD });
 
   for (const i of GLOBAL_INCIDENTS) {
     const existing = await IncidentType.findOne({ slug: i.slug });

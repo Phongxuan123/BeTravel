@@ -8,7 +8,10 @@ export const listQuickPhrasesAdmin = async (query) => {
   if (query.countryCode) filter.countryCode = query.countryCode;
 
   const [items, total] = await Promise.all([
-    QuickPhrase.find(filter).sort({ countryCode: 1, order: 1 }).skip(pagination.skip).limit(pagination.limit),
+    QuickPhrase.find(filter)
+      .sort({ countryCode: 1, order: 1 })
+      .skip(pagination.skip)
+      .limit(pagination.limit),
     QuickPhrase.countDocuments(filter),
   ]);
 

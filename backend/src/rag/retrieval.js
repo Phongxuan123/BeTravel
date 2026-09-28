@@ -93,15 +93,23 @@ function toCitation(chunk, article, marker) {
 export async function retrieve({ question, countryCode, topicSlug, focusArticleId }) {
   const embeddingProvider = getEmbeddingProvider();
   const [queryVector] = await embeddingProvider.embedBatch([question]);
+  // Lech so chieu = cau hinh sai (EMBEDDING_DIMS/model) -- bao loi ro (caller
+  // ha cap PROVIDER_ERROR) thay vi tinh cosine tren vector bi cat cut am tham.
+  if (!Array.isArray(queryVector) || queryVector.length !== embeddingProvider.dims) {
+    throw new Error("EMBEDDING_DIMS_MISMATCH");
+  }
   const words = normalizeVi(question).split(/\s+/).filter(Boolean);
 
   const driver = getSearchDriver();
-  const [vectorHits, keywordHits] = await Promise.all([
+  const [rawVectorHits, keywordHits] = await Promise.all([
     driver.vectorSearch({ countryCode, topicSlug, queryVector, k: env.RAG_TOP_K }),
     driver.keywordSearch({ countryCode, topicSlug, words, k: env.RAG_TOP_K }),
   ]);
+  // CLAUDE.md "Embedding dong nhat": chunk cua model khac (doi model nhung chua
+  // re-index het) cho cosine vo nghia -- khong duoc gop vao diem nguong.
+  const vectorHits = rawVectorHits.filter((hit) => hit.embeddingModel === embeddingProvider.model);
 
-  // ★ Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
+  // [!] Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
   // (fusedScore chi co y nghia tuong doi giua cac chunk, khong tuyet doi).
   // Chunk bị gỡ không được góp điểm giúp tập bằng chứng vượt ngưỡng.
   const { verifiedChunks: verifiedVectorHits } = await verifyAgainstArticles(

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-nativ
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Info, ArrowRight, MapPin } from 'lucide-react-native';
+import { Search, Info, ArrowRight, MapPin, Check } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { StepProgress } from '@/components/ui/StepProgress';
@@ -18,7 +18,7 @@ import { ApiError } from '@/lib/api/http';
 import { useAuth } from '@/lib/auth';
 import { now, parseISODate } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
-import type { Trip } from '@/mocks/schemas';
+import type { Trip } from '@/lib/data';
 
 type State = {
   countryCode: string | null;
@@ -470,7 +470,7 @@ export default function TripWizardScreen() {
               ].map((line) => (
                 <View key={line} className="flex-row items-center" style={{ gap: 10 }}>
                   <View className="h-[30px] w-[30px] items-center justify-center rounded-[8px] bg-success-soft">
-                    <Text style={{ color: colors.success }}>✓</Text>
+                    <Check size={16} color={colors.success} />
                   </View>
                   <Text className="flex-1 text-base text-[#3B4A63]">{line}</Text>
                 </View>

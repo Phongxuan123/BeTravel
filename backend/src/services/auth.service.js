@@ -129,10 +129,6 @@ export const loginUser = async ({ identifier, password, rememberMe }, context = 
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  if (!user.isActive) {
-    throw new Error("ACCOUNT_NOT_ACTIVE");
-  }
-
   if (!user.password) {
     throw new Error("PASSWORD_LOGIN_UNAVAILABLE");
   }
@@ -141,6 +137,12 @@ export const loginUser = async ({ identifier, password, rememberMe }, context = 
 
   if (!isPasswordCorrect) {
     throw new Error("INVALID_CREDENTIALS");
+  }
+
+  // Chỉ báo "bị khóa" SAU khi mật khẩu đúng: báo sớm hơn thì ai cũng dò được
+  // tài khoản nào tồn tại và đang bị khóa mà không cần biết mật khẩu.
+  if (!user.isActive) {
+    throw new Error("ACCOUNT_NOT_ACTIVE");
   }
 
   // Nhớ đăng nhập --> dùng trọn REFRESH_TTL_DAYS; không nhớ --> hết hạn sau 1 ngày.
@@ -324,7 +326,8 @@ export const updateUserPreferences = async ({ userId, patch }) => {
   if (patch.locale !== undefined) user.preferences.locale = patch.locale;
   if (patch.alerts?.legal !== undefined) user.preferences.alerts.legal = patch.alerts.legal;
   if (patch.alerts?.safety !== undefined) user.preferences.alerts.safety = patch.alerts.safety;
-  if (patch.alerts?.tripReminder !== undefined) user.preferences.alerts.tripReminder = patch.alerts.tripReminder;
+  if (patch.alerts?.tripReminder !== undefined)
+    user.preferences.alerts.tripReminder = patch.alerts.tripReminder;
   if (patch.locationConsent !== undefined) user.preferences.locationConsent = patch.locationConsent;
 
   await user.save();

@@ -15,7 +15,7 @@ import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
 import { fetchCountries, fetchPreferences, updatePreferences, listChatSessions, deleteChatSession } from '@/lib/data';
-import type { Preferences } from '@/mocks/schemas';
+import type { Preferences } from '@/lib/data';
 import type { PreferencesPatch } from '@/lib/api/preferences';
 import { changePassword } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/http';
@@ -47,7 +47,6 @@ export default function SettingsScreen() {
       queryClient.setQueryData(['preferences'], res);
     },
   });
-  const [shareLocation, setShareLocation] = useState(true);
 
   const [pickingCountry, setPickingCountry] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -166,7 +165,8 @@ export default function SettingsScreen() {
             </View>
             <Text className="text-[13px] leading-5 text-muted">
               Vị trí GPS (nếu bạn cho phép) chỉ dùng để tìm cảnh báo an toàn và điểm hỗ trợ SOS gần bạn nhất — không được lưu lại
-              hay gửi cho bên thứ ba. Tắt mục dưới đây bất cứ lúc nào để chỉ nhận cảnh báo theo cấp quốc gia.
+              trên máy chủ. Nếu chọn chia sẻ vị trí, tọa độ được chuyển cho ứng dụng và người nhận do bạn chọn.
+              Tắt cảnh báo theo vị trí bên dưới để chỉ nhận cảnh báo cấp quốc gia.
             </Text>
           </View>
           <View className="h-px bg-line" />
@@ -177,7 +177,7 @@ export default function SettingsScreen() {
             value={preferences.locationConsent}
             onValueChange={(v) => preferencesMutation.mutate({ locationConsent: v })}
           />
-          <SettingsSwitchRow label="Chia sẻ vị trí khi SOS" description="Gửi cho 2 liên hệ khẩn cấp" value={shareLocation} onValueChange={setShareLocation} />
+          <SettingsRow label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
           <View className="h-px bg-line" />
           <SettingsRow
             icon={<Trash2 size={18} color={colors.danger} />}

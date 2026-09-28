@@ -1,28 +1,93 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-28 · Phiên: rà soát sau B9, bảo vệ dữ liệu và hoàn thiện favorites
+Cập nhật lần cuối: 2026-09-29 · Nhánh: `main` sau khi gộp PR QA (#21) và `feature/translation-location-sharing`.
+
+## Nhánh Quy — quét test và gộp main (29/09)
+
+Gộp `main` (QA #21, dịch/chia sẻ vị trí #22) vào nhánh `Quy`; xung đột lấy
+bản `main`. `main` đã tự sửa lỗi "đ" (gập d/đ lúc so khớp, không đổi
+normalizeVi) nên bỏ cách sửa của nhánh này. Giữ lại phần không trùng:
+- Guard: bước đối chiếu số tiền dùng chung `CURRENCY_UNIT` với bước phát hiện
+  (bản main vẫn để "900.000₫ [S1]" hoặc "500$ [S1]" lọt khi nguồn ghi số khác).
+- Chat: phát hiện tên nước khác theo ranh giới từ, giữ dấu (`containsPhrase`),
+  tránh "Lào" chặn nhầm câu hỏi "lao động".
+- Google login với email ngắn (username < 3 ký tự); `npm test` backend chạy
+  trên Windows/Node 20; test không cần `backend/.env`.
+- Kiểm tra: backend 255 pass (+1 todo có sẵn), mobile 153/153, admin 18/18
+  (Node 22); lint/typecheck/build đạt. Máy local vẫn Node 20.19.6, cần >=22.13.
+
+## Nhánh Quy — quét test và gộp main (29/09)
+
+Gộp `main` (QA #21, dịch/chia sẻ vị trí #22) vào nhánh `Quy`; xung đột lấy
+bản `main`. `main` đã tự sửa lỗi "đ" (gập d/đ lúc so khớp, không đổi
+normalizeVi) nên bỏ cách sửa của nhánh này. Giữ lại phần không trùng:
+- Guard: bước đối chiếu số tiền dùng chung `CURRENCY_UNIT` với bước phát hiện
+  (bản main vẫn để "900.000₫ [S1]" hoặc "500$ [S1]" lọt khi nguồn ghi số khác).
+- Chat: phát hiện tên nước khác theo ranh giới từ, giữ dấu (`containsPhrase`),
+  tránh "Lào" chặn nhầm câu hỏi "lao động".
+- Google login với email ngắn (username < 3 ký tự); `npm test` backend chạy
+  trên Windows/Node 20; test không cần `backend/.env`.
+- Kiểm tra: backend 255 pass (+1 todo có sẵn), mobile 153/153, admin 18/18
+  (Node 22); lint/typecheck/build đạt. Máy local vẫn Node 20.19.6, cần >=22.13.
+
+## Phiên 28–29/09 — dịch hai chiều và chia sẻ vị trí (hiện hành)
+
+Tiến độ triển khai/kiểm tra local: `[######] 6/6`. Nghiệm thu thiết bị/dịch vụ thật: **còn mở**.
+
+| Bước | Trạng thái | Bằng chứng |
+|---|---|---|
+| Đọc cấu trúc và quy tắc | xong | CLAUDE, AGENTS mobile, Docs kiến trúc/audit/tối ưu, contracts; giữ 3 workspace độc lập |
+| Dịch Việt - Anh hai chiều | xong | Mười cặp câu Tatoeba offline, UD grammar, chuẩn hóa ngôn ngữ, quota và chống response cũ |
+| Chia sẻ vị trí thực tế | xong | GPS foreground -> preview -> native share; bỏ công tắc giả SOS/Cài đặt; không cần backend mới |
+| Rà soát lỗi và hồi quy | xong trong phạm vi local | Quyền/GPS sai-cũ/hủy/race; backend auth/RBAC/quota/data tests; admin lint/typecheck/test/build |
+| Đóng gói | xong | Expo export iOS và Android thành công; không phải native build đã ký hoặc kiểm thử điện thoại |
+| Ghi sổ bàn giao | xong | LOCATION_SHARING, TRANSLATION_SOURCES, OPTIMIZATION_REPORT, ACCEPTANCE và contracts |
+
+### Bằng chứng kiểm tra phiên này
+
+- Backend: lint sạch; **156/156 test** với MongoDB tạm và mock provider, không dùng Atlas.
+- Mobile: lint/typecheck sạch; **124 test / 25 suites**; test nguồn offline, UI đổi chiều/response cũ và GPS/share.
+- Admin: lint/typecheck sạch; **9/9 test / 4 files**, production build đạt.
+- iOS export: `/tmp/betravel-share-ios-final-20260929`; Android: `/tmp/betravel-share-android-final-20260929` (artifact tạm, không commit).
+- Metro in cảnh báo biến môi trường NO_COLOR/FORCE_COLOR trùng nhau; không có lỗi bundling. Không sửa thư viện chỉ để che cảnh báo môi trường.
+- Lệnh thử `expo export --platform all` dừng vì thiếu `react-native-web`; đây là cấu hình mobile native hiện tại. Kiểm riêng hai nền tảng iOS/Android; chưa bổ sung hoặc chứng nhận mobile web.
+
+### Điểm vào cho người/AI tiếp theo
+
+- [Cách dùng và vận hành chia sẻ vị trí](LOCATION_SHARING.md): route `mobile/src/app/sos/share-location.tsx`; xử lý dữ liệu ở `features/sos/locationShare.ts`. Không streaming nền, không link thu hồi/hết hạn, không tự gửi tin.
+- [Nguồn mở và kiến trúc dịch](TRANSLATION_SOURCES.md): UI `app/translate/index.tsx`, client `lib/api/translate.ts`, backend `services/translate.service.js`, resources `translation/vi-en.json`.
+- Cấu trúc tổng thể ở bảng kiến trúc của phiên lịch sử ngay bên dưới vẫn áp dụng; không migration, không thêm collection hay npm dependency.
+- Cần điện thoại iOS/Android/iPad để nghiệm thu native share, GPS approximate, timeout/chuyển nền, Zalo/SMS và phát âm. Cần build native mới để áp dụng chuỗi xin quyền iOS vừa sửa.
+- Chưa đánh giá dịch tự do bằng provider thật; test mock chỉ chứng minh pipeline. Chưa kiểm Atlas/production hay dữ liệu SOS ngoài máy. Maps SDK key hiện là placeholder; link Google Maps của tính năng chia sẻ không cần key đó.
+- npm audit vẫn chưa có kết quả mới: auto-review trước đó từ chối gửi metadata dependency tới registry. Không tự chạy lại để vượt hạn chế. Expo Doctor chưa có CLI local; không coi kết quả lịch sử là kết quả phiên này.
+- Không xác nhận toàn hệ điều hành hoặc mọi lỗi có thể có; phạm vi đã rà là mã nguồn, cấu hình và kiểm thử ba workspace. Các phần cần dữ liệu/thao tác thật giữ trong ACCEPTANCE.
+
+## Đợt QA (docs/07_QA_BugHunt.md) — chi tiết ở docs/QA_REPORT.md
+
+| Phiên | Trạng thái | Ghi chú |
+|---|---|---|
+| QA-1 Pha 0 + Pha 1 + M01-M04 | xong | Nhánh `feature/qa-20260928`. Sửa 5 lỗi (2 S1 lộ PII/mật khẩu mặc định, 1 S2 xóa Country/Topic đang tham chiếu, 2 S3). Backend 174, mobile 95, admin 9 test xanh |
+| QA-2 M05-M07 | xong | Sửa 10 lỗi: 3 S1 (guard bỏ sót 5 dạng định lượng; 2 bất biến RAG không có test bảo vệ -- phát hiện qua mutation testing), 5 S2 (lộ trường nội bộ bài luật, tìm `đ`, trộn embedding model, chat gửi trùng, bỏ qua needsOfficialHelp), 2 S3. Backend 198, mobile 99, admin 9 test xanh |
+| QA-3 M08-M12 | xong | Sửa 4 lỗi: 1 S1 (mở app khi mất mạng --> SOS Hub trắng, nay cache quốc gia + màn dự phòng), 2 S2 (translate from/to không giới hạn vào prompt LLM; favorites lộ trường nội bộ bài luật), 1 S3 (backend cho trip tới nước coming_soon). Backend 211 (+1 todo nợ H-09.a), mobile 102, admin 9 |
+| QA-4 M13-M15 | xong | Sửa 6 lỗi: 2 S2 (không có ErrorBoundary cấp route; admin xác minh hàng loạt điểm SOS/re-index không xác nhận), D17 admin hard-code quốc gia, 3 S3 (refresh lộ cờ `rotated` + fixture admin lệch; 7 chỗ gọi điện/link không bắt lỗi; màn hình import type từ @/mocks). Mọi fixture có backend + client. Backend 214 (+1 todo), mobile 111, admin 11 |
+| QA-5 M16-M17 + Pha 3 + Pha 4 | xong | Sửa: PATCH incident/geo-alert xóa `steps`/`behaviorsToAvoid` (Zod 4 partial giữ default, phát hiện qua E2E); production fail fast khi AI mock/thiếu key/JWT ngắn; smoke test server.js; emoji/host/README; commit format riêng BASE-01. E2E 5 kịch bản + fuzz mọi route ghi (tự đề xuất vì 07 thiếu PHAN 6-7). Backend 227 (+1 todo), mobile 111, admin 11 |
+
+**Đợt QA kết thúc.** Danh sách duy nhất các việc người cần làm/quyết định: `docs/QA_REPORT.md` mục 7.
+
+Việc của người phát sinh từ QA-1 (chi tiết QA_REPORT mục 7): đổi ngay mật khẩu admin đã
+seed; quyết định rewrite lịch sử git; chốt QA-D13 (SOS chưa xác minh), QA-M04-01 (đồ thị
+trạng thái bài luật), QA-M04-03 (transaction publish); xác nhận partial unique index trên Atlas.
+QA-2 thêm: chốt QA2-M06-04 (bí danh quốc gia -- "Ở Nhật..." hiện vẫn được trả lời bằng
+luật KR) và QA2-M06-05; hợp đồng `public.legalArticle.json` đã bỏ trường nội bộ.
+Thay đổi cấu hình: `SEED_ADMIN_PASSWORD` không còn giá trị mặc định -- để trống thì `npm run seed`
+bỏ qua bước tạo admin.
+
+## Lịch sử phiên 28/09 — bảo vệ dữ liệu và hoàn thiện favorites
+
 Nhánh: `feature/audit-20260928`, tách từ `feature/trip-management` tại `bbe3378`.
 Nhánh gốc ahead origin 18 commit trước phiên; không tự pull/rebase/push hoặc merge.
 
-## Phiên 28/09 (b) — quét test toàn dự án
-
-Nhánh `feature/test-sweep-20260928`. Người dùng yêu cầu viết test toàn dự án,
-tìm lỗi qua test và sửa. Chi tiết từng lỗi: OPTIMIZATION_REPORT mục "Quét test".
-
-- Lỗi đã sửa (mỗi lỗi có test fail trước khi sửa): chuẩn hóa "đ" trong tìm
-  kiếm/RAG; guard bỏ sót số tiền viết bằng ký hiệu (₫, $, 円, บาท); chat từ
-  chối nhầm khi tên nước là từ thường ("Lào"/"lao động"); Google login với
-  email ngắn; `npm test` backend không chạy trên Windows/Node 20; test phụ
-  thuộc `backend/.env`.
-- Kết quả: backend 174/174, mobile 106/106, admin 16/16; lint/typecheck/build đạt.
-- **Cần người làm:** máy local đang Node 20.19.6, dự án yêu cầu >=22.13 (admin
-  test cần Node 22; đã chạy tạm qua `npx -p node@22`). Nên chuyển nvm sang 22.
-- Dữ liệu cũ: `titleNorm`/chunk `textNorm` lưu trước bản sửa vẫn còn "đ"; tìm
-  kiếm đã khớp cả hai dạng. Chạy reindex/lưu lại bài sẽ đồng bộ, không bắt buộc.
-- Nợ: format lại `auth.service.js`, `publicContent.service.js`,
-  `memory.driver.js` (lệch prettier từ trước) trong một commit format riêng.
-
-## Phiên 28/09 — bàn giao hiện hành
+### Bàn giao phiên trước
 
 Tiến độ mã nguồn và kiểm tra local: `[######] 6/6`.
 Tiến độ phát hành/kiểm chứng ngoài máy: **xong một phần**, không phải 100% sản phẩm.
@@ -206,14 +271,14 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
   MapView khi mất mạng và thao tác soạn/khôi phục bản nháp trong trình duyệt.
 - **(B9) Đã chạy `npm run seed` VÀ `npm run seed:demo` thật trên Atlas trong
   phiên này** (không phải test cô lập, dữ liệu còn tồn tại thật): tạo tài
-  khoản admin `admin@betravel.local` (mật khẩu mặc định `Matkhau123` từ
-  `SEED_ADMIN_PASSWORD` -- **PHẢI đổi ngay**), 5 `IncidentType` (published),
+  khoản admin seed theo `SEED_ADMIN_EMAIL` (mật khẩu mặc định lấy từ
+  `SEED_ADMIN_PASSWORD` -- **PHẢI đổi ngay**, không ghi mật khẩu vào tài liệu
+  public), 5 `IncidentType` (published),
   25 `QuickPhrase` KR (published). KHÔNG tạo `support_locations`/`geo_alerts`
   (giữ nguyên quyết định không bịa dữ liệu an toàn thời gian thực). Phát
   hiện thêm: Atlas đã có sẵn 4 countries/6 topics/8 legal articles (draft) từ
-  trước, và 3 tài khoản người dùng thật KHÔNG do AI tạo (email
-  `doraemondat0605@gmail.com`, `admin123@betravel.local`,
-  `phong123@gmail.com`) -- không đụng tới các bản ghi này.
+  trước, và 3 tài khoản do người dùng tạo (không liệt kê định danh trong repo
+  public) -- không đụng tới các bản ghi này.
 - **(B9) Chưa triển khai thật** lên Render/Vercel/EAS -- `docs/DEPLOY.md`,
   `backend/render.yaml`, `mobile/eas.json`, `.github/workflows/keepalive.yml`
   đã viết đầy đủ nhưng cần tài khoản dịch vụ thật của người phụ trách để

@@ -80,6 +80,7 @@ export default function ChatScreen() {
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const scrollRef = useRef<ScrollView>(null);
   const focusArticleIdUsedRef = useRef(false);
+  const sendingRef = useRef(false);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -141,8 +142,14 @@ export default function ChatScreen() {
     );
   }
 
+  // Mot luot hoi tai mot thoi diem: getLastChatMessageId() doc id cua luot VUA
+  // xong, hai luot song song se gan nham id --> "Bao sai" roi vao tin nhan khac.
+  // State de lam mo nut; ref chan ca hai lan bam trong cung mot frame.
+  const isAwaitingAnswer = messages.some((m) => m.pending);
+
   const send = async (question: string) => {
-    if (!question.trim()) return;
+    if (!question.trim() || sendingRef.current) return;
+    sendingRef.current = true;
     const userMsg: Message = { id: nextMessageId('u'), role: 'user', text: question };
     const pendingMsg: Message = { id: nextMessageId('a'), role: 'assistant', pending: true, forQuestion: question };
     setMessages((prev) => [...prev, userMsg, pendingMsg]);
@@ -169,6 +176,8 @@ export default function ChatScreen() {
         suggestions: [],
       };
       setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer: errorAnswer } : m)));
+    } finally {
+      sendingRef.current = false;
     }
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
   };
@@ -349,9 +358,9 @@ export default function ChatScreen() {
         />
         <Pressable
           accessibilityLabel="Gửi câu hỏi"
-          disabled={!input.trim()}
+          disabled={!input.trim() || isAwaitingAnswer}
           onPress={() => send(input)}
-          className={`h-14 w-14 items-center justify-center rounded-lg bg-primary ${!input.trim() ? 'opacity-50' : ''}`}
+          className={`h-14 w-14 items-center justify-center rounded-lg bg-primary ${!input.trim() || isAwaitingAnswer ? 'opacity-50' : ''}`}
         >
           <Send size={22} color="#fff" />
         </Pressable>

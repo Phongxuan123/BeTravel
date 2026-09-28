@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { RefreshCw } from 'lucide-react';
-import { ragApi } from '../lib/api';
+import { countriesApi, ragApi } from '../lib/api';
 import { ApiError } from '../lib/apiClient';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Select } from '../components/ui/Field';
@@ -10,8 +10,6 @@ import { Table, Thead, Th, Tbody, Td } from '../components/ui/Table';
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/Feedback';
 import { Badge } from '../components/ui/Badge';
 import type { RagIndexState } from '../lib/types';
-
-const COUNTRIES = ['KR', 'JP', 'TH', 'SG'];
 
 const STATUS_TONE: Record<RagIndexState['status'], 'brand' | 'warn' | 'danger' | 'neutral'> = {
   indexed: 'brand',
@@ -39,6 +37,9 @@ const STATUS_LABEL: Record<RagIndexState['status'], string> = {
 export default function RagIndexPage() {
   const [countryCode, setCountryCode] = useState('');
   const queryClient = useQueryClient();
+  // Country-driven (CLAUDE.md 4.1): danh sach quoc gia lay tu DB, khong hard-code.
+  const { data: countriesRes } = useQuery({ queryKey: ['admin', 'countries'], queryFn: () => countriesApi.list({ limit: 100 }) });
+  const countryCodes = (countriesRes?.data ?? []).map((country) => country.code);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'rag', 'status', countryCode],
@@ -61,7 +62,7 @@ export default function RagIndexPage() {
         <div className="max-w-xs">
           <Select label="Quốc gia" value={countryCode} onChange={(e) => setCountryCode(e.target.value)}>
             <option value="">Tất cả</option>
-            {COUNTRIES.map((code) => (
+            {countryCodes.map((code) => (
               <option key={code} value={code}>
                 {code}
               </option>
@@ -73,7 +74,11 @@ export default function RagIndexPage() {
           iconLeft={<RefreshCw size={16} />}
           loading={reindexMutation.isPending}
           disabled={!countryCode}
-          onClick={() => countryCode && reindexMutation.mutate(countryCode)}
+          onClick={() =>
+            countryCode &&
+            window.confirm(`Re-index toàn bộ bài đã xuất bản của ${countryCode}? Việc này gọi lại embedding cho mọi bài.`) &&
+            reindexMutation.mutate(countryCode)
+          }
         >
           Re-index {countryCode || '(chọn quốc gia trước)'}
         </Button>

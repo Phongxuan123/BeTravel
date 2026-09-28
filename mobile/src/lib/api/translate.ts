@@ -5,6 +5,7 @@
 import { apiRequest } from './http';
 import { StorageKeys, getJSON, setJSON } from '@/lib/storage';
 import type { QuickPhrase } from '@/mocks/schemas';
+import { findEnglishPhrase } from '@/features/translate/phrasebook';
 
 export async function translateText(
   text: string,
@@ -12,6 +13,8 @@ export async function translateText(
   // qua, chi can from/to (nhan hien thi ngon ngu) de dua vao prompt dich.
   opts: { countryCode: string; from: string; to: string; mode?: 'text' | 'phrase' },
 ): Promise<{ translated: string; phonetic: string }> {
+  const local = findEnglishPhrase(text, opts.from, opts.to);
+  if (local) return local;
   return apiRequest<{ translated: string; phonetic: string }>('/translate', {
     method: 'POST',
     body: { text, from: opts.from, to: opts.to, mode: opts.mode ?? 'text' },

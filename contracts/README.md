@@ -301,11 +301,11 @@ POST   /admin/legal/articles/:id/status   { status, note? }
 POST   /admin/legal/articles/:id/new-version            201, clone sang version+1 draft
 ```
 
-★ **Chong ghi de**: `PATCH` phai kem `updatedAt` cua ban dang xem. Khac voi
+[!] **Chong ghi de**: `PATCH` phai kem `updatedAt` cua ban dang xem. Khac voi
 `updatedAt` hien co trong DB --> `409 CONFLICT`, `details: {updatedBy, updatedAt}`
 la trang thai hien hanh de client tai lai.
 
-★ **May trang thai** qua `POST .../status`:
+[!] **May trang thai** qua `POST .../status`:
 - Chuyen sang `published`: bat buoc >=1 `sources[]` co du `url`+`authority`+
   `publishedAt`, `summaryVi` khong rong, `effectiveFrom` co gia tri, `topicSlug`
   ton tai. Thieu --> `409 CONFLICT`, `details` la mang `{path, message}` liet
@@ -360,10 +360,16 @@ GET /legal/articles/:country/:slug                     200 kem relatedArticles
 GET /legal/search?q=&country=KR&topic=&page=           200, meta {page,limit,total}
 ```
 
-★ **Tim khong dau**: `q` duoc tach tung tu, moi tu phai xuat hien o
+[!] **Tim khong dau**: `q` duoc tach tung tu, moi tu phai xuat hien o
 `titleNorm` hoac `summaryNorm` (da bo dau + lowercase, tu dong tinh lai moi
 lan luu bai — xem `LegalArticle.js` hook `pre('save')`). "phat vape" khop
-"Muc phat ... (vape)" du hai tu khong lien tiep.
+"Muc phat ... (vape)" du hai tu khong lien tiep. Chu `d` va `đ` khop lan nhau
+("dai su quan" ra "Đại sứ quán"). `q` toi da 200 ky tu, rong/qua dai --> 400.
+
+**Truong noi bo khong tra ra API cong khai** (QA-2, INV-05.8): bai luat o
+`/legal/articles` va `/legal/articles/:country/:slug` KHONG co `titleNorm`,
+`summaryNorm`, `reviewNote`, `reviewedBy`, `indexState`, `createdBy`,
+`updatedBy`, `__v`. Admin van thay day du qua `/admin/legal/articles/:id`.
 
 **Diem thay the cho B4**: khi `legal_chunks` + Atlas Search san sang, chi cai
 lai PHAN THAN cua `publicContent.service.js#searchArticles` sang goi Atlas
@@ -389,7 +395,7 @@ PUT    /users/trips/:id/current 200, dat chuyen di nay la current, cac chuyen
 DELETE /users/trips/:id         200 { deleted: true }
 ```
 
-★ **Chi 1 `isCurrent:true` moi user tai mot thoi diem** — ep bang partial
+[!] **Chi 1 `isCurrent:true` moi user tai mot thoi diem** — ep bang partial
 unique index `{userId}` where `isCurrent:true` tren model `Trip` (cung mau
 voi `LegalArticle`), cong voi logic tuan tu o service layer. Goi
 `:id` khong thuoc ve user dang goi --> `404 NOT_FOUND` (khong lo ra `403`
@@ -407,7 +413,7 @@ POST   /chat/sessions            {countryCode}      201, tao phien moi
 DELETE /chat/sessions/:id                           200 { deleted: true }
 GET    /chat/sessions/:id/messages                  200, lich su tin nhan cua phien
 POST   /chat/sessions/:id/messages {question, focusArticleId?}  201 { sessionId, message } --
-                                                      ★ TRA MOT LAN, KHONG STREAMING (master plan B.7).
+                                                      [!] TRA MOT LAN, KHONG STREAMING (master plan B.7).
                                                       focusArticleId (B5): CTA "Hoi AI ve bai nay" tu man
                                                       hinh chi tiet bai luat -- uu tien chunk cua bai do
                                                       trong RRF (xem rag/retrieval.js FOCUS_ARTICLE_WEIGHT).
@@ -426,12 +432,12 @@ POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  2
 }
 ```
 
-★ **Cau hoi nhac ten mot quoc gia KHAC voi `countryCode` cua session** duoc
+[!] **Cau hoi nhac ten mot quoc gia KHAC voi `countryCode` cua session** duoc
 chan o tang service (`chat.service.js#detectOtherCountryMention`) TRUOC ca
 retrieval -- tra loi co dinh moi nguoi dung doi quoc gia, khong bao gio de
 LLM tu quyet dinh (deterministic, khong ton chi phi goi LLM).
 
-★ **Quota 2 lop** (CLAUDE.md muc 4.1): `express-rate-limit` RAM (20
+[!] **Quota 2 lop** (CLAUDE.md muc 4.1): `express-rate-limit` RAM (20
 req/15p/IP, lop 1) + quota luu DB `users.aiUsage` theo ngay (`AI_DAILY_QUOTA_USER`,
 mac dinh 40/ngay/user; van an toan he thong `AI_DAILY_QUOTA_GLOBAL`, mac dinh
 800/ngay) -- vuot quota --> `429 QUOTA_EXCEEDED`. Day la lop THAT SU bao ve
@@ -467,7 +473,7 @@ GET   /admin/feedback/:id                                          200, { feedba
 PATCH /admin/feedback/:id {status:'pending'|'resolved'|'dismissed', reviewerNote?}  200
 ```
 
-★ Feedback KHONG tu dong sua knowledge base -- doi trang thai chi de theo doi,
+[!] Feedback KHONG tu dong sua knowledge base -- doi trang thai chi de theo doi,
 sua bai luat (neu can) van la thao tac rieng qua `/admin/legal/articles/:id`.
 
 ## 13. ENDPOINT ADMIN ANALYTICS — `/api/admin/analytics/overview` (B5, A01 nang cap, role admin)
@@ -482,7 +488,7 @@ GET /admin/analytics/overview?days=7   200
   "fallbackCount": 10,
   "fallbackRate": 0.238,
   "avgLatencyMs": 1450,
-  "costEstimateUsd": 0,  // ★ luon 0 -- provider Gemini/OpenAI chua tra usage tokens, xem docs/PROGRESS.md muc "No ky thuat"
+  "costEstimateUsd": 0,  // [!] luon 0 -- provider Gemini/OpenAI chua tra usage tokens, xem docs/PROGRESS.md muc "No ky thuat"
   "pendingFeedbackCount": 3,
   "topFallbackQuestions": [{ "question": "...", "count": 4 }]
 }
@@ -515,12 +521,12 @@ GET /support-locations?country=&type=   200 -- fallback khi tu choi GPS,
 ```
 POST /admin/locations/bulk-import {rows:[LocationInput...]}   200
      { createdCount, createdIds, skipped:[{index,name,reason}] } --
-     ★ moi dong xu ly DOC LAP, dong loi bi bo qua kem ly do thay vi lam hong
+     [!] moi dong xu ly DOC LAP, dong loi bi bo qua kem ly do thay vi lam hong
        ca file (Rule 7 -- khong "tat ca hoac khong gi" voi du lieu nguoi go tay).
 POST /admin/locations/bulk-verify {ids:[...]}   200 { verifiedCount }
 ```
 
-★ Validate khi tao/sua 1 diem (khong ap dung cho tung dong bulk-import, xem tren):
+[!] Validate khi tao/sua 1 diem (khong ap dung cho tung dong bulk-import, xem tren):
 `name` + `address` bat buoc, toa do phai hop le (lat [-90,90], lng [-180,180]),
 va can IT NHAT 1 trong 2: `phone` hoac `website` -- diem chi co ten+dia chi
 khong "Goi ngay" duoc, giam gia tri tinh nang SOS.
@@ -585,6 +591,13 @@ KHONG goi duoc endpoint nay (401 UNAUTHORIZED) -- man hinh tu chan, hien
 banner moi dang nhap thay vi goi API roi nhan loi.
 
 ## 19. ENDPOINT TRANSLATOR — `/api/translate`, `/api/quick-phrases/*` (B7)
+
+Việt–Anh hai chiều độc lập với quốc gia. `from`/`to` nhận mã
+`vi/en/ko/ja/th/zh/fr/de`, mã vùng như `en-US`, hoặc tên hiển thị tương ứng
+của client cũ. Ngôn ngữ khác trả VALIDATION_ERROR. Cùng ngôn ngữ trả nguyên
+văn, không gọi AI. `text` dịch đầy đủ; `phrase` ưu tiên cách nói tự nhiên,
+lịch sự nhưng không bỏ thông tin. Lượt gọi AI tính quota DB chung với chat.
+Response giữ nguyên. Bộ câu mẫu mở offline: `docs/TRANSLATION_SOURCES.md`.
 
 ```
 POST /translate {text, from, to, mode:'text'|'phrase'}   can dang nhap

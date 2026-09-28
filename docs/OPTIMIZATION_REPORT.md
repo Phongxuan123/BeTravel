@@ -1,31 +1,24 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
-> Trạng thái hiện hành: xem **Rà soát 28/09/2026** ngay dưới đây và
+> Trạng thái hiện hành: xem **Rà soát 29/09/2026** ngay dưới đây và
 > `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
 
-## Quét test toàn dự án 28/09/2026 — viết test, tìm lỗi, sửa
+## Rà soát 29/09/2026 — dịch và chia sẻ vị trí
 
-Phạm vi: bổ sung test cho module thuần chưa có test (chuẩn hóa tiếng Việt,
-chunking, RRF, phân trang, guard, parse JSON LLM; date/format/password mobile;
-apiClient admin) và test hồi quy chạy DB. Mỗi lỗi dưới đây có test fail trước
-khi sửa, pass sau khi sửa (đã chạy đối chứng bằng cách tạm gỡ phần sửa).
-
-| Nhóm/file | Loại lỗi và nguyên nhân | Sửa và bằng chứng |
+| File/nhóm | Lỗi hoặc thiếu sót | Cách sửa và bằng chứng |
 |---|---|---|
-| `backend/src/utils/textNormalize.js`, `publicContent.service.js`, `rag/search/memory.driver.js` | Data: NFD không tách "đ" --> tìm "dang ky" không khớp "Đăng ký" | Đổi đ/Đ --> d; tìm kiếm khớp cả "d" lẫn "đ" để bài/chunk lưu trước bản sửa không mất kết quả; `regression.sweep.test.js` |
-| `backend/src/rag/guard.js` | W5 (chống ảo giác): danh sách đơn vị tiền lúc phát hiện và lúc đối chiếu lệch nhau --> "900.000₫ [S1]" lọt qua dù nguồn ghi số khác | Một hằng `CURRENCY_UNITS` dùng chung; `unit.textAndRag.test.js` (₫, $) |
-| `backend/src/services/chat.service.js` | Logic: phát hiện nước khác bằng chuỗi con không dấu --> nước "Lào" làm mọi câu hỏi "lao động" bị từ chối | `containsPhrase`: ranh giới từ, so giữ dấu trước, chỉ so không dấu khi cả câu gõ không dấu |
-| `backend/src/services/auth.service.js` | Runtime: Google login email "ab@..." sinh username 2 ký tự, vi phạm minlength 3 | Bỏ hàm sinh username riêng, dùng chung `generateUniqueUsername` (Rule 3) |
-| `backend/package.json`, `scripts/run-tests.js` | Tooling: `node --test "test/**/*.test.js"` không chạy trên Windows/Node 20 ("Could not find") | Script tự liệt kê file test, chạy giống nhau mọi OS |
-| `backend/test/setup.js` | Test phụ thuộc `backend/.env`: file import tĩnh làm env.js validate trước khi DB tạm gán URI | URI giữ chỗ chỉ để qua validate; kết nối vẫn dùng DB tạm |
+| `mobile/src/app/sos/index.tsx`, `settings/index.tsx` | Công tắc chia sẻ là state giả, gợi ý gửi tự động cho 2 liên hệ nhưng không có luồng gửi; SOS trắng khi thiếu quốc gia | Thay bằng điều hướng route chia sẻ, sửa mô tả quyền riêng tư; fallback SOS vẫn cho mở chia sẻ |
+| `app/sos/share-location.tsx`, `features/sos/locationShare.ts` | Chưa có chức năng gửi vị trí thực tế | Snapshot, preview, quyền foreground, timeout, bỏ response muộn, kiểm tuổi/coords trước gửi, khóa bấm lặp, xóa khi rời màn hình/nền; test quyền/hủy/GPS cũ/tắt/lỗi chia sẻ |
+| `mobile/app.json` | Chuỗi xin quyền chỉ mô tả tìm hỗ trợ, thiếu chia sẻ/cảnh báo | Cập nhật mục đích; không bật quyền nền hoặc thêm native dependency |
+| `app/translate/index.tsx` | Dịch phụ thuộc quốc gia, phrase đảo chiều sai, response cũ ghi đè câu mới, nhãn offline gây hiểu nhầm | Việt-Anh độc lập; đảo source/target; generation guard; remount account/country; nhãn offline đúng, lỗi copy/speech; test UI |
+| `features/translate`, `lib/api/translate.ts`, mock client | Thiếu nguồn offline Việt-Anh có license | 10 cặp exact-match Tatoeba có nguồn và giấy phép; 20 chiều dịch được kiểm không gọi mạng; không bỏ dấu |
+| Backend translate validator/controller/service | from/to tùy ý; output chỉ kiểm truthy; endpoint không tính ngân sách AI chung | Allowlist + normalize, Zod output, cùng ngôn ngữ không gọi AI; DB quota trước provider; test số lượt, hết quota, ngôn ngữ lạ và output sai |
+| Backend translation resource | Prompt thiếu chỉ dẫn ngữ pháp và từ vựng cụ thể | UD Vietnamese grammar diễn đạt lại + sáu mục từ từ câu nguồn; test resource mobile/backend bằng nhau |
 
-Kiểm tra cuối: backend lint sạch, **174/174** (gồm golden KR); mobile typecheck
-đạt, **106/106** (22 suite); admin typecheck/lint/build đạt, **16/16** chạy bằng
-Node 22. Máy local đang ở Node 20.19.6 (dự án yêu cầu >=22.13): jsdom 30 của
-admin không khởi động được trên Node 20 (`markAsUncloneable`) -- lỗi môi trường,
-không phải mã nguồn. `prettier --check` báo cả file không đụng tới do
-`core.autocrlf=true` (CRLF) so với `endOfLine: lf`; bỏ qua đầu dòng thì file mới
-sửa đạt. `auth.service.js`, `publicContent.service.js`, `memory.driver.js` vốn
-lệch format từ trước, không format lại trong commit logic này.
+Theo Rule 7/8/9/11: lỗi có trạng thái rõ, giữ mô hình ba workspace, không thêm dịch vụ theo dõi hay thư viện; chú thích quyết định quan trọng bằng tiếng Việt. Không lưu tọa độ hoặc câu dịch mới vào DB nên không tạo xung đột dữ liệu lâu dài.
+
+Kiểm tra: backend 156 test + lint; mobile 124 test + lint/typecheck; admin 9 test + lint/typecheck/build; export iOS/Android đạt. Metro có warning NO_COLOR/FORCE_COLOR của môi trường. Hai lỗi kiểm tra ban đầu (React purity Date.now trong render, parser ESLint không hỗ trợ import-attributes) đã được sửa bằng lazy initializer và đọc JSON bằng URL cố định; không hạ quy tắc lint.
+
+Giới hạn: UAT điện thoại/provider thật/Atlas còn mở; dependency security audit chưa được phép gửi registry ở phiên trước; mobile web chưa có react-native-web (`expo export --platform all` báo thiếu dependency), không phải target đã nghiệm thu; không tuyên bố không còn mọi lỗi. Xem `LOCATION_SHARING.md`, `TRANSLATION_SOURCES.md`, `ACCEPTANCE.md` và đầu `PROGRESS.md`.
 
 ## Rà soát 28/09/2026 — bảo vệ dữ liệu và hoàn thiện favorites
 
@@ -594,7 +587,12 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
-| 2026.09.28b | 28/09/2026 | Quét test | Test module thuần + hồi quy; sửa chuẩn hóa "đ", guard đơn vị tiền, phát hiện tên nước, username Google, script test Windows; 174/106/16 test |
+| 2026.09.29-quy | 29/09/2026 | Quét test (nhánh Quy) | Test module thuần + hồi quy; guard đối chiếu đủ đơn vị tiền (dùng chung CURRENCY_UNIT); containsPhrase cho tên nước; username Google; script test đa nền tảng; 255(+1 todo)/153/18 test |
+| 2026.09.28-qa5 | 28/09/2026 | QA-5 (07_QA_BugHunt) | M16-M17 + E2E + edge; update schema incident/geo-alert không còn ghi đè mảng rỗng; `parseEnv` + ràng buộc production; smoke test import server; Rule 12 (README/contracts/src/UI); commit format backend riêng (BASE-01); 227(+1 todo)/111/11 test, export iOS/Android đạt |
+| 2026.09.28-qa4 | 28/09/2026 | QA-4 (07_QA_BugHunt) | M13-M15; ErrorBoundary cấp route (Thử lại + SOS); helper `openExternal` chuẩn hóa `tel:` và bắt lỗi Linking; màn hình chỉ import từ `@/lib/data`; admin xác nhận xác minh hàng loạt/re-index, lấy quốc gia từ API; `/auth/refresh` bỏ cờ nội bộ; mọi fixture có backend + client; 214(+1 todo)/111/11 test |
+| 2026.09.28-qa3 | 28/09/2026 | QA-3 (07_QA_BugHunt) | M08-M12; mobile cache danh sách quốc gia + SOS Hub có màn dự phòng thay vì trắng; translate giới hạn from/to; favorites dùng chung projection bỏ trường nội bộ; trip chỉ tới quốc gia active; tái hiện nợ H-09.a bằng test `todo`; 211(+1 todo)/102/9 test |
+| 2026.09.28-qa2 | 28/09/2026 | QA-2 (07_QA_BugHunt) | M05-M07 + mutation testing RAG (3 đột biến, 2 sống sót --> thêm test); guard bắt thêm ký hiệu tiền đứng trước/phạt tù/số bằng chữ; retrieval bỏ chunk khác embedding model + báo lỗi sai số chiều; tìm kiếm khớp d/đ, giới hạn q 200; bài luật công khai bỏ trường nội bộ (contract + fixture); mobile chat chặn gửi trùng + nút hỗ trợ khẩn cấp khi needsOfficialHelp; 198/99/9 test |
+| 2026.09.28-qa1 | 28/09/2026 | QA-1 (07_QA_BugHunt) | Baseline 3 workspace + detector D01-D40 + M01-M04; 23 test backend + 1 test mobile mới; sửa E11000 gắn nhãn sai, dò tài khoản bị khóa khi đăng nhập, xóa Country/Topic đang tham chiếu (+ hiện lỗi xóa ở admin), gỡ PII/mật khẩu mặc định khỏi tài liệu và `env.js`; tồn đọng S2-S4 ở docs/QA_REPORT.md mục 4.3; 174/95/9 test |
 | 2026.09.28 | 28/09/2026 | Rà soát sau B9 | Favorites/content visibility, incident/CAS, GeoAlert, GPS/consent, dismiss, saved filter; 151/94/9 test |
 | v0.2.0    |      | —     | Trạng thái ban đầu |
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |

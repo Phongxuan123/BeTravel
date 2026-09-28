@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, Pressable, Linking } from 'react-native';
+import { ScrollView, View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { colors } from '@/lib/theme';
+import { openPhone } from '@/lib/openExternal';
 import { useCountry } from '@/lib/countryContext';
 import { useAuth } from '@/lib/auth';
 import { fetchTrips, fetchAlerts, fetchArticles, fetchCountries } from '@/lib/data';
@@ -213,7 +214,7 @@ export default function HomeScreen() {
               label={`Cảnh sát ${country?.emergencyNumbers.police ?? ''}`}
               tone="red"
               icon={<Phone size={18} color={colors.danger} />}
-              onPress={() => country && Linking.openURL(`tel:${country.emergencyNumbers.police}`)}
+              onPress={() => void openPhone(country?.emergencyNumbers.police)}
             />
             <HelpTile label="Hỗ trợ gần bạn" tone="green" icon={<MapPin size={18} color={colors.success} />} onPress={() => router.push('/sos/map')} />
             <HelpTile label="Dịch khẩn cấp" tone="blue" icon={<Languages size={18} color={colors.primary} />} onPress={() => router.push('/translate')} />

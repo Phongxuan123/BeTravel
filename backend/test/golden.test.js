@@ -21,7 +21,7 @@ import { COUNTRIES, KR_TOPICS, KR_ARTICLES, buildBodyMd } from "../scripts/seed-
 import * as chatService from "../src/services/chat.service.js";
 
 /*
- * ★ GOLDEN TEST (docs/03_Contracts_v2.md muc 13, CLAUDE.md muc 4.1 AC-04).
+ * [!] GOLDEN TEST (docs/03_Contracts_v2.md muc 13, CLAUDE.md muc 4.1 AC-04).
  * Chay toan bo pipeline chat THAT (chat.service.js) tren du lieu KR THAT
  * (tai su dung dung noi dung trong scripts/seed-content.js -- Rule 3 DRY,
  * khong bia mot bo du lieu gia lap song song) voi SEARCH_DRIVER=memory +
@@ -63,7 +63,10 @@ test("golden KR", async (t) => {
       bodyMd: buildBodyMd(a),
     });
 
-    const pieces = chunkArticle(article.toObject(), { countryName: "Hàn Quốc", topicName: a.topicSlug });
+    const pieces = chunkArticle(article.toObject(), {
+      countryName: "Hàn Quốc",
+      topicName: a.topicSlug,
+    });
     const embeddings = await embeddingProvider.embedBatch(pieces.map((p) => p.textForEmbedding));
 
     await LegalChunk.insertMany(

@@ -280,7 +280,10 @@ export const incidentCreateSchema = z.object({
   status: z.enum(["draft", "published"]).optional(),
 });
 
+// Zod 4: .partial() VAN ap .default([]) cua schema tao -- PATCH khong gui
+// `steps` se ghi de thanh mang rong (mat toan bo buoc). Khai lai khong default.
 export const incidentUpdateSchema = incidentCreateSchema.partial().extend({
+  steps: z.array(incidentStepSchema).optional(),
   updatedAt: z.iso.datetime().optional(),
 });
 
@@ -343,7 +346,10 @@ export const geoAlertCreateSchema = geoAlertBaseSchema
     path: ["effectiveTo"],
   });
 
-export const geoAlertUpdateSchema = geoAlertBaseSchema.partial();
+// Nhu incidentUpdateSchema: bo default([]) de PATCH khong xoa behaviorsToAvoid.
+export const geoAlertUpdateSchema = geoAlertBaseSchema.partial().extend({
+  behaviorsToAvoid: z.array(z.string().trim()).optional(),
+});
 
 export const geoAlertListQuerySchema = paginationQuerySchema.extend({
   countryCode: countryCodeSchema.optional(),

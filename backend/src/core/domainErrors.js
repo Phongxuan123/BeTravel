@@ -98,6 +98,12 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   ],
 });
 
+const DUPLICATE_FIELD_LABELS = Object.freeze({
+  email: "Email",
+  phone: "Số điện thoại",
+  username: "Username",
+});
+
 /*
  * Chuyển lỗi bất kỳ thành AppError nếu nhận ra được; không nhận ra thì trả về
  * nguyên lỗi để error middleware coi là INTERNAL_ERROR. Xử lý riêng lỗi trùng
@@ -111,10 +117,15 @@ export const toAppError = (error) => {
   }
 
   if (error?.code === 11000) {
+    // Factory CRUD admin cung di qua day (trung ma quoc gia, slug chu de...) --
+    // field la khong duoc gan nhan "Username", tra thong bao trung chung.
     const duplicatedField = Object.keys(error.keyPattern ?? {})[0];
-    const fieldLabel = { email: "Email", phone: "Số điện thoại" }[duplicatedField] ?? "Username";
+    const fieldLabel = DUPLICATE_FIELD_LABELS[duplicatedField];
+    const message = fieldLabel
+      ? `${fieldLabel} đã được sử dụng`
+      : "Dữ liệu bị trùng với bản ghi đã có";
 
-    return new AppError(ErrorCode.CONFLICT, `${fieldLabel} đã được sử dụng`);
+    return new AppError(ErrorCode.CONFLICT, message);
   }
 
   return error;
