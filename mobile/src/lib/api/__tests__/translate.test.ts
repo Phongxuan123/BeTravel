@@ -1,6 +1,7 @@
 import { fetchQuickPhrases, translateText } from '../translate';
 import { apiRequest } from '../http';
 import { getJSON, setJSON } from '@/lib/storage';
+import { englishPhrases } from '@/features/translate/phrasebook';
 
 jest.mock('../http', () => ({ apiRequest: jest.fn() }));
 jest.mock('@/lib/storage', () => ({
@@ -10,6 +11,16 @@ jest.mock('@/lib/storage', () => ({
 }));
 
 const raw = { _id: 'id1', countryCode: 'KR', vi: 'Tôi cần giúp đỡ', translated: '도와주세요', phonetic: 'Dowajuseyo' };
+
+test('câu Việt-Anh có sẵn không gọi mạng kể cả khi API đang offline', async () => {
+  jest.clearAllMocks();
+  (apiRequest as jest.Mock).mockRejectedValue(new Error('offline'));
+  for (const phrase of englishPhrases) {
+    expect((await translateText(phrase.vi, { countryCode: 'JP', from: 'vi', to: 'en' })).translated).toBe(phrase.en);
+    expect((await translateText(phrase.en, { countryCode: 'KR', from: 'en', to: 'vi' })).translated).toBe(phrase.vi);
+  }
+  expect(apiRequest).not.toHaveBeenCalled();
+});
 
 test('quick phrases duoc cache lai va dung duoc khi ngoai tuyen', async () => {
   (apiRequest as jest.Mock).mockResolvedValueOnce([raw]);

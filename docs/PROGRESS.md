@@ -1,6 +1,38 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-28 · Phiên: QA-1 (docs/07_QA_BugHunt.md: Pha 0, Pha 1, M01-M04)
+Cập nhật lần cuối: 2026-09-29 · Nhánh: `main` sau khi gộp PR QA (#21) và `feature/translation-location-sharing`.
+
+## Phiên 28–29/09 — dịch hai chiều và chia sẻ vị trí (hiện hành)
+
+Tiến độ triển khai/kiểm tra local: `[######] 6/6`. Nghiệm thu thiết bị/dịch vụ thật: **còn mở**.
+
+| Bước | Trạng thái | Bằng chứng |
+|---|---|---|
+| Đọc cấu trúc và quy tắc | xong | CLAUDE, AGENTS mobile, Docs kiến trúc/audit/tối ưu, contracts; giữ 3 workspace độc lập |
+| Dịch Việt - Anh hai chiều | xong | Mười cặp câu Tatoeba offline, UD grammar, chuẩn hóa ngôn ngữ, quota và chống response cũ |
+| Chia sẻ vị trí thực tế | xong | GPS foreground -> preview -> native share; bỏ công tắc giả SOS/Cài đặt; không cần backend mới |
+| Rà soát lỗi và hồi quy | xong trong phạm vi local | Quyền/GPS sai-cũ/hủy/race; backend auth/RBAC/quota/data tests; admin lint/typecheck/test/build |
+| Đóng gói | xong | Expo export iOS và Android thành công; không phải native build đã ký hoặc kiểm thử điện thoại |
+| Ghi sổ bàn giao | xong | LOCATION_SHARING, TRANSLATION_SOURCES, OPTIMIZATION_REPORT, ACCEPTANCE và contracts |
+
+### Bằng chứng kiểm tra phiên này
+
+- Backend: lint sạch; **156/156 test** với MongoDB tạm và mock provider, không dùng Atlas.
+- Mobile: lint/typecheck sạch; **124 test / 25 suites**; test nguồn offline, UI đổi chiều/response cũ và GPS/share.
+- Admin: lint/typecheck sạch; **9/9 test / 4 files**, production build đạt.
+- iOS export: `/tmp/betravel-share-ios-final-20260929`; Android: `/tmp/betravel-share-android-final-20260929` (artifact tạm, không commit).
+- Metro in cảnh báo biến môi trường NO_COLOR/FORCE_COLOR trùng nhau; không có lỗi bundling. Không sửa thư viện chỉ để che cảnh báo môi trường.
+- Lệnh thử `expo export --platform all` dừng vì thiếu `react-native-web`; đây là cấu hình mobile native hiện tại. Kiểm riêng hai nền tảng iOS/Android; chưa bổ sung hoặc chứng nhận mobile web.
+
+### Điểm vào cho người/AI tiếp theo
+
+- [Cách dùng và vận hành chia sẻ vị trí](LOCATION_SHARING.md): route `mobile/src/app/sos/share-location.tsx`; xử lý dữ liệu ở `features/sos/locationShare.ts`. Không streaming nền, không link thu hồi/hết hạn, không tự gửi tin.
+- [Nguồn mở và kiến trúc dịch](TRANSLATION_SOURCES.md): UI `app/translate/index.tsx`, client `lib/api/translate.ts`, backend `services/translate.service.js`, resources `translation/vi-en.json`.
+- Cấu trúc tổng thể ở bảng kiến trúc của phiên lịch sử ngay bên dưới vẫn áp dụng; không migration, không thêm collection hay npm dependency.
+- Cần điện thoại iOS/Android/iPad để nghiệm thu native share, GPS approximate, timeout/chuyển nền, Zalo/SMS và phát âm. Cần build native mới để áp dụng chuỗi xin quyền iOS vừa sửa.
+- Chưa đánh giá dịch tự do bằng provider thật; test mock chỉ chứng minh pipeline. Chưa kiểm Atlas/production hay dữ liệu SOS ngoài máy. Maps SDK key hiện là placeholder; link Google Maps của tính năng chia sẻ không cần key đó.
+- npm audit vẫn chưa có kết quả mới: auto-review trước đó từ chối gửi metadata dependency tới registry. Không tự chạy lại để vượt hạn chế. Expo Doctor chưa có CLI local; không coi kết quả lịch sử là kết quả phiên này.
+- Không xác nhận toàn hệ điều hành hoặc mọi lỗi có thể có; phạm vi đã rà là mã nguồn, cấu hình và kiểm thử ba workspace. Các phần cần dữ liệu/thao tác thật giữ trong ACCEPTANCE.
 
 ## Đợt QA (docs/07_QA_BugHunt.md) — chi tiết ở docs/QA_REPORT.md
 
@@ -22,11 +54,12 @@ luật KR) và QA2-M06-05; hợp đồng `public.legalArticle.json` đã bỏ tr
 Thay đổi cấu hình: `SEED_ADMIN_PASSWORD` không còn giá trị mặc định -- để trống thì `npm run seed`
 bỏ qua bước tạo admin.
 
-## Lịch sử phiên trước
+## Lịch sử phiên 28/09 — bảo vệ dữ liệu và hoàn thiện favorites
+
 Nhánh: `feature/audit-20260928`, tách từ `feature/trip-management` tại `bbe3378`.
 Nhánh gốc ahead origin 18 commit trước phiên; không tự pull/rebase/push hoặc merge.
 
-## Phiên 28/09 — bàn giao hiện hành
+### Bàn giao phiên trước
 
 Tiến độ mã nguồn và kiểm tra local: `[######] 6/6`.
 Tiến độ phát hành/kiểm chứng ngoài máy: **xong một phần**, không phải 100% sản phẩm.

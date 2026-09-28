@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "license": "CC BY 2.0 FR",
+  "licenseUrl": "https://creativecommons.org/licenses/by/2.0/fr/",
+  "source": "Tatoeba contributors",
+  "retrievedAt": "2026-09-28",
+  "notice": "Câu mẫu cộng đồng, không phải bản dịch được chứng nhận. Giữ nguyên văn; chỉ chuẩn hóa Unicode và khoảng trắng khi tra cứu.",
+  "grammar": [
+    {
+      "id": "segmentation",
+      "source": "https://universaldependencies.org/vi/index.html",
+      "instruction": "Vietnamese spaces can separate syllables within a word. Translate multi-syllable expressions as a unit, not word by word."
+    },
+    {
+      "id": "polarity",
+      "source": "https://universaldependencies.org/vi/index.html",
+      "instruction": "Preserve Vietnamese negation such as không, chẳng and không thể; distinguish cannot from can."
+    },
+    {
+      "id": "modality",
+      "source": "https://universaldependencies.org/vi/index.html",
+      "instruction": "Preserve the distinction between obligation (phải), ability (có thể), advice (nên) and need (cần). Do not strengthen or weaken these meanings."
+    }
+  ],
+  "vocabulary": [
+    {
+      "vi": "hộ chiếu",
+      "en": "passport",
+      "exampleEnglishId": 13709342
+    },
+    {
+      "vi": "khách sạn",
+      "en": "hotel",
+      "exampleEnglishId": 13709342
+    },
+    {
+      "vi": "bệnh viện",
+      "en": "hospital",
+      "exampleEnglishId": 11176745
+    },
+    {
+      "vi": "giúp đỡ",
+      "en": "help",
+      "exampleEnglishId": 2111166
+    },
+    {
+      "vi": "hiểu",
+      "en": "understand",
+      "exampleEnglishId": 2701641
+    },
+    {
+      "vi": "tiếng Pháp",
+      "en": "French",
+      "exampleEnglishId": 5958308
+    }
+  ],
+  "phrases": [
+    {
+      "en": "Help me!",
+      "vi": "Cứu tôi với!",
+      "enId": 1126684,
+      "viId": 1550859
+    },
+    {
+      "en": "Help us.",
+      "vi": "Giúp chúng tôi với.",
+      "enId": 2187193,
+      "viId": 13338312
+    },
+    {
+      "en": "We need emergency assistance.",
+      "vi": "Chúng tôi cần giúp đỡ khẩn cấp.",
+      "enId": 2953717,
+      "viId": 4786061
+    },
+    {
+      "en": "My passport is at the hotel.",
+      "vi": "Hộ chiếu của tôi đang ở khách sạn.",
+      "enId": 13709342,
+      "viId": 13710217
+    },
+    {
+      "en": "I was at the hospital.",
+      "vi": "Tôi đã ở bệnh viện.",
+      "enId": 11176745,
+      "viId": 11262292
+    },
+    {
+      "en": "Yes, I understand.",
+      "vi": "Vâng, tôi hiểu.",
+      "enId": 2701641,
+      "viId": 13351036
+    },
+    {
+      "en": "I understand French.",
+      "vi": "Tôi hiểu tiếng Pháp.",
+      "enId": 5958308,
+      "viId": 13340818
+    },
+    {
+      "en": "Thank you!",
+      "vi": "Cám ơn!",
+      "enId": 374827,
+      "viId": 510444
+    },
+    {
+      "en": "I heard they don't have a passport.",
+      "vi": "Tôi nghe nói họ không có hộ chiếu.",
+      "enId": 13724862,
+      "viId": 13726512
+    },
+    {
+      "en": "Tom is helping.",
+      "vi": "Tom đang giúp.",
+      "enId": 5854386,
+      "viId": 13599296
+    }
+  ]
+}

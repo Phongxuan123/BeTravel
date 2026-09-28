@@ -4,10 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconTile } from '@/components/ui/IconTile';
 import { Badge } from '@/components/ui/Badge';
-import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
@@ -26,7 +26,7 @@ export default function SosHubScreen() {
   const queryClient = useQueryClient();
 
   // Chua co du lieu quoc gia (mo app lan dau khi mat mang): KHONG duoc tra man
-  // hinh trang -- van giu nut quay lai va cho thu tai lai.
+  // hinh trang -- van giu nut quay lai, cho thu tai lai va chia se vi tri GPS.
   if (!country) {
     return (
       <AppShell active="sos">
@@ -44,6 +44,9 @@ export default function SosHubScreen() {
           >
             <Text className="font-body-bold text-white">Thử lại</Text>
           </Pressable>
+          <View className="mt-3">
+            <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
+          </View>
         </View>
       </AppShell>
     );
@@ -156,16 +159,15 @@ export default function SosHubScreen() {
             </View>
           </View>
 
-          <View className="mt-4 flex-row items-center gap-3 rounded-lg border border-line bg-surface p-4">
+          <Pressable accessibilityRole="button" onPress={() => router.push('/sos/share-location')} className="mt-4 flex-row items-center gap-3 rounded-lg border border-line bg-surface p-4">
             <IconTile tone="blue">
               <Share2 size={20} color={colors.primary} />
             </IconTile>
             <View className="flex-1">
               <Text className="text-base font-body-bold text-ink">Chia sẻ vị trí với người thân</Text>
-              <Text className="text-[13px] text-muted">Tính năng đang phát triển</Text>
+              <Text className="text-[13px] text-muted">Lấy GPS, xem trước và chọn người nhận</Text>
             </View>
-            <Switch value={false} onValueChange={() => router.push({ pathname: '/coming-soon', params: { title: 'Chia sẻ vị trí' } })} accessibilityLabel="Chia sẻ vị trí với người thân" />
-          </View>
+          </Pressable>
 
           <View className="mt-6">
             <Text className="mb-3 text-base font-body-bold text-ink">Địa điểm hỗ trợ gần bạn</Text>
