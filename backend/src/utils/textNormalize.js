@@ -21,3 +21,21 @@ export const foldDStroke = (text) => text.replace(/đ/g, "d");
 
 // Chuoi da escape regex --> moi "d"/"đ" khop ca hai dang.
 export const toDStrokeInsensitivePattern = (escapedText) => escapedText.replace(/[dđ]/g, "[dđ]");
+
+const toWordSequence = (text) => ` ${text.replace(/[^\p{L}\p{N}]+/gu, " ").trim()} `;
+const lowerKeepAccents = (input) => (input ?? "").toString().normalize("NFC").toLowerCase();
+const hasVietnameseMarks = (text) => normalizeVi(text) !== lowerKeepAccents(text).trim();
+
+/*
+ * Kiem tra `text` co chua cum tu `phrase` theo RANH GIOI TU. So khop chuoi con
+ * tran se sai ("uc" nam trong "thuc"), va bo dau cung sai: "Lào" -> "lao"
+ * trung voi "lao động". Vi vay so GIU DAU truoc; chi so khong dau khi nguoi
+ * dung go ca cau khong dau (khi do khong con cach phan biet nao khac).
+ */
+export const containsPhrase = (text, phrase) => {
+  const accentedPhrase = toWordSequence(lowerKeepAccents(phrase));
+  if (accentedPhrase.trim() === "") return false;
+  if (toWordSequence(lowerKeepAccents(text)).includes(accentedPhrase)) return true;
+  if (hasVietnameseMarks(text)) return false;
+  return toWordSequence(normalizeVi(text)).includes(toWordSequence(normalizeVi(phrase)));
+};

@@ -11,6 +11,10 @@ process.env.NODE_ENV = "test";
 process.env.LLM_PROVIDER = "mock";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
+// File test import model/service tinh (truoc startTestDb) lam env.js validate
+// ngay luc nap: may khong co backend/.env se hong ca file. URI that cua DB tam
+// van do startTestDb gan va dung de ket noi; gia tri nay chi de qua validate.
+process.env.MONGODB_URI ??= "mongodb://127.0.0.1:27017/betravel-test-placeholder";
 process.env.JWT_ACCESS_SECRET ??= "test-only-secret-please-change-in-real-env";
 process.env.AUTH_TRANSPORT ??= "both";
 // Nhỏ có chủ đích: env.js đóng băng giá trị này lúc import đầu tiên nên test

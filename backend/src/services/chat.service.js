@@ -10,7 +10,7 @@ import { buildSystemPrompt, buildUserPrompt, parseLlmJson } from "../rag/prompt.
 import { guardAnswer, FALLBACK_MESSAGE, DEFAULT_DISCLAIMER } from "../rag/guard.js";
 import { getLlmProvider } from "../rag/llm/index.js";
 import { getEmbeddingProvider } from "../rag/embedding/index.js";
-import { normalizeVi } from "../utils/textNormalize.js";
+import { containsPhrase, normalizeVi } from "../utils/textNormalize.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
 import { FallbackReason, ChatRole } from "../core/constants.js";
 import { env } from "../core/env.js";
@@ -94,8 +94,7 @@ async function detectOtherCountryMention(question, currentCountry) {
   const otherCountries = await Country.find({ code: { $ne: currentCountry.code } })
     .select("code name")
     .lean();
-  const normalizedQuestion = normalizeVi(question);
-  return otherCountries.find((c) => normalizedQuestion.includes(normalizeVi(c.name))) ?? null;
+  return otherCountries.find((c) => containsPhrase(question, c.name)) ?? null;
 }
 
 async function persistAssistantMessage({ sessionId, result, model, latencyMs }) {

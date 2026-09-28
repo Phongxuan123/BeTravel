@@ -27,6 +27,14 @@ const QUANTITATIVE_CLAIM = new RegExp(
   "iu",
 );
 
+// Doi chieu so tien voi nguon dung CUNG don vi voi luc phat hien: danh sach
+// rieng tung thieu "$", "₫", "円", "บาท" dat sau so --> "900.000₫ [S1]" duoc
+// nhan la dinh luong nhung lot qua buoc doi chieu du nguon ghi so khac.
+const AMOUNT = new RegExp(
+  String.raw`\d[\d.,]*\s*(?:${CURRENCY_UNIT}|triệu|nghìn)|[₩$฿¥€]\s*\d[\d.,]*`,
+  "giu",
+);
+
 const MARKER = /\[S(\d+)\]/g;
 
 export const FALLBACK_MESSAGE =
@@ -84,11 +92,7 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
     if (!QUANTITATIVE_CLAIM.test(prose)) continue;
     const markers = [...block.matchAll(/\[S(\d+)\]/g)].map((match) => `S${match[1]}`);
     const sourceText = markers.map((marker) => retrieved.get(marker)?.text ?? "").join(" ");
-    const amounts = [
-      ...prose.matchAll(
-        /\d[\d.,]*\s*(?:KRW|won|원|THB|baht|USD|SGD|JPY|yen|VNĐ|VND|đồng|triệu|nghìn)|[₩$฿¥€]\s*\d[\d.,]*/giu,
-      ),
-    ].map(([amount]) =>
+    const amounts = [...prose.matchAll(AMOUNT)].map(([amount]) =>
       amount
         .match(/\d[\d.,]*/)[0]
         .replace(/[.,]+$/g, "")

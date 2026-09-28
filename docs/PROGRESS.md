@@ -2,6 +2,34 @@
 
 Cập nhật lần cuối: 2026-09-29 · Nhánh: `main` sau khi gộp PR QA (#21) và `feature/translation-location-sharing`.
 
+## Nhánh Quy — quét test và gộp main (29/09)
+
+Gộp `main` (QA #21, dịch/chia sẻ vị trí #22) vào nhánh `Quy`; xung đột lấy
+bản `main`. `main` đã tự sửa lỗi "đ" (gập d/đ lúc so khớp, không đổi
+normalizeVi) nên bỏ cách sửa của nhánh này. Giữ lại phần không trùng:
+- Guard: bước đối chiếu số tiền dùng chung `CURRENCY_UNIT` với bước phát hiện
+  (bản main vẫn để "900.000₫ [S1]" hoặc "500$ [S1]" lọt khi nguồn ghi số khác).
+- Chat: phát hiện tên nước khác theo ranh giới từ, giữ dấu (`containsPhrase`),
+  tránh "Lào" chặn nhầm câu hỏi "lao động".
+- Google login với email ngắn (username < 3 ký tự); `npm test` backend chạy
+  trên Windows/Node 20; test không cần `backend/.env`.
+- Kiểm tra: backend 255 pass (+1 todo có sẵn), mobile 153/153, admin 18/18
+  (Node 22); lint/typecheck/build đạt. Máy local vẫn Node 20.19.6, cần >=22.13.
+
+## Nhánh Quy — quét test và gộp main (29/09)
+
+Gộp `main` (QA #21, dịch/chia sẻ vị trí #22) vào nhánh `Quy`; xung đột lấy
+bản `main`. `main` đã tự sửa lỗi "đ" (gập d/đ lúc so khớp, không đổi
+normalizeVi) nên bỏ cách sửa của nhánh này. Giữ lại phần không trùng:
+- Guard: bước đối chiếu số tiền dùng chung `CURRENCY_UNIT` với bước phát hiện
+  (bản main vẫn để "900.000₫ [S1]" hoặc "500$ [S1]" lọt khi nguồn ghi số khác).
+- Chat: phát hiện tên nước khác theo ranh giới từ, giữ dấu (`containsPhrase`),
+  tránh "Lào" chặn nhầm câu hỏi "lao động".
+- Google login với email ngắn (username < 3 ký tự); `npm test` backend chạy
+  trên Windows/Node 20; test không cần `backend/.env`.
+- Kiểm tra: backend 255 pass (+1 todo có sẵn), mobile 153/153, admin 18/18
+  (Node 22); lint/typecheck/build đạt. Máy local vẫn Node 20.19.6, cần >=22.13.
+
 ## Phiên 28–29/09 — dịch hai chiều và chia sẻ vị trí (hiện hành)
 
 Tiến độ triển khai/kiểm tra local: `[######] 6/6`. Nghiệm thu thiết bị/dịch vụ thật: **còn mở**.
