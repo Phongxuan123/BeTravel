@@ -69,7 +69,9 @@ test("POST /api/feedback -- bao sai tin nhan CUA CHINH MINH thanh cong, xuat hie
   assert.equal(res.body.data.status, "pending");
 
   const { accessToken: adminToken } = await registerAndLogin(app, { role: "admin" });
-  const listRes = await request(app).get("/api/admin/feedback").set("Authorization", auth(adminToken));
+  const listRes = await request(app)
+    .get("/api/admin/feedback")
+    .set("Authorization", auth(adminToken));
   assert.equal(listRes.status, 200);
   assert.equal(listRes.body.data.length, 1);
   assert.equal(listRes.body.data[0].note, "Mức phạt ghi sai");
@@ -83,7 +85,12 @@ test("POST /api/feedback -- bao sai tin nhan CUA NGUOI KHAC bi tu choi (khong lo
   const res = await request(app)
     .post("/api/feedback")
     .set("Authorization", auth(attackerToken))
-    .send({ targetType: "chat_message", targetId: String(message._id), rating: "down", note: "spam" });
+    .send({
+      targetType: "chat_message",
+      targetId: String(message._id),
+      rating: "down",
+      note: "spam",
+    });
 
   assert.equal(res.status, 404);
   assert.equal(res.body.error.code, "NOT_FOUND");
@@ -104,7 +111,9 @@ test("GET/PATCH /api/admin/feedback/:id -- xem chi tiet kem tin nhan goc, doi tr
 
   const { accessToken: adminToken } = await registerAndLogin(app, { role: "admin" });
 
-  const detailRes = await request(app).get(`/api/admin/feedback/${feedback._id}`).set("Authorization", auth(adminToken));
+  const detailRes = await request(app)
+    .get(`/api/admin/feedback/${feedback._id}`)
+    .set("Authorization", auth(adminToken));
   assert.equal(detailRes.status, 200);
   assert.equal(detailRes.body.data.message.text, "Trả lời cần sửa [S1].");
 
@@ -117,7 +126,9 @@ test("GET/PATCH /api/admin/feedback/:id -- xem chi tiet kem tin nhan goc, doi tr
   assert.equal(patchRes.body.data.status, "resolved");
   assert.equal(patchRes.body.data.reviewerNote, "Đã sửa bài luật");
 
-  const auditRes = await request(app).get("/api/admin/audit").set("Authorization", auth(adminToken));
+  const auditRes = await request(app)
+    .get("/api/admin/audit")
+    .set("Authorization", auth(adminToken));
   const entry = auditRes.body.data.find((a) => a.entityType === "Feedback");
   assert.ok(entry, "phai co audit log cho thao tac doi trang thai feedback");
 });
@@ -125,7 +136,9 @@ test("GET/PATCH /api/admin/feedback/:id -- xem chi tiet kem tin nhan goc, doi tr
 test("GET /api/admin/analytics/overview -- tra ve so lieu AI ke ca khi chua co ai_events nao", async () => {
   const { accessToken: adminToken } = await registerAndLogin(app, { role: "admin" });
 
-  const res = await request(app).get("/api/admin/analytics/overview").set("Authorization", auth(adminToken));
+  const res = await request(app)
+    .get("/api/admin/analytics/overview")
+    .set("Authorization", auth(adminToken));
   assert.equal(res.status, 200);
   assert.equal(res.body.data.totalChats, 0);
   assert.equal(res.body.data.fallbackRate, 0);

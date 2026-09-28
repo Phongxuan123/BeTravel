@@ -22,7 +22,11 @@ export const create = async (req, res, next) => {
 
 export const remove = async (req, res, next) => {
   try {
-    await favoriteService.removeFavorite(req.user.userId, req.params.targetType, req.params.targetId);
+    await favoriteService.removeFavorite(
+      req.user.userId,
+      req.params.targetType,
+      req.params.targetId,
+    );
     return ok(res, { deleted: true });
   } catch (error) {
     next(toAppError(error));

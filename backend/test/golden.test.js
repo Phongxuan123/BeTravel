@@ -63,7 +63,10 @@ test("golden KR", async (t) => {
       bodyMd: buildBodyMd(a),
     });
 
-    const pieces = chunkArticle(article.toObject(), { countryName: "Hàn Quốc", topicName: a.topicSlug });
+    const pieces = chunkArticle(article.toObject(), {
+      countryName: "Hàn Quốc",
+      topicName: a.topicSlug,
+    });
     const embeddings = await embeddingProvider.embedBatch(pieces.map((p) => p.textForEmbedding));
 
     await LegalChunk.insertMany(

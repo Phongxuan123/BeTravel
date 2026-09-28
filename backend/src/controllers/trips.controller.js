@@ -20,7 +20,6 @@ export const create = async (req, res, next) => {
   }
 };
 
-
 export const update = async (req, res, next) => {
   try {
     const trip = await tripService.updateTrip(req.user.userId, req.params.id, req.body);

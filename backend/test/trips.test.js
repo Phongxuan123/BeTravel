@@ -37,7 +37,13 @@ test("tao chuyen di moi LUON isCurrent:false (giong hanh vi mock)", async () => 
   const res = await request(app)
     .post("/api/users/trips")
     .set("Authorization", auth(accessToken))
-    .send({ countryCode: "kr", destinationCity: "Seoul", destinationDetail: "Gangnam-gu", startDate: "2026-10-01", endDate: "2026-10-10" });
+    .send({
+      countryCode: "kr",
+      destinationCity: "Seoul",
+      destinationDetail: "Gangnam-gu",
+      startDate: "2026-10-01",
+      endDate: "2026-10-10",
+    });
 
   assert.equal(res.status, 201);
   assert.equal(res.body.data.countryCode, "KR");
@@ -49,14 +55,24 @@ test("setCurrentTrip: chi 1 chuyen di isCurrent:true tai mot thoi diem", async (
   const headers = { Authorization: auth(accessToken) };
 
   const t1 = await request(app).post("/api/users/trips").set(headers).send({
-    countryCode: "KR", destinationCity: "Seoul", destinationDetail: "Gangnam-gu", startDate: "2026-10-01", endDate: "2026-10-10",
+    countryCode: "KR",
+    destinationCity: "Seoul",
+    destinationDetail: "Gangnam-gu",
+    startDate: "2026-10-01",
+    endDate: "2026-10-10",
   });
   const t2 = await request(app).post("/api/users/trips").set(headers).send({
-    countryCode: "JP", destinationCity: "Osaka", destinationDetail: "Namba", startDate: "2026-11-01", endDate: "2026-11-10",
+    countryCode: "JP",
+    destinationCity: "Osaka",
+    destinationDetail: "Namba",
+    startDate: "2026-11-01",
+    endDate: "2026-11-10",
   });
 
   await request(app).put(`/api/users/trips/${t1.body.data._id}/current`).set(headers);
-  const afterSecond = await request(app).put(`/api/users/trips/${t2.body.data._id}/current`).set(headers);
+  const afterSecond = await request(app)
+    .put(`/api/users/trips/${t2.body.data._id}/current`)
+    .set(headers);
 
   assert.equal(afterSecond.status, 200);
 
@@ -73,9 +89,17 @@ test("user A khong xem/xoa duoc chuyen di cua user B", async () => {
   const created = await request(app)
     .post("/api/users/trips")
     .set("Authorization", auth(userA.accessToken))
-    .send({ countryCode: "KR", destinationCity: "Seoul", destinationDetail: "Gangnam-gu", startDate: "2026-10-01", endDate: "2026-10-10" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Seoul",
+      destinationDetail: "Gangnam-gu",
+      startDate: "2026-10-01",
+      endDate: "2026-10-10",
+    });
 
-  const listB = await request(app).get("/api/users/trips").set("Authorization", auth(userB.accessToken));
+  const listB = await request(app)
+    .get("/api/users/trips")
+    .set("Authorization", auth(userB.accessToken));
   assert.equal(listB.body.data.length, 0);
 
   const deleteByB = await request(app)
@@ -103,12 +127,16 @@ test("endDate truoc startDate bi VALIDATION_ERROR", async () => {
   const res = await request(app)
     .post("/api/users/trips")
     .set("Authorization", auth(accessToken))
-    .send({ countryCode: "KR", destinationCity: "Seoul", startDate: "2026-10-10", endDate: "2026-10-01" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Seoul",
+      startDate: "2026-10-10",
+      endDate: "2026-10-01",
+    });
 
   assert.equal(res.status, 400);
   assert.equal(res.body.error.code, "VALIDATION_ERROR");
 });
-
 
 test("cap nhat chuyen di: sua dia diem, ngay va tuy chon canh bao", async () => {
   const { accessToken } = await registerAndLogin(app);
@@ -152,12 +180,22 @@ test("user khong duoc sua chuyen di cua user khac", async () => {
   const created = await request(app)
     .post("/api/users/trips")
     .set("Authorization", auth(userA.accessToken))
-    .send({ countryCode: "KR", destinationCity: "Seoul", startDate: "2026-10-01", endDate: "2026-10-10" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Seoul",
+      startDate: "2026-10-01",
+      endDate: "2026-10-10",
+    });
 
   const res = await request(app)
     .put(`/api/users/trips/${created.body.data._id}`)
     .set("Authorization", auth(userB.accessToken))
-    .send({ countryCode: "KR", destinationCity: "Busan", startDate: "2026-10-02", endDate: "2026-10-11" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Busan",
+      startDate: "2026-10-02",
+      endDate: "2026-10-11",
+    });
 
   assert.equal(res.status, 404);
   assert.equal(res.body.error.code, "NOT_FOUND");
@@ -168,13 +206,21 @@ test("cap nhat chuyen di voi endDate truoc startDate bi VALIDATION_ERROR", async
   const headers = { Authorization: auth(accessToken) };
 
   const created = await request(app).post("/api/users/trips").set(headers).send({
-    countryCode: "KR", destinationCity: "Seoul", startDate: "2026-10-01", endDate: "2026-10-10",
+    countryCode: "KR",
+    destinationCity: "Seoul",
+    startDate: "2026-10-01",
+    endDate: "2026-10-10",
   });
 
   const res = await request(app)
     .put(`/api/users/trips/${created.body.data._id}`)
     .set(headers)
-    .send({ countryCode: "KR", destinationCity: "Busan", startDate: "2026-10-20", endDate: "2026-10-10" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Busan",
+      startDate: "2026-10-20",
+      endDate: "2026-10-10",
+    });
 
   assert.equal(res.status, 400);
   assert.equal(res.body.error.code, "VALIDATION_ERROR");

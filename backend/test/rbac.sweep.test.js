@@ -45,17 +45,36 @@ function extractAdminRoutes(router) {
 
 test("MOI route /api/admin/* deu bi chan boi requireRole('admin') -- quet tu dong tu router.stack", async () => {
   const routes = extractAdminRoutes(adminRouter);
-  assert.ok(routes.length >= 40, "phai quet duoc it nhat 40 route (dau hieu router.stack doc dung)");
+  assert.ok(
+    routes.length >= 40,
+    "phai quet duoc it nhat 40 route (dau hieu router.stack doc dung)",
+  );
 
   const { accessToken: userToken } = await registerAndLogin(app, { role: "user" });
 
   for (const { method, path } of routes) {
     const noAuthRes = await request(app)[method](path);
-    assert.equal(noAuthRes.status, 401, `${method.toUpperCase()} ${path} (khong token) phai tra 401`);
-    assert.equal(noAuthRes.body.error.code, "UNAUTHORIZED", `${method.toUpperCase()} ${path} sai ma loi khi khong token`);
+    assert.equal(
+      noAuthRes.status,
+      401,
+      `${method.toUpperCase()} ${path} (khong token) phai tra 401`,
+    );
+    assert.equal(
+      noAuthRes.body.error.code,
+      "UNAUTHORIZED",
+      `${method.toUpperCase()} ${path} sai ma loi khi khong token`,
+    );
 
     const nonAdminRes = await request(app)[method](path).set("Authorization", auth(userToken));
-    assert.equal(nonAdminRes.status, 403, `${method.toUpperCase()} ${path} (user thuong) phai tra 403`);
-    assert.equal(nonAdminRes.body.error.code, "FORBIDDEN", `${method.toUpperCase()} ${path} sai ma loi khi khong phai admin`);
+    assert.equal(
+      nonAdminRes.status,
+      403,
+      `${method.toUpperCase()} ${path} (user thuong) phai tra 403`,
+    );
+    assert.equal(
+      nonAdminRes.body.error.code,
+      "FORBIDDEN",
+      `${method.toUpperCase()} ${path} sai ma loi khi khong phai admin`,
+    );
   }
 });

@@ -53,7 +53,9 @@ test("POST /api/translate tu choi noi dung qua 500 ky tu", async () => {
 });
 
 test("chua dang nhap goi /api/translate bi 401 UNAUTHORIZED", async () => {
-  const res = await request(app).post("/api/translate").send({ text: "xin chào", from: "vi", to: "ko" });
+  const res = await request(app)
+    .post("/api/translate")
+    .send({ text: "xin chào", from: "vi", to: "ko" });
   assert.equal(res.status, 401);
 });
 
@@ -63,13 +65,24 @@ test("Admin CRUD QuickPhrase, GET /api/quick-phrases cong khai tra dung thu tu",
   const p1 = await request(app)
     .post("/api/admin/quick-phrases")
     .set("Authorization", auth(accessToken))
-    .send({ countryCode: "KR", vi: "Tôi cần giúp đỡ", translated: "도와주세요", phonetic: "Dowajuseyo", order: 2 });
+    .send({
+      countryCode: "KR",
+      vi: "Tôi cần giúp đỡ",
+      translated: "도와주세요",
+      phonetic: "Dowajuseyo",
+      order: 2,
+    });
   assert.equal(p1.status, 201);
 
   const p2 = await request(app)
     .post("/api/admin/quick-phrases")
     .set("Authorization", auth(accessToken))
-    .send({ countryCode: "KR", vi: "Tôi bị mất hộ chiếu", translated: "여권을 잃어버렸어요", order: 1 });
+    .send({
+      countryCode: "KR",
+      vi: "Tôi bị mất hộ chiếu",
+      translated: "여권을 잃어버렸어요",
+      order: 1,
+    });
   assert.equal(p2.status, 201);
 
   const listRes = await request(app).get("/api/quick-phrases").query({ country: "KR" });

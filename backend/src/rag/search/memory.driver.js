@@ -18,7 +18,9 @@ let cache = null;
 async function loadPublishedChunks() {
   if (cache && Date.now() - cache.loadedAt < TTL_MS) return cache.chunks;
 
-  const chunks = await LegalChunk.find({ status: ContentStatus.PUBLISHED }).select("+embedding").lean();
+  const chunks = await LegalChunk.find({ status: ContentStatus.PUBLISHED })
+    .select("+embedding")
+    .lean();
   cache = { loadedAt: Date.now(), chunks };
   return chunks;
 }
@@ -69,7 +71,12 @@ export function createMemorySearchDriver() {
     async vectorSearch({ countryCode, topicSlug, queryVector, k }) {
       const chunks = await loadPublishedChunks();
       return chunks
-        .filter((c) => matchesFilter(c, { countryCode, topicSlug }) && Array.isArray(c.embedding) && c.embedding.length)
+        .filter(
+          (c) =>
+            matchesFilter(c, { countryCode, topicSlug }) &&
+            Array.isArray(c.embedding) &&
+            c.embedding.length,
+        )
         .map((c) => ({ ...projectHit(c), score: cosineSimilarity(queryVector, c.embedding) }))
         .sort((a, b) => b.score - a.score)
         .slice(0, k);

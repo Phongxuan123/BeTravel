@@ -6,7 +6,11 @@ import { UserRole } from "../core/constants.js";
 
 import { countriesController } from "../controllers/adminCountries.controller.js";
 import { topicsController } from "../controllers/adminTopics.controller.js";
-import { locationsController, bulkImport as locationsBulkImport, bulkVerify as locationsBulkVerify } from "../controllers/adminLocations.controller.js";
+import {
+  locationsController,
+  bulkImport as locationsBulkImport,
+  bulkVerify as locationsBulkVerify,
+} from "../controllers/adminLocations.controller.js";
 import * as articlesController from "../controllers/adminArticles.controller.js";
 import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
@@ -93,14 +97,26 @@ router.delete("/locations/:id", locationsController.remove);
 
 router.get("/audit", validateQuery(auditListQuerySchema), auditController.list);
 
-router.post("/rag/reindex-country", validateBody(ragReindexCountrySchema), ragController.reindexCountry);
+router.post(
+  "/rag/reindex-country",
+  validateBody(ragReindexCountrySchema),
+  ragController.reindexCountry,
+);
 router.get("/rag/status", validateQuery(ragStatusQuerySchema), ragController.status);
 
 router.get("/feedback", validateQuery(feedbackListQuerySchema), feedbackController.list);
 router.get("/feedback/:id", feedbackController.get);
-router.patch("/feedback/:id", validateBody(feedbackStatusUpdateSchema), feedbackController.updateStatus);
+router.patch(
+  "/feedback/:id",
+  validateBody(feedbackStatusUpdateSchema),
+  feedbackController.updateStatus,
+);
 
-router.get("/analytics/overview", validateQuery(analyticsOverviewQuerySchema), analyticsController.overview);
+router.get(
+  "/analytics/overview",
+  validateQuery(analyticsOverviewQuerySchema),
+  analyticsController.overview,
+);
 
 router.get("/incidents", validateQuery(incidentListQuerySchema), incidentsController.list);
 router.post("/incidents", validateBody(incidentCreateSchema), incidentsController.create);
@@ -108,10 +124,18 @@ router.get("/incidents/:id", incidentsController.get);
 router.patch("/incidents/:id", validateBody(incidentUpdateSchema), incidentsController.update);
 router.delete("/incidents/:id", incidentsController.remove);
 
-router.get("/quick-phrases", validateQuery(quickPhraseListQuerySchema), quickPhrasesController.list);
+router.get(
+  "/quick-phrases",
+  validateQuery(quickPhraseListQuerySchema),
+  quickPhrasesController.list,
+);
 router.post("/quick-phrases", validateBody(quickPhraseCreateSchema), quickPhrasesController.create);
 router.get("/quick-phrases/:id", quickPhrasesController.get);
-router.patch("/quick-phrases/:id", validateBody(quickPhraseUpdateSchema), quickPhrasesController.update);
+router.patch(
+  "/quick-phrases/:id",
+  validateBody(quickPhraseUpdateSchema),
+  quickPhrasesController.update,
+);
 router.delete("/quick-phrases/:id", quickPhrasesController.remove);
 
 router.get("/geo-alerts", validateQuery(geoAlertListQuerySchema), geoAlertsController.list);

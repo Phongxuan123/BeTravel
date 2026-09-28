@@ -13,7 +13,12 @@ import mongoose from "mongoose";
  */
 const legalChunkSchema = new mongoose.Schema(
   {
-    articleId: { type: mongoose.Schema.Types.ObjectId, ref: "LegalArticle", required: true, index: true },
+    articleId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "LegalArticle",
+      required: true,
+      index: true,
+    },
     articleSlug: { type: String, required: true },
     articleVersion: { type: Number, required: true },
 

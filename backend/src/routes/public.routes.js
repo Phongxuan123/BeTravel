@@ -56,6 +56,10 @@ router.get("/incidents/:slug", incidentController.get);
 
 router.get("/quick-phrases", validateQuery(quickPhraseListQuerySchema), quickPhraseController.list);
 
-router.get("/alerts/applicable", validateQuery(alertsApplicableQuerySchema), alertsController.applicable);
+router.get(
+  "/alerts/applicable",
+  validateQuery(alertsApplicableQuerySchema),
+  alertsController.applicable,
+);
 
 export default router;

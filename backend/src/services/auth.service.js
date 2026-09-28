@@ -341,7 +341,8 @@ export const updateUserPreferences = async ({ userId, patch }) => {
   if (patch.locale !== undefined) user.preferences.locale = patch.locale;
   if (patch.alerts?.legal !== undefined) user.preferences.alerts.legal = patch.alerts.legal;
   if (patch.alerts?.safety !== undefined) user.preferences.alerts.safety = patch.alerts.safety;
-  if (patch.alerts?.tripReminder !== undefined) user.preferences.alerts.tripReminder = patch.alerts.tripReminder;
+  if (patch.alerts?.tripReminder !== undefined)
+    user.preferences.alerts.tripReminder = patch.alerts.tripReminder;
   if (patch.locationConsent !== undefined) user.preferences.locationConsent = patch.locationConsent;
 
   await user.save();

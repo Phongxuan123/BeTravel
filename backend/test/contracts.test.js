@@ -163,7 +163,9 @@ test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, erro
     .post("/api/admin/countries")
     .set(as)
     .send({ code: "KR", name: "Hàn Quốc", status: "active" });
-  const countryRes = await request(app).get(`/api/admin/countries/${country.body.data._id}`).set(as);
+  const countryRes = await request(app)
+    .get(`/api/admin/countries/${country.body.data._id}`)
+    .set(as);
   assertSameKeys(countryRes.body.data, readFixture("admin.country.json").data, "admin.country");
 
   await request(app)
@@ -191,7 +193,12 @@ test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, erro
       summaryVi: "Tóm tắt",
       effectiveFrom: "2024-01-01",
       sources: [
-        { title: "Nguồn", url: "https://example.go.kr", authority: "Bộ", publishedAt: "2024-01-01" },
+        {
+          title: "Nguồn",
+          url: "https://example.go.kr",
+          authority: "Bộ",
+          publishedAt: "2024-01-01",
+        },
       ],
       updatedAt: draft.body.data.updatedAt,
     });
@@ -202,7 +209,11 @@ test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, erro
   const article = await request(app)
     .get(`/api/admin/legal/articles/${draft.body.data._id}`)
     .set(as);
-  assertSameKeys(article.body.data, readFixture("admin.legalArticle.json").data, "admin.legalArticle");
+  assertSameKeys(
+    article.body.data,
+    readFixture("admin.legalArticle.json").data,
+    "admin.legalArticle",
+  );
 });
 
 // ── B3: noi dung cong khai + trips ────────────────────────────────────────
@@ -232,9 +243,23 @@ test("response cua GET /api/legal/articles/:country/:slug khop fixture public.le
   const fixture = readFixture("public.legalArticle.json");
   const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
   await LegalArticle.create({
-    countryCode: "KR", topicSlug: "giao-thong", slug: "bang-lai-nuoc-ngoai", version: 1, isCurrent: true,
-    status: "published", title: "Bằng lái nước ngoài", summaryVi: "Tóm tắt",
-    sources: [{ title: "Nguồn", url: "https://example.go.kr", authority: "Bộ Tư pháp", kind: "gov", publishedAt: new Date() }],
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bang-lai-nuoc-ngoai",
+    version: 1,
+    isCurrent: true,
+    status: "published",
+    title: "Bằng lái nước ngoài",
+    summaryVi: "Tóm tắt",
+    sources: [
+      {
+        title: "Nguồn",
+        url: "https://example.go.kr",
+        authority: "Bộ Tư pháp",
+        kind: "gov",
+        publishedAt: new Date(),
+      },
+    ],
     effectiveFrom: new Date(),
   });
 
@@ -248,9 +273,23 @@ test("response cua GET /api/legal/search khop fixture public.legalSearch.json", 
   const fixture = readFixture("public.legalSearch.json");
   const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
   await LegalArticle.create({
-    countryCode: "KR", topicSlug: "giao-thong", slug: "bang-lai-nuoc-ngoai", version: 1, isCurrent: true,
-    status: "published", title: "Bằng lái nước ngoài", summaryVi: "Tóm tắt",
-    sources: [{ title: "Nguồn", url: "https://example.go.kr", authority: "Bộ Tư pháp", kind: "gov", publishedAt: new Date() }],
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bang-lai-nuoc-ngoai",
+    version: 1,
+    isCurrent: true,
+    status: "published",
+    title: "Bằng lái nước ngoài",
+    summaryVi: "Tóm tắt",
+    sources: [
+      {
+        title: "Nguồn",
+        url: "https://example.go.kr",
+        authority: "Bộ Tư pháp",
+        kind: "gov",
+        publishedAt: new Date(),
+      },
+    ],
     effectiveFrom: new Date(),
   });
 
@@ -270,7 +309,13 @@ test("response cua POST /api/users/trips khop fixture trip.json", async () => {
   const res = await request(app)
     .post("/api/users/trips")
     .set("Authorization", `Bearer ${accessToken}`)
-    .send({ countryCode: "KR", destinationCity: "Seoul", destinationDetail: "Gangnam-gu", startDate: "2026-10-01", endDate: "2026-10-10" });
+    .send({
+      countryCode: "KR",
+      destinationCity: "Seoul",
+      destinationDetail: "Gangnam-gu",
+      startDate: "2026-10-01",
+      endDate: "2026-10-10",
+    });
 
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data, fixture.data, "trip");
@@ -336,7 +381,12 @@ test("response cua GET /api/quick-phrases khop fixture public.quickPhrase.json",
   await request(app)
     .post("/api/admin/quick-phrases")
     .set("Authorization", `Bearer ${accessToken}`)
-    .send({ countryCode: "KR", vi: "Tôi cần giúp đỡ", translated: "도와주세요", phonetic: "Dowajuseyo" });
+    .send({
+      countryCode: "KR",
+      vi: "Tôi cần giúp đỡ",
+      translated: "도와주세요",
+      phonetic: "Dowajuseyo",
+    });
 
   const res = await request(app).get("/api/quick-phrases").query({ country: "KR" });
 
@@ -365,7 +415,9 @@ test("response cua GET /api/alerts/applicable khop fixture public.geoAlert.json"
       status: "published",
     });
 
-  const res = await request(app).get("/api/alerts/applicable").query({ country: "KR", lat: 37.5407, lng: 127.0016 });
+  const res = await request(app)
+    .get("/api/alerts/applicable")
+    .query({ country: "KR", lat: 37.5407, lng: 127.0016 });
 
   assert.equal(res.body.ok, true);
   assertSameKeys(res.body.data[0], fixture.data[0], "public.geoAlert");
