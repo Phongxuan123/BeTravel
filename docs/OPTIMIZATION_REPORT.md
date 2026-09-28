@@ -1,6 +1,24 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
-> Trạng thái hiện hành: xem **Rà soát 28/09/2026** ngay dưới đây và
+> Trạng thái hiện hành: xem **Rà soát 29/09/2026** ngay dưới đây và
 > `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
+
+## Rà soát 29/09/2026 — dịch và chia sẻ vị trí
+
+| File/nhóm | Lỗi hoặc thiếu sót | Cách sửa và bằng chứng |
+|---|---|---|
+| `mobile/src/app/sos/index.tsx`, `settings/index.tsx` | Công tắc chia sẻ là state giả, gợi ý gửi tự động cho 2 liên hệ nhưng không có luồng gửi; SOS trắng khi thiếu quốc gia | Thay bằng điều hướng route chia sẻ, sửa mô tả quyền riêng tư; fallback SOS vẫn cho mở chia sẻ |
+| `app/sos/share-location.tsx`, `features/sos/locationShare.ts` | Chưa có chức năng gửi vị trí thực tế | Snapshot, preview, quyền foreground, timeout, bỏ response muộn, kiểm tuổi/coords trước gửi, khóa bấm lặp, xóa khi rời màn hình/nền; test quyền/hủy/GPS cũ/tắt/lỗi chia sẻ |
+| `mobile/app.json` | Chuỗi xin quyền chỉ mô tả tìm hỗ trợ, thiếu chia sẻ/cảnh báo | Cập nhật mục đích; không bật quyền nền hoặc thêm native dependency |
+| `app/translate/index.tsx` | Dịch phụ thuộc quốc gia, phrase đảo chiều sai, response cũ ghi đè câu mới, nhãn offline gây hiểu nhầm | Việt-Anh độc lập; đảo source/target; generation guard; remount account/country; nhãn offline đúng, lỗi copy/speech; test UI |
+| `features/translate`, `lib/api/translate.ts`, mock client | Thiếu nguồn offline Việt-Anh có license | 10 cặp exact-match Tatoeba có nguồn và giấy phép; 20 chiều dịch được kiểm không gọi mạng; không bỏ dấu |
+| Backend translate validator/controller/service | from/to tùy ý; output chỉ kiểm truthy; endpoint không tính ngân sách AI chung | Allowlist + normalize, Zod output, cùng ngôn ngữ không gọi AI; DB quota trước provider; test số lượt, hết quota, ngôn ngữ lạ và output sai |
+| Backend translation resource | Prompt thiếu chỉ dẫn ngữ pháp và từ vựng cụ thể | UD Vietnamese grammar diễn đạt lại + sáu mục từ từ câu nguồn; test resource mobile/backend bằng nhau |
+
+Theo Rule 7/8/9/11: lỗi có trạng thái rõ, giữ mô hình ba workspace, không thêm dịch vụ theo dõi hay thư viện; chú thích quyết định quan trọng bằng tiếng Việt. Không lưu tọa độ hoặc câu dịch mới vào DB nên không tạo xung đột dữ liệu lâu dài.
+
+Kiểm tra: backend 156 test + lint; mobile 124 test + lint/typecheck; admin 9 test + lint/typecheck/build; export iOS/Android đạt. Metro có warning NO_COLOR/FORCE_COLOR của môi trường. Hai lỗi kiểm tra ban đầu (React purity Date.now trong render, parser ESLint không hỗ trợ import-attributes) đã được sửa bằng lazy initializer và đọc JSON bằng URL cố định; không hạ quy tắc lint.
+
+Giới hạn: UAT điện thoại/provider thật/Atlas còn mở; dependency security audit chưa được phép gửi registry ở phiên trước; mobile web chưa có react-native-web (`expo export --platform all` báo thiếu dependency), không phải target đã nghiệm thu; không tuyên bố không còn mọi lỗi. Xem `LOCATION_SHARING.md`, `TRANSLATION_SOURCES.md`, `ACCEPTANCE.md` và đầu `PROGRESS.md`.
 
 ## Rà soát 28/09/2026 — bảo vệ dữ liệu và hoàn thiện favorites
 

@@ -1,10 +1,26 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
-Cập nhật 28/09/2026: backend 151/151, mobile 94/94, admin 9/9 test đạt;
-lint/typecheck/admin build và export iOS/Android đạt. Hồi quy mới cho favorites
-ẩn nội dung chưa công khai, workflow CAS, GeoAlert PATCH, consent và dữ liệu
-dismiss riêng tài khoản. AC-11/AC-12 vẫn cần nghiệm thu thật; advisory trực
-tuyến và Expo Doctor chưa kiểm được phiên này (xem PROGRESS).
+Cập nhật 29/09/2026: backend 156/156, mobile 124/124, admin 9/9 test đạt;
+lint/typecheck/admin build và export iOS/Android đạt. Phiên này bổ sung dịch
+Việt-Anh hai chiều có câu mẫu nguồn mở, quota AI và chia sẻ snapshot GPS chủ động.
+AC-11/AC-12 vẫn cần nghiệm thu thật; advisory trực tuyến và Expo Doctor chưa
+kiểm được phiên này (xem PROGRESS). Không dùng kết quả mock để chứng nhận
+chất lượng dịch AI hay việc gửi tin trên điện thoại thật.
+
+## Nghiệm thu tính năng mới 29/09
+
+| Nội dung | Trạng thái | Bằng chứng/còn cần |
+|---|---|---|
+| GPS chỉ lấy khi bấm, không tự chia sẻ | Đạt tự động | `features/sos/__tests__/ShareLocationScreen.test.tsx`: không xin quyền lúc mount, preview trước Share |
+| Quyền từ chối, GPS tắt/cũ, hủy, lỗi share | Đạt tự động | Cùng test screen; pure `locationShare.test.ts` kiểm tọa độ biên, timestamp và sai số |
+| Link bản đồ và tin gửi minh bạch | Đạt tự động | URL encode lat/lng, UTC, sai số và nhãn không cập nhật trực tiếp; chưa gửi tin thật |
+| Native share và responsive | Cần người xác nhận | iPhone/Android/iPad, Zalo/SMS, approximate location, font lớn, offline, chuyển nền và timeout 20 giây; xem LOCATION_SHARING |
+| Dịch Việt-Anh offline hai chiều | Đạt tự động | `phrasebook.test.ts`, `api/__tests__/translate.test.ts`: 10 cặp không gọi mạng; nguồn/giấy phép trong TRANSLATION_SOURCES |
+| Đổi chiều, sửa câu trong lúc dịch | Đạt tự động | `TranslatorScreen.test.tsx`: phrase source/target đúng, bỏ response cũ |
+| API dịch validate và quota | Đạt tự động | `backend/test/translate.test.js`: allowlist, output JSON sai, cùng ngôn ngữ không gọi AI, quota dùng chung/hết lượt |
+| Chất lượng dịch tự do và phát âm | Cần người xác nhận | Provider thật với câu thử phi nhạy cảm; giọng vi/en đã cài trên thiết bị. Không gửi văn bản cá nhân trong test |
+
+## Tiêu chí hệ thống
 
 Khung bảng lấy từ `docs/03_Contracts_v2.md` mục 14. Mỗi dòng ghi **bằng
 chứng cụ thể đang có trong repo** (tên file test/tài liệu thật, không phải

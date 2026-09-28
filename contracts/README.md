@@ -586,6 +586,13 @@ banner moi dang nhap thay vi goi API roi nhan loi.
 
 ## 19. ENDPOINT TRANSLATOR — `/api/translate`, `/api/quick-phrases/*` (B7)
 
+Việt–Anh hai chiều độc lập với quốc gia. `from`/`to` nhận mã
+`vi/en/ko/ja/th/zh/fr/de`, mã vùng như `en-US`, hoặc tên hiển thị tương ứng
+của client cũ. Ngôn ngữ khác trả VALIDATION_ERROR. Cùng ngôn ngữ trả nguyên
+văn, không gọi AI. `text` dịch đầy đủ; `phrase` ưu tiên cách nói tự nhiên,
+lịch sự nhưng không bỏ thông tin. Lượt gọi AI tính quota DB chung với chat.
+Response giữ nguyên. Bộ câu mẫu mở offline: `docs/TRANSLATION_SOURCES.md`.
+
 ```
 POST /translate {text, from, to, mode:'text'|'phrase'}   can dang nhap
      200 { translated, phonetic } -- text toi da 500 ky tu, rong hoac qua dai

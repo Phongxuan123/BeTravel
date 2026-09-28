@@ -4,10 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { PageHeader } from '@/components/common/PageHeader';
+import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconTile } from '@/components/ui/IconTile';
 import { Badge } from '@/components/ui/Badge';
-import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
@@ -22,7 +23,15 @@ export default function SosHubScreen() {
   const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
   const [locatingGps, setLocatingGps] = useState(false);
 
-  if (!country) return null;
+  if (!country) return (
+    <AppShell active="sos">
+      <PageHeader title="Hỗ trợ khẩn cấp" />
+      <View className="gap-4 p-[18px]">
+        <Text className="text-base text-muted">Chưa có thông tin hỗ trợ của quốc gia. Bạn vẫn có thể lấy GPS và gửi vị trí cho người thân.</Text>
+        <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
+      </View>
+    </AppShell>
+  );
 
   const hasEmbassyCoordinates = Number.isFinite(country.embassy.lat) &&
     Number.isFinite(country.embassy.lng) && (country.embassy.lat !== 0 || country.embassy.lng !== 0);
@@ -131,16 +140,15 @@ export default function SosHubScreen() {
             </View>
           </View>
 
-          <View className="mt-4 flex-row items-center gap-3 rounded-lg border border-line bg-surface p-4">
+          <Pressable accessibilityRole="button" onPress={() => router.push('/sos/share-location')} className="mt-4 flex-row items-center gap-3 rounded-lg border border-line bg-surface p-4">
             <IconTile tone="blue">
               <Share2 size={20} color={colors.primary} />
             </IconTile>
             <View className="flex-1">
               <Text className="text-base font-body-bold text-ink">Chia sẻ vị trí với người thân</Text>
-              <Text className="text-[13px] text-muted">Tính năng đang phát triển</Text>
+              <Text className="text-[13px] text-muted">Lấy GPS, xem trước và chọn người nhận</Text>
             </View>
-            <Switch value={false} onValueChange={() => router.push({ pathname: '/coming-soon', params: { title: 'Chia sẻ vị trí' } })} accessibilityLabel="Chia sẻ vị trí với người thân" />
-          </View>
+          </Pressable>
 
           <View className="mt-6">
             <Text className="mb-3 text-base font-body-bold text-ink">Địa điểm hỗ trợ gần bạn</Text>

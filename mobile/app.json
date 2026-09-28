@@ -39,7 +39,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Be.Travel cần vị trí của bạn để tìm đại sứ quán, bệnh viện, đồn công an gần nhất khi bạn cần hỗ trợ khẩn cấp."
+          "locationWhenInUsePermission": "Be.Travel dùng vị trí để tìm hỗ trợ gần bạn, cảnh báo khu vực hoặc chia sẻ vị trí một lần khi bạn chủ động chọn người nhận."
         }
       ]
     ]

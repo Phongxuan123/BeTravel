@@ -292,11 +292,14 @@ export async function translateText(
   text: string,
   opts: { countryCode: string; from: string; to: string; mode?: 'text' | 'phrase' },
 ): Promise<{ translated: string; phonetic: string }> {
+  const { findEnglishPhrase } = await import('../features/translate/phrasebook');
+  const english = findEnglishPhrase(text, opts.from, opts.to);
+  if (english) return english;
   await new Promise((r) => setTimeout(r, 400));
   const known = (await fetchQuickPhrases(opts.countryCode)).data.find(
     (p) => p.vi.toLowerCase() === text.trim().toLowerCase(),
   );
-  if (known) return { translated: known.translated, phonetic: known.phonetic };
+  if (known && opts.from === 'Tiếng Việt' && !['en', 'English', 'Tiếng Anh'].includes(opts.to)) return { translated: known.translated, phonetic: known.phonetic };
   return { translated: `[${opts.to}] ${text}`, phonetic: '(chưa dịch được ở bản mẫu)' };
 }
 
