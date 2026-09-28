@@ -89,6 +89,9 @@ export default function CountriesPage() {
 
       {isLoading && <LoadingState />}
       {error && <ErrorState message={error instanceof ApiError ? error.message : 'Không tải được dữ liệu'} />}
+      {deleteMutation.error && (
+        <ErrorState message={deleteMutation.error instanceof ApiError ? deleteMutation.error.message : 'Không xoá được quốc gia'} />
+      )}
       {!isLoading && countries.length === 0 && <EmptyState label="Chưa có quốc gia nào" />}
 
       {countries.length > 0 && (

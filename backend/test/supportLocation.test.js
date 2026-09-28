@@ -57,7 +57,10 @@ test("GET /api/support-locations/nearby dung $geoNear, KHONG dao lat/lng", async
   assert.equal(res.status, 200);
   assert.equal(res.body.data.length, 1, "chi diem trong ban kinh 10km moi duoc tra ve");
   assert.equal(res.body.data[0].name, "Dai su quan Viet Nam tai Seoul");
-  assert.ok(res.body.data[0].distanceMeters < 1000, "diem trung toa do phai co distanceMeters rat nho");
+  assert.ok(
+    res.body.data[0].distanceMeters < 1000,
+    "diem trung toa do phai co distanceMeters rat nho",
+  );
 });
 
 test("GET /api/support-locations/nearby -- khong co diem trong ban kinh thi tu mo rong ra toan bo quoc gia", async () => {
@@ -166,8 +169,22 @@ test("POST /api/admin/locations/bulk-verify -- danh dau verified hang loat, ghi 
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
 
   const locations = await SupportLocation.create([
-    { countryCode: "KR", type: "police", name: "A", address: "Seoul", phone: "112", location: { type: "Point", coordinates: [126.9, 37.5] } },
-    { countryCode: "KR", type: "police", name: "B", address: "Seoul", phone: "112", location: { type: "Point", coordinates: [126.9, 37.5] } },
+    {
+      countryCode: "KR",
+      type: "police",
+      name: "A",
+      address: "Seoul",
+      phone: "112",
+      location: { type: "Point", coordinates: [126.9, 37.5] },
+    },
+    {
+      countryCode: "KR",
+      type: "police",
+      name: "B",
+      address: "Seoul",
+      phone: "112",
+      location: { type: "Point", coordinates: [126.9, 37.5] },
+    },
   ]);
 
   const res = await request(app)
@@ -181,7 +198,9 @@ test("POST /api/admin/locations/bulk-verify -- danh dau verified hang loat, ghi 
   const reloaded = await SupportLocation.find({ _id: { $in: locations.map((l) => l._id) } });
   assert.ok(reloaded.every((l) => l.verified === true && l.verifiedAt));
 
-  const auditRes = await request(app).get("/api/admin/audit").set("Authorization", auth(accessToken));
+  const auditRes = await request(app)
+    .get("/api/admin/audit")
+    .set("Authorization", auth(accessToken));
   const entry = auditRes.body.data.find((a) => a.action === "BULK_VERIFY");
   assert.ok(entry, "phai co audit log cho bulk verify");
 });

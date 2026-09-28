@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { colors } from '@/lib/theme';
+import { openPhone } from '@/lib/openExternal';
 import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
 import { fetchTrips, fetchFavorites } from '@/lib/data';
@@ -189,7 +190,7 @@ export default function ProfileScreen() {
                     {contact.relationship} · {contact.phone}
                   </Text>
                 </View>
-                <IconButton accessibilityLabel={`Gọi ${contact.name}`} variant="soft" icon={<Phone size={18} color={colors.primary} />} onPress={() => Linking.openURL(`tel:${contact.phone}`)} />
+                <IconButton accessibilityLabel={`Gọi ${contact.name}`} variant="soft" icon={<Phone size={18} color={colors.primary} />} onPress={() => void openPhone(contact.phone)} />
                 <IconButton accessibilityLabel={`Xoá ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
               </View>
             ))}

@@ -9,7 +9,7 @@ import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { fetchAlerts, markAlertRead, markAllAlertsRead } from '@/lib/data';
-import type { Alert } from '@/mocks/schemas';
+import type { Alert } from '@/lib/data';
 import { now } from '@/lib/date';
 
 const CATEGORY_META: Record<Alert['category'], { icon: typeof CircleAlert; tone: Tone; badge: BadgeTone; label: string }> = {

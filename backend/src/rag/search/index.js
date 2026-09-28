@@ -6,7 +6,8 @@ let cachedDriver = null;
 
 export function getSearchDriver() {
   if (cachedDriver) return cachedDriver;
-  cachedDriver = env.SEARCH_DRIVER === "atlas" ? createAtlasSearchDriver() : createMemorySearchDriver();
+  cachedDriver =
+    env.SEARCH_DRIVER === "atlas" ? createAtlasSearchDriver() : createMemorySearchDriver();
   return cachedDriver;
 }
 

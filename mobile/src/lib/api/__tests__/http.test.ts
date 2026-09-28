@@ -23,6 +23,26 @@ test('refresh mất mạng giữ token, request sau có thể phục hồi', asy
   expect(setAccessToken).toHaveBeenCalledWith('new-access');
 });
 
+test('nhiều request cùng nhận 401 chỉ kích hoạt một lần refresh rồi phát lại', async () => {
+  const expired = response({ ok: false, error: { code: 'UNAUTHORIZED', message: 'expired' } }, 401);
+  fetchMock.mockImplementation(async (url: string, init: { headers?: Record<string, string> }) => {
+    if (url.endsWith('/auth/refresh')) return response({ ok: true, data: { accessToken: 'new-access' } });
+    return init.headers?.Authorization === 'Bearer new-access' ? response({ ok: true, data: url }) : expired;
+  });
+  const { getAccessToken } = jest.requireMock('../tokenStore') as { getAccessToken: jest.Mock };
+  getAccessToken.mockImplementation(() =>
+    (setAccessToken as jest.Mock).mock.calls.length ? 'new-access' : 'old-access',
+  );
+
+  const results = await Promise.all(['/a', '/b', '/c'].map((path) => apiRequest<string>(path)));
+
+  expect(results).toEqual([expect.stringMatching(/\/a$/), expect.stringMatching(/\/b$/), expect.stringMatching(/\/c$/)]);
+  const refreshCalls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/auth/refresh'));
+  expect(refreshCalls).toHaveLength(1);
+  getAccessToken.mockImplementation(() => 'old-access');
+  fetchMock.mockReset();
+});
+
 test('refresh token thật sự bị thu hồi mới xóa phiên', async () => {
   fetchMock.mockResolvedValue(response({ ok: false, error: { code: 'UNAUTHORIZED', message: 'revoked' } }, 401));
   await expect(apiRequest('/auth/me')).rejects.toMatchObject({ code: 'UNAUTHORIZED' });

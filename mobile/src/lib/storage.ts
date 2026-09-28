@@ -11,6 +11,9 @@ export const StorageKeys = {
   // Prefix -- ghep them countryCode de cache danh sach diem SOS theo tung nuoc
   // (xem lib/api/sos.ts). Tinh huong SOS rat hay mat mang (CLAUDE.md B6 muc 11).
   sosLocationsCachePrefix: 'bt_sos_locations_',
+  // Danh sach quoc gia lan tai thanh cong gan nhat -- so khan cap cua SOS Hub
+  // lay tu day, mo app luc mat mang khong duoc lam mat (QA H-08.a).
+  countriesCache: 'bt_countries_cache',
   // Prefix -- ghep them countryCode de dung offline man hinh Dich khan cap
   // khi mat mang hoac API dich loi (CLAUDE.md B7 muc 16).
   quickPhrasesCachePrefix: 'bt_quick_phrases_',

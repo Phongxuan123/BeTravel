@@ -5,7 +5,7 @@ import { guardAnswer, FALLBACK_MESSAGE } from "../src/rag/guard.js";
 import { createHallucinatingMockLlmProvider } from "../src/rag/llm/mock.llm.js";
 
 /*
- * ★ Test bat buoc di kem guard.js (docs/03_Contracts_v2.md muc 8) -- neu
+ * [!] Test bat buoc di kem guard.js (docs/03_Contracts_v2.md muc 8) -- neu
  * khong co test nay thi khong ai biet guardrail co thuc su chay hay khong.
  */
 

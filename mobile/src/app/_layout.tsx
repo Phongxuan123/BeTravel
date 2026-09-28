@@ -22,6 +22,9 @@ import { AuthProvider } from '@/lib/auth';
 import { CountryProvider } from '@/lib/countryContext';
 import { AppGate } from '@/components/common/AppGate';
 
+// Expo Router boc moi route con bang Error Boundary nay (INV-13.3).
+export { RouteErrorFallback as ErrorBoundary } from '@/components/common/RouteErrorFallback';
+
 SplashScreen.preventAutoHideAsync().catch(() => {
   // đã ẩn splash trước đó — bỏ qua
 });

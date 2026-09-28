@@ -185,7 +185,11 @@ export default function LocationsPage() {
               iconLeft={<BadgeCheck size={16} />}
               disabled={selectedIds.size === 0}
               loading={bulkVerifyMutation.isPending}
-              onClick={() => bulkVerifyMutation.mutate([...selectedIds])}
+              onClick={() =>
+                // Xac minh = dua diem len SOS map cua nguoi dung that -- phai xac nhan.
+                window.confirm(`Xác minh ${selectedIds.size} điểm đã chọn? Các điểm này sẽ hiển thị trên SOS cho người dùng.`) &&
+                bulkVerifyMutation.mutate([...selectedIds])
+              }
             >
               Xác minh đã chọn ({selectedIds.size})
             </Button>

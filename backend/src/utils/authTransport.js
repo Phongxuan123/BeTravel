@@ -23,7 +23,9 @@ export const applyAuthTransport = (res, session) => {
     setRefreshTokenCookie(res, session.refreshToken, refreshMaxAgeMs);
   }
 
-  const { expiresAt, refreshToken, ...rest } = session;
+  // `rotated` chi la tin hieu noi bo cua refreshToken.service (test dung), khong
+  // thuoc hop dong auth.refresh.json -- khong gui ra client.
+  const { expiresAt, refreshToken, rotated: _rotated, ...rest } = session;
 
   // Trong cửa sổ ân hạn (replay), session.refreshToken là null vì không cấp
   // token mới. BỎ HẲN field thay vì gửi `refreshToken: null` -- client parse

@@ -22,6 +22,13 @@ describe('AnswerCard', () => {
     expect(getByText('Nguồn pháp lý mẫu')).toBeTruthy();
   });
 
+  it('needsOfficialHelp hiện nút hỗ trợ khẩn cấp ngay đầu thẻ, mặc định thì không', async () => {
+    const urgent = await render(<AnswerCard answer={{ ...answered, needsOfficialHelp: true }} onFeedback={() => {}} />);
+    expect(urgent.getByTestId('answer-card-official-help')).toBeTruthy();
+    const normal = await render(<AnswerCard answer={answered} onFeedback={() => {}} />);
+    expect(normal.queryByTestId('answer-card-official-help')).toBeNull();
+  });
+
   it('biến thể "insufficient_evidence" KHÔNG BAO GIỜ hiển thị nội dung trả lời, chỉ lý do', async () => {
     const { getByTestId, queryByText, getByText } = await render(<AnswerCard answer={insufficient} onFeedback={() => {}} />);
     expect(getByTestId('answer-card-insufficient')).toBeTruthy();

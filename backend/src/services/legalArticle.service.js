@@ -55,7 +55,7 @@ export const createArticle = async (data, actorId) =>
   });
 
 /*
- * ★ Chong ghi de: client gui kem `updatedAt` cua ban dang xem. Khac voi
+ * [!] Chong ghi de: client gui kem `updatedAt` cua ban dang xem. Khac voi
  * updatedAt hien luu trong DB nghia la co nguoi khac da sua giua luc -- tra
  * CONFLICT kem thong tin ai sua, khong am tham ghi de (nhap lieu la cong suc
  * ton nhat du an, mat bai vi ghi de la thiet hai that -- xem CLAUDE.md B2).
@@ -163,7 +163,7 @@ const findMissingPublishFields = (article) => {
 };
 
 /*
- * ★ May trang thai noi dung: draft -> pending_review -> published -> superseded/archived.
+ * [!] May trang thai noi dung: draft -> pending_review -> published -> superseded/archived.
  * Publish version N: isCurrent=true cho N; moi version khac cua cung
  * (countryCode,slug) dang isCurrent=true bi chuyen isCurrent=false +
  * status='superseded'. Publish --> enqueue 'reindex_article'.

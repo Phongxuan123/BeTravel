@@ -11,9 +11,10 @@ import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
+import { openPhone, openUrl } from '@/lib/openExternal';
 import { fetchNearbyLocations, fetchSupportLocations } from '@/lib/data';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
-import type { SupportLocation } from '@/mocks/schemas';
+import type { SupportLocation } from '@/lib/data';
 
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#EAF1FE' }] },
@@ -56,7 +57,7 @@ function openDirections(lat: number, lng: number, label: string) {
   const fallback = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   const url =
     Platform.OS === 'ios' ? `maps://?daddr=${lat},${lng}&q=${encodeURIComponent(label)}` : `google.navigation:q=${lat},${lng}`;
-  Linking.openURL(url).catch(() => Linking.openURL(fallback));
+  Linking.openURL(url).catch(() => void openUrl(fallback));
 }
 
 // CTA "Tìm đồn gần nhất" tu man hinh xu ly su co (B7) mo thang man hinh nay
@@ -114,7 +115,7 @@ export default function SosMapScreen() {
     longitudeDelta: 0.06,
   };
 
-  const call = (phone: string) => Linking.openURL(`tel:${phone}`);
+  const call = (phone: string) => void openPhone(phone);
   const copyAddress = async (address: string) => {
     await Clipboard.setStringAsync(address);
   };
@@ -286,7 +287,7 @@ export default function SosMapScreen() {
             {!!detail.website && (
               <View className="flex-row items-center" style={{ gap: 8 }}>
                 <Globe size={16} color={colors.muted} />
-                <Text className="flex-1 text-sm text-primary" numberOfLines={1} onPress={() => Linking.openURL(detail.website!)}>
+                <Text className="flex-1 text-sm text-primary" numberOfLines={1} onPress={() => void openUrl(detail.website!)}>
                   {detail.website}
                 </Text>
               </View>

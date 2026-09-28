@@ -32,7 +32,11 @@ export const listFeedback = async (query) => {
   if (query.countryCode) filter["context.countryCode"] = query.countryCode;
 
   const [items, total] = await Promise.all([
-    Feedback.find(filter).sort({ createdAt: -1 }).skip(pagination.skip).limit(pagination.limit).lean(),
+    Feedback.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(pagination.skip)
+      .limit(pagination.limit)
+      .lean(),
     Feedback.countDocuments(filter),
   ]);
 

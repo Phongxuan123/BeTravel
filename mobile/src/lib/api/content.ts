@@ -17,6 +17,7 @@ import {
   type ApiTopic,
   type ApiTrip,
 } from './adapters';
+import { StorageKeys, getJSON, setJSON } from '@/lib/storage';
 import type { Article, Country, SearchResultItem, Topic, Trip } from '@/mocks/schemas';
 
 type Envelope<T> = { ok: true; data: T };
@@ -30,9 +31,19 @@ async function fetchOrNull<T>(path: string): Promise<T | null> {
   }
 }
 
+// So khan cap/Dai su quan cua SOS Hub nam trong du lieu quoc gia: mat mang luc
+// mo app van phai dung duoc ban tai thanh cong gan nhat (tinh nang an toan).
 export async function fetchCountries(): Promise<Envelope<Country[]>> {
-  const raw = await apiRequest<ApiCountry[]>('/countries');
-  return { ok: true, data: raw.map(adaptCountry) };
+  try {
+    const raw = await apiRequest<ApiCountry[]>('/countries');
+    const data = raw.map(adaptCountry);
+    await setJSON(StorageKeys.countriesCache, data);
+    return { ok: true, data };
+  } catch (error) {
+    const cached = await getJSON<Country[]>(StorageKeys.countriesCache);
+    if (cached?.length) return { ok: true, data: cached };
+    throw error;
+  }
 }
 
 export async function fetchCountry(code: string): Promise<Envelope<Country | null>> {
@@ -72,8 +83,12 @@ export async function fetchArticle(countryCode: string, slug: string): Promise<E
   return { ok: true, data: raw ? adaptArticle(raw) : null };
 }
 
+// Khop gioi han cua backend (validators/publicContent.validator.js) -- cat o
+// day de mot doan van dan vao o tim kiem khong bien thanh loi 400.
+const SEARCH_QUERY_MAX_LENGTH = 200;
+
 export async function searchArticles(query: string, countryCode: string): Promise<Envelope<SearchResultItem[]>> {
-  const q = query.trim();
+  const q = query.trim().slice(0, SEARCH_QUERY_MAX_LENGTH).trim();
   if (!q) return { ok: true, data: [] };
 
   const params = new URLSearchParams({ q, country: countryCode });

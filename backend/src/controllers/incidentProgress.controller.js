@@ -6,7 +6,10 @@ import * as incidentService from "../services/incident.service.js";
 // biet role, guest (chua dang nhap) khong goi toi day (route yeu cau auth).
 export const get = async (req, res, next) => {
   try {
-    const completedSteps = await incidentService.getProgress(req.user.userId, req.params.incidentId);
+    const completedSteps = await incidentService.getProgress(
+      req.user.userId,
+      req.params.incidentId,
+    );
     return ok(res, { completedSteps });
   } catch (error) {
     next(toAppError(error));

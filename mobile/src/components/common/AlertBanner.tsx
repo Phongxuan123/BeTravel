@@ -5,7 +5,7 @@ import { colors } from '@/lib/theme';
 import { usePollAlerts } from '@/features/alerts/usePollAlerts';
 import { markAlertRead } from '@/lib/data';
 import { useQueryClient } from '@tanstack/react-query';
-import type { Alert } from '@/mocks/schemas';
+import type { Alert } from '@/lib/data';
 
 const SEVERITY_ORDER: Record<string, number> = { danger: 0, warn: 1, info: 2 };
 const SEVERITY_COLOR: Record<string, string> = { danger: colors.danger, warn: colors.warning, info: colors.primary };
