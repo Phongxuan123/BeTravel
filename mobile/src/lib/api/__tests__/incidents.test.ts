@@ -1,7 +1,7 @@
 import { fetchIncident, fetchIncidents, getIncidentProgress, setIncidentProgress } from '../incidents';
-import { apiRequest } from '../http';
+import { apiRequest, ApiError } from '../http';
 
-jest.mock('../http', () => ({ apiRequest: jest.fn() }));
+jest.mock('../http', () => ({ ...jest.requireActual('../http'), apiRequest: jest.fn() }));
 
 const rawIncident = {
   _id: 'i1',
@@ -24,7 +24,7 @@ test('fetchIncidents goi dung query country va giu nguyen step.order', async () 
 });
 
 test('fetchIncident tra ve null (khong nem loi) khi 404', async () => {
-  (apiRequest as jest.Mock).mockRejectedValueOnce(new Error('not found'));
+  (apiRequest as jest.Mock).mockRejectedValueOnce(new ApiError('NOT_FOUND', 'not found', 404));
   const result = await fetchIncident('khong-ton-tai');
   expect(result.data).toBeNull();
 });
@@ -39,4 +39,10 @@ test('getIncidentProgress/setIncidentProgress goi dung endpoint', async () => {
   const put = await setIncidentProgress('i1', [0, 1]);
   expect(apiRequest).toHaveBeenCalledWith('/users/incident-progress/i1', { method: 'PUT', body: { completedSteps: [0, 1] } });
   expect(put.data.completedSteps).toEqual([0, 1]);
+});
+
+ test('fetchIncident giữ lỗi mạng để giao diện có thể báo lỗi và thử lại', async () => {
+  const error = new ApiError('UPSTREAM_ERROR', 'offline', 0);
+  (apiRequest as jest.Mock).mockRejectedValueOnce(error);
+  await expect(fetchIncident('mat-ho-chieu')).rejects.toBe(error);
 });

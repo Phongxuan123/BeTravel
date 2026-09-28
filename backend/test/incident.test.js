@@ -25,8 +25,16 @@ const globalIncident = {
   reassurance: "Giữ bình tĩnh.",
   status: "published",
   steps: [
-    { title: "Trình báo công an", body: ["Xin giấy xác nhận"], ctas: [{ type: "map", label: "Đồn gần nhất", payload: { locationType: "police" } }] },
-    { title: "Liên hệ Đại sứ quán", body: [], ctas: [{ type: "call", label: "Gọi ngay", payload: {} }] },
+    {
+      title: "Trình báo công an",
+      body: ["Xin giấy xác nhận"],
+      ctas: [{ type: "map", label: "Đồn gần nhất", payload: { locationType: "police" } }],
+    },
+    {
+      title: "Liên hệ Đại sứ quán",
+      body: [],
+      ctas: [{ type: "call", label: "Gọi ngay", payload: {} }],
+    },
   ],
 };
 
@@ -49,7 +57,10 @@ const draftIncident = {
 test("Admin tao IncidentType, step.order duoc chuan hoa theo thu tu mang", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
 
-  const res = await request(app).post("/api/admin/incidents").set("Authorization", auth(accessToken)).send(globalIncident);
+  const res = await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(accessToken))
+    .send(globalIncident);
 
   assert.equal(res.status, 201);
   assert.equal(res.body.data.steps.length, 2);
@@ -60,7 +71,10 @@ test("Admin tao IncidentType, step.order duoc chuan hoa theo thu tu mang", async
 
 test("non-admin khong tao duoc IncidentType", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "user" });
-  const res = await request(app).post("/api/admin/incidents").set("Authorization", auth(accessToken)).send(globalIncident);
+  const res = await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(accessToken))
+    .send(globalIncident);
   assert.equal(res.status, 403);
 });
 
@@ -82,7 +96,10 @@ test("GET /api/incidents?country= gop workflow toan cuc + rieng quoc gia, KHONG 
 
 test("Quoc gia chua co workflow rieng van thay duoc nhom toan cuc, khong tra mang rong", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
-  await request(app).post("/api/admin/incidents").set("Authorization", auth(accessToken)).send(globalIncident);
+  await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(accessToken))
+    .send(globalIncident);
 
   const res = await request(app).get("/api/incidents").query({ country: "TH" });
   assert.equal(res.status, 200);
@@ -92,7 +109,10 @@ test("Quoc gia chua co workflow rieng van thay duoc nhom toan cuc, khong tra man
 
 test("GET /api/incidents/:slug tra 404 cho workflow con draft", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
-  await request(app).post("/api/admin/incidents").set("Authorization", auth(accessToken)).send(draftIncident);
+  await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(accessToken))
+    .send(draftIncident);
 
   const res = await request(app).get("/api/incidents/dang-soan");
   assert.equal(res.status, 404);
@@ -101,7 +121,10 @@ test("GET /api/incidents/:slug tra 404 cho workflow con draft", async () => {
 
 test("Tien do xu ly su co: luu/doc rieng theo tung user, khong lan nhau", async () => {
   const admin = await registerAndLogin(app, { role: "admin" });
-  const created = await request(app).post("/api/admin/incidents").set("Authorization", auth(admin.accessToken)).send(globalIncident);
+  const created = await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(admin.accessToken))
+    .send(globalIncident);
   const incidentId = created.body.data._id;
 
   const userA = await registerAndLogin(app, { role: "user" });
@@ -114,16 +137,23 @@ test("Tien do xu ly su co: luu/doc rieng theo tung user, khong lan nhau", async 
   assert.equal(putRes.status, 200);
   assert.deepEqual(putRes.body.data.completedSteps, [0]);
 
-  const getA = await request(app).get(`/api/users/incident-progress/${incidentId}`).set("Authorization", auth(userA.accessToken));
+  const getA = await request(app)
+    .get(`/api/users/incident-progress/${incidentId}`)
+    .set("Authorization", auth(userA.accessToken));
   assert.deepEqual(getA.body.data.completedSteps, [0]);
 
-  const getB = await request(app).get(`/api/users/incident-progress/${incidentId}`).set("Authorization", auth(userB.accessToken));
+  const getB = await request(app)
+    .get(`/api/users/incident-progress/${incidentId}`)
+    .set("Authorization", auth(userB.accessToken));
   assert.deepEqual(getB.body.data.completedSteps, []);
 });
 
 test("Tien do bo qua step.order khong con ton tai trong workflow hien hanh", async () => {
   const admin = await registerAndLogin(app, { role: "admin" });
-  const created = await request(app).post("/api/admin/incidents").set("Authorization", auth(admin.accessToken)).send(globalIncident);
+  const created = await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(admin.accessToken))
+    .send(globalIncident);
   const incidentId = created.body.data._id;
 
   const user = await registerAndLogin(app, { role: "user" });
@@ -140,4 +170,60 @@ test("chua dang nhap goi /api/users/incident-progress bi 401 UNAUTHORIZED", asyn
   const res = await request(app).get("/api/users/incident-progress/000000000000000000000000");
   assert.equal(res.status, 401);
   assert.equal(res.body.error.code, "UNAUTHORIZED");
+});
+
+test("Tiến độ không đọc/ghi incident nháp và lọc bước đã xóa khi đọc", async () => {
+  const admin = await registerAndLogin(app, { role: "admin" });
+  const created = await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(admin.accessToken))
+    .send(globalIncident);
+  const id = created.body.data._id;
+  const user = await registerAndLogin(app);
+  const url = `/api/users/incident-progress/${id}`;
+  await request(app)
+    .put(url)
+    .set("Authorization", auth(user.accessToken))
+    .send({ completedSteps: [0, 1] });
+  await request(app)
+    .patch(`/api/admin/incidents/${id}`)
+    .set("Authorization", auth(admin.accessToken))
+    .send({ steps: [globalIncident.steps[0]] });
+  const read = await request(app).get(url).set("Authorization", auth(user.accessToken));
+  assert.deepEqual(read.body.data.completedSteps, [0]);
+  await request(app)
+    .patch(`/api/admin/incidents/${id}`)
+    .set("Authorization", auth(admin.accessToken))
+    .send({ status: "draft" });
+  assert.equal(
+    (await request(app).get(url).set("Authorization", auth(user.accessToken))).status,
+    404,
+  );
+  assert.equal(
+    (
+      await request(app)
+        .put(url)
+        .set("Authorization", auth(user.accessToken))
+        .send({ completedSteps: [0] })
+    ).status,
+    404,
+  );
+});
+
+test("Hai admin lưu cùng phiên bản workflow: chỉ một lần ghi thành công", async () => {
+  const admin = await registerAndLogin(app, { role: "admin" });
+  const created = await request(app)
+    .post("/api/admin/incidents")
+    .set("Authorization", auth(admin.accessToken))
+    .send(globalIncident);
+  const { _id, updatedAt } = created.body.data;
+  const responses = await Promise.all(
+    ["Bản A", "Bản B"].map((title) =>
+      request(app)
+        .patch(`/api/admin/incidents/${_id}`)
+        .set("Authorization", auth(admin.accessToken))
+        .send({ title, updatedAt }),
+    ),
+  );
+  assert.deepEqual(responses.map((response) => response.status).sort(), [200, 409]);
 });

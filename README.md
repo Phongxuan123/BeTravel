@@ -107,3 +107,11 @@ Kết quả nghiệm thu và những việc cần người phụ trách dữ li�
 
 Mobile có `patch-package` chạy trong postinstall để giữ Expo Router tương thích
 với decoder đã vá bảo mật. Giữ thư mục `mobile/patches/` khi cài đặt lại.
+
+## Rà soát 28/09/2026
+
+Đã sửa kiểm soát nội dung favorites, dữ liệu cảnh báo/tiến độ sự cố, quyền GPS,
+trạng thái đã đọc riêng tài khoản và editor không ghi đè khi refetch. Bổ sung
+lọc bài đã lưu theo quốc gia/chủ đề, nhận phiên bản hiện hành, chống ghi đè
+workflow bằng updatedAt. Backend 151, mobile 94, admin 9 test đạt; native export
+hai nền tảng đạt. Tiến độ và các kiểm tra còn chờ xem đầu `docs/PROGRESS.md`.

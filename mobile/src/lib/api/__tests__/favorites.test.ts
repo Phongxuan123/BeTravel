@@ -40,3 +40,10 @@ test('addFavorite/removeFavorite goi dung endpoint', async () => {
   await removeFavorite('incident', 'inc1');
   expect(apiRequest).toHaveBeenCalledWith('/users/favorites/incident/inc1', { method: 'DELETE' });
 });
+
+test('fixture bookmark lịch sử vẫn đọc được khi backend chỉ trả metadata an toàn', async () => {
+  const fixture = require('../../../../../contracts/fixtures/favorites.json');
+  (apiRequest as jest.Mock).mockResolvedValueOnce(fixture.data);
+  const result = await fetchFavorites();
+  expect(result.data[0]).toMatchObject({ targetId: fixture.data[0].targetId, isOutdated: true, currentArticleId: fixture.data[0].currentArticleId });
+});

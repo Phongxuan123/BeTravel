@@ -1,3 +1,5 @@
+import { geoAlertCreateSchema } from "../validators/admin.validator.js";
+import { AppError, ErrorCode } from "../core/errors.js";
 import GeoAlert from "../models/GeoAlert.js";
 import { RiskLevel } from "../core/constants.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
@@ -22,8 +24,18 @@ export const getGeoAlertById = async (id) => GeoAlert.findById(id);
 export const createGeoAlert = async (data, actorId) =>
   GeoAlert.create({ ...data, createdBy: actorId, updatedBy: actorId });
 
-export const updateGeoAlert = async (id, data, actorId) =>
-  GeoAlert.findByIdAndUpdate(id, { ...data, updatedBy: actorId }, { returnDocument: "after" });
+export const updateGeoAlert = async (id, data, actorId) => {
+  const existing = await GeoAlert.findById(id);
+  if (!existing) throw new AppError(ErrorCode.NOT_FOUND, "Không tìm thấy cảnh báo");
+  // PATCH phải kiểm toàn bộ kết quả ghép, nếu đổi scope mà thiếu tâm sẽ làm API public crash.
+  const merged = { ...existing.toObject(), ...data };
+  if (merged.linkedArticleId) merged.linkedArticleId = String(merged.linkedArticleId);
+  geoAlertCreateSchema.parse(merged);
+  existing.$where = { updatedAt: existing.updatedAt };
+  Object.assign(existing, data, { updatedBy: actorId });
+  await existing.save();
+  return existing;
+};
 
 export const deleteGeoAlert = async (id) => GeoAlert.findByIdAndDelete(id);
 
@@ -40,7 +52,8 @@ function haversineMeters(lat1, lng1, lat2, lng2) {
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
   const a =
-    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -65,6 +78,13 @@ export const findApplicable = async ({ country, lat, lng }) => {
   if (lat !== undefined && lng !== undefined) {
     const candidates = await GeoAlert.find({ ...baseFilter, scope: "area" });
     areaAlerts = candidates.filter((alert) => {
+      // Bỏ bản ghi cũ sai cấu trúc để một cảnh báo lỗi không làm hỏng toàn bộ danh sách.
+      if (
+        !alert.center?.coordinates ||
+        alert.center.coordinates.length !== 2 ||
+        !(alert.radiusM > 0)
+      )
+        return false;
       const [centerLng, centerLat] = alert.center.coordinates;
       return haversineMeters(lat, lng, centerLat, centerLng) <= alert.radiusM;
     });

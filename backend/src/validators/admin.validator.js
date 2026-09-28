@@ -280,7 +280,9 @@ export const incidentCreateSchema = z.object({
   status: z.enum(["draft", "published"]).optional(),
 });
 
-export const incidentUpdateSchema = incidentCreateSchema.partial();
+export const incidentUpdateSchema = incidentCreateSchema.partial().extend({
+  updatedAt: z.iso.datetime().optional(),
+});
 
 export const incidentListQuerySchema = paginationQuerySchema.extend({
   countryCode: countryCodeSchema.optional(),
@@ -331,10 +333,15 @@ const geoAlertBaseSchema = z.object({
 
 // Canh bao khu vuc BAT BUOC co tam + ban kinh -- canh bao ca nuoc thi khong
 // can (khong co "khu vuc" de ve tren ban do).
-export const geoAlertCreateSchema = geoAlertBaseSchema.refine(
-  (data) => data.scope !== "area" || Boolean(data.center && data.radiusM),
-  { message: "Cảnh báo khu vực cần chọn tâm và bán kính trên bản đồ", path: ["center"] },
-);
+export const geoAlertCreateSchema = geoAlertBaseSchema
+  .refine((data) => data.scope !== "area" || Boolean(data.center && data.radiusM), {
+    message: "Cảnh báo khu vực cần chọn tâm và bán kính trên bản đồ",
+    path: ["center"],
+  })
+  .refine((data) => !data.effectiveTo || data.effectiveTo >= data.effectiveFrom, {
+    message: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu",
+    path: ["effectiveTo"],
+  });
 
 export const geoAlertUpdateSchema = geoAlertBaseSchema.partial();
 

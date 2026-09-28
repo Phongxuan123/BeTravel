@@ -24,8 +24,13 @@ type ApiGeoAlert = {
 
 const DISMISS_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-async function getDismissedMap(): Promise<Record<string, string>> {
-  return (await getJSON<Record<string, string>>(StorageKeys.dismissedAlerts)) ?? {};
+type AlertsContext = { countryCode: string; owner?: string | null; lat?: number; lng?: number };
+
+const dismissedKey = (context: AlertsContext | null) =>
+  `${StorageKeys.dismissedAlerts}:real:${encodeURIComponent(context?.owner ?? 'guest')}`;
+
+async function getDismissedMap(key: string): Promise<Record<string, string>> {
+  return (await getJSON<Record<string, string>>(key)) ?? {};
 }
 
 function isDismissedRecently(dismissedAt: string | undefined): boolean {
@@ -56,10 +61,10 @@ function adaptAlert(api: ApiGeoAlert, dismissed: Record<string, string>): Alert 
   };
 }
 
-let currentContext: { countryCode: string; lat?: number; lng?: number } | null = null;
+let currentContext: AlertsContext | null = null;
 
 /** Goi TRUOC fetchAlerts() moi khi quoc gia/vi tri doi -- xem usePollAlerts.ts. */
-export function setAlertsContext(context: { countryCode: string; lat?: number; lng?: number }): void {
+export function setAlertsContext(context: AlertsContext | null): void {
   currentContext = context;
 }
 
@@ -70,25 +75,36 @@ export async function fetchAlerts(): Promise<{ ok: true; data: Alert[] }> {
   if (currentContext.lat !== undefined) params.set('lat', String(currentContext.lat));
   if (currentContext.lng !== undefined) params.set('lng', String(currentContext.lng));
 
+  const context = currentContext;
+  const key = dismissedKey(context);
   const raw = await apiRequest<ApiGeoAlert[]>(`/alerts/applicable?${params.toString()}`);
-  const dismissed = await getDismissedMap();
+  const dismissed = await getDismissedMap(key);
+  if (context !== currentContext) return { ok: true, data: [] };
   return { ok: true, data: raw.map((a) => adaptAlert(a, dismissed)) };
 }
 
+// Xếp hàng thao tác đọc-sửa-ghi để hai lần đóng cảnh báo không ghi đè nhau.
+let dismissQueue: Promise<void> = Promise.resolve();
+
+function saveDismissals(key: string, ids: string[]): Promise<void> {
+  const write = dismissQueue.then(async () => {
+    const dismissed = await getDismissedMap(key);
+    const now = new Date().toISOString();
+    ids.forEach((id) => { dismissed[id] = now; });
+    await setJSON(key, dismissed);
+  });
+  dismissQueue = write.catch(() => undefined);
+  return write;
+}
+
 export async function markAlertRead(id: string): Promise<{ ok: true; data: null }> {
-  const dismissed = await getDismissedMap();
-  dismissed[id] = new Date().toISOString();
-  await setJSON(StorageKeys.dismissedAlerts, dismissed);
+  await saveDismissals(dismissedKey(currentContext), [id]);
   return { ok: true, data: null };
 }
 
 export async function markAllAlertsRead(): Promise<{ ok: true; data: null }> {
+  const key = dismissedKey(currentContext);
   const { data } = await fetchAlerts();
-  const dismissed = await getDismissedMap();
-  const now = new Date().toISOString();
-  data.forEach((a) => {
-    dismissed[a.id] = now;
-  });
-  await setJSON(StorageKeys.dismissedAlerts, dismissed);
+  await saveDismissals(key, data.map((alert) => alert.id));
   return { ok: true, data: null };
 }

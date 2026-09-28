@@ -60,3 +60,26 @@ test('markAlertRead luu vao AsyncStorage, alert dismiss trong 24h khong hien lai
   const result = await fetchAlerts();
   expect(result.data[0].read).toBe(true);
 });
+
+test('đóng cảnh báo tách tài khoản, hai thao tác đồng thời không mất dữ liệu', async () => {
+  const store: Record<string, Record<string, string>> = {};
+  (getJSON as jest.Mock).mockImplementation(async (key) => ({ ...store[key] }));
+  (setJSON as jest.Mock).mockImplementation(async (key, value) => { store[key] = { ...value }; });
+  setAlertsContext({ countryCode: 'KR', owner: 'a@test.local' });
+  await Promise.all([markAlertRead('a1'), markAlertRead('a2')]);
+  (apiRequest as jest.Mock).mockResolvedValue([raw]);
+  expect((await fetchAlerts()).data[0].read).toBe(true);
+  expect(Object.values(store)[0]).toHaveProperty('a2');
+  setAlertsContext({ countryCode: 'KR', owner: 'b@test.local' });
+  expect((await fetchAlerts()).data[0].read).toBe(false);
+});
+
+test('bỏ response của quốc gia cũ khi chuyển context trong lúc request chạy', async () => {
+  let finish!: (value: unknown) => void;
+  (apiRequest as jest.Mock).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+  setAlertsContext({ countryCode: 'KR', owner: 'a@test.local' });
+  const pending = fetchAlerts();
+  setAlertsContext({ countryCode: 'JP', owner: 'a@test.local' });
+  finish([raw]);
+  expect((await pending).data).toEqual([]);
+});

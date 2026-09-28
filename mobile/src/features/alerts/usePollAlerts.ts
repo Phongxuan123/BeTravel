@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Location from 'expo-location';
@@ -21,50 +21,59 @@ const MIN_POLL_INTERVAL_MS = 5 * 60 * 1000;
  * choi GPS van nhan canh bao cap quoc gia qua setAlertsContext khong co lat/lng).
  */
 export function usePollAlerts() {
-  const { isGuest } = useAuth();
+  const { isGuest, user } = useAuth();
   const { countryCode } = useCountry();
   const queryClient = useQueryClient();
-  const lastPolledAt = useRef(0);
-
+  const owner = user?.email ?? null;
   const preferencesQuery = useQuery({ queryKey: ['preferences'], queryFn: fetchPreferences, enabled: !isGuest });
-  const locationConsent = preferencesQuery.data?.data.locationConsent ?? true;
-
-  const poll = async (force = false) => {
-    if (!countryCode) return;
-    const now = Date.now();
-    if (!force && now - lastPolledAt.current < MIN_POLL_INTERVAL_MS) return;
-    lastPolledAt.current = now;
-
-    let coords: { lat: number; lng: number } | undefined;
-    if (locationConsent) {
-      try {
-        const permission = await Location.getForegroundPermissionsAsync();
-        if (permission.status === 'granted') {
-          const position = await Location.getLastKnownPositionAsync();
-          if (position) coords = { lat: position.coords.latitude, lng: position.coords.longitude };
-        }
-      } catch {
-        // Khong lay duoc vi tri -- tiep tuc voi CHI canh bao cap quoc gia.
-      }
-    }
-
-    setAlertsContext({ countryCode, lat: coords?.lat, lng: coords?.lng });
-    queryClient.invalidateQueries({ queryKey: ['alerts'] });
-  };
+  // Chưa tải được lựa chọn của người dùng thì chưa đọc GPS.
+  const locationConsent = preferencesQuery.data?.data.locationConsent === true;
+  const safetyEnabled = preferencesQuery.data?.data.alerts.safety !== false;
 
   useEffect(() => {
-    poll(true);
+    let cancelled = false;
+    let lastPolledAt = 0;
+    setAlertsContext(isGuest ? null : { countryCode, owner });
+    if (isGuest || !countryCode) return;
+
+    const poll = async (force = false) => {
+      if (AppState.currentState !== 'active') return;
+      const now = Date.now();
+      if (!force && now - lastPolledAt < MIN_POLL_INTERVAL_MS) return;
+      lastPolledAt = now;
+      let coords: { lat: number; lng: number } | undefined;
+      if (locationConsent) {
+        try {
+          const permission = await Location.getForegroundPermissionsAsync();
+          if (cancelled) return;
+          if (permission.status === 'granted') {
+            const position = await Location.getLastKnownPositionAsync({ maxAge: MIN_POLL_INTERVAL_MS });
+            if (position) coords = { lat: position.coords.latitude, lng: position.coords.longitude };
+          }
+        } catch {
+          // Không lấy được GPS thì vẫn tra cảnh báo cấp quốc gia.
+        }
+      }
+      // Bỏ kết quả GPS của phiên/quốc gia/đồng ý đã thay đổi trong lúc chờ.
+      if (cancelled) return;
+      const latestPreferences = queryClient.getQueryData<Awaited<ReturnType<typeof fetchPreferences>>>(['preferences']);
+      if (latestPreferences?.data.locationConsent !== true) coords = undefined;
+      setAlertsContext({ countryCode, owner, lat: coords?.lat, lng: coords?.lng });
+      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    };
+
+    void poll(true);
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') poll();
+      if (state === 'active') void poll();
     });
-    const heartbeat = setInterval(() => poll(), MIN_POLL_INTERVAL_MS);
+    const heartbeat = setInterval(() => void poll(), MIN_POLL_INTERVAL_MS);
     return () => {
+      cancelled = true;
       subscription.remove();
       clearInterval(heartbeat);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countryCode, locationConsent]);
+  }, [countryCode, locationConsent, isGuest, owner, queryClient]);
 
   const alertsQuery = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts, enabled: Boolean(countryCode) && !isGuest });
-  return { alerts: alertsQuery.data?.data ?? [] };
+  return { alerts: !isGuest && safetyEnabled ? alertsQuery.data?.data ?? [] : [] };
 }

@@ -38,14 +38,14 @@ export default function ExploreScreen() {
 
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
-  // "Da luu" duoc loc CLIENT-SIDE sau khi fetch (favorites la mot nguon du
-  // lieu rieng, khong phai tham so loc cua API bai luat) -- content.ts luon
-  // tra rong cho tham so nay.
+  const useServerSavedFilter = savedOnly && process.env.EXPO_PUBLIC_USE_MOCKS !== 'true';
   const articlesQuery = useQuery({
-    queryKey: ['articles', countryCode, topicFilter],
-    queryFn: () => fetchArticles(countryCode, { topicKey: topicFilter ?? undefined }),
+    queryKey: ['articles', countryCode, topicFilter, savedOnly],
+    queryFn: () => fetchArticles(countryCode, { topicKey: topicFilter ?? undefined, savedOnly: useServerSavedFilter }),
   });
-  const visibleArticles = (articlesQuery.data?.data ?? []).filter((a) => !savedOnly || isSaved(a.id));
+  const visibleArticles = (articlesQuery.data?.data ?? []).filter(
+    (article) => !savedOnly || useServerSavedFilter || isSaved(article.id),
+  );
 
   const topicFilterLabel = topicsQuery.data?.data.find((t) => t.key === topicFilter)?.label ?? 'Chủ đề';
 
@@ -138,6 +138,11 @@ export default function ExploreScreen() {
             onAction={() => setTopicFilter(null)}
           />
           <View className="mt-3" style={{ gap: 12 }}>
+            {!articlesQuery.isLoading && !articlesQuery.isError && visibleArticles.length === 0 && (
+              <Text className="text-sm text-muted">
+                {savedOnly ? 'Chưa có quy định đã lưu trong mục này.' : 'Chưa có quy định được xuất bản trong mục này.'}
+              </Text>
+            )}
             {visibleArticles.map((article) => (
               <ArticleCard
                 key={article.id}

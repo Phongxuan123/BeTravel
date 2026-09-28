@@ -1,8 +1,39 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
-> Trạng thái hiện hành: xem mục **B9 — HARDENING, SEED, QA, TÀI LIỆU BÀN
-> GIAO** bên dưới và `PROGRESS.md`. Các mục B1–B8 và "Rà soát toàn hệ thống
-> 24/09/2026" là lịch sử; không dùng những dòng tồn đọng cũ để kết luận một
-> lỗi vẫn còn sau B9.
+> Trạng thái hiện hành: xem **Rà soát 28/09/2026** ngay dưới đây và
+> `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
+
+## Rà soát 28/09/2026 — bảo vệ dữ liệu và hoàn thiện favorites
+
+Phạm vi: ba workspace, cấu trúc/contracts/Docs và bộ test hiện có. Đây là
+kiểm tra dự án và môi trường chạy local, không phải chứng nhận toàn hệ điều hành.
+Không sửa dữ liệu Atlas, không gọi provider AI thật, không đổi kiến trúc.
+
+| Nhóm/file | Loại lỗi và nguyên nhân | Sửa và bằng chứng |
+|---|---|---|
+| `backend/src/services/favorite.service.js` | W5: truy vấn theo ID không lọc trạng thái; trả cả nội dung lịch sử | Filter công khai/verified; lịch sử chỉ metadata; `favorites.test.js` chứng minh giữ bookmark trong DB nhưng không lộ nội dung |
+| `backend/src/services/incident.service.js` | Data: đọc tiến độ không lọc bước đã mất/incident draft; UPDATE không có revision | Kiểm published khi đọc/ghi, lọc order, thêm CAS updatedAt; test hai request cùng revision chỉ một thành công |
+| `backend/src/services/geoAlert.service.js`, `validators/admin.validator.js` | Runtime/Data: PATCH scope bỏ qua ràng buộc tạo mới, area thiếu center làm public crash | Validate sau ghép, kiểm ngày, CAS khi lưu, bỏ bản ghi cũ sai cấu trúc; test PATCH và public |
+| `admin/src/pages/IncidentEditorPage.tsx` | W4 + mất dữ liệu: effect lấy refetch đè form đang nhập | Draft độc lập, giữ revision gốc, cập nhật revision sau lưu; test DOM refetch/lưu |
+| `mobile/src/lib/api/incidents.ts` | Runtime/UI: catch mọi lỗi thành 404 giả | Chỉ nuốt NOT_FOUND; test mạng vẫn reject |
+| `mobile/src/features/alerts/usePollAlerts.ts` | W5: mặc định consent=true trước khi đọc server, poll guest/nền, response GPS cũ | Default chưa đồng ý, chặn guest/nền, kiểm lại consent sau await, hủy kết quả cũ; test pending consent và revoke trong lúc GPS chạy |
+| `mobile/src/lib/api/alerts.ts` | Data: dismiss dùng chung tài khoản, ghi cạnh tranh làm mất dấu đã đọc | Khóa có owner, hàng đợi ghi, bỏ response context cũ; test hai tài khoản + ghi đồng thời |
+| `mobile/src/lib/api/content.ts`, `features/explore/useSavedArticles.ts`, `app/explore/index.tsx` | UI/Data: savedOnly trả rỗng; bookmark cũ không khớp ID phiên bản mới | Lấy bài hiện hành theo slug, lọc country/topic, gộp trùng, bỏ lưu ID gốc; giữ mock; test service/hook và empty state |
+| `contracts/README.md`, `fixtures/favorites.json` | Contract chưa phân biệt metadata lịch sử với nội dung pháp lý | Cập nhật trước code; backend/mobile kiểm cùng fixture |
+
+Quy tắc áp dụng chính: 7 (lỗi rõ ràng), 11 (giải thích ràng buộc), 13 (security/
+regression), 3/9 (tận dụng API/provider/design system). Một warning lint admin
+đã hết; không thêm dependency. Hàm orchestration favorites/poll dài hơn 20 dòng
+được giữ để thấy rõ thứ tự filter/await/cleanup, không tách vì chỉ để đạt số dòng.
+
+Kiểm tra cuối: backend 151 test, mobile 94 test, admin 9 test; lint/typecheck,
+admin build và native export iOS/Android đạt. Bộ golden nằm trong backend test.
+Jest mutation test đặt GC Infinity và cleanup client để không giữ tiến trình sống.
+
+Giới hạn: npm audit bị auto-review từ chối gửi metadata dependency ra npm;
+Expo Doctor thiếu CLI local và lỗi DNS. Chưa UAT/Atlas search/provider thật hoặc
+EAS build ký. Chưa có cơ chế định danh bước workflow để bảo toàn tiến độ khi
+admin đổi thứ tự; chưa có CAS bắt buộc cho mọi CRUD. Xem PROGRESS mục 28/09.
+
 
 
 Phiên bản : v0.2.0 --> v0.5.0
@@ -538,6 +569,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.09.28 | 28/09/2026 | Rà soát sau B9 | Favorites/content visibility, incident/CAS, GeoAlert, GPS/consent, dismiss, saved filter; 151/94/9 test |
 | v0.2.0    |      | —     | Trạng thái ban đầu |
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |
 | v0.3.1    | 22/09/2026 | B1 (điều chỉnh) | Phone bắt buộc lại + UI đăng ký; login-phone chặn bằng màn hình tĩnh; sửa 2 bug phát hiện qua smoke test thật trên Atlas (import sai đường dẫn, `refreshToken: null` lọt envelope) |
