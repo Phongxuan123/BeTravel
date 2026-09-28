@@ -147,24 +147,6 @@ export const loginUser = async ({ identifier, password, rememberMe }, context = 
   return createSession(user, rememberMe ? env.REFRESH_TTL_DAYS : 1, context);
 };
 
-const generateUniqueGoogleUsername = async (email) => {
-  const emailPrefix = email
-    .split("@")[0]
-    .replace(/[^a-z0-9_]/g, "")
-    .slice(0, 20);
-
-  const base = emailPrefix || "googleuser";
-  let username = base;
-  let counter = 1;
-
-  while (await User.exists({ username })) {
-    username = `${base}${counter}`;
-    counter += 1;
-  }
-
-  return username;
-};
-
 export const loginWithGoogle = async ({ googleId, email, fullName }, context = {}) => {
   if (!googleId || typeof googleId !== "string") {
     throw new Error("GOOGLE_ID_INVALID");
@@ -210,7 +192,10 @@ export const loginWithGoogle = async ({ googleId, email, fullName }, context = {
     throw new Error("GOOGLE_EMAIL_ALREADY_REGISTERED");
   }
 
-  const username = await generateUniqueGoogleUsername(normalizedEmail);
+  // Dung chung bo sinh username voi dang ky thuong: email co phan truoc "@"
+  // ngan hon 3 ky tu (vd "ab@gmail.com") phai co base du dai, neu khong
+  // User.create vi pham minlength va dang nhap Google that bai.
+  const username = await generateUniqueUsername(normalizedEmail);
 
   user = await User.create({
     username,

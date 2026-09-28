@@ -6,10 +6,16 @@ import { FallbackReason } from "../core/constants.js";
  * no. Day la pure function de test de dang, khong phu thuoc DB/network.
  */
 
+// Mot danh sach don vi tien duy nhat cho CA phat hien lan doi chieu so voi
+// nguon -- lech nhau thi so tien ghi bang ky hieu thieu (vd "₫", "$") duoc
+// phat hien la dinh luong nhung lai lot qua buoc doi chieu.
+const CURRENCY_UNITS = String.raw`KRW|won|원|THB|baht|บาท|USD|\$|SGD|JPY|yen|円|VNĐ|VND|đồng|₫|triệu|nghìn`;
+const AMOUNT = new RegExp(String.raw`\d[\d.,]*\s*(?:${CURRENCY_UNITS})`, "giu");
+
 // Bat tuyen bo phap ly dinh luong -- thu LLM hay bia nhat.
 const QUANTITATIVE_CLAIM = new RegExp(
   [
-    String.raw`\d[\d.,]*\s*(KRW|won|원|THB|baht|บาท|USD|\$|SGD|JPY|yen|円|VNĐ|VND|đồng|₫|triệu|nghìn)`,
+    String.raw`\d[\d.,]*\s*(${CURRENCY_UNITS})`,
     String.raw`điều\s+\d+`,
     String.raw`khoản\s+\d+`,
     String.raw`\d+\s*(năm|tháng|ngày)\s*(tù|giam|phạt)`,
@@ -76,11 +82,7 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
     if (!QUANTITATIVE_CLAIM.test(prose)) continue;
     const markers = [...block.matchAll(/\[S(\d+)\]/g)].map((match) => `S${match[1]}`);
     const sourceText = markers.map((marker) => retrieved.get(marker)?.text ?? "").join(" ");
-    const amounts = [
-      ...prose.matchAll(
-        /\d[\d.,]*\s*(?:KRW|won|원|THB|baht|USD|SGD|JPY|yen|VNĐ|VND|đồng|triệu|nghìn)/giu,
-      ),
-    ].map(([amount]) =>
+    const amounts = [...prose.matchAll(AMOUNT)].map(([amount]) =>
       amount
         .match(/^[\d.,]+/)[0]
         .replace(/[.,]+$/g, "")

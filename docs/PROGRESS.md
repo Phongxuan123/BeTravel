@@ -4,6 +4,24 @@ Cập nhật lần cuối: 2026-09-28 · Phiên: rà soát sau B9, bảo vệ d�
 Nhánh: `feature/audit-20260928`, tách từ `feature/trip-management` tại `bbe3378`.
 Nhánh gốc ahead origin 18 commit trước phiên; không tự pull/rebase/push hoặc merge.
 
+## Phiên 28/09 (b) — quét test toàn dự án
+
+Nhánh `feature/test-sweep-20260928`. Người dùng yêu cầu viết test toàn dự án,
+tìm lỗi qua test và sửa. Chi tiết từng lỗi: OPTIMIZATION_REPORT mục "Quét test".
+
+- Lỗi đã sửa (mỗi lỗi có test fail trước khi sửa): chuẩn hóa "đ" trong tìm
+  kiếm/RAG; guard bỏ sót số tiền viết bằng ký hiệu (₫, $, 円, บาท); chat từ
+  chối nhầm khi tên nước là từ thường ("Lào"/"lao động"); Google login với
+  email ngắn; `npm test` backend không chạy trên Windows/Node 20; test phụ
+  thuộc `backend/.env`.
+- Kết quả: backend 174/174, mobile 106/106, admin 16/16; lint/typecheck/build đạt.
+- **Cần người làm:** máy local đang Node 20.19.6, dự án yêu cầu >=22.13 (admin
+  test cần Node 22; đã chạy tạm qua `npx -p node@22`). Nên chuyển nvm sang 22.
+- Dữ liệu cũ: `titleNorm`/chunk `textNorm` lưu trước bản sửa vẫn còn "đ"; tìm
+  kiếm đã khớp cả hai dạng. Chạy reindex/lưu lại bài sẽ đồng bộ, không bắt buộc.
+- Nợ: format lại `auth.service.js`, `publicContent.service.js`,
+  `memory.driver.js` (lệch prettier từ trước) trong một commit format riêng.
+
 ## Phiên 28/09 — bàn giao hiện hành
 
 Tiến độ mã nguồn và kiểm tra local: `[######] 6/6`.

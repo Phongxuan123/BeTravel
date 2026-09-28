@@ -2,6 +2,31 @@
 > Trạng thái hiện hành: xem **Rà soát 28/09/2026** ngay dưới đây và
 > `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
 
+## Quét test toàn dự án 28/09/2026 — viết test, tìm lỗi, sửa
+
+Phạm vi: bổ sung test cho module thuần chưa có test (chuẩn hóa tiếng Việt,
+chunking, RRF, phân trang, guard, parse JSON LLM; date/format/password mobile;
+apiClient admin) và test hồi quy chạy DB. Mỗi lỗi dưới đây có test fail trước
+khi sửa, pass sau khi sửa (đã chạy đối chứng bằng cách tạm gỡ phần sửa).
+
+| Nhóm/file | Loại lỗi và nguyên nhân | Sửa và bằng chứng |
+|---|---|---|
+| `backend/src/utils/textNormalize.js`, `publicContent.service.js`, `rag/search/memory.driver.js` | Data: NFD không tách "đ" --> tìm "dang ky" không khớp "Đăng ký" | Đổi đ/Đ --> d; tìm kiếm khớp cả "d" lẫn "đ" để bài/chunk lưu trước bản sửa không mất kết quả; `regression.sweep.test.js` |
+| `backend/src/rag/guard.js` | W5 (chống ảo giác): danh sách đơn vị tiền lúc phát hiện và lúc đối chiếu lệch nhau --> "900.000₫ [S1]" lọt qua dù nguồn ghi số khác | Một hằng `CURRENCY_UNITS` dùng chung; `unit.textAndRag.test.js` (₫, $) |
+| `backend/src/services/chat.service.js` | Logic: phát hiện nước khác bằng chuỗi con không dấu --> nước "Lào" làm mọi câu hỏi "lao động" bị từ chối | `containsPhrase`: ranh giới từ, so giữ dấu trước, chỉ so không dấu khi cả câu gõ không dấu |
+| `backend/src/services/auth.service.js` | Runtime: Google login email "ab@..." sinh username 2 ký tự, vi phạm minlength 3 | Bỏ hàm sinh username riêng, dùng chung `generateUniqueUsername` (Rule 3) |
+| `backend/package.json`, `scripts/run-tests.js` | Tooling: `node --test "test/**/*.test.js"` không chạy trên Windows/Node 20 ("Could not find") | Script tự liệt kê file test, chạy giống nhau mọi OS |
+| `backend/test/setup.js` | Test phụ thuộc `backend/.env`: file import tĩnh làm env.js validate trước khi DB tạm gán URI | URI giữ chỗ chỉ để qua validate; kết nối vẫn dùng DB tạm |
+
+Kiểm tra cuối: backend lint sạch, **174/174** (gồm golden KR); mobile typecheck
+đạt, **106/106** (22 suite); admin typecheck/lint/build đạt, **16/16** chạy bằng
+Node 22. Máy local đang ở Node 20.19.6 (dự án yêu cầu >=22.13): jsdom 30 của
+admin không khởi động được trên Node 20 (`markAsUncloneable`) -- lỗi môi trường,
+không phải mã nguồn. `prettier --check` báo cả file không đụng tới do
+`core.autocrlf=true` (CRLF) so với `endOfLine: lf`; bỏ qua đầu dòng thì file mới
+sửa đạt. `auth.service.js`, `publicContent.service.js`, `memory.driver.js` vốn
+lệch format từ trước, không format lại trong commit logic này.
+
 ## Rà soát 28/09/2026 — bảo vệ dữ liệu và hoàn thiện favorites
 
 Phạm vi: ba workspace, cấu trúc/contracts/Docs và bộ test hiện có. Đây là
@@ -569,6 +594,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.09.28b | 28/09/2026 | Quét test | Test module thuần + hồi quy; sửa chuẩn hóa "đ", guard đơn vị tiền, phát hiện tên nước, username Google, script test Windows; 174/106/16 test |
 | 2026.09.28 | 28/09/2026 | Rà soát sau B9 | Favorites/content visibility, incident/CAS, GeoAlert, GPS/consent, dismiss, saved filter; 151/94/9 test |
 | v0.2.0    |      | —     | Trạng thái ban đầu |
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |

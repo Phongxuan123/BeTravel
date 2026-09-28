@@ -3,7 +3,7 @@ import LegalTopic from "../models/LegalTopic.js";
 import LegalArticle from "../models/LegalArticle.js";
 import { ContentStatus } from "../core/constants.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
-import { normalizeVi } from "../utils/textNormalize.js";
+import { buildNormalizedWordRegex, normalizeVi } from "../utils/textNormalize.js";
 
 /*
  * Tang truy van CONG KHAI cho noi dung phap ly (B3). Khac voi cac service o
@@ -97,8 +97,6 @@ export const getArticle = async (countryCode, slug) => {
  * nay sang goi AtlasSearchDriver -- chu ky ham va shape SearchHit tra ve GIU
  * NGUYEN, controller/route/mobile khong phai sua (CLAUDE.md Phan 4.1 muc 5).
  */
-const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
 export const searchArticles = async (query) => {
   const pagination = parsePagination(query);
   // Tach theo tung tu, MOI tu phai xuat hien o titleNorm hoac summaryNorm
@@ -107,7 +105,7 @@ export const searchArticles = async (query) => {
   const words = normalizeVi(query.q)
     .split(/\s+/)
     .filter(Boolean)
-    .map((word) => new RegExp(escapeRegex(word), "i"));
+    .map(buildNormalizedWordRegex);
 
   const filter = {
     ...PUBLISHED_CURRENT_FILTER,

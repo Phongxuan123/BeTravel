@@ -1,5 +1,6 @@
 import LegalChunk from "../../models/LegalChunk.js";
 import { ContentStatus } from "../../core/constants.js";
+import { normalizeVi } from "../../utils/textNormalize.js";
 
 /*
  * MemorySearchDriver -- phuong an du phong khi Atlas Search truc trac hoac
@@ -80,7 +81,9 @@ export function createMemorySearchDriver() {
       return chunks
         .filter((c) => matchesFilter(c, { countryCode, topicSlug }))
         .map((c) => {
-          const matched = words.filter((w) => c.textNorm.includes(w)).length;
+          // Chunk index truoc khi normalizeVi doi "đ" -> "d" van con "đ".
+          const textNorm = normalizeVi(c.textNorm);
+          const matched = words.filter((w) => textNorm.includes(w)).length;
           return { chunk: c, matched };
         })
         .filter((x) => x.matched > 0)
