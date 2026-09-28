@@ -13,6 +13,7 @@ import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 import { haversineKm } from '@/lib/geo';
+import { openPhone } from '@/lib/openExternal';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -111,7 +112,7 @@ export default function SosHubScreen() {
             </Text>
             <Pressable
               className="mt-4 h-[58px] flex-row items-center justify-center gap-2 rounded-lg bg-white"
-              disabled={!country.emergencyNumbers.police} onPress={() => openLink(`tel:${country.emergencyNumbers.police}`)}
+              disabled={!country.emergencyNumbers.police} onPress={() => void openPhone(country.emergencyNumbers.police)}
               accessibilityLabel={`Gọi cảnh sát số ${country.emergencyNumbers.police}`}
             >
               <Phone size={20} color={colors.danger} />
@@ -141,7 +142,7 @@ export default function SosHubScreen() {
               )}
             </View>
             <View className="mt-3 flex-row" style={{ gap: 10 }}>
-              <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" disabled={!country.embassy.phone} onPress={() => openLink(`tel:${country.embassy.phone}`)}>
+              <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" disabled={!country.embassy.phone} onPress={() => void openPhone(country.embassy.phone)}>
                 <Phone size={18} color="#fff" />
                 <Text className="font-body-bold text-white">Gọi ngay</Text>
               </Pressable>
@@ -182,7 +183,7 @@ export default function SosHubScreen() {
 function ServiceTile({ label, number, tone, icon }: { label: string; number: string; tone: 'red' | 'orange' | 'blue'; icon: React.ReactNode }) {
   const textColor = tone === 'red' ? colors.danger : tone === 'orange' ? colors.warning : colors.primary;
   return (
-    <Pressable disabled={!number} onPress={() => Linking.openURL(`tel:${number}`).catch(() => Alert.alert('Không gọi được', `Vui lòng gọi trực tiếp số ${number}.`))} className="h-[104px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface">
+    <Pressable disabled={!number} onPress={() => void openPhone(number)} className="h-[104px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface">
       <IconTile tone={tone} size={36}>
         {icon}
       </IconTile>

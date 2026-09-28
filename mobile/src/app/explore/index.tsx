@@ -15,7 +15,7 @@ import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchTopics, fetchArticles, fetchCountries } from '@/lib/data';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
-import type { Topic, Article } from '@/mocks/schemas';
+import type { Topic, Article } from '@/lib/data';
 
 const TOPIC_ICON: Record<Topic['iconKey'], { icon: typeof FileText; tone: Tone }> = {
   entry: { icon: BriefcaseBusiness, tone: 'blue' },

@@ -9,7 +9,8 @@ Cập nhật lần cuối: 2026-09-28 · Phiên: QA-1 (docs/07_QA_BugHunt.md: Ph
 | QA-1 Pha 0 + Pha 1 + M01-M04 | xong | Nhánh `feature/qa-20260928`. Sửa 5 lỗi (2 S1 lộ PII/mật khẩu mặc định, 1 S2 xóa Country/Topic đang tham chiếu, 2 S3). Backend 174, mobile 95, admin 9 test xanh |
 | QA-2 M05-M07 | xong | Sửa 10 lỗi: 3 S1 (guard bỏ sót 5 dạng định lượng; 2 bất biến RAG không có test bảo vệ -- phát hiện qua mutation testing), 5 S2 (lộ trường nội bộ bài luật, tìm `đ`, trộn embedding model, chat gửi trùng, bỏ qua needsOfficialHelp), 2 S3. Backend 198, mobile 99, admin 9 test xanh |
 | QA-3 M08-M12 | xong | Sửa 4 lỗi: 1 S1 (mở app khi mất mạng --> SOS Hub trắng, nay cache quốc gia + màn dự phòng), 2 S2 (translate from/to không giới hạn vào prompt LLM; favorites lộ trường nội bộ bài luật), 1 S3 (backend cho trip tới nước coming_soon). Backend 211 (+1 todo nợ H-09.a), mobile 102, admin 9 |
-| QA-4..QA-5 | chưa làm | QA-5 cần người bổ sung PHAN 6-12 của 07 |
+| QA-4 M13-M15 | xong | Sửa 6 lỗi: 2 S2 (không có ErrorBoundary cấp route; admin xác minh hàng loạt điểm SOS/re-index không xác nhận), D17 admin hard-code quốc gia, 3 S3 (refresh lộ cờ `rotated` + fixture admin lệch; 7 chỗ gọi điện/link không bắt lỗi; màn hình import type từ @/mocks). Mọi fixture có backend + client. Backend 214 (+1 todo), mobile 111, admin 11 |
+| QA-5 | chưa làm | PHAN 6-12 của 07 thiếu --> dùng kịch bản tự đề xuất |
 
 Việc của người phát sinh từ QA-1 (chi tiết QA_REPORT mục 7): đổi ngay mật khẩu admin đã
 seed; quyết định rewrite lịch sử git; chốt QA-D13 (SOS chưa xác minh), QA-M04-01 (đồ thị

@@ -18,7 +18,7 @@ import { ApiError } from '@/lib/api/http';
 import { useAuth } from '@/lib/auth';
 import { now, parseISODate } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
-import type { Trip } from '@/mocks/schemas';
+import type { Trip } from '@/lib/data';
 
 type State = {
   countryCode: string | null;

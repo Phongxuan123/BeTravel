@@ -10,7 +10,7 @@
 | QA-1 | Pha 0 + Pha 1 (D01-D40) + M01-M04 | xong | 28/09/2026 |
 | QA-2 | M05-M07 | xong | 28/09/2026 |
 | QA-3 | M08-M12 | xong | 28/09/2026 |
-| QA-4 | M13-M15 | chưa làm | |
+| QA-4 | M13-M15 | xong | 28/09/2026 |
 | QA-5 | M16-M17 + Pha 3 + Pha 4 + báo cáo tổng | chưa làm | |
 
 Nhánh: `feature/qa-20260928`, tách từ `main` tại `2d681d8`. Không push, không merge.
@@ -354,6 +354,96 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | H-12.a N request bài đã lưu | [*] | `fetchArticles(savedOnly)` gọi chi tiết từng slug --> 50 bookmark = 51 request. Ghi S3 hiệu năng QA3-M12-03, không đổi contract |
 | H-12.b xóa trip đang current | [v] | Không trip nào thành current; mock cùng hành vi |
 
+---
+
+## 3D. PHA 2 — MODULE (QA-4: M13-M15)
+
+Test mới: mobile `RouteErrorFallback.test.tsx` (2), `openExternal.test.ts` (3), `contractsB7B8.test.ts` (4);
+admin `DangerousActions.test.tsx` (2); backend `contracts.test.js` +3 (5 fixture chưa từng được backend đối chiếu).
+
+### M13 — Mobile
+
+**Bảng trạng thái màn hình (INV-13.2)** — `L` loading · `E` empty · `R` error · `T` nút thử lại.
+
+| Màn hình | L | E | R | T | Ghi chú |
+|---|---|---|---|---|---|
+| `index` (Home) | [v] Skeleton | [v] | [v] | [X] | Lỗi hiển thị chung một dòng |
+| `explore/index` | [v] | [v] | [v] | [X] | |
+| `explore/[country]/[slug]` | [v] | n/a | [v] | [X] | Có nút "Quay lại" |
+| `search/index` | [*] không chỉ báo đang tìm | [v] EmptyState | [v] | [X] | |
+| `chat/index` | [v] TypingDots | [v] | [v] (khối vàng) | [v] gửi lại | |
+| `sos/index` | n/a | n/a | [v] sau sửa QA-3 | [v] | |
+| `sos/map` | [v] | [v] | [v] + ErrorBoundary MapView | [X] | |
+| `incidents/index` | [v] | [v] | [v] | [X] | |
+| `incidents/[slug]` | [v] | n/a | [v] | [X] | |
+| `translate/index` | [X] mẫu câu | [X] | [X] mẫu câu (lỗi dịch có Alert) | [X] | QA4-M13-04 |
+| `alerts/index` | [v] | [v] | [v] | [X] | |
+| `favorites/index` | [v] | [v] | [v] | [X] | Lỗi và "rỗng" hiện **cùng lúc** — QA4-M13-05 |
+| `trips/index` | [v] | [v] | [v] | [X] | |
+| `trips/new` | [v] (sửa) | n/a | [v] | — | |
+| `profile/index` | [v] ("…") | — | [X] | [X] | Đếm số chuyến/đã lưu về 0 khi lỗi |
+| `settings/index` | [X] | — | [X] | [X] | Lỗi tải preferences --> hiện giá trị mặc định như thật — QA4-M13-06 |
+| `welcome`, `(auth)/*` (5), `coming-soon`, `_dev/design-system` | tĩnh / form | — | form báo lỗi | — | `_dev/design-system` vẫn là route trong bản production — QA4-M13-08 |
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 13.1 mọi màn qua `@/lib/data`, mock toàn app | [v] sau sửa | D25: 11 file `import type` từ `@/mocks/schemas` --> chuyển qua `@/lib/data` (re-export type). `grep '@/mocks' src/app src/components src/features` = rỗng (dấu hiệu B8 của CLAUDE.md đúng lại) |
+| 13.2 3 trạng thái | [v] một phần | Bảng trên: hầu hết có L/E/R, **gần như không màn nào có nút thử lại** --> S3 QA4-M13-03 |
+| 13.3 ErrorBoundary route gốc | [v] sau sửa | S2 QA4-M13-01: không có ErrorBoundary cấp route (chỉ MapView) --> lỗi render một màn làm sập app. Đã thêm (`_layout.tsx` export theo API Expo Router, đã tra docs) + test (đỏ khi gỡ export) |
+| 13.4 adapter chịu dữ liệu thiếu | [v] | `adapters.test.ts`; fixture mới QA-2 bỏ trường nội bộ vẫn xanh |
+| 13.5 Zod không bắt `__mock` | [v] | `schemas.ts` `__mock: z.literal(true).optional()` |
+| 13.6 URL API | [v] | `http.ts`: URL tường minh ưu tiên, suy IP LAN chỉ khi `__DEV__`. [*] build production thiếu URL --> lỗi bị bọc thành "Không thể kết nối" (S4) |
+| 13.7 `tel:`/link không crash | [v] sau sửa | S3 QA4-M13-02: 7 chỗ `Linking.openURL` không bắt lỗi (Home, profile, incident CTA, SOS map...) và số không chuẩn hóa --> helper `lib/openExternal.ts` (`toTelUrl` bỏ khoảng trắng/chấm/gạch/ngoặc, giữ `+`; lỗi --> Alert) |
+| 13.8 xin quyền vị trí đúng lúc, giải thích thật | [v] | `locationPermission.ts` giải thích trước hộp thoại, nói rõ gửi tọa độ tới máy chủ, không theo dõi nền; từ chối vĩnh viễn --> trả `null`, không lặp. [X] không hướng dẫn mở Settings khi bị từ chối vĩnh viễn (S3) |
+| 13.9 token ở secure-store | [v] | `tokenStore.ts`. Hồ sơ `authUser` (email, tên) ở AsyncStorage — không phải token |
+| 13.10 queryKey theo quốc gia/user | [v] một phần | articles/topics/quick-phrases có `countryCode`; đổi tài khoản `queryClient.clear()`. [X] `['alerts']` không gồm quốc gia --> có thể thoáng thấy cảnh báo nước cũ khi đổi quốc gia (S3 QA4-M13-07) |
+| 13.11 font lỗi vẫn vào app | [X] | `_layout.tsx`: `if (!fontsLoaded) return null` — `useFonts` lỗi thì `loaded` không bao giờ true --> kẹt splash. S3 QA4-M13-09 (cần thiết bị để tái hiện) |
+| 13.12 không emoji UI | [X] | `trips/new.tsx:473` ký tự U+2713 (QA-D30) |
+| 13.13 Expo Go SDK 57 | [v] | `expo-doctor` 21/21; không thêm native module mới trong đợt QA |
+| 13.14 patch-package | [v] | baseline: `query-string@7.1.3` applied |
+| 13.15 không hard-code quốc gia mặc định | [v] một phần | `countryContext` chọn nước `active` đầu tiên. [*] `sos/map.tsx` tọa độ mặc định Tokyo khi thiếu GPS lẫn Đại sứ quán (S4) |
+| 13.16 bàn phím che ô nhập | [X] đọc code | Không có `KeyboardAvoidingView` ở chat (ô nhập đáy màn hình) — trên iOS bàn phím có thể che ô nhập. Cần xác nhận trên thiết bị, không tự sửa mù — QA4-M13-10 |
+| H-13.c ngày tháng | [v] | `parseISODate` dùng nửa đêm giờ địa phương; "Cập nhật" từ timestamp nên theo giờ địa phương là đúng |
+| H-13.d `Intl` trên Hermes | [*] | Cần thiết bị |
+
+### M14 — Admin
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 14.1 ProtectedRoute, refresh 1 lần | [v] | `ProtectedRoute.tsx`; `apiClient.ts` single-flight + `isRetry` |
+| 14.2 hiện lỗi `details` từ backend | [v] một phần | Publish hiện `details`; form khác chỉ hiện `message` (S4) |
+| 14.3 409 giữ nội dung đang gõ | [v] incident / [*] bài luật | `IncidentEditorPage.test.tsx`; bài luật đọc code: lỗi giữ form, **không** có "tải bản mới để so" (S3) |
+| 14.4 DOMPurify, link ngoài | [v] | `markdown.test.ts`; không có `target="_blank"` nào |
+| 14.5 phân trang/lọc | [X] một phần | `LocationsPage`/`CountriesPage` gọi `limit: 100`, không phân trang --> điểm thứ 101 trở đi không hiện (S3 QA4-M14-03) |
+| 14.6 xác nhận hành động nguy hiểm | [v] sau sửa | Xóa/publish có xác nhận; **xác minh hàng loạt điểm SOS** và **re-index quốc gia** thì không --> S2 QA4-M14-01 (xác minh = đưa điểm lên SOS thật). Đã thêm + test |
+| 14.7 MapPicker `[lat,lng]` --> `[lng,lat]` | [*] | `MapPicker.tsx`, `CirclePicker.tsx` đổi đúng chiều (đọc code, chưa có test do Leaflet cần DOM thật) |
+| 14.8 đổi tài khoản xóa cache/nháp | [v] | `authContext.tsx` `queryClient.clear()`; nháp khóa theo userId |
+| 14.9 thiếu `VITE_API_BASE_URL` | [X] | Build vẫn đạt, lỗi chỉ lộ lúc gọi API (S3) |
+| 14.10 bundle | [v] | Chunk lớn nhất 455 kB, trang bản đồ đã lazy-load |
+| D17 hard-code quốc gia | [v] sau sửa | `RagIndexPage`, `FeedbackQueuePage` lấy danh sách từ `countriesApi` (test) |
+| H-14.a 2 tab | [*] | Không lắng nghe sự kiện `storage` --> tab 2 chỉ phát hiện khi gọi API bị 401 (S4) |
+| H-14.b `<img onerror>` | [v] | `markdown.test.ts` "lọc script, event handler" |
+
+### M15 — Contract 3 bên
+
+Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một client đọc.
+
+| Fixture | backend | mobile | admin |
+|---|---|---|---|
+| auth.register / login / me, error.validation / unauthorized | [v] | [v] | |
+| auth.refresh | [v] QA-4 | [v] | |
+| admin.country, admin.legalArticle, error.conflict, error.forbidden | [v] QA-4 | | [v] |
+| public.country / legalTopic / legalArticle / legalSearch / supportLocation / incident, trip, favorites | [v] | [v] | |
+| public.geoAlert, public.quickPhrase, translate, preferences | [v] | [v] QA-4 | |
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 15.1 mỗi fixture backend + 1 client | [v] sau sửa | 5 fixture chưa có test backend + 4 fixture chưa có client --> đã bổ sung. Phát hiện lệch thật: QA4-M15-01 |
+| 15.2 mọi endpoint có fixture | [X] | Chat, feedback, admin locations/incidents/quick-phrases/geo-alerts/audit/analytics/rag chưa có fixture (S3 QA4-M15-02) |
+| 15.3 fixture là response thật | [v] sau sửa | `admin.country`/`admin.legalArticle` thiếu `__v`, `titleNorm`, `summaryNorm` mà admin API thật trả --> cập nhật fixture |
+| 15.4 fixture lỗi khớp HTTP + code | [v] | error.validation/unauthorized/forbidden/conflict đều có test backend với status thật |
+| 15.5 `docs/API.md` vs contracts | [*] | Chưa đối chiếu từng dòng (để QA-5) |
+
 ## 4. DANH SÁCH LỖI / NGHI VẤN
 
 ### 4.1. Đã sửa trong QA-1 (mỗi lỗi có test đỏ trước, xanh sau)
@@ -390,6 +480,17 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | QA3-M12-01 | S2 | `GET /users/favorites` trả nguyên document bài luật hiện hành (lộ `reviewNote`, `indexState`...) — cùng lỗi QA2-M05-03 qua đường bookmark | Dùng chung `INTERNAL_ARTICLE_FIELDS` của `publicContent.service.js` | `qa.support` INV-12.3 |
 | QA3-M12-02 | S3 | Backend cho tạo/sửa trip tới quốc gia `coming_soon` hoặc mã không tồn tại (chỉ UI chặn) | `trip.service.js` kiểm Country `active` khi tạo và khi **đổi** quốc gia (trip cũ tới nước sau này bị đóng vẫn sửa ngày được) | `qa.support` INV-12.5 |
 
+**Đã sửa trong QA-4:**
+
+| ID | Mức | Mô tả | Sửa | Test |
+|---|---|---|---|---|
+| QA4-M13-01 | S2 | Không có ErrorBoundary cấp route: lỗi render một màn hình làm sập toàn app, người đang gặp sự cố không tới được SOS | `components/common/RouteErrorFallback.tsx` (Thử lại + Mở SOS, không lộ `error.message`) export làm `ErrorBoundary` ở `app/_layout.tsx` | `RouteErrorFallback.test.tsx` |
+| QA4-M14-01 | S2 | Admin "Xác minh đã chọn" (đưa điểm lên SOS cho người dùng) và "Re-index" không có xác nhận | `window.confirm` với nội dung nêu hậu quả | `DangerousActions.test.tsx` |
+| QA4-M15-01 | S3 | `/auth/refresh` trả thêm cờ nội bộ `rotated` ngoài hợp đồng; fixture admin lệch response thật (`__v`, `titleNorm`, `summaryNorm`) | `authTransport.js` bỏ `rotated` trước khi trả; cập nhật 2 fixture admin | `contracts.test.js` 3 test mới |
+| QA4-M13-02 | S3 | 7 chỗ gọi điện/mở link không bắt lỗi, số không chuẩn hóa | `lib/openExternal.ts` dùng chung | `openExternal.test.ts` |
+| QA-D17 | S2 | Admin hard-code `['KR','JP','TH','SG']` | Lấy từ `countriesApi` | `DangerousActions.test.tsx` |
+| QA-D25 | S3 | 11 màn `import type` từ `@/mocks/schemas` | Re-export type qua `@/lib/data` | `tsc` + grep rỗng |
+
 ### 4.2. Cần người quyết định (không tự sửa — CLAUDE.md Phần 8: chạm logic nghiệp vụ)
 
 | ID | Mức | Vấn đề | Phương án |
@@ -400,13 +501,14 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | QA2-M06-05 | S3 | Câu trả lời không có số liệu mà **không có marker hợp lệ nào** vẫn được hiển thị (0 citation), kể cả khi LLM viết marker sai dạng `[S1, S2]`/`[s1]` | Có bắt buộc >=1 citation cho mọi câu `answered` không? (CLAUDE.md 4.2 chỉ bắt buộc với tuyên bố định lượng) |
 | QA3-M08-03 | S1 (nếu người dùng cài app lúc không có mạng) | Lần **đầu** mở app mà offline thì chưa có dữ liệu quốc gia nào --> SOS chỉ hiện màn dự phòng, không có số khẩn cấp | (A) Đóng gói sẵn số khẩn cấp + Đại sứ quán của các nước `active` vào app (dữ liệu tĩnh, **người phải xác minh từng số**). (B) Giữ màn dự phòng như hiện tại. **Đề xuất A** — 07 yêu cầu hỏi người trước khi thêm dữ liệu tĩnh |
 | QA3-M09-01 | S2 | Tiến độ incident lưu theo `step.order`; admin đổi thứ tự bước (giữ số bước) --> tick của người dùng gắn sai bước (đã tái hiện bằng test `todo`) | (A) Thêm id ổn định cho từng bước (`stepId`), progress lưu `stepId` — đổi schema + migrate progress hiện có. (B) Khi admin đổi thứ tự thì xóa progress của workflow đó. **Đề xuất A** |
+| QA4-M11-01 | S2 (quyền riêng tư) | `locationConsent` **mặc định `true`** ở cả backend (`User.js`) lẫn mobile (`DEFAULT_PREFERENCES`) — "đồng ý chia sẻ vị trí" được bật sẵn thay vì người dùng chủ động chọn. Hiện GPS vẫn cần quyền hệ điều hành (chỉ xin kèm giải thích ở SOS) nên chưa đọc vị trí ngầm | (A) Mặc định `false`, hỏi đồng ý lần đầu khi bật cảnh báo vị trí (user cũ giữ nguyên giá trị đã lưu). (B) Giữ `true`, ghi rõ trong chính sách riêng tư. **Đề xuất A** |
 | QA-M04-03 | S2 | Tính duy nhất `isCurrent` phụ thuộc hoàn toàn vào partial unique index; publish không chạy trong transaction (siblings bị supersede trước, nếu `save()` lỗi vì lý do khác thì 0 bản hiện hành) | (A) Dùng transaction Mongo (Atlas M0 hỗ trợ replica set). (B) Chấp nhận, thêm kiểm tra khởi động `LegalArticle.syncIndexes()`/cảnh báo nếu thiếu index. **Cần người xác nhận index đã tồn tại trên Atlas** |
 
 ### 4.3. Còn tồn đọng (ghi nợ, chưa sửa)
 
 | ID | Mức | Mô tả | Đề xuất |
 |---|---|---|---|
-| QA-D17 | S2 | Admin hard-code danh sách quốc gia ở `FeedbackQueuePage.tsx:82`, `RagIndexPage.tsx:14` | Lấy từ `countriesApi.list` (QA-4, M14) |
+| ~~QA-D17~~ | — | **Đã sửa ở QA-4** (xem 4.1) | — |
 | QA-M02-02 | S3 | `resend-reset-otp` không có cooldown theo email (chỉ rate limit IP gộp 8/15 phút) --> spam email nạn nhân từ nhiều IP | Cooldown 60s theo bản ghi `PasswordReset.createdAt` |
 | QA-M02-03 | S3 | `PASSWORD_LOGIN_UNAVAILABLE` (tài khoản chỉ có Google) trả trước khi kiểm mật khẩu --> dò được email đã đăng ký Google | Quyết định UX: giữ thông báo hữu ích hay gộp vào INVALID_CREDENTIALS |
 | QA-M02-04 | S3 | `forgot-password` với email tồn tại + SMTP lỗi trả 502, email không tồn tại trả 200 --> dò tài khoản khi SMTP hỏng | Luôn trả 200, log lỗi SMTP phía server |
@@ -418,7 +520,7 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | QA-M03-03 | S3 | `reindex-country` không ghi audit log | Thêm `recordAuditLog` action `REINDEX` |
 | QA-M04-04 | S3 | Bài luật hết `effectiveTo` vẫn hiển thị/được RAG dùng; validator bài luật không kiểm `effectiveTo >= effectiveFrom` | Chốt nghiệp vụ trước (hiện "Hết hiệu lực" hay ẩn) |
 | QA-M04-05 | S3 | PATCH Country `code` / Topic `slug` đang có bài tham chiếu vẫn làm bài mồ côi (cùng loại QA-M04-02, đường sửa thay vì xóa); `findByIdAndUpdate` không `runValidators` | Chặn đổi khóa khi có tham chiếu |
-| QA-D25 | S3 | 11 màn hình `import type` từ `@/mocks/schemas` | Re-export type qua `@/lib/data` (QA-4) |
+| ~~QA-D25~~ | — | **Đã sửa ở QA-4** (xem 4.1) | — |
 | QA-D30 | S3 | Emoji: `README.md` U+2705, UI `trips/new.tsx` U+2713, U+2605 trong comment/contracts | Thay `[v]`, icon `lucide`; gom sửa QA-5 |
 | QA-D03 | S3 | Host cluster thật còn trong `docs/04_Repo_Audit.md:183` và lịch sử git | Thay bằng `<cluster-host>`; lịch sử git: người quyết định |
 | BASE-01/02 | S4 | Format backend (28 file) + CRLF Windows | Commit format riêng ở QA-5 |
@@ -429,9 +531,20 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | QA2-M13-01 | S4 | Comment lỗi thời `mobile/src/lib/api/adapters.ts:269` ("quick-phrases vẫn 100% mock tới B7") | Xóa khi làm QA-4 |
 | QA3-M08-02 | S3 | Bulk import SOS không có khóa chống trùng: import lại cùng CSV tạo bản ghi trùng | Định nghĩa khóa trùng (vd `countryCode+name+tọa độ làm tròn`) — cần người chốt tiêu chí |
 | QA3-M09-02 | S3 | PATCH incident không bắt buộc `updatedAt` (client cũ không được bảo vệ ghi đè) | Bắt buộc `updatedAt` như bài luật (admin hiện đã luôn gửi) |
-| QA3-M09-03 | S3 | CTA incident (`runCta`) và nút gọi Đại sứ quán ở `incidents/[slug].tsx` gọi `Linking.openURL` không `.catch` | Bắt lỗi + thông báo như `sos/index.tsx` (QA-4) |
+| ~~QA3-M09-03~~ | — | **Đã sửa ở QA-4** (QA4-M13-02, helper `openExternal`) | — |
 | QA3-M12-03 | S3 | Lọc "Đã lưu" ở Explore gọi chi tiết từng bài (N+1 request) | Endpoint batch theo danh sách id — đổi contract, để sau |
 | QA3-M10-02 | S4 | `translate.service.js` log nguyên văn phản hồi provider (`rawText`) khi JSON hỏng — có thể chứa nội dung người dùng dịch | Chỉ log độ dài/loại lỗi |
+| QA4-M13-03 | S3 | Hầu hết màn hình lỗi không có nút "Thử lại" (INV-13.2) | Thêm nút gọi `refetch()` ở khối lỗi |
+| QA4-M13-04 | S3 | Màn Dịch: danh sách mẫu câu không có loading/rỗng/lỗi; mọi lỗi dịch đều báo "kiểm tra kết nối mạng" | Hiển thị theo `phrasesQuery` và `ApiError.code` |
+| QA4-M13-05 | S4 | Favorites hiện đồng thời thông báo lỗi và trạng thái rỗng | Thêm `!isError` cho khối rỗng |
+| QA4-M13-06 | S3 | Settings: lỗi tải preferences --> hiện giá trị mặc định như dữ liệu thật, không báo lỗi | Khóa công tắc + báo lỗi khi `preferencesQuery.isError` |
+| QA4-M13-07 | S3 | `queryKey ['alerts']` không gồm quốc gia/tài khoản | Thêm `countryCode`, `owner` vào key |
+| QA4-M13-08 | S4 | Route `_dev/design-system` có trong bản production | Chặn khi `!__DEV__` |
+| QA4-M13-09 | S3 | Font lỗi --> `useFonts` không bao giờ `loaded` --> kẹt splash | Dùng giá trị `error` của `useFonts`, vẫn render khi lỗi |
+| QA4-M13-10 | S3 | Chat không có `KeyboardAvoidingView` — nghi ô nhập bị bàn phím che trên iOS | **Người xác nhận trên thiết bị** trước khi sửa |
+| QA4-M14-03 | S3 | Admin Locations/Countries `limit: 100`, không phân trang | Dùng `Pagination` như FeedbackQueue |
+| QA4-M15-02 | S3 | Nhiều endpoint (chat, feedback, admin CRUD B6-B8, audit, analytics, rag) chưa có fixture | Bổ sung dần, ưu tiên chat (mobile phụ thuộc) |
+| QA4-M15-03 | S3 | API công khai alerts/quick-phrases/support-locations/incidents trả `createdBy`/`updatedBy` (ID admin) | Projection chung như bài luật |
 | QA2-M05-04 | S4 | `memory.driver.js` đã lệch Prettier từ baseline, lần này sửa logic nhưng không format (tránh trộn commit) | Gộp vào commit format BASE-01 |
 | - | S4 | `admin/ArticleEditorPage.tsx`: sau `changeStatus` thành công, refetch `article` chạy lại `setForm` --> ghi đè nội dung đang gõ chưa lưu | Kiểm ở QA-4 (INV-14.3) |
 | - | S4 | CLAUDE.md Phần 9 nhắc `npm run reindex` nhưng `backend/package.json` không có script này | Sửa tài liệu hoặc thêm script |
@@ -471,6 +584,14 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | mobile | [v] | [v] | **102/102** (25 suite) | — |
 | admin | [v] | [v] | 9/9 | [v] |
 
+**Kết quả sau sửa (QA-4):**
+
+| Workspace | Lint | Type | Test | Build |
+|---|---|---|---|---|
+| backend | [v] | n/a | **214/214** + 1 `todo` · golden 26/26 | n/a |
+| mobile | [v] | [v] | **111/111** (28 suite) | — |
+| admin | [v] | [v] | **11/11** | [v] |
+
 ---
 
 ## 6. CHẤM MỤC TIÊU G1-G12 (sau QA-3)
@@ -481,11 +602,11 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 | G2 | **Đạt** (có điều kiện) | Golden 26/26; guard chặn marker bịa + 9 dạng định lượng; spy LLM = 0 khi dưới ngưỡng; lỗi provider --> fallback. Mutation 1 và 3 từng sống sót --> đã thêm test. Điều kiện: QA2-M06-04 (câu hỏi nhắc nước khác bằng tên ngắn vẫn được trả lời bằng luật KR) cần chốt |
 | G3 | **Đạt** | Sweep RBAC + test mới cho token xấu, khóa/hạ quyền, refresh xoay vòng/ân hạn/reuse/đồng thời |
 | G4 | **Đạt** | Chat (5 thao tác), trips (xem/sửa/xóa/đặt current), favorites (xóa/list), progress (theo user), preferences (chỉ của mình) — đều có test |
-| G5 | Chưa kiểm được | QA-4 (M15). Fixture `public.legalArticle.json` đã đổi trong QA-2, test 2 phía xanh |
+| G5 | Đạt một phần | Mọi fixture hiện có được backend + ít nhất một client đối chiếu (QA-4); đã sửa 2 lệch thật (`rotated`, fixture admin). Còn nhiều endpoint chưa có fixture (QA4-M15-02) |
 | G6 | **Đạt** | Chat: quota user + global nguyên tử (test đồng thời), không trừ khi validate lỗi, cache không trả bằng chứng cũ. Dịch: rate limit + giới hạn độ dài cả `text`/`from`/`to` (QA3-M10-01); không quota DB — quyết định B7 có ghi lý do |
 | G7 | Đạt một phần | Backend không log/lưu tọa độ (không có logger request); `usePollAlerts` chỉ đọc GPS khi có consent + quyền, không chạy nền, last-known ≤5 phút (có test). Còn kiểm màn hình xin quyền ở QA-4 và trên thiết bị thật |
 | G8 | Đạt một phần | Optimistic concurrency bài luật + incident có test; toàn vẹn tham chiếu Country/Topic đã sửa; dữ liệu local theo tài khoản có test. Còn: QA-M04-03 (phụ thuộc index), QA3-M09-01 (tick sai bước khi đổi thứ tự) |
-| G9 | Chưa kiểm được | QA-4 |
+| G9 | Đạt một phần | Có ErrorBoundary cấp route (QA-4), SOS không còn màn trắng khi offline (QA-3), refresh lỗi mạng không đăng xuất, không vòng lặp refresh. Thiếu nút "Thử lại" ở phần lớn màn lỗi (QA4-M13-03); font lỗi có thể kẹt splash (QA4-M13-09) |
 | G10 | Đạt một phần | Build admin + export iOS/Android đạt; khởi động với `.env.example` ở QA-5 |
 | G11 | Đạt một phần | Đã gỡ PII/mật khẩu khỏi tài liệu hiện hành; còn lịch sử git + host trong `04_Repo_Audit.md` |
 | G12 | Đạt một phần | lint/typecheck sạch 3 workspace; còn format backend (BASE-01) và emoji (QA-D30) |
@@ -508,7 +629,9 @@ Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc s
 
 7. (QA-3) Chốt QA3-M08-03 (đóng gói sẵn số khẩn cấp đã xác minh cho lần mở app đầu tiên khi offline) và
    QA3-M09-01 (id ổn định cho bước incident).
+8. (QA-4) Chốt QA4-M11-01 (mặc định đồng ý vị trí) và xác nhận trên iPhone thật QA4-M13-10 (bàn phím che ô chat).
 
 ## 8. PHIÊN TIẾP THEO
 
-**QA-4: M13-M15** (mobile toàn bộ, admin, contract 3 bên) — đang chạy liên tục theo yêu cầu người dùng.
+**QA-5: M16-M17 + Pha 3 + Pha 4 + báo cáo tổng** — đang chạy liên tục theo yêu cầu người dùng. PHAN 6-12 của 07
+thiếu --> Pha 3/Pha 4 dùng kịch bản tự đề xuất (ghi rõ trong báo cáo).

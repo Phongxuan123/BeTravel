@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchIncidents } from '@/lib/data';
-import type { Incident } from '@/mocks/schemas';
+import type { Incident } from '@/lib/data';
 
 const ICONS: Record<string, typeof IdCard> = { IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren };
 

@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { fetchFavorites, removeFavorite } from '@/lib/data';
-import type { FavoriteItem } from '@/mocks/schemas';
+import type { FavoriteItem } from '@/lib/data';
 
 const GROUP_META: Record<FavoriteItem['targetType'], { label: string; icon: typeof FileText; tone: 'blue' | 'green' | 'orange' }> = {
   article: { label: 'Quy định pháp luật', icon: FileText, tone: 'blue' },
