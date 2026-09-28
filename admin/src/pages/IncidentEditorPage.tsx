@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -12,6 +12,7 @@ import { LoadingState, ErrorState } from '../components/ui/Feedback';
 import { StepsEditor } from '../components/incident-editor/StepsEditor';
 
 type FormState = {
+  updatedAt?: string;
   slug: string;
   countryCode: string; // '' = toan cuc (khong gioi han quoc gia)
   title: string;
@@ -65,26 +66,25 @@ function IncidentEditor() {
   });
   const incident = incidentRes?.data;
 
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  // Refetch nền không được ghi đè các trường người biên tập đang nhập.
+  const [draft, setForm] = useState<FormState | null>(null);
+  const form: FormState = draft ?? (incident ? {
+    updatedAt: incident.updatedAt,
+    slug: incident.slug,
+    countryCode: incident.countryCode ?? '',
+    title: incident.title,
+    iconKey: incident.iconKey,
+    tone: incident.tone,
+    urgent: incident.urgent,
+    reassurance: incident.reassurance,
+    status: incident.status,
+    steps: incident.steps,
+  } : EMPTY_FORM);
   const [slugTouched, setSlugTouched] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!incident) return;
-    setForm({
-      slug: incident.slug,
-      countryCode: incident.countryCode ?? '',
-      title: incident.title,
-      iconKey: incident.iconKey,
-      tone: incident.tone,
-      urgent: incident.urgent,
-      reassurance: incident.reassurance,
-      status: incident.status,
-      steps: incident.steps,
-    });
-  }, [incident]);
-
   const buildPayload = () => ({
+    updatedAt: form.updatedAt,
     slug: form.slug,
     countryCode: form.countryCode || null,
     title: form.title,
@@ -107,7 +107,9 @@ function IncidentEditor() {
 
   const updateMutation = useMutation({
     mutationFn: () => incidentsApi.update(id!, buildPayload()),
-    onSuccess: () => {
+    onSuccess: (res) => {
+      setForm((current) => current ? { ...current, updatedAt: res.data.updatedAt } : current);
+      queryClient.setQueryData(['admin', 'incidents', id], res);
       queryClient.invalidateQueries({ queryKey: ['admin', 'incidents', id] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'incidents'] });
     },

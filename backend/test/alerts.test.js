@@ -58,7 +58,11 @@ async function createAlert(app, token, body) {
 
 test("Admin tao GeoAlert scope 'area' thieu center/radiusM bi VALIDATION_ERROR", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
-  const res = await createAlert(app, accessToken, { ...areaAlertNearSeoul, center: undefined, radiusM: undefined });
+  const res = await createAlert(app, accessToken, {
+    ...areaAlertNearSeoul,
+    center: undefined,
+    radiusM: undefined,
+  });
   assert.equal(res.status, 400);
   assert.equal(res.body.error.code, "VALIDATION_ERROR");
 });
@@ -85,7 +89,9 @@ test("GET /api/alerts/applicable co toa do trong ban kinh -> gom ca alert 'area'
   await createAlert(app, accessToken, countryAlert);
   await createAlert(app, accessToken, areaAlertNearSeoul);
 
-  const res = await request(app).get("/api/alerts/applicable").query({ country: "KR", lat: SEOUL.lat, lng: SEOUL.lng });
+  const res = await request(app)
+    .get("/api/alerts/applicable")
+    .query({ country: "KR", lat: SEOUL.lat, lng: SEOUL.lng });
   assert.equal(res.status, 200);
   assert.equal(res.body.data.length, 2);
   // Severity giam dan: danger truoc warn.
@@ -96,7 +102,9 @@ test("GET /api/alerts/applicable toa do NGOAI ban kinh -> khong gom alert 'area'
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
   await createAlert(app, accessToken, areaAlertNearSeoul);
 
-  const res = await request(app).get("/api/alerts/applicable").query({ country: "KR", lat: BUSAN.lat, lng: BUSAN.lng });
+  const res = await request(app)
+    .get("/api/alerts/applicable")
+    .query({ country: "KR", lat: BUSAN.lat, lng: BUSAN.lng });
   assert.equal(res.status, 200);
   assert.equal(res.body.data.length, 0);
 });
@@ -111,4 +119,39 @@ test("GET /api/alerts/applicable loai bo alert draft va het hieu luc", async () 
   assert.equal(res.status, 200);
   assert.equal(res.body.data.length, 1);
   assert.equal(res.body.data[0].title, countryAlert.title);
+});
+
+test("PATCH cảnh báo kiểm scope và ngày sau khi ghép dữ liệu hiện có", async () => {
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+  const created = await createAlert(app, accessToken, countryAlert);
+  const url = `/api/admin/geo-alerts/${created.body.data._id}`;
+  for (const patch of [{ scope: "area" }, { effectiveTo: "2019-01-01T00:00:00.000Z" }]) {
+    const response = await request(app)
+      .patch(url)
+      .set("Authorization", auth(accessToken))
+      .send(patch);
+    assert.equal(response.status, 400);
+  }
+  const valid = await request(app)
+    .patch(url)
+    .set("Authorization", auth(accessToken))
+    .send({ title: "Đổi tiêu đề" });
+  assert.equal(valid.status, 200);
+  assert.equal(valid.body.data.scope, "country");
+  const publicList = await request(app)
+    .get("/api/alerts/applicable")
+    .query({ country: "KR", lat: SEOUL.lat, lng: SEOUL.lng });
+  assert.equal(publicList.status, 200);
+  assert.equal(publicList.body.data.length, 1);
+});
+
+test("Dữ liệu area cũ thiếu center không làm hỏng cảnh báo cả nước", async () => {
+  const { default: GeoAlert } = await import("../src/models/GeoAlert.js");
+  await GeoAlert.create({ ...countryAlert, scope: "area" });
+  await GeoAlert.create(countryAlert);
+  const response = await request(app)
+    .get("/api/alerts/applicable")
+    .query({ country: "KR", lat: SEOUL.lat, lng: SEOUL.lng });
+  assert.equal(response.status, 200);
+  assert.equal(response.body.data.length, 1);
 });

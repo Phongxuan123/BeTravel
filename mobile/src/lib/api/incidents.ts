@@ -3,7 +3,7 @@
  * chữ ký cơ bản với mock, thêm object tham số optional (giống pattern sos.ts,
  * chat.ts) -- xem lib/data.ts cho công tắc mock/thật.
  */
-import { apiRequest } from './http';
+import { apiRequest, ApiError } from './http';
 import type { Incident } from '@/mocks/schemas';
 
 export type ApiIncidentCta = { type: 'map' | 'call' | 'ai' | 'link'; label: string; payload: Record<string, unknown> };
@@ -57,7 +57,8 @@ export async function fetchIncident(slug: string): Promise<{ ok: true; data: Inc
   try {
     const data = await apiRequest<ApiIncident>(`/incidents/${slug}`);
     return { ok: true, data: adaptIncident(data) };
-  } catch {
+  } catch (error) {
+    if (!(error instanceof ApiError) || error.code !== 'NOT_FOUND') throw error;
     return { ok: true, data: null };
   }
 }

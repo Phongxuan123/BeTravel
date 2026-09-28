@@ -4,6 +4,7 @@
  * mà không phải sửa màn hình (CLAUDE.md B3 mục 9).
  */
 import { apiRequest, ApiError } from './http';
+import { fetchFavorites } from './favorites';
 import {
   adaptArticle,
   adaptCountry,
@@ -48,9 +49,16 @@ export async function fetchArticles(
   countryCode: string,
   opts?: { topicKey?: string; savedOnly?: boolean },
 ): Promise<Envelope<Article[]>> {
-  // "Da luu" (favorites) la B8, API that chua ho tro -- tra rong thay vi bia
-  // ket qua hoac goi API khong can thiet.
-  if (opts?.savedOnly) return { ok: true, data: [] };
+  if (opts?.savedOnly) {
+    const favorites = await fetchFavorites();
+    const slugs = new Set(favorites.data
+      .filter((item) => item.targetType === 'article' && item.countryCode === countryCode)
+      .map((item) => item.slug).filter((slug): slug is string => Boolean(slug)));
+    // Mở theo dòng lịch sử để lấy bản công khai hiện hành, không hiển thị luật cũ.
+    const responses = await Promise.all([...slugs].map((slug) => fetchArticle(countryCode, slug)));
+    const articles = responses.map((response) => response.data).filter((article): article is Article => article !== null);
+    return { ok: true, data: articles.filter((article) => !opts.topicKey || article.topicKey === opts.topicKey) };
+  }
 
   const params = new URLSearchParams({ country: countryCode, limit: '100' });
   if (opts?.topicKey) params.set('topic', opts.topicKey);

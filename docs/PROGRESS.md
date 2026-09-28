@@ -1,7 +1,98 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-25 · Phiên: B9 Hardening, seed, QA, tài liệu bàn giao
-Nhánh: `feature/b9-hardening-seed-handoff`.
+Cập nhật lần cuối: 2026-09-28 · Phiên: rà soát sau B9, bảo vệ dữ liệu và hoàn thiện favorites
+Nhánh: `feature/audit-20260928`, tách từ `feature/trip-management` tại `bbe3378`.
+Nhánh gốc ahead origin 18 commit trước phiên; không tự pull/rebase/push hoặc merge.
+
+## Phiên 28/09 — bàn giao hiện hành
+
+Tiến độ mã nguồn và kiểm tra local: `[######] 6/6`.
+Tiến độ phát hành/kiểm chứng ngoài máy: **xong một phần**, không phải 100% sản phẩm.
+
+| Bước | Trạng thái | Bằng chứng |
+|---|---|---|
+| Đọc Docs, kiến trúc, nhánh và thay đổi có sẵn | xong | Working tree ban đầu sạch; đọc CLAUDE/AGENTS, audit, master plan, quy tắc, B9, contracts |
+| Kiểm tra nền ba workspace | xong | Backend 145, mobile 85, admin 8 test; phát hiện 1 warning admin |
+| Rà soát và sửa lỗi | xong trong phạm vi phiên | Favorites, incident/progress, GeoAlert, GPS/consent, dismiss, editor |
+| Hoàn thiện phần không cần data mới | xong | Bộ lọc bài đã lưu thật + bản hiện hành; chống ghi đè workflow |
+| Kiểm thử hồi quy/build local | xong | Backend 151, mobile 94, admin 9 test; lint/typecheck/build/export đạt |
+| Ghi sổ và bàn giao | xong | Mục này, OPTIMIZATION_REPORT, ACCEPTANCE, contracts/fixture |
+
+### Bản đồ cấu trúc để tiếp tục
+
+| Thư mục | Trách nhiệm và đường đi chính |
+|---|---|
+| `backend/src/routes`, `validators`, `middleware` | Auth/RBAC, Zod body/query, rate limit trước controller |
+| `backend/src/controllers`, `services`, `models` | Envelope --> nghiệp vụ --> Mongoose; không thêm workspace chung |
+| `backend/src/rag` | Embedding/LLM provider, retrieval xác minh bài hiện hành, guard và fallback |
+| `backend/test` | MongoDB tạm, mock provider, contract/RBAC/golden/hồi quy |
+| `mobile/src/app`, `components`, `styles` | Expo Router, màn hình và design system hiện có |
+| `mobile/src/lib/data.ts`, `lib/api`, `features` | Công tắc mock/thật, adapter API, hooks trạng thái và cache |
+| `admin/src/pages`, `components`, `lib` | Trang quản trị, editor, React Query và API client |
+| `contracts` | Nguồn API chung và fixture để kiểm cả backend/client |
+| `docs`, `.github/workflows`, cấu hình deploy | Tiến độ/kiến trúc/QA; mới có workflow keepalive, chưa có CI test tự động |
+
+### Những thay đổi trong phiên
+
+1. Favorites chặn draft/pending_review/archived, location chưa verified,
+   incident chưa published. Bookmark ẩn vẫn giữ trong DB, không xóa dữ liệu.
+   Bài superseded chỉ trả metadata nhận diện, không trả nội dung pháp lý cũ;
+   currentArticleId chỉ trỏ bản published + isCurrent. Contract/fixture cập nhật.
+2. Bộ lọc bài đã lưu lấy bản công khai hiện hành theo quốc gia/chủ đề, gộp
+   trùng theo slug. Bookmark cũ vẫn đánh dấu bản mới là đã lưu; bỏ lưu đúng ID
+   cũ. Giữ nhánh mock và thêm trạng thái rỗng trên Explore.
+3. Admin IncidentEditor không lấy refetch đè draft. Gửi updatedAt của bản
+   bắt đầu sửa; backend kiểm bằng điều kiện nguyên tử trong UPDATE, stale
+   trả 409. Sau lưu cập nhật revision mà vẫn giữ nội dung tiếp tục nhập.
+4. Incident progress chỉ đọc/ghi workflow published; khi đọc lọc các chỉ số
+   bước không còn tồn tại. Mobile chỉ chuyển NOT_FOUND thành null; lỗi mạng
+   còn nguyên để UI báo lỗi/thử lại.
+5. GeoAlert PATCH validate dữ liệu sau ghép, chặn area thiếu tâm/bán kính và
+   ngày kết thúc trước ngày bắt đầu. API công khai bỏ bản ghi area cũ sai
+   cấu trúc để không làm hỏng toàn danh sách. Không sửa DB thật.
+6. GPS không đọc khi guest hoặc consent chưa tải; không poll khi app nền;
+   bỏ kết quả cũ khi đổi consent/tài khoản/quốc gia. Tọa độ last-known quá
+   5 phút không dùng; lúc đó chỉ tra cảnh báo cả nước. Không theo dõi nền.
+   Banner tôn trọng tùy chọn safety. Đối chiếu Expo SDK 57 Location docs.
+7. Dismiss cảnh báo chia theo tài khoản real, xếp hàng đọc-sửa-ghi tránh
+   mất dấu đã đọc khi bấm liên tiếp; không nhận response của context cũ.
+   Khóa dismiss cũ không rõ chủ sở hữu không được tự gán cho tài khoản mới.
+
+### Kiểm chứng 28/09
+
+- Backend: lint đạt; **151/151 test** (bao gồm 25 ca golden KR), MongoDB tạm,
+  LLM/embedding mock. Test ban đầu trong sandbox bị EPERM mở cổng; chạy lại
+  ngoài sandbox được phép và đạt. Không gọi Atlas/AI thật.
+- Mobile: lint/typecheck đạt; **94/94 test, 21 suite**. Sửa cả timer GC trong
+  test mutation để Jest kết thúc sạch, không dùng forceExit.
+- Admin: lint không còn warning, typecheck đạt, **9/9 test**, build đạt.
+  Test DOM chứng minh refetch không ghi đè draft và gửi đúng revision gốc.
+- Expo export **iOS và Android đạt**, output tạm `/tmp/betravel-export-*-20260928`.
+  Export `--platform all` không phù hợp: web thiếu react-native-web; phạm vi
+  hiện tại là mobile native nên đã export riêng hai nền tảng, không thêm thư viện web.
+- `git diff --check` đạt. Không sửa .env, không seed/migrate/ghi đè dữ liệu thật.
+- npm audit **chưa kiểm được phiên này**: sandbox chặn mạng; auto-review từ
+  chối chạy ngoài sandbox vì gửi metadata dependency tới npm registry.
+  Cần người dùng cho phép trước khi thử lại. Không lấy số 0 advisory cũ làm
+  kết quả mới. Expo Doctor chưa chạy: CLI không có local, npx lỗi DNS.
+- Chưa thử thiết bị/GPS/gọi điện/map thật, chưa EAS build ký, chưa kiểm layout
+  bằng screenshot trên nhiều kích thước; bundle/test không thay thế UAT.
+
+### Việc tiếp theo còn làm được bằng code (chưa thực hiện)
+
+- CI chạy lint/test/build ba workspace (hiện repo chỉ có keepalive).
+- Thêm định danh/version ổn định cho bước incident: hiện lưu theo step.order,
+  chỉ lọc bước bị xóa, chưa giải quyết việc admin đổi thứ tự nhưng giữ số bước.
+- Mở rộng chống ghi đè đồng thời sang mọi loại CRUD admin. Incident updatedAt
+  đang optional để không phá client cũ; client không gửi chưa được bảo vệ.
+- Chat multi-turn, đo usage/tokens thật, tìm kiếm Atlas theo chunk vẫn chưa
+  triển khai trong phiên; giữ nguyên các giới hạn ở mục bên dưới.
+- Bộ lọc favorites fetch chi tiết từng slug (gộp trùng); cân nhắc phân trang
+  khi số bookmark lớn. Chưa tự đổi contract sang batch endpoint.
+
+Các quyết định lịch sử dưới đây giữ để truy vết; nếu mâu thuẫn, mục 28/09 này
+là kết luận mới. Các dữ liệu pháp lý/SOS, key dịch vụ, UAT và deploy vẫn cần
+người phụ trách như mục “Đang vướng”. Không khẳng định hệ thống không còn lỗi.
 
 ## Trạng thái hiện hành — đọc mục này trước
 

@@ -596,7 +596,9 @@ GET/POST/PATCH/DELETE /admin/quick-phrases[/:id]   role admin, CRUD don gian.
 GET/POST/PATCH/DELETE /admin/incidents[/:id]        role admin, A07 Incident
      Workflow Builder. PATCH gui LAI TRON VEN mang `steps` -- server chuan
      hoa lai `order` theo dung vi tri trong mang gui len (khong tu dien so
-     order o client).
+     order o client). PATCH nhận thêm `updatedAt` (ISO date) của bản đang sửa:
+     nếu đã thay đổi thì trả 409 CONFLICT, không ghi đè. Admin portal luôn gửi;
+     client cũ không gửi vẫn tương thích nhưng chưa có chống ghi đè giữa hai người.
 ```
 
 ## 20. ENDPOINT GEO ALERTS — `/api/alerts/applicable`, `/api/admin/geo-alerts/*` (B8, A06)
@@ -635,11 +637,15 @@ POST   /users/favorites {targetType, targetId}        201 -- targetType:
        thanh cong), khong tao 2 ban ghi. targetId khong ton tai -> 404.
 DELETE /users/favorites/:targetType/:targetId         200 { deleted: true }
 ```
-Moi item tra ve kem NGUYEN VAN doi tuong duoc luu (`article`/`location`/
-`incident`), rieng loai `article`: neu ban da luu KHONG con la ban hien hanh
-(`isCurrent:false`), item them `isOutdated:true` + `currentArticleId` tro toi
-ban dang published hien hanh cung dong lich su -- KHONG bao gio tu am tham
-xoa favorite chi vi noi dung da co ban moi hon.
+Chỉ cho lưu/đọc bài published hiện hành, địa điểm verified và incident published.
+Bản nháp, bài archived và nội dung đã thu hồi xác minh trả 404 khi thêm;
+khi liệt kê thì ẩn nhưng giữ nguyên bản ghi Favorite trong DB.
+Ngoại lệ lịch sử: bài superseded không hiện hành vẫn giữ bookmark, nhưng
+`article` chỉ có `_id`, `countryCode`, `slug`, `title`, `topicSlug` (không trả
+nội dung pháp lý cũ). Kèm `isOutdated:true` và `currentArticleId` chỉ trỏ tới
+bản published hiện hành; chưa có bản công khai thì null. Các mục hiện hành
+vẫn trả đối tượng `article`/`location`/`incident` như trước.
+Fixture: `fixtures/favorites.json`.
 
 ## 22. ENDPOINT PREFERENCES — `/api/users/preferences` (B8, can dang nhap)
 

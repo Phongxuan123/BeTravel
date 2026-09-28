@@ -24,20 +24,27 @@ function useMockSavedArticles() {
 function useRealSavedArticles() {
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
-  const favoritesQuery = useQuery({ queryKey: ['favorites'], queryFn: fetchFavorites, enabled: !isGuest });
-  const savedIds = new Set(
-    (favoritesQuery.data?.data ?? []).filter((f) => f.targetType === 'article').map((f) => f.targetId),
+  const favoritesQuery = useQuery({ queryKey: ['favorites'], queryFn: fetchFavorites, enabled: !isGuest && !USE_MOCKS });
+  const articles = (favoritesQuery.data?.data ?? []).filter((f) => f.targetType === 'article');
+  const matchesArticle = (articleId: string) => articles.filter(
+    (favorite) => favorite.targetId === articleId || favorite.currentArticleId === articleId,
   );
 
   const mutation = useMutation({
     mutationFn: async (articleId: string) => {
-      if (savedIds.has(articleId)) await removeFavorite('article', articleId);
+      const matches = matchesArticle(articleId);
+      if (matches.length) await Promise.all(matches.map((favorite) => removeFavorite('article', favorite.targetId)));
       else await addFavorite('article', articleId);
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['favorites'] }),
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['favorites'] }),
+        queryClient.invalidateQueries({ queryKey: ['articles'] }),
+      ]);
+    },
   });
 
-  const isSaved = (articleId: string) => savedIds.has(articleId);
+  const isSaved = (articleId: string) => matchesArticle(articleId).length > 0;
   const toggleSaved = async (articleId: string) => {
     if (isGuest) return;
     await mutation.mutateAsync(articleId);
