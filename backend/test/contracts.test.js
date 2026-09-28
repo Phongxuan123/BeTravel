@@ -176,6 +176,8 @@ test("response cua POST /api/users/trips khop fixture trip.json", async () => {
   const fixture = readFixture("trip.json");
   const { registerAndLogin } = await import("./helpers.js");
   const { accessToken } = await registerAndLogin(app);
+  const Country = (await import("../src/models/Country.js")).default;
+  await Country.create({ code: "KR", name: "Hàn Quốc", status: "active" });
 
   const res = await request(app)
     .post("/api/users/trips")

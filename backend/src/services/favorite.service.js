@@ -3,6 +3,7 @@ import LegalArticle from "../models/LegalArticle.js";
 import SupportLocation from "../models/SupportLocation.js";
 import IncidentType from "../models/IncidentType.js";
 import { AppError, ErrorCode } from "../core/errors.js";
+import { INTERNAL_ARTICLE_FIELDS } from "./publicContent.service.js";
 
 const TARGET_MODEL = { article: LegalArticle, location: SupportLocation, incident: IncidentType };
 // Bookmark không được trở thành đường vòng đọc nội dung chưa kiểm chứng.
@@ -52,7 +53,9 @@ export const listFavorites = async (userId) => {
 
   const [articles, locations, incidents] = await Promise.all([
     idsByType.article.length
-      ? LegalArticle.find({ ...VISIBLE_FILTER.article, _id: { $in: idsByType.article } }).lean()
+      ? LegalArticle.find({ ...VISIBLE_FILTER.article, _id: { $in: idsByType.article } })
+          .select(INTERNAL_ARTICLE_FIELDS)
+          .lean()
       : [],
     idsByType.location.length
       ? SupportLocation.find({

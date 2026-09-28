@@ -13,7 +13,15 @@ before(async () => {
 });
 
 after(stopTestDb);
-beforeEach(clearTestDb);
+beforeEach(async () => {
+  await clearTestDb();
+  // Chuyen di chi tao duoc toi quoc gia dang mo (QA-3, INV-12.5).
+  const Country = (await import("../src/models/Country.js")).default;
+  await Country.create([
+    { code: "KR", name: "Hàn Quốc", status: "active" },
+    { code: "JP", name: "Nhật Bản", status: "active" },
+  ]);
+});
 
 const auth = (token) => `Bearer ${token}`;
 

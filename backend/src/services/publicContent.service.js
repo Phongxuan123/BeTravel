@@ -16,7 +16,8 @@ const PUBLISHED_CURRENT_FILTER = { status: ContentStatus.PUBLISHED, isCurrent: t
 
 // Truong noi bo cua quy trinh bien tap/index -- khong thuoc hop dong cong khai
 // (reviewNote co the chua ghi chu noi bo, indexState.error chua loi provider).
-const INTERNAL_ARTICLE_FIELDS =
+// Dung chung voi favorite.service.js (bookmark cung la duong doc cong khai).
+export const INTERNAL_ARTICLE_FIELDS =
   "-titleNorm -summaryNorm -reviewNote -reviewedBy -indexState -createdBy -updatedBy -__v";
 
 // Khong loc theo status: mobile can biet ca quoc gia 'coming_soon' de hien

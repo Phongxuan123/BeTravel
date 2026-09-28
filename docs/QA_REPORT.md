@@ -9,7 +9,7 @@
 |---|---|---|---|
 | QA-1 | Pha 0 + Pha 1 (D01-D40) + M01-M04 | xong | 28/09/2026 |
 | QA-2 | M05-M07 | xong | 28/09/2026 |
-| QA-3 | M08-M12 | chưa làm | |
+| QA-3 | M08-M12 | xong | 28/09/2026 |
 | QA-4 | M13-M15 | chưa làm | |
 | QA-5 | M16-M17 + Pha 3 + Pha 4 + báo cáo tổng | chưa làm | |
 
@@ -279,6 +279,81 @@ Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/ch
 | H-07.a UI ngụ ý AI nhớ ngữ cảnh | [v] | Không có câu chữ như vậy trên màn hình; comment `lib/api/chat.ts` nói "giữ lịch sử" là lưu phiên, không phải multi-turn |
 | H-07.b phân trang | [X] | `listSessions`/`listMessages` trả toàn bộ, không giới hạn --> S3 QA2-M07-04 |
 
+---
+
+## 3C. PHA 2 — MODULE (QA-3: M08-M12)
+
+Test mới: `backend/test/qa.support.test.js` (13 test + 1 `todo` tái hiện nợ H-09.a); mobile
+`lib/api/__tests__/countriesOffline.test.ts` (2), `features/sos/__tests__/SosHubScreen.test.tsx` (1).
+Test cũ `trips.test.js`, `contracts.test.js` thêm seed Country (bắt buộc sau QA3-M12-02), không nới điều kiện.
+
+### M08 — SOS
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 08.1 chỉ trả `verified:true` | [!] | Không lọc — quyết định B6 (xem QA-D13, chờ người chốt) |
+| 08.2 `$geoNear` đầu, giới hạn lat/lng/radius/limit | [v] | D15; `qa.support` INV-08.2 (lat 91, lng 181, lat chữ, radiusKm 5000, limit 1000 --> 400) |
+| 08.3 `[lng, lat]` mọi tầng | [v] | `supportLocation.test.js` tọa độ thật Seoul/Busan; admin `csv.test.ts`; validator tuple `[lng, lat]`. MapPicker Leaflet kiểm ở QA-4 |
+| 08.4 đơn vị khoảng cách | [v] | API `distanceMeters`; mobile `haversineKm` + nhãn m/km |
+| 08.5 CSV import từng dòng | [v] một phần | `supportLocation.test.js`, `hardening` bulk import. [X] không định nghĩa khóa trùng: import 2 lần cùng file tạo 2 bản ghi --> S3 QA3-M08-02 |
+| 08.6 `tel:`/website http(s)/thiếu tọa độ | [v] | `qa.support` INV-08.6; mobile vô hiệu nút khi thiếu số/tọa độ (`sos/index.tsx`) |
+| 08.7 SOS khi mất mạng | [v] sau sửa | H-08.a bên dưới |
+| 08.8 từ chối quyền vị trí vẫn dùng được SOS | [v] | `supportLocation.test.js` fallback theo quốc gia; `sos/index.tsx` bắt lỗi GPS, giữ nguyên số khẩn cấp |
+| H-08.a mất mạng khi mở app | [v] sau sửa | **S1** QA3-M08-01: mỗi lần mở app offline `country` rỗng --> `SosHubScreen` `return null` = màn hình trắng, không số khẩn cấp, không nút quay lại. Đã sửa (cache danh sách quốc gia + màn dự phòng). [!] Lần đầu cài app mà offline vẫn chưa có số khẩn cấp --> QA3-M08-03 cần người duyệt dữ liệu tĩnh |
+| H-08.b Android thiếu Maps key | [*] | Không kiểm được trên máy ảo/thiết bị; danh sách điểm vẫn tải độc lập với MapView |
+| H-08.c cache SOS tách bộ lọc, tính lại khoảng cách | [v] | `sos.test.ts` |
+
+### M09 — Workflow sự cố
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 09.1 chỉ published; gộp toàn cục + quốc gia | [v] | `incident.test.js` 3 test |
+| 09.2 progress chỉ workflow published; bước không tồn tại | [v] một phần | `incident.test.js` "Tiến độ không đọc/ghi incident nháp". Khác đặc tả: bước ngoài phạm vi bị **lọc âm thầm** (200) thay vì 400 — quyết định B7 có test, ghi nhận |
+| 09.3 unique + PUT idempotent | [v] | `qa.support` INV-09.3 (3 PUT đồng thời --> 1 bản ghi) |
+| 09.4 admin 409 khi stale; refetch không đè nháp | [v] | `incident.test.js` "Hai admin lưu cùng phiên bản"; admin `IncidentEditorPage.test.tsx` |
+| 09.5 CTA | [*] | `runCta` dùng `Linking.openURL` **không** `.catch` (thiết bị không có ứng dụng gọi --> promise bị từ chối không xử lý) --> S3 QA3-M09-03 (gộp INV-13.7 ở QA-4) |
+| H-09.a đổi thứ tự bước | [X] tái hiện | `qa.support` H-09.a (`todo`): tick "Trình báo công an" chuyển sang "Xin giấy thông hành" --> S2 QA3-M09-01, cần người chốt (đổi schema, chạm dữ liệu) |
+| H-09.b `updatedAt` optional | [X] ghi nợ | Admin hiện tại luôn gửi; API vẫn nhận PATCH không có `updatedAt` --> S3 QA3-M09-02 |
+| H-09.c mobile NOT_FOUND vs lỗi mạng | [v] | `incidents.test.ts` (sửa ở PR #20) |
+
+### M10 — Dịch khẩn cấp & mẫu câu
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 10.1 rate limit/quota | [v] một phần | `translateRateLimit` 30/15 phút/IP; không quota DB — quyết định B7 có ghi lý do (`rateLimit.middleware.js`) |
+| 10.2 giới hạn độ dài + ngôn ngữ | [v] sau sửa | `qa.support` INV-10.2 (đỏ trước sửa: `to`/`from` 5000 ký tự --> 200, chèn thẳng vào prompt LLM) --> S2 QA3-M10-01. Ngôn ngữ chưa theo danh sách cố định (nhãn tự do ≤40) — ghi nhận |
+| 10.3 provider lỗi --> 502 | [v] | `qa.support` INV-10.3 (throw / JSON hỏng / `translated` rỗng) |
+| 10.4 `mode` text/phrase | [*] | Backend xử lý như nhau; UI không hứa khác biệt |
+| 10.5 mẫu câu theo quốc gia, offline | [v] | `qa.support` INV-10.5; mobile `translate.test.ts` (cache offline). QuickPhrase không có trạng thái nháp (D14) |
+| 10.6 nhãn "bản dịch máy" | [*] | Kiểm UI ở QA-4 |
+
+### M11 — Cảnh báo theo vị trí
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 11.1 area cần center/radius; `effectiveTo >= effectiveFrom` ở create và PATCH | [v] | `alerts.test.js`; `qa.support` INV-11.1 |
+| 11.2 hiệu lực thời gian, quốc gia, bán kính, bỏ bản ghi hỏng | [v] | `alerts.test.js` 5 test; `qa.support` INV-11.2 (nước khác, chưa tới ngày) |
+| 11.3 GPS chỉ khi có consent, không nền, last-known ≤5 phút | [v] | `usePollAlerts.test.tsx`; code `usePollAlerts.ts` (`AppState` active, `maxAge` 5 phút) |
+| 11.4 backend không log tọa độ | [v] | Không có logger request (morgan/pino) trong `backend/`; `findApplicable` chỉ tính, không ghi |
+| 11.5 dismiss theo tài khoản, hàng đợi | [v] | `alerts.test.ts` (mobile) |
+| 11.6 tôn trọng safety | [v] | `usePollAlerts.test.tsx` |
+| H-11.a log query string | [v] | như 11.4 |
+| H-11.b giờ thiết bị | [v] | So sánh hiệu lực chạy ở server (`new Date()` backend) |
+
+### M12 — Favorites, trips, preferences
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 12.1 IDOR | [v] | `trips.test.js` xem/xóa/sửa; `qa.support` favorite B xóa của A, trip B đặt current của A --> 404 |
+| 12.2 chặn target không công khai | [v] | `favorites.test.js` "Favorites không lộ draft, archived, địa điểm chưa xác minh..." |
+| 12.3 bookmark superseded chỉ metadata | [v] | `favorites.test.js` 2 test. Bài hiện hành trong favorites lộ trường nội bộ --> đã sửa QA3-M12-01 (`qa.support` INV-12.3) |
+| 12.4 unique, idempotent | [v] | `favorites.test.js` "Luu trung 1 muc khong loi" |
+| 12.5 một isCurrent, endDate, chặn coming_soon | [v] sau sửa | `trips.test.js`; `qa.support` INV-12.5 (đỏ trước sửa: tạo được trip tới JP coming_soon và mã "XX") --> QA3-M12-02 |
+| 12.6 preferences chặt | [v] | `qa.support` INV-12.6 (role/email bị bỏ qua); `profile.test.js` |
+| 12.7 dữ liệu local theo email+mode | [v] | `userStorage.test.tsx` |
+| H-12.a N request bài đã lưu | [*] | `fetchArticles(savedOnly)` gọi chi tiết từng slug --> 50 bookmark = 51 request. Ghi S3 hiệu năng QA3-M12-03, không đổi contract |
+| H-12.b xóa trip đang current | [v] | Không trip nào thành current; mock cùng hành vi |
+
 ## 4. DANH SÁCH LỖI / NGHI VẤN
 
 ### 4.1. Đã sửa trong QA-1 (mỗi lỗi có test đỏ trước, xanh sau)
@@ -306,6 +381,15 @@ Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/ch
 | QA2-M07-01 | S2 | Mobile chat cho gửi câu mới (nút gửi + câu gợi ý) khi câu trước chưa trả lời. `getLastChatMessageId()` đọc id lượt vừa xong --> 2 lượt song song gán nhầm id, "Báo sai"/thumbs rơi vào tin nhắn khác. Comment `lib/api/chat.ts` khẳng định "input bị khóa trong lúc chờ" nhưng code không khóa | `chat/index.tsx`: khóa bằng ref (chặn 2 lần bấm cùng frame) + làm mờ nút khi đang chờ | `ChatScreen.test.tsx` |
 | QA2-M07-02 | S2 | Backend trả `needsOfficialHelp` (quy tắc 6 prompt: bị bắt, tai nạn, mất giấy tờ) nhưng mobile bỏ qua --> câu trả lời khẩn cấp không có lối tắt tới SOS | `ChatAnswer` thêm `needsOfficialHelp?` (optional, mock không đổi), adapter truyền xuống, `AnswerCard` hiện nút "Liên hệ hỗ trợ khẩn cấp" đầu thẻ | `AnswerCard.test.tsx` |
 
+**Đã sửa trong QA-3:**
+
+| ID | Mức | Mô tả | Sửa | Test |
+|---|---|---|---|---|
+| QA3-M08-01 | **S1** | Mở app khi mất mạng: danh sách quốc gia (nguồn số khẩn cấp + Đại sứ quán) không có cache --> SOS Hub `return null`, màn hình trắng, không nút quay lại | `lib/api/content.ts#fetchCountries` lưu bản tải thành công gần nhất (`StorageKeys.countriesCache`) và dùng khi lỗi mạng; `sos/index.tsx` hiện màn dự phòng (hướng dẫn, "Thử lại", nút quay lại) thay vì `null` | mobile `countriesOffline.test.ts`, `SosHubScreen.test.tsx` |
+| QA3-M10-01 | S2 | `/api/translate`: `from`/`to` không giới hạn độ dài, chèn thẳng vào prompt LLM --> vượt trần 500 ký tự (chi phí AI), prompt injection dài | `translate.validator.js` giới hạn 40 ký tự | `qa.support` INV-10.2 |
+| QA3-M12-01 | S2 | `GET /users/favorites` trả nguyên document bài luật hiện hành (lộ `reviewNote`, `indexState`...) — cùng lỗi QA2-M05-03 qua đường bookmark | Dùng chung `INTERNAL_ARTICLE_FIELDS` của `publicContent.service.js` | `qa.support` INV-12.3 |
+| QA3-M12-02 | S3 | Backend cho tạo/sửa trip tới quốc gia `coming_soon` hoặc mã không tồn tại (chỉ UI chặn) | `trip.service.js` kiểm Country `active` khi tạo và khi **đổi** quốc gia (trip cũ tới nước sau này bị đóng vẫn sửa ngày được) | `qa.support` INV-12.5 |
+
 ### 4.2. Cần người quyết định (không tự sửa — CLAUDE.md Phần 8: chạm logic nghiệp vụ)
 
 | ID | Mức | Vấn đề | Phương án |
@@ -314,6 +398,8 @@ Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/ch
 | QA-M04-01 | S2 | Không có đồ thị chuyển trạng thái bài luật; mọi chuyển đều hợp lệ | (A) Chốt đồ thị tối thiểu: `draft<->pending_review`, `pending_review-->published`, `published-->archived|draft`, cấm `superseded-->published` (khôi phục bản cũ phải qua `new-version`). (B) Giữ tự do, ghi rõ trong contract. **Đề xuất A** |
 | QA2-M06-04 | S2 | Chặn câu hỏi nước khác chỉ khớp **tên đầy đủ** (`Country.name`). Đã tái hiện: "Ở Nhật vượt đèn đỏ...", "Đi Tokyo...", "In Japan...", "Sang Thái..." đều lọt --> RAG trả lời bằng luật **Hàn Quốc** kèm trích dẫn như thể áp dụng cho nước được hỏi | (A) Thêm `Country.aliases[]` (admin nhập: "nhật", "japan", "tokyo"...) + khớp cả `nameEn` — cần đổi model + nhập liệu. (B) Chỉ thêm khớp `nameEn` (rẻ, không đổi dữ liệu, vẫn lọt "Nhật"/"Tokyo"). **Đề xuất A** |
 | QA2-M06-05 | S3 | Câu trả lời không có số liệu mà **không có marker hợp lệ nào** vẫn được hiển thị (0 citation), kể cả khi LLM viết marker sai dạng `[S1, S2]`/`[s1]` | Có bắt buộc >=1 citation cho mọi câu `answered` không? (CLAUDE.md 4.2 chỉ bắt buộc với tuyên bố định lượng) |
+| QA3-M08-03 | S1 (nếu người dùng cài app lúc không có mạng) | Lần **đầu** mở app mà offline thì chưa có dữ liệu quốc gia nào --> SOS chỉ hiện màn dự phòng, không có số khẩn cấp | (A) Đóng gói sẵn số khẩn cấp + Đại sứ quán của các nước `active` vào app (dữ liệu tĩnh, **người phải xác minh từng số**). (B) Giữ màn dự phòng như hiện tại. **Đề xuất A** — 07 yêu cầu hỏi người trước khi thêm dữ liệu tĩnh |
+| QA3-M09-01 | S2 | Tiến độ incident lưu theo `step.order`; admin đổi thứ tự bước (giữ số bước) --> tick của người dùng gắn sai bước (đã tái hiện bằng test `todo`) | (A) Thêm id ổn định cho từng bước (`stepId`), progress lưu `stepId` — đổi schema + migrate progress hiện có. (B) Khi admin đổi thứ tự thì xóa progress của workflow đó. **Đề xuất A** |
 | QA-M04-03 | S2 | Tính duy nhất `isCurrent` phụ thuộc hoàn toàn vào partial unique index; publish không chạy trong transaction (siblings bị supersede trước, nếu `save()` lỗi vì lý do khác thì 0 bản hiện hành) | (A) Dùng transaction Mongo (Atlas M0 hỗ trợ replica set). (B) Chấp nhận, thêm kiểm tra khởi động `LegalArticle.syncIndexes()`/cảnh báo nếu thiếu index. **Cần người xác nhận index đã tồn tại trên Atlas** |
 
 ### 4.3. Còn tồn đọng (ghi nợ, chưa sửa)
@@ -341,6 +427,11 @@ Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/ch
 | QA2-M07-04 | S3 | `GET /chat/sessions` và `/sessions/:id/messages` không phân trang | Thêm `limit`/cursor khi dữ liệu lớn |
 | QA2-M06-09 | S4 | Chunking không cắt một câu đơn dài hơn 1.200 ký tự | Cắt cứng theo ký tự khi câu vượt ngưỡng |
 | QA2-M13-01 | S4 | Comment lỗi thời `mobile/src/lib/api/adapters.ts:269` ("quick-phrases vẫn 100% mock tới B7") | Xóa khi làm QA-4 |
+| QA3-M08-02 | S3 | Bulk import SOS không có khóa chống trùng: import lại cùng CSV tạo bản ghi trùng | Định nghĩa khóa trùng (vd `countryCode+name+tọa độ làm tròn`) — cần người chốt tiêu chí |
+| QA3-M09-02 | S3 | PATCH incident không bắt buộc `updatedAt` (client cũ không được bảo vệ ghi đè) | Bắt buộc `updatedAt` như bài luật (admin hiện đã luôn gửi) |
+| QA3-M09-03 | S3 | CTA incident (`runCta`) và nút gọi Đại sứ quán ở `incidents/[slug].tsx` gọi `Linking.openURL` không `.catch` | Bắt lỗi + thông báo như `sos/index.tsx` (QA-4) |
+| QA3-M12-03 | S3 | Lọc "Đã lưu" ở Explore gọi chi tiết từng bài (N+1 request) | Endpoint batch theo danh sách id — đổi contract, để sau |
+| QA3-M10-02 | S4 | `translate.service.js` log nguyên văn phản hồi provider (`rawText`) khi JSON hỏng — có thể chứa nội dung người dùng dịch | Chỉ log độ dài/loại lỗi |
 | QA2-M05-04 | S4 | `memory.driver.js` đã lệch Prettier từ baseline, lần này sửa logic nhưng không format (tránh trộn commit) | Gộp vào commit format BASE-01 |
 | - | S4 | `admin/ArticleEditorPage.tsx`: sau `changeStatus` thành công, refetch `article` chạy lại `setForm` --> ghi đè nội dung đang gõ chưa lưu | Kiểm ở QA-4 (INV-14.3) |
 | - | S4 | CLAUDE.md Phần 9 nhắc `npm run reindex` nhưng `backend/package.json` không có script này | Sửa tài liệu hoặc thêm script |
@@ -372,20 +463,28 @@ Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/ch
 | mobile | [v] | [v] | **99/99** (23 suite) | — |
 | admin | [v] | [v] | 9/9 | [v] |
 
+**Kết quả sau sửa (QA-3):**
+
+| Workspace | Lint | Type | Test | Build |
+|---|---|---|---|---|
+| backend | [v] | n/a | **211/211** + 1 `todo` (H-09.a, nợ đã biết) · golden 26/26 | n/a |
+| mobile | [v] | [v] | **102/102** (25 suite) | — |
+| admin | [v] | [v] | 9/9 | [v] |
+
 ---
 
-## 6. CHẤM MỤC TIÊU G1-G12 (sau QA-2)
+## 6. CHẤM MỤC TIÊU G1-G12 (sau QA-3)
 
 | # | Chấm | Ghi chú |
 |---|---|---|
-| G1 | Đạt một phần | Bài luật: 5 trạng thái bị chặn ở list/detail/search/đếm/RAG (QA-2, có test). Còn favorites, incidents, quick phrase, alerts (QA-3). [!] QA-D13 SOS chưa verified cần chốt |
+| G1 | Đạt một phần | Bài luật (list/detail/search/đếm/RAG/favorites), incidents, alerts đều có test chặn trạng thái ẩn. QuickPhrase không có bản nháp. **Chưa đạt ở SOS**: API trả điểm `verified:false` — QA-D13 chờ người chốt |
 | G2 | **Đạt** (có điều kiện) | Golden 26/26; guard chặn marker bịa + 9 dạng định lượng; spy LLM = 0 khi dưới ngưỡng; lỗi provider --> fallback. Mutation 1 và 3 từng sống sót --> đã thêm test. Điều kiện: QA2-M06-04 (câu hỏi nhắc nước khác bằng tên ngắn vẫn được trả lời bằng luật KR) cần chốt |
 | G3 | **Đạt** | Sweep RBAC + test mới cho token xấu, khóa/hạ quyền, refresh xoay vòng/ân hạn/reuse/đồng thời |
-| G4 | Đạt một phần | Chat: 5 thao tác IDOR đều 404 (QA-2). Trips, favorites, progress, preferences ở QA-3 |
+| G4 | **Đạt** | Chat (5 thao tác), trips (xem/sửa/xóa/đặt current), favorites (xóa/list), progress (theo user), preferences (chỉ của mình) — đều có test |
 | G5 | Chưa kiểm được | QA-4 (M15). Fixture `public.legalArticle.json` đã đổi trong QA-2, test 2 phía xanh |
-| G6 | Đạt một phần | Quota user + global nguyên tử có test đồng thời; không trừ khi validate lỗi; cache không trả bằng chứng cũ; rate limit trước controller. Dịch (translate) kiểm ở QA-3 |
-| G7 | Chưa kiểm được | QA-3/QA-4 |
-| G8 | Đạt một phần | Optimistic concurrency bài luật có test; toàn vẹn tham chiếu Country/Topic đã sửa; QA-M04-03 phụ thuộc index |
+| G6 | **Đạt** | Chat: quota user + global nguyên tử (test đồng thời), không trừ khi validate lỗi, cache không trả bằng chứng cũ. Dịch: rate limit + giới hạn độ dài cả `text`/`from`/`to` (QA3-M10-01); không quota DB — quyết định B7 có ghi lý do |
+| G7 | Đạt một phần | Backend không log/lưu tọa độ (không có logger request); `usePollAlerts` chỉ đọc GPS khi có consent + quyền, không chạy nền, last-known ≤5 phút (có test). Còn kiểm màn hình xin quyền ở QA-4 và trên thiết bị thật |
+| G8 | Đạt một phần | Optimistic concurrency bài luật + incident có test; toàn vẹn tham chiếu Country/Topic đã sửa; dữ liệu local theo tài khoản có test. Còn: QA-M04-03 (phụ thuộc index), QA3-M09-01 (tick sai bước khi đổi thứ tự) |
 | G9 | Chưa kiểm được | QA-4 |
 | G10 | Đạt một phần | Build admin + export iOS/Android đạt; khởi động với `.env.example` ở QA-5 |
 | G11 | Đạt một phần | Đã gỡ PII/mật khẩu khỏi tài liệu hiện hành; còn lịch sử git + host trong `04_Repo_Audit.md` |
@@ -407,7 +506,9 @@ Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/ch
 6. (QA-2) Nếu từng đổi `EMBEDDING_MODEL` trên môi trường thật mà chưa re-index toàn bộ: sau bản sửa
    QA2-M06-02, chunk của model cũ không còn được dùng --> chạy "Reindex quốc gia" ở Admin A04 để AI trả lời lại được.
 
+7. (QA-3) Chốt QA3-M08-03 (đóng gói sẵn số khẩn cấp đã xác minh cho lần mở app đầu tiên khi offline) và
+   QA3-M09-01 (id ổn định cho bước incident).
+
 ## 8. PHIÊN TIẾP THEO
 
-**QA-3: M08-M12** (SOS, incidents, translate, alerts, favorites/trips/preferences). Đủ điều kiện. QA-D13 thuộc
-M08 — nếu người chưa chốt, QA-3 chỉ kiểm và ghi nhận, không đổi hành vi SOS.
+**QA-4: M13-M15** (mobile toàn bộ, admin, contract 3 bên) — đang chạy liên tục theo yêu cầu người dùng.
