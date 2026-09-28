@@ -109,7 +109,7 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
   // re-index het) cho cosine vo nghia -- khong duoc gop vao diem nguong.
   const vectorHits = rawVectorHits.filter((hit) => hit.embeddingModel === embeddingProvider.model);
 
-  // ★ Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
+  // [!] Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
   // (fusedScore chi co y nghia tuong doi giua cac chunk, khong tuyet doi).
   // Chunk bị gỡ không được góp điểm giúp tập bằng chứng vượt ngưỡng.
   const { verifiedChunks: verifiedVectorHits } = await verifyAgainstArticles(

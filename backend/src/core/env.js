@@ -110,7 +110,45 @@ const envSchema = z.object({
     .transform((value) => value || undefined),
 });
 
-const parsed = envSchema.safeParse(process.env);
+const PRODUCTION_JWT_SECRET_MIN_LENGTH = 32;
+const PROVIDER_API_KEY = { gemini: "GEMINI_API_KEY", openai: "OPENAI_API_KEY" };
+
+/*
+ * Production KHONG duoc am tham chay provider mock (mac dinh cua schema, de
+ * dev/test khong ton tien): thieu bien la tro ly AI tra loi gia hoac tu choi
+ * moi cau ma khong ai biet vi sao. Fail fast ngay luc khoi dong (QA-5, M16).
+ */
+const productionEnvSchema = envSchema.superRefine((data, ctx) => {
+  if (data.NODE_ENV !== "production") return;
+  if (data.JWT_ACCESS_SECRET.length < PRODUCTION_JWT_SECRET_MIN_LENGTH) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["JWT_ACCESS_SECRET"],
+      message: `Production cần JWT_ACCESS_SECRET dài ít nhất ${PRODUCTION_JWT_SECRET_MIN_LENGTH} ký tự`,
+    });
+  }
+  for (const key of ["LLM_PROVIDER", "EMBEDDING_PROVIDER"]) {
+    const provider = data[key];
+    if (provider === "mock") {
+      ctx.addIssue({
+        code: "custom",
+        path: [key],
+        message: "Production không được dùng provider mock",
+      });
+    } else if (!data[PROVIDER_API_KEY[provider]]) {
+      ctx.addIssue({
+        code: "custom",
+        path: [PROVIDER_API_KEY[provider]],
+        message: `Thiếu ${PROVIDER_API_KEY[provider]} cho ${key}=${provider}`,
+      });
+    }
+  }
+});
+
+// Ham thuan de test duoc tung cau hinh ma khong phai doc .env that (co secret).
+export const parseEnv = (source) => productionEnvSchema.safeParse(source);
+
+const parsed = parseEnv(process.env);
 
 if (!parsed.success) {
   const problems = parsed.error.issues

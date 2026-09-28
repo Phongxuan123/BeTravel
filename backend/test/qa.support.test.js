@@ -142,6 +142,29 @@ test(
   },
 );
 
+test("QA5-E2E PATCH chi doi status/title khong xoa steps (incident) va behaviorsToAvoid (geo-alert)", async () => {
+  // Zod 4: .partial() van ap .default([]) cua schema tao --> field khong gui bi ghi de rong.
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+  const incident = await createIncident({ status: "draft" });
+  const patchedIncident = await request(app)
+    .patch(`/api/admin/incidents/${incident._id}`)
+    .set(as(accessToken))
+    .send({ status: "published", updatedAt: incident.updatedAt.toISOString() });
+  assert.equal(patchedIncident.status, 200);
+  assert.equal(patchedIncident.body.data.steps.length, 3);
+
+  const alert = await request(app)
+    .post("/api/admin/geo-alerts")
+    .set(as(accessToken))
+    .send(alertBody({ behaviorsToAvoid: ["Không tụ tập"] }));
+  const patchedAlert = await request(app)
+    .patch(`/api/admin/geo-alerts/${alert.body.data._id}`)
+    .set(as(accessToken))
+    .send({ title: "Tiêu đề mới" });
+  assert.equal(patchedAlert.status, 200);
+  assert.deepEqual(patchedAlert.body.data.behaviorsToAvoid, ["Không tụ tập"]);
+});
+
 // ── M10: dich khan cap ───────────────────────────────────────────────────
 
 test("INV-10.2 ngon ngu nguon/dich gioi han do dai (khong vuot tran chi phi AI)", async () => {

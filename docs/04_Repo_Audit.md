@@ -180,7 +180,7 @@ Tin tốt: `react-native-maps` **chạy được trong Expo Go ở SDK 57**, kh�
 
 | # | Việc | Ai | Ghi chú |
 |---|---|---|---|
-| 1 | Xoá host cluster thật (`wdp.w0bnsxm.mongodb.net`) khỏi `backend/README.md` | CTO | Repo public — nên để `<cluster-host>` |
+| 1 | Xoá host cluster thật (`<cluster-host>` (đã ẩn host thật, QA-5)) khỏi `backend/README.md` | CTO | Repo public — nên để `<cluster-host>` |
 | 2 | Bật Atlas Vector Search trên cluster hiện tại, kiểm tra còn đủ slot index | CTO | M0 tối đa 3 |
 | 3 | Lấy API key Gemini | CTO | Cho embedding + LLM |
 | 4 | Tạo Android Maps API key **có quota cap** | CTO | Xem 5.2 |

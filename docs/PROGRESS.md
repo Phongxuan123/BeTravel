@@ -10,7 +10,9 @@ Cập nhật lần cuối: 2026-09-28 · Phiên: QA-1 (docs/07_QA_BugHunt.md: Ph
 | QA-2 M05-M07 | xong | Sửa 10 lỗi: 3 S1 (guard bỏ sót 5 dạng định lượng; 2 bất biến RAG không có test bảo vệ -- phát hiện qua mutation testing), 5 S2 (lộ trường nội bộ bài luật, tìm `đ`, trộn embedding model, chat gửi trùng, bỏ qua needsOfficialHelp), 2 S3. Backend 198, mobile 99, admin 9 test xanh |
 | QA-3 M08-M12 | xong | Sửa 4 lỗi: 1 S1 (mở app khi mất mạng --> SOS Hub trắng, nay cache quốc gia + màn dự phòng), 2 S2 (translate from/to không giới hạn vào prompt LLM; favorites lộ trường nội bộ bài luật), 1 S3 (backend cho trip tới nước coming_soon). Backend 211 (+1 todo nợ H-09.a), mobile 102, admin 9 |
 | QA-4 M13-M15 | xong | Sửa 6 lỗi: 2 S2 (không có ErrorBoundary cấp route; admin xác minh hàng loạt điểm SOS/re-index không xác nhận), D17 admin hard-code quốc gia, 3 S3 (refresh lộ cờ `rotated` + fixture admin lệch; 7 chỗ gọi điện/link không bắt lỗi; màn hình import type từ @/mocks). Mọi fixture có backend + client. Backend 214 (+1 todo), mobile 111, admin 11 |
-| QA-5 | chưa làm | PHAN 6-12 của 07 thiếu --> dùng kịch bản tự đề xuất |
+| QA-5 M16-M17 + Pha 3 + Pha 4 | xong | Sửa: PATCH incident/geo-alert xóa `steps`/`behaviorsToAvoid` (Zod 4 partial giữ default, phát hiện qua E2E); production fail fast khi AI mock/thiếu key/JWT ngắn; smoke test server.js; emoji/host/README; commit format riêng BASE-01. E2E 5 kịch bản + fuzz mọi route ghi (tự đề xuất vì 07 thiếu PHAN 6-7). Backend 227 (+1 todo), mobile 111, admin 11 |
+
+**Đợt QA kết thúc.** Danh sách duy nhất các việc người cần làm/quyết định: `docs/QA_REPORT.md` mục 7.
 
 Việc của người phát sinh từ QA-1 (chi tiết QA_REPORT mục 7): đổi ngay mật khẩu admin đã
 seed; quyết định rewrite lịch sử git; chốt QA-D13 (SOS chưa xác minh), QA-M04-01 (đồ thị

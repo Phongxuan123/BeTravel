@@ -1,7 +1,7 @@
 import { FallbackReason } from "../core/constants.js";
 
 /*
- * ★ HAU KIEM BANG CODE -- PHAN QUAN TRONG NHAT CUA B4 (CLAUDE.md muc 7,
+ * [!] HAU KIEM BANG CODE -- PHAN QUAN TRONG NHAT CUA B4 (CLAUDE.md muc 7,
  * docs/03_Contracts_v2.md muc 8). KHONG BAO GIO tin LLM tu kiem duyet chinh
  * no. Day la pure function de test de dang, khong phu thuoc DB/network.
  */
@@ -62,7 +62,7 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
     return "";
   });
 
-  // (b) ★ Tuyen bo dinh luong ma KHONG co nguon -> tu choi hien thi hoan toan
+  // (b) [!] Tuyen bo dinh luong ma KHONG co nguon -> tu choi hien thi hoan toan
   // (khong phai chi xoa cau do -- neu LLM bia so lieu thi ca cau tra loi
   // khong con dang tin, ha cap xuong fallback an toan).
   if (QUANTITATIVE_CLAIM.test(answer) && found.size === 0) {

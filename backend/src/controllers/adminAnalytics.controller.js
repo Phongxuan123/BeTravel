@@ -4,7 +4,7 @@ import { ok } from "../core/envelope.js";
 
 export const overview = async (req, res, next) => {
   try {
-    // ★ validateQuery khong the "sua tai cho" req.query o Express nay --
+    // [!] validateQuery khong the "sua tai cho" req.query o Express nay --
     // req.query la getter tra ve MOT DOI TUONG MOI moi lan doc (da xac minh
     // thuc nghiem: req.query === req.query la false), nen Object.assign trong
     // validate.middleware.js ghi vao mot ban sao roi mat ngay, khong bao gio

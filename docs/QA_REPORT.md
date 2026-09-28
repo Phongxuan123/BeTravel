@@ -11,7 +11,7 @@
 | QA-2 | M05-M07 | xong | 28/09/2026 |
 | QA-3 | M08-M12 | xong | 28/09/2026 |
 | QA-4 | M13-M15 | xong | 28/09/2026 |
-| QA-5 | M16-M17 + Pha 3 + Pha 4 + báo cáo tổng | chưa làm | |
+| QA-5 | M16-M17 + Pha 3 + Pha 4 + báo cáo tổng | xong | 28/09/2026 |
 
 Nhánh: `feature/qa-20260928`, tách từ `main` tại `2d681d8`. Không push, không merge.
 
@@ -444,6 +444,63 @@ Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một cl
 | 15.4 fixture lỗi khớp HTTP + code | [v] | error.validation/unauthorized/forbidden/conflict đều có test backend với status thật |
 | 15.5 `docs/API.md` vs contracts | [*] | Chưa đối chiếu từng dòng (để QA-5) |
 
+---
+
+## 3E. QA-5: M16-M17 + PHA 3 + PHA 4
+
+Test mới: `backend/test/qa.config.test.js` (5), `qa.e2e.test.js` (5 kịch bản), `qa.edge.test.js` (2),
++1 test hồi quy ở `qa.support.test.js`.
+
+### M16 — Cấu hình, khởi động, triển khai
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 16.1 validate env, fail fast ở production | [v] sau sửa | S2 QA5-M16-01: production chấp nhận `LLM_PROVIDER`/`EMBEDDING_PROVIDER=mock` (chính là **mặc định**) và JWT secret 16 ký tự --> thiếu biến là server chạy AI giả/từ chối mọi câu mà không báo. Đã thêm ràng buộc production (không mock, có API key đúng provider, JWT ≥32) — `qa.config` INV-16.1 (6 cấu hình hỏng bị từ chối; dev/test vẫn chạy mock) |
+| 16.2 biến đọc trong code có trong `.env.example` | [v] | `qa.config` INV-16.2 (quét `src/` + `scripts/`, có đối chứng) |
+| 16.3 `render.yaml` | [v] một phần | `qa.config` INV-16.3 (startCommand khớp script, healthCheck, không secret). [X] backend không khai `engines`; Render không đặt `SEARCH_DRIVER` --> production chạy memory driver thay vì Atlas Search (S3 QA5-M16-03) |
+| 16.4 CORS | [*] | `cors({ origin: env.CORS_ORIGINS, credentials: true })`; request không Origin (native) qua được |
+| 16.5 helmet, trust proxy | [v] | `app.js` (D39) |
+| 16.6 pool ≤10, SIGTERM | [v] / [X] | `MONGO_MAX_POOL_SIZE` mặc định 10. `server.js` **không** bắt SIGTERM: Render tắt tiến trình giữa job --> lease 60s rồi job được nhận lại (không mất, chỉ trễ) — S3 QA5-M16-04 |
+| 16.7 `/api/health` không lộ bí mật | [v] | Trả `db`, `searchDriver`, `version`, `uptime` (`auth.test.js`) |
+| 16.8 worker không chạy trong test | [v] | Worker chỉ khởi động ở `server.js`, test chỉ import `app.js` |
+| 16.9 `eas.json`/`app.json` | [X] một phần | Có profile preview/production, chuỗi quyền vị trí tiếng Việt, Maps key là placeholder (không lộ). **Thiếu `ios.bundleIdentifier` và `android.package`** --> EAS build production cần — tên định danh vĩnh viễn trên store, người phải chọn (QA5-M16-05) |
+| 16.10 CI | [!] | Chỉ có keepalive. Đề xuất `ci.yml` (lint + test 3 workspace, mongodb-memory-server, không cần secret) — 07 yêu cầu hỏi người trước |
+| 16.11 tên database | [*] | Chỉ báo cáo, không sửa |
+| H-16.a smoke import | [v] sau bổ sung | `qa.config` H-16.a: import `config/db.js`, `rag/jobs/index.js`, `job.service.js` + kiểm mọi đường dẫn import tương đối trong `server.js` tồn tại (BUG-H01) |
+| H-16.b khởi động với `.env.example` | [v] | `qa.config` INV-16.1 dev dùng cấu hình tối thiểu tương đương `.env.example` |
+
+### M17 — Vệ sinh repo
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 17.1 D01-D04 | [v] | D01 rỗng; D02 chỉ ví dụ `<cluster-host>`; D03 đã thay host thật trong `docs/04_Repo_Audit.md` (QA-5); D04 sạch sau QA-1 (ví dụ `Matkhau123` trong `contracts/README.md` chỉ còn là mật khẩu mẫu, không còn là mặc định hệ thống) |
+| 17.2 không email/tài khoản thật | [v] | Sửa ở QA-1. Lịch sử git vẫn còn — người quyết định |
+| 17.3 `backend/README.md` | [v] | Không có host thật |
+| 17.4 mật khẩu admin đã seed | [!] **S0 việc của người** | Chưa có xác nhận đã đổi |
+| 17.5 `.claude/` không bị track | [v] | `git ls-files .claude` rỗng |
+| 17.6 `PROGRESS.md` quá dài | [!] | Đề xuất tách lịch sử sang `docs/PROGRESS_HISTORY.md` khi người đồng ý |
+| 17.7 README gốc | [v] sau sửa | Bỏ U+2705, sửa câu "seed tạo 1 admin" (giờ cần `SEED_ADMIN_PASSWORD`), trỏ tới QA_REPORT |
+| D30 emoji | [v] sau sửa | U+2605 --> `[!]` (contracts + 7 file backend), U+2713 trên UI --> icon lucide `Check`, U+26A0 trong test chat bỏ. Còn trong `docs/00-04` (tài liệu gốc của nhóm, không tính) |
+
+### Pha 3 — E2E (tự đề xuất, PHAN 6 thiếu)
+
+| ID | Kịch bản | Kết quả |
+|---|---|---|
+| E2E-Q1 | Bài luật: nháp (ẩn, AI từ chối) --> publish --> job reindex thật --> công khai + AI trích dẫn --> người dùng lưu --> version 2 publish --> v1 superseded, chunk v1 bị purge, favorite báo `isOutdated` + trỏ v2, không lộ nội dung cũ | [v] |
+| E2E-Q2 | Lưu trữ bài --> job purge --> công khai 404, search rỗng, AI từ chối | [v] |
+| E2E-Q3 | Điểm SOS chưa xác minh không lưu được --> bulk verify --> lưu được, đứng đầu `/nearby` | [v] |
+| E2E-Q4 | Workflow sự cố: nháp ẩn + chặn tiến độ --> publish --> ghi tiến độ --> gỡ về nháp --> chặn đọc/ghi | [X] --> **phát hiện QA5-E2E-01**, sửa xong [v] |
+| E2E-Q5 | Hết quota ngày --> 429 `QUOTA_EXCEEDED`, không tạo tin nhắn | [v] |
+
+### Pha 4 — Edge case (tự đề xuất, PHAN 7 thiếu)
+
+| Kịch bản | Kết quả |
+|---|---|
+| Quét tự động **mọi route ghi** (admin + auth + chat + trips + favorites + preferences + progress + feedback + translate, ≥40 route) × 3 dạng ID (hợp lệ-không-tồn-tại, sai định dạng, `%24ne`) × 7 payload (mảng, rỗng, sai kiểu, `$gt/$ne` injection, lồng sâu 200 tầng, số quá lớn, chuỗi 100k) | [v] không 5xx, không lộ stack |
+| NoSQL injection qua query string ở 4 endpoint công khai | [v] 400 hoặc rỗng — không bypass bộ lọc |
+| Đồng thời: refresh, OTP, quota user/global, publish 2 version, sửa bài, PUT tiến độ, gửi chat liên tục | [v] (đã có test ở QA-1..QA-4 + hardening) |
+| Mất mạng: refresh, SOS offline, mẫu câu offline, SOS lần đầu offline | [v] / [!] QA3-M08-03 |
+
 ## 4. DANH SÁCH LỖI / NGHI VẤN
 
 ### 4.1. Đã sửa trong QA-1 (mỗi lỗi có test đỏ trước, xanh sau)
@@ -491,6 +548,16 @@ Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một cl
 | QA-D17 | S2 | Admin hard-code `['KR','JP','TH','SG']` | Lấy từ `countriesApi` | `DangerousActions.test.tsx` |
 | QA-D25 | S3 | 11 màn `import type` từ `@/mocks/schemas` | Re-export type qua `@/lib/data` | `tsc` + grep rỗng |
 
+**Đã sửa trong QA-5:**
+
+| ID | Mức | Mô tả | Sửa | Test |
+|---|---|---|---|---|
+| QA5-E2E-01 | S2 | Zod 4 `.partial()` vẫn áp `.default([])`: PATCH incident không gửi `steps` --> **xóa sạch các bước**; PATCH geo-alert không gửi `behaviorsToAvoid` --> xóa danh sách. Admin UI hiện luôn gửi đủ nên chưa dính, nhưng mọi client/API khác thì dính | `incidentUpdateSchema`/`geoAlertUpdateSchema` khai lại 2 field không default | `qa.support` QA5-E2E; `qa.e2e` E2E-Q4 |
+| QA5-M16-01 | S2 | Production chạy được với provider mock (mặc định) và JWT secret ngắn | `env.js`: `parseEnv` + ràng buộc production | `qa.config` INV-16.1 |
+| QA5-M16-02 | S3 | Không test nào bắt lỗi import của `server.js` (BUG-H01) | Smoke test module + đường dẫn | `qa.config` H-16.a |
+| QA5-M17-01 | S3 | Emoji còn trong README/contracts/src/UI; host cluster thật trong `04_Repo_Audit.md`; README nói sai về seed admin | Thay bằng ký hiệu Rule 12 / icon; ẩn host; sửa README | D30 grep sạch (ngoài docs 00-04) |
+| BASE-01 | S4 | 28 file backend lệch Prettier | Commit **format riêng** `style(QA-5)` sau commit logic | `npm run format:check` |
+
 ### 4.2. Cần người quyết định (không tự sửa — CLAUDE.md Phần 8: chạm logic nghiệp vụ)
 
 | ID | Mức | Vấn đề | Phương án |
@@ -502,6 +569,9 @@ Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một cl
 | QA3-M08-03 | S1 (nếu người dùng cài app lúc không có mạng) | Lần **đầu** mở app mà offline thì chưa có dữ liệu quốc gia nào --> SOS chỉ hiện màn dự phòng, không có số khẩn cấp | (A) Đóng gói sẵn số khẩn cấp + Đại sứ quán của các nước `active` vào app (dữ liệu tĩnh, **người phải xác minh từng số**). (B) Giữ màn dự phòng như hiện tại. **Đề xuất A** — 07 yêu cầu hỏi người trước khi thêm dữ liệu tĩnh |
 | QA3-M09-01 | S2 | Tiến độ incident lưu theo `step.order`; admin đổi thứ tự bước (giữ số bước) --> tick của người dùng gắn sai bước (đã tái hiện bằng test `todo`) | (A) Thêm id ổn định cho từng bước (`stepId`), progress lưu `stepId` — đổi schema + migrate progress hiện có. (B) Khi admin đổi thứ tự thì xóa progress của workflow đó. **Đề xuất A** |
 | QA4-M11-01 | S2 (quyền riêng tư) | `locationConsent` **mặc định `true`** ở cả backend (`User.js`) lẫn mobile (`DEFAULT_PREFERENCES`) — "đồng ý chia sẻ vị trí" được bật sẵn thay vì người dùng chủ động chọn. Hiện GPS vẫn cần quyền hệ điều hành (chỉ xin kèm giải thích ở SOS) nên chưa đọc vị trí ngầm | (A) Mặc định `false`, hỏi đồng ý lần đầu khi bật cảnh báo vị trí (user cũ giữ nguyên giá trị đã lưu). (B) Giữ `true`, ghi rõ trong chính sách riêng tư. **Đề xuất A** |
+| QA5-M16-05 | S2 (chặn phát hành) | `app.json` thiếu `ios.bundleIdentifier`, `android.package` | Người chọn định danh vĩnh viễn (vd `vn.betravel.app`) trước lần build store đầu tiên |
+| QA5-CI | S2 | Không có CI chạy test khi push/PR | Đồng ý để thêm `.github/workflows/ci.yml` (lint + test + build, không secret) |
+| BASE-02 | S4 | Windows `core.autocrlf=true` + Prettier `endOfLine: lf` --> `format:check` báo 147 file trên máy Windows | Thêm `.gitattributes` `* text=auto eol=lf` (đụng line ending mọi file — cần đồng ý) |
 | QA-M04-03 | S2 | Tính duy nhất `isCurrent` phụ thuộc hoàn toàn vào partial unique index; publish không chạy trong transaction (siblings bị supersede trước, nếu `save()` lỗi vì lý do khác thì 0 bản hiện hành) | (A) Dùng transaction Mongo (Atlas M0 hỗ trợ replica set). (B) Chấp nhận, thêm kiểm tra khởi động `LegalArticle.syncIndexes()`/cảnh báo nếu thiếu index. **Cần người xác nhận index đã tồn tại trên Atlas** |
 
 ### 4.3. Còn tồn đọng (ghi nợ, chưa sửa)
@@ -523,7 +593,9 @@ Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một cl
 | ~~QA-D25~~ | — | **Đã sửa ở QA-4** (xem 4.1) | — |
 | QA-D30 | S3 | Emoji: `README.md` U+2705, UI `trips/new.tsx` U+2713, U+2605 trong comment/contracts | Thay `[v]`, icon `lucide`; gom sửa QA-5 |
 | QA-D03 | S3 | Host cluster thật còn trong `docs/04_Repo_Audit.md:183` và lịch sử git | Thay bằng `<cluster-host>`; lịch sử git: người quyết định |
-| BASE-01/02 | S4 | Format backend (28 file) + CRLF Windows | Commit format riêng ở QA-5 |
+| ~~BASE-01~~ | — | **Đã format ở QA-5** (commit riêng). BASE-02 chuyển sang 4.2 | — |
+| QA5-M16-03 | S3 | Backend không khai `engines`; `render.yaml` không đặt `SEARCH_DRIVER=atlas` | Thêm `"engines": {"node": ">=22.13"}` và biến trên Render khi index Atlas đã ACTIVE |
+| QA5-M16-04 | S3 | `server.js` không xử lý SIGTERM (đóng kết nối, dừng worker) | `process.on('SIGTERM', ...)` gọi `stopJobWorker` + `mongoose.disconnect` |
 | QA2-M06-06 | S4 | Cache hit vẫn trừ quota (quota trừ trước khi tra cache); câu hỏi bị từ chối (dưới ngưỡng/nước khác) cũng trừ lượt. Chưa ghi trong `contracts/README.md` | Ghi rõ quyết định vào contract |
 | QA2-M07-03 | S3 | Feedback admin đổi trạng thái tự do (không có đồ thị) | Chốt cùng QA-M04-01 |
 | QA2-M07-04 | S3 | `GET /chat/sessions` và `/sessions/:id/messages` không phân trang | Thêm `limit`/cursor khi dữ liệu lớn |
@@ -592,9 +664,19 @@ Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một cl
 | mobile | [v] | [v] | **111/111** (28 suite) | — |
 | admin | [v] | [v] | **11/11** | [v] |
 
+**Kết quả cuối đợt (QA-5, sau commit format):**
+
+| Workspace | Lint | Type | Format | Test | Build/Export |
+|---|---|---|---|---|---|
+| backend | [v] | n/a | [v] `format:check` (bỏ qua CRLF, xem BASE-02) | **227/227** + 1 `todo` · golden 26/26 | n/a |
+| mobile | [v] | [v] | n/a | **111/111** (28 suite) | [v] iOS / [v] Android |
+| admin | [v] | [v] | n/a | **11/11** | [v] |
+
+Tổng test tăng trong đợt: backend 151 --> 227 (+76), mobile 94 --> 111 (+17), admin 9 --> 11 (+2).
+
 ---
 
-## 6. CHẤM MỤC TIÊU G1-G12 (sau QA-3)
+## 6. CHẤM MỤC TIÊU G1-G12 (cuối đợt)
 
 | # | Chấm | Ghi chú |
 |---|---|---|
@@ -604,34 +686,59 @@ Ma trận (sau QA-4): mọi fixture được backend **và** ít nhất một cl
 | G4 | **Đạt** | Chat (5 thao tác), trips (xem/sửa/xóa/đặt current), favorites (xóa/list), progress (theo user), preferences (chỉ của mình) — đều có test |
 | G5 | Đạt một phần | Mọi fixture hiện có được backend + ít nhất một client đối chiếu (QA-4); đã sửa 2 lệch thật (`rotated`, fixture admin). Còn nhiều endpoint chưa có fixture (QA4-M15-02) |
 | G6 | **Đạt** | Chat: quota user + global nguyên tử (test đồng thời), không trừ khi validate lỗi, cache không trả bằng chứng cũ. Dịch: rate limit + giới hạn độ dài cả `text`/`from`/`to` (QA3-M10-01); không quota DB — quyết định B7 có ghi lý do |
-| G7 | Đạt một phần | Backend không log/lưu tọa độ (không có logger request); `usePollAlerts` chỉ đọc GPS khi có consent + quyền, không chạy nền, last-known ≤5 phút (có test). Còn kiểm màn hình xin quyền ở QA-4 và trên thiết bị thật |
-| G8 | Đạt một phần | Optimistic concurrency bài luật + incident có test; toàn vẹn tham chiếu Country/Topic đã sửa; dữ liệu local theo tài khoản có test. Còn: QA-M04-03 (phụ thuộc index), QA3-M09-01 (tick sai bước khi đổi thứ tự) |
-| G9 | Đạt một phần | Có ErrorBoundary cấp route (QA-4), SOS không còn màn trắng khi offline (QA-3), refresh lỗi mạng không đăng xuất, không vòng lặp refresh. Thiếu nút "Thử lại" ở phần lớn màn lỗi (QA4-M13-03); font lỗi có thể kẹt splash (QA4-M13-09) |
-| G10 | Đạt một phần | Build admin + export iOS/Android đạt; khởi động với `.env.example` ở QA-5 |
-| G11 | Đạt một phần | Đã gỡ PII/mật khẩu khỏi tài liệu hiện hành; còn lịch sử git + host trong `04_Repo_Audit.md` |
-| G12 | Đạt một phần | lint/typecheck sạch 3 workspace; còn format backend (BASE-01) và emoji (QA-D30) |
+| G7 | Đạt một phần | Backend không log/lưu tọa độ; `usePollAlerts` chỉ đọc GPS khi có consent + quyền, không chạy nền, last-known ≤5 phút (có test); lời xin quyền đúng sự thật. [!] `locationConsent` mặc định `true` (QA4-M11-01) cần chốt; kiểm trên thiết bị thật |
+| G8 | Đạt một phần | Optimistic concurrency bài luật + incident có test; toàn vẹn tham chiếu Country/Topic; PATCH không còn xóa `steps`/`behaviorsToAvoid` (QA5-E2E-01); dữ liệu local theo tài khoản có test. Còn: QA-M04-03 (phụ thuộc index), QA3-M09-01 (tick sai bước khi đổi thứ tự) |
+| G9 | Đạt một phần | ErrorBoundary cấp route, SOS không trắng khi offline, gọi điện/link không crash, refresh lỗi mạng không đăng xuất, không vòng lặp refresh. Thiếu nút "Thử lại" ở phần lớn màn lỗi (QA4-M13-03); font lỗi có thể kẹt splash (QA4-M13-09) |
+| G10 | Đạt một phần | Admin build + Expo export iOS/Android đạt (QA-5); production fail fast khi thiếu cấu hình AI (QA5-M16-01); `render.yaml` khớp script. **Chưa đạt để phát hành store**: thiếu `bundleIdentifier`/`package` (QA5-M16-05); triển khai thật chưa kiểm được |
+| G11 | Đạt một phần | Tài liệu hiện hành sạch PII/mật khẩu/host thật (QA-1, QA-5). Còn lịch sử git (người quyết định) |
+| G12 | **Đạt** | lint/typecheck sạch 3 workspace, backend `format:check` sạch sau commit format, không emoji trong mã nguồn/README/contracts, không import `@/mocks` ở màn hình, không hard-code quốc gia ở admin |
+
+Tóm tắt: **Đạt 5** (G2 có điều kiện, G3, G4, G6, G12) · **Đạt một phần 7** (G1, G5, G7, G8, G9, G10, G11) · Không đạt 0.
 
 ---
 
-## 7. VIỆC NGƯỜI PHẢI LÀM
+## 7. TỔNG HỢP CUỐI ĐỢT — VIỆC NGƯỜI PHẢI LÀM (một danh sách duy nhất, theo ưu tiên)
 
-1. **[S0] Đổi ngay mật khẩu tài khoản admin đã seed trên Atlas** — mật khẩu mặc định cũ vẫn nằm trong
-   lịch sử git public. Nếu `backend/.env` đang khai `SEED_ADMIN_PASSWORD` bằng giá trị cũ, đổi luôn.
-2. Quyết định có rewrite lịch sử git để xóa email/mật khẩu/host cluster đã từng commit hay không
-   (thao tác phá hủy, ảnh hưởng mọi clone).
-3. Chốt các mục ở 4.2 (mỗi mục có phương án): QA-D13 (SOS chỉ trả điểm đã xác minh?), QA-M04-01 (đồ thị
-   trạng thái), QA-M04-03 (transaction hay chấp nhận index), **QA2-M06-04 (bí danh quốc gia để chặn câu hỏi
-   nước khác — ưu tiên cao, ảnh hưởng G2)**, QA2-M06-05 (bắt buộc citation cho mọi câu trả lời).
-4. Xác nhận partial unique index `{countryCode, slug}` `isCurrent:true` đã tồn tại trên Atlas.
-5. Bổ sung PHAN 6-12 cho `docs/07_QA_BugHunt.md` trước phiên QA-5.
-6. (QA-2) Nếu từng đổi `EMBEDDING_MODEL` trên môi trường thật mà chưa re-index toàn bộ: sau bản sửa
-   QA2-M06-02, chunk của model cũ không còn được dùng --> chạy "Reindex quốc gia" ở Admin A04 để AI trả lời lại được.
+### Ưu tiên 1 — làm ngay (bảo mật)
 
-7. (QA-3) Chốt QA3-M08-03 (đóng gói sẵn số khẩn cấp đã xác minh cho lần mở app đầu tiên khi offline) và
-   QA3-M09-01 (id ổn định cho bước incident).
-8. (QA-4) Chốt QA4-M11-01 (mặc định đồng ý vị trí) và xác nhận trên iPhone thật QA4-M13-10 (bàn phím che ô chat).
+1. **Đổi mật khẩu tài khoản admin đã seed trên Atlas** (INV-17.4, S0). Mật khẩu mặc định cũ vẫn nằm trong lịch sử
+   git public. Nếu `backend/.env` còn khai `SEED_ADMIN_PASSWORD` bằng giá trị cũ, đổi luôn.
+2. **Quyết định rewrite lịch sử git** để xóa email thật, mật khẩu mặc định, host cluster đã từng commit (thao tác
+   phá hủy, ảnh hưởng mọi bản clone — tôi không tự làm).
 
-## 8. PHIÊN TIẾP THEO
+### Ưu tiên 2 — quyết định nghiệp vụ ảnh hưởng an toàn/độ tin cậy (mỗi mục có phương án ở 4.2)
 
-**QA-5: M16-M17 + Pha 3 + Pha 4 + báo cáo tổng** — đang chạy liên tục theo yêu cầu người dùng. PHAN 6-12 của 07
-thiếu --> Pha 3/Pha 4 dùng kịch bản tự đề xuất (ghi rõ trong báo cáo).
+3. **QA2-M06-04** — bí danh quốc gia: "Ở Nhật..."/"Tokyo"/"Japan" hiện vẫn được trả lời bằng **luật Hàn Quốc**.
+4. **QA-D13** — SOS có chỉ trả điểm đã xác minh không (hiện trả cả điểm chưa xác minh, không gắn nhãn).
+5. **QA3-M08-03** — đóng gói sẵn số khẩn cấp đã xác minh cho lần đầu mở app khi offline (cần người xác minh từng số).
+6. **QA4-M11-01** — `locationConsent` mặc định `true` hay `false`.
+7. **QA-M04-01** — đồ thị trạng thái bài luật ở backend (đề xuất: áp đúng đồ thị mà Admin UI `StatusBar` đang dùng).
+8. **QA3-M09-01** — id ổn định cho bước incident (tick hiện gắn sai bước khi admin đổi thứ tự — đã tái hiện).
+9. **QA2-M06-05** — có bắt buộc ≥1 trích dẫn cho mọi câu trả lời AI không.
+10. **QA-M04-03** — publish dùng transaction hay chấp nhận dựa vào index; **xác nhận partial unique index
+    `{countryCode, slug}` (`isCurrent:true`) đã tồn tại trên Atlas**.
+
+### Ưu tiên 3 — trước khi phát hành
+
+11. **QA5-M16-05** — chọn `ios.bundleIdentifier` / `android.package` (định danh vĩnh viễn trên store).
+12. Điền placeholder: `EXPO_PUBLIC_API_URL` trong `mobile/eas.json`, Android Maps key trong `mobile/app.json`
+    (đặt quota cap cho key), secret `BACKEND_HEALTH_URL` cho workflow keepalive, biến môi trường trên Render
+    (production giờ **bắt buộc** `LLM_PROVIDER`/`EMBEDDING_PROVIDER` khác `mock` + API key + JWT secret ≥32 ký tự).
+13. Nếu từng đổi `EMBEDDING_MODEL` trên môi trường thật mà chưa re-index toàn bộ: chạy "Reindex quốc gia" ở
+    Admin (sau QA2-M06-02, chunk của model cũ không còn được dùng làm bằng chứng).
+14. Kiểm trên **thiết bị thật**: bàn phím che ô chat trên iPhone (QA4-M13-10), bản đồ Android, gọi điện, GPS/từ chối
+    quyền, chữ tràn màn 375px, splash khi lỗi font.
+
+### Ưu tiên 4 — đồng ý để tôi làm tiếp (không phá dữ liệu)
+
+15. Thêm CI `.github/workflows/ci.yml` (QA5-CI) · thêm `.gitattributes` LF (BASE-02) · tách lịch sử
+    `PROGRESS.md` (INV-17.6) · chốt tiêu chí chống trùng khi import CSV SOS (QA3-M08-02).
+16. Bổ sung PHAN 6-12 cho `docs/07_QA_BugHunt.md` nếu muốn chạy lại Pha 3/4 đúng đặc tả gốc.
+
+Các mục S3/S4 còn lại ở 4.3 là nợ kỹ thuật có thể làm dần, không cần quyết định.
+
+## 8. KẾT THÚC ĐỢT
+
+Đợt QA-1..QA-5 hoàn tất trên nhánh `feature/qa-20260928` (mỗi phiên một lần push). Chưa merge `main`.
+Tổng cộng **30 mục đã sửa** (QA-1: 5 · QA-2: 10 · QA-3: 4 · QA-4: 6 · QA-5: 5 kể cả commit format BASE-01),
+trong đó **6 lỗi mức S1** (QA-1: 2 · QA-2: 3 · QA-3: 1); mọi lỗi mã nguồn đều có test tái hiện đỏ trước khi sửa.
