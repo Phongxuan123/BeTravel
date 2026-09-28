@@ -23,6 +23,8 @@ const slugSchema = z
   .min(1, "Slug khong duoc de trong")
   .regex(/^[a-z0-9-]+$/, "Slug chi duoc chua chu thuong, so va dau gach ngang");
 
+const SEARCH_QUERY_MAX_LENGTH = 200;
+
 export const topicListQuerySchema = z.object({
   country: countryCodeSchema,
 });
@@ -33,7 +35,13 @@ export const articleListQuerySchema = paginationQuerySchema.extend({
 });
 
 export const articleSearchQuerySchema = paginationQuerySchema.extend({
-  q: z.string().trim().min(1, "Vui long nhap tu khoa tim kiem"),
+  // Moi tu thanh mot $regex -- khong gioi han thi mot q vai nghin ky tu tao
+  // hang tram dieu kien $and quet toan collection.
+  q: z
+    .string()
+    .trim()
+    .min(1, "Vui long nhap tu khoa tim kiem")
+    .max(SEARCH_QUERY_MAX_LENGTH, "Tu khoa tim kiem qua dai"),
   country: countryCodeSchema,
   topic: slugSchema.optional(),
 });

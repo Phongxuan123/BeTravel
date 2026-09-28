@@ -363,7 +363,13 @@ GET /legal/search?q=&country=KR&topic=&page=           200, meta {page,limit,tot
 ★ **Tim khong dau**: `q` duoc tach tung tu, moi tu phai xuat hien o
 `titleNorm` hoac `summaryNorm` (da bo dau + lowercase, tu dong tinh lai moi
 lan luu bai — xem `LegalArticle.js` hook `pre('save')`). "phat vape" khop
-"Muc phat ... (vape)" du hai tu khong lien tiep.
+"Muc phat ... (vape)" du hai tu khong lien tiep. Chu `d` va `đ` khop lan nhau
+("dai su quan" ra "Đại sứ quán"). `q` toi da 200 ky tu, rong/qua dai --> 400.
+
+**Truong noi bo khong tra ra API cong khai** (QA-2, INV-05.8): bai luat o
+`/legal/articles` va `/legal/articles/:country/:slug` KHONG co `titleNorm`,
+`summaryNorm`, `reviewNote`, `reviewedBy`, `indexState`, `createdBy`,
+`updatedBy`, `__v`. Admin van thay day du qua `/admin/legal/articles/:id`.
 
 **Diem thay the cho B4**: khi `legal_chunks` + Atlas Search san sang, chi cai
 lai PHAN THAN cua `publicContent.service.js#searchArticles` sang goi Atlas

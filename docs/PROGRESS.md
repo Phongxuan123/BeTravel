@@ -7,12 +7,15 @@ Cập nhật lần cuối: 2026-09-28 · Phiên: QA-1 (docs/07_QA_BugHunt.md: Ph
 | Phiên | Trạng thái | Ghi chú |
 |---|---|---|
 | QA-1 Pha 0 + Pha 1 + M01-M04 | xong | Nhánh `feature/qa-20260928`. Sửa 5 lỗi (2 S1 lộ PII/mật khẩu mặc định, 1 S2 xóa Country/Topic đang tham chiếu, 2 S3). Backend 174, mobile 95, admin 9 test xanh |
-| QA-2 M05-M07 | chưa làm | Đủ điều kiện |
-| QA-3..QA-5 | chưa làm | QA-5 cần người bổ sung PHAN 6-12 của 07 |
+| QA-2 M05-M07 | xong | Sửa 10 lỗi: 3 S1 (guard bỏ sót 5 dạng định lượng; 2 bất biến RAG không có test bảo vệ -- phát hiện qua mutation testing), 5 S2 (lộ trường nội bộ bài luật, tìm `đ`, trộn embedding model, chat gửi trùng, bỏ qua needsOfficialHelp), 2 S3. Backend 198, mobile 99, admin 9 test xanh |
+| QA-3 M08-M12 | chưa làm | Đủ điều kiện |
+| QA-4..QA-5 | chưa làm | QA-5 cần người bổ sung PHAN 6-12 của 07 |
 
 Việc của người phát sinh từ QA-1 (chi tiết QA_REPORT mục 7): đổi ngay mật khẩu admin đã
 seed; quyết định rewrite lịch sử git; chốt QA-D13 (SOS chưa xác minh), QA-M04-01 (đồ thị
 trạng thái bài luật), QA-M04-03 (transaction publish); xác nhận partial unique index trên Atlas.
+QA-2 thêm: chốt QA2-M06-04 (bí danh quốc gia -- "Ở Nhật..." hiện vẫn được trả lời bằng
+luật KR) và QA2-M06-05; hợp đồng `public.legalArticle.json` đã bỏ trường nội bộ.
 Thay đổi cấu hình: `SEED_ADMIN_PASSWORD` không còn giá trị mặc định -- để trống thì `npm run seed`
 bỏ qua bước tạo admin.
 

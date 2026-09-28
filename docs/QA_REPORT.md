@@ -8,7 +8,7 @@
 | Phiên | Phạm vi | Trạng thái | Ngày |
 |---|---|---|---|
 | QA-1 | Pha 0 + Pha 1 (D01-D40) + M01-M04 | xong | 28/09/2026 |
-| QA-2 | M05-M07 | chưa làm | |
+| QA-2 | M05-M07 | xong | 28/09/2026 |
 | QA-3 | M08-M12 | chưa làm | |
 | QA-4 | M13-M15 | chưa làm | |
 | QA-5 | M16-M17 + Pha 3 + Pha 4 + báo cáo tổng | chưa làm | |
@@ -203,6 +203,82 @@ Test mới: `backend/test/qa.core.test.js` (23 test) + 1 test ở `mobile/src/li
 
 ---
 
+---
+
+## 3B. PHA 2 — MODULE (QA-2: M05-M07)
+
+Test mới: `backend/test/qa.content-rag.test.js` (24 test); mobile `features/chat/__tests__/ChatScreen.test.tsx`,
+`lib/api/__tests__/search.test.ts` (2), 1 test thêm ở `AnswerCard.test.tsx`. Fixture `hardening.test.js` sửa
+`embeddingModel` cho khớp provider (xem QA2-M06-03).
+
+### M05 — API nội dung công khai & tìm kiếm
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 05.1 chặn 5 trạng thái ở mọi endpoint | [v] | `qa.content-rag` INV-05.1: draft, pending_review, archived, superseded, published-nhưng-không-hiện-hành × list/detail/search/related/`articleCount` topic + country |
+| 05.2 slug có bản superseded | [v] | `qa.content-rag` INV-05.2 (trả bản hiện hành v2, không trả nội dung cũ) |
+| 05.3 `articleCount` chỉ đếm published+current | [v] | như 05.1 |
+| 05.4 coming_soon / 404 | [v] | `qa.content-rag` INV-05.4; `publicContent.test.js` |
+| 05.5 chuẩn hóa tiếng Việt, `đ`-->`d`, giới hạn q | [v] sau sửa | `qa.content-rag` INV-05.5 x2 (đỏ trước sửa: "dai su quan" không ra "Đại sứ quán"; q 201 ký tự trả 200) --> QA2-M05-01, QA2-M05-02 |
+| 05.6 regex injection | [v] | `qa.content-rag` INV-05.6 (`(a+)+$`, `.*`, `[`, `\`, `a|b` --> 200, 0 kết quả) |
+| 05.7 snippet không HTML | [v] | search trả `summaryVi` thuần, không `<mark>`; mobile render `Text` |
+| 05.8 không lộ trường nội bộ | [v] sau sửa | `qa.content-rag` INV-05.8 (đỏ trước sửa: lộ `reviewNote`, `indexState.error`, `titleNorm`, `createdBy`...) --> QA2-M05-03 |
+| 05.9 cô lập quốc gia | [v] | `qa.content-rag` INV-05.9 |
+| H-05.a `kr` chữ thường | [v] | cùng test; validator `toUpperCase` |
+| H-05.b total khi tách AND | [v] | `countDocuments(filter)` dùng cùng filter với `find` |
+| H-05.c regex không index | [*] | chấp nhận ở quy mô hiện tại (quyết định B3), không sửa |
+
+### M06 — RAG, guardrail, quota, cache
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 06.1 lọc country+published ở tầng search | [v] | `atlas.driver.js` filter; `memory.driver.js` `status` + `matchesFilter`; `hardening` "focusArticle không đưa chunk quốc gia khác" |
+| 06.2 xác minh bài thật ở cả 2 driver | [v] sau bổ sung test | `retrieval.js#verifyAgainstArticles` dùng chung; `qa.content-rag` INV-06.2 (bài published nhưng `isCurrent:false`) — xem mutation 3 |
+| 06.3 dưới ngưỡng --> LLM = 0 lần | [v] | `qa.content-rag` INV-06.3 (spy đếm: câu ngoài phạm vi + câu nước khác = 0 lần; câu hợp lệ = 1 lần) |
+| 06.4 ngưỡng trên score gốc | [v] | `retrieval.js` tính `topScore` từ vector hits đã xác minh, trước RRF |
+| 06.5 guard marker + định lượng | [v] sau sửa | `rag.guard.test.js`; `qa.content-rag` H-06.a (pipeline thật), H-06.b (9 dạng) --> QA2-M06-01 |
+| 06.6 so số tiền với nguồn | [v] | `rag.guard.test.js` "marker hợp lệ không bảo chứng con số bịa"; `qa.content-rag` H-06.b ký hiệu `₩` đứng trước |
+| 06.7 disclaimer, không "100%" | [v] | `qa.content-rag` INV-06.7; `git grep -niE "100\s*%" -- backend/src mobile/src admin/src`: quy tắc 4 system prompt (câu phủ định), kích thước CSS/SVG, và comment lỗi thời `mobile/src/lib/api/adapters.ts:269` "quick-phrases vẫn 100% mock tới B7" (S4). Không có câu hứa chính xác 100% |
+| 06.8 JSON hỏng / answer rỗng / thiếu trường / throw | [v] | `qa.content-rag` INV-06.8 (4 dạng --> PROVIDER_ERROR, không 500) |
+| 06.9 lỗi embedding/search/timeout | [v] | `hardening` "lỗi embedding trở thành fallback"; D23 timeout 4/4 provider |
+| 06.10 câu hỏi nước khác chặn trước retrieval | [X] một phần | 4 ca golden `country_isolation` xanh, nhưng chỉ khớp **tên đầy đủ** --> QA2-M06-04 |
+| 06.11 focusArticle cùng quốc gia, hiện hành | [v] | `hardening` "focusArticle không đưa chunk quốc gia khác" |
+| 06.12 cache key + expiresAt | [v] | `qa.content-rag` INV-06.12 (sửa bài --> cache miss); `hardening` "cache hết hạn không dùng lại" |
+| 06.13 cache hit trừ quota | [*] | Code: quota trừ **trước** cache (`sendMessage` dòng 151). Tài liệu chưa ghi --> S4 QA2-M06-06 |
+| 06.14 quota nguyên tử, không trừ khi validate lỗi | [v] | `hardening` 2 test đồng thời; `qa.content-rag` INV-06.14. Quyết định: lỗi provider **vẫn trừ** lượt (comment `aiUsage.service.js`) |
+| 06.15 ai_events | [v] | `qa.content-rag` INV-06.15. Lưu cả câu hỏi thô — quyết định có chủ đích (`AiEvent.js`: A01 cần hiện "top câu hỏi fallback") |
+| 06.16 chunking | [v] | `qa.content-rag` INV-06.16 (cắt >1200 có overlap, gộp <200, penalty riêng, dòng ngữ cảnh không vào `text`). [*] một câu đơn >1200 ký tự không bị cắt |
+| 06.17 lệch dims / trộn model | [v] sau sửa | `qa.content-rag` INV-06.17 (đỏ trước sửa: chunk model cũ vẫn làm bằng chứng) --> QA2-M06-02 |
+| H-06.a mutation testing | xem dưới | |
+| H-06.b regex bỏ sót | [v] sau sửa | 5/9 dạng lọt trước sửa --> QA2-M06-01 |
+| H-06.c từ chối oan | [v] | `qa.content-rag` H-06.c ("gọi 112", "tổng đài 1345", "9 giờ" không bị hạ cấp) |
+| H-06.d marker dạng lạ | [*] | `[S1, S2]`, `[s1]`, `【S1】`, `[S01]` không được nhận: có số liệu --> bị chặn (an toàn); không số liệu --> hiện nguyên chuỗi marker, 0 citation --> S3 QA2-M06-05 |
+| H-06.e prompt injection | [*] | Trong câu hỏi: guard vẫn chặn (hậu kiểm không phụ thuộc LLM). Trong nội dung bài do admin nhập: **không chặn được** — rủi ro tin cậy nội dung admin, ghi nhận |
+| H-06.f 20 request song song | [v] | `hardening` "quota user đồng thời chỉ cấp đúng số lượt còn lại" |
+| H-06.g reset quota 07:00 giờ VN | [*] | Khóa ngày UTC (`toISOString().slice(0,10)`) --> reset 07:00 sáng giờ VN. Ghi nhận, không đổi |
+
+**Mutation testing thủ công (H-06.a)** — sửa tạm trên cây làm việc, chạy golden + guard + hardening + qa, hoàn nguyên sau mỗi lần (đã kiểm `git diff`/grep không còn dấu `MUTATION`):
+
+| # | Đột biến | Kết quả với bộ test **baseline** | Xử lý |
+|---|---|---|---|
+| 1 | Bỏ `guardAnswer` trong `chat.service.js`, trả thẳng answer LLM | [X] **sống sót**: golden dùng MockLlm luôn trích đúng nguồn, `rag.guard.test` gọi thẳng hàm --> không test nào đi qua guard trên đường thật | Thêm `qa.content-rag` H-06.a (LLM bịa qua `sendMessage`) --> đỏ dưới đột biến, xanh khi hoàn nguyên. **S1 QA2-M06-07 đã xử lý** |
+| 2 | `RAG_MIN_TOP_SCORE=0.99` (qua env) | [v] bị bắt: 16/26 ca golden đỏ | — |
+| 3 | Bỏ `isCurrent: true` ở `verifyAgainstArticles` | [X] **sống sót**: test cũ chỉ đổi `status` | Thêm `qa.content-rag` INV-06.2 --> đỏ dưới đột biến. **S1 QA2-M06-08 đã xử lý** |
+
+### M07 — Chat & feedback
+
+| INV | Chấm | Bằng chứng |
+|---|---|---|
+| 07.1 IDOR session/message | [v] | `qa.content-rag` INV-07.1: B gọi GET messages, POST message, PATCH rename, DELETE, POST feedback trên session của A --> 404 cả 5; dữ liệu A nguyên vẹn; quota B không bị trừ; `feedback.test.js` báo sai tin nhắn người khác |
+| 07.2 xóa session xóa message | [v] | `qa.content-rag` INV-07.2. Feedback trỏ tin đã xóa: admin detail trả `message: null`, không crash |
+| 07.3 message lưu citations/retrieval/fallbackReason | [v] | `hardening` "cache hết hạn... giữ metadata AI và chunkId thật" |
+| 07.4 chat cần đăng nhập | [v] | `chat.routes.js` `router.use(authenticateToken)`; mobile chặn guest bằng màn "Đăng nhập để hỏi AI" |
+| 07.5 feedback rate limit, độ dài, trạng thái | [v] một phần | `feedbackRateLimit`; `qa.content-rag` INV-07.5 (note >1000 --> 400); audit ở `feedback.test.js`. [X] không có đồ thị trạng thái (mọi chuyển đều hợp lệ) --> S3 QA2-M07-03 |
+| 07.6 mobile pending / chống gửi trùng / fallback / SOS | [v] sau sửa | `ChatScreen.test.tsx` (đỏ trước sửa: 2 request song song); `AnswerCard.test.tsx` needsOfficialHelp (đỏ trước sửa) --> QA2-M07-01, QA2-M07-02. Fallback hiển thị khối riêng màu vàng, không phải lỗi đỏ [v] |
+| 07.7 tiêu đề session | [v] | `chatSessionRenameSchema` 1-100 ký tự; mobile render `Text` (không HTML); `profile.test.js` |
+| H-07.a UI ngụ ý AI nhớ ngữ cảnh | [v] | Không có câu chữ như vậy trên màn hình; comment `lib/api/chat.ts` nói "giữ lịch sử" là lưu phiên, không phải multi-turn |
+| H-07.b phân trang | [X] | `listSessions`/`listMessages` trả toàn bộ, không giới hạn --> S3 QA2-M07-04 |
+
 ## 4. DANH SÁCH LỖI / NGHI VẤN
 
 ### 4.1. Đã sửa trong QA-1 (mỗi lỗi có test đỏ trước, xanh sau)
@@ -215,12 +291,29 @@ Test mới: `backend/test/qa.core.test.js` (23 test) + 1 test ở `mobile/src/li
 | QA-M02-01 | S3 | Đăng nhập tài khoản bị khóa trả 403 "đã bị vô hiệu hóa" **trước** khi kiểm mật khẩu --> dò được tài khoản tồn tại/bị khóa, và chênh thời gian (không chạy bcrypt) | `auth.service.js#loginUser`: kiểm mật khẩu trước, chỉ báo bị khóa khi mật khẩu đúng | `qa.core` INV-02.12 |
 | QA-M04-02 | S2 | Xóa Country/Topic đang có bài luật (hoặc chủ đề) tham chiếu --> bài mồ côi | `country.service`/`legalTopic.service`: kiểm tham chiếu --> 409 CONFLICT; admin `CountriesPage`/`TopicsPage` hiện lỗi xóa (trước đó mutation xóa **không có** `onError`, lỗi bị nuốt) | `qa.core` INV-04.10 |
 
+**Đã sửa trong QA-2:**
+
+| ID | Mức | Mô tả | Sửa | Test |
+|---|---|---|---|---|
+| QA2-M06-01 | **S1** | Guard bỏ sót 5 dạng tuyên bố định lượng không nguồn: `₩3,000,000`, `$500`, "bị phạt tù 1 năm", "tù đến 3 năm", "ba triệu won". Dạng "phạt tù đến 1 năm" có ngay trong nguồn KR (fixture) --> LLM chép sai con số mà không marker vẫn hiện cho người dùng | `guard.js`: thêm ký hiệu tiền đứng trước, "phạt tù", "tù (đến) N", "triệu/nghìn/tỷ + đơn vị tiền"; trích số từ dạng `₩N` để đối chiếu nguồn | `qa.content-rag` H-06.b x2; golden 26/26 và H-06.c (không từ chối oan) vẫn xanh |
+| QA2-M06-07 | **S1** | Test không bảo vệ bất biến: bỏ hẳn guard khỏi `sendMessage` mà toàn bộ test baseline vẫn xanh (mutation 1) | Thêm test end-to-end LLM bịa qua pipeline thật | `qa.content-rag` H-06.a |
+| QA2-M06-08 | **S1** | Test không bảo vệ bất biến: bỏ `isCurrent` ở lớp phòng thủ thứ hai mà test vẫn xanh (mutation 3) | Thêm test bài published nhưng không hiện hành | `qa.content-rag` INV-06.2 |
+| QA2-M06-02 | S2 | Chunk của embedding model khác (đổi model chưa re-index hết) vẫn được tính cosine và làm bằng chứng; vector truy vấn sai số chiều bị cắt âm thầm (`cosineSimilarity` dùng `Math.min` độ dài) | `retrieval.js`: bỏ vector hit khác `embeddingModel` của provider hiện tại (2 driver trả thêm `embeddingModel`); sai số chiều --> lỗi `EMBEDDING_DIMS_MISMATCH` --> fallback PROVIDER_ERROR | `qa.content-rag` INV-06.17 |
+| QA2-M06-03 | S3 | Fixture `hardening.test.js` ghi chunk `embeddingModel:"mock"` khác provider `"mock-embedding"` | Dùng `createMockEmbeddingProvider().model`; nếu không, test "chunk cũ không lọt RAG" xanh vô nghĩa sau QA2-M06-02 | chính các test đó |
+| QA2-M05-01 | S2 | Tìm kiếm không dấu không khớp `đ`: "dai su quan" không ra "Đại sứ quán" (NFD không tách `đ`). Ảnh hưởng cả keyword search RAG của memory driver | So khớp phía truy vấn `[dđ]` (`toDStrokeInsensitivePattern`) và gập `đ` khi so ở memory driver. **Không** đổi `normalizeVi` --> không phải migrate `titleNorm`/`textNorm` trên Atlas, không đổi vector mock của golden | `qa.content-rag` INV-05.5 |
+| QA2-M05-02 | S3 | `q` không giới hạn độ dài (mỗi từ thành một `$regex`) | Zod `max(200)` + mobile cắt `q` về 200 ký tự ở `lib/api/content.ts` (không sửa màn hình) | `qa.content-rag` INV-05.5; mobile `search.test.ts` |
+| QA2-M05-03 | S2 | Bài luật công khai (`/legal/articles`, `/legal/articles/:c/:s`) lộ `reviewNote` (ghi chú nội bộ reviewer), `indexState.error` (lỗi provider), `createdBy/updatedBy/reviewedBy`, `titleNorm/summaryNorm`, `__v`. Chính fixture hợp đồng đã ghi nhận các trường này | Contract trước: bỏ khỏi `public.legalArticle.json` + ghi chú `contracts/README.md`; service `.select()` loại trường nội bộ. Mobile không dùng trường nào trong số này (grep) | `qa.content-rag` INV-05.8; `contracts.test.js` (backend) + `adapters.test.ts`/`savedArticles.test.ts` (mobile) vẫn xanh với fixture mới |
+| QA2-M07-01 | S2 | Mobile chat cho gửi câu mới (nút gửi + câu gợi ý) khi câu trước chưa trả lời. `getLastChatMessageId()` đọc id lượt vừa xong --> 2 lượt song song gán nhầm id, "Báo sai"/thumbs rơi vào tin nhắn khác. Comment `lib/api/chat.ts` khẳng định "input bị khóa trong lúc chờ" nhưng code không khóa | `chat/index.tsx`: khóa bằng ref (chặn 2 lần bấm cùng frame) + làm mờ nút khi đang chờ | `ChatScreen.test.tsx` |
+| QA2-M07-02 | S2 | Backend trả `needsOfficialHelp` (quy tắc 6 prompt: bị bắt, tai nạn, mất giấy tờ) nhưng mobile bỏ qua --> câu trả lời khẩn cấp không có lối tắt tới SOS | `ChatAnswer` thêm `needsOfficialHelp?` (optional, mock không đổi), adapter truyền xuống, `AnswerCard` hiện nút "Liên hệ hỗ trợ khẩn cấp" đầu thẻ | `AnswerCard.test.tsx` |
+
 ### 4.2. Cần người quyết định (không tự sửa — CLAUDE.md Phần 8: chạm logic nghiệp vụ)
 
 | ID | Mức | Vấn đề | Phương án |
 |---|---|---|---|
 | QA-D13 | S0 theo 07 / đã chốt khác ở B6 | API SOS công khai trả cả điểm `verified:false` (PROGRESS mục 45, contracts §SOS: "verified ưu tiên"). Mobile chỉ gắn huy hiệu cho điểm đã xác minh, **không** gắn nhãn "chưa xác minh". Mâu thuẫn với D13/INV-08.1 và với favorites (không cho lưu điểm chưa verified) | (A) Chỉ trả `verified:true` — an toàn nhất, nhưng hiện Atlas chưa có điểm nào verified --> bản đồ trống, chỉ còn số khẩn cấp quốc gia. (B) Giữ nguyên, thêm nhãn "Chưa xác minh" rõ ràng ở mobile + contract. (C) Mặc định verified-only, cho client xin thêm `includeUnverified=true` khi không có kết quả. **Đề xuất: A hoặc C** |
 | QA-M04-01 | S2 | Không có đồ thị chuyển trạng thái bài luật; mọi chuyển đều hợp lệ | (A) Chốt đồ thị tối thiểu: `draft<->pending_review`, `pending_review-->published`, `published-->archived|draft`, cấm `superseded-->published` (khôi phục bản cũ phải qua `new-version`). (B) Giữ tự do, ghi rõ trong contract. **Đề xuất A** |
+| QA2-M06-04 | S2 | Chặn câu hỏi nước khác chỉ khớp **tên đầy đủ** (`Country.name`). Đã tái hiện: "Ở Nhật vượt đèn đỏ...", "Đi Tokyo...", "In Japan...", "Sang Thái..." đều lọt --> RAG trả lời bằng luật **Hàn Quốc** kèm trích dẫn như thể áp dụng cho nước được hỏi | (A) Thêm `Country.aliases[]` (admin nhập: "nhật", "japan", "tokyo"...) + khớp cả `nameEn` — cần đổi model + nhập liệu. (B) Chỉ thêm khớp `nameEn` (rẻ, không đổi dữ liệu, vẫn lọt "Nhật"/"Tokyo"). **Đề xuất A** |
+| QA2-M06-05 | S3 | Câu trả lời không có số liệu mà **không có marker hợp lệ nào** vẫn được hiển thị (0 citation), kể cả khi LLM viết marker sai dạng `[S1, S2]`/`[s1]` | Có bắt buộc >=1 citation cho mọi câu `answered` không? (CLAUDE.md 4.2 chỉ bắt buộc với tuyên bố định lượng) |
 | QA-M04-03 | S2 | Tính duy nhất `isCurrent` phụ thuộc hoàn toàn vào partial unique index; publish không chạy trong transaction (siblings bị supersede trước, nếu `save()` lỗi vì lý do khác thì 0 bản hiện hành) | (A) Dùng transaction Mongo (Atlas M0 hỗ trợ replica set). (B) Chấp nhận, thêm kiểm tra khởi động `LegalArticle.syncIndexes()`/cảnh báo nếu thiếu index. **Cần người xác nhận index đã tồn tại trên Atlas** |
 
 ### 4.3. Còn tồn đọng (ghi nợ, chưa sửa)
@@ -243,6 +336,12 @@ Test mới: `backend/test/qa.core.test.js` (23 test) + 1 test ở `mobile/src/li
 | QA-D30 | S3 | Emoji: `README.md` U+2705, UI `trips/new.tsx` U+2713, U+2605 trong comment/contracts | Thay `[v]`, icon `lucide`; gom sửa QA-5 |
 | QA-D03 | S3 | Host cluster thật còn trong `docs/04_Repo_Audit.md:183` và lịch sử git | Thay bằng `<cluster-host>`; lịch sử git: người quyết định |
 | BASE-01/02 | S4 | Format backend (28 file) + CRLF Windows | Commit format riêng ở QA-5 |
+| QA2-M06-06 | S4 | Cache hit vẫn trừ quota (quota trừ trước khi tra cache); câu hỏi bị từ chối (dưới ngưỡng/nước khác) cũng trừ lượt. Chưa ghi trong `contracts/README.md` | Ghi rõ quyết định vào contract |
+| QA2-M07-03 | S3 | Feedback admin đổi trạng thái tự do (không có đồ thị) | Chốt cùng QA-M04-01 |
+| QA2-M07-04 | S3 | `GET /chat/sessions` và `/sessions/:id/messages` không phân trang | Thêm `limit`/cursor khi dữ liệu lớn |
+| QA2-M06-09 | S4 | Chunking không cắt một câu đơn dài hơn 1.200 ký tự | Cắt cứng theo ký tự khi câu vượt ngưỡng |
+| QA2-M13-01 | S4 | Comment lỗi thời `mobile/src/lib/api/adapters.ts:269` ("quick-phrases vẫn 100% mock tới B7") | Xóa khi làm QA-4 |
+| QA2-M05-04 | S4 | `memory.driver.js` đã lệch Prettier từ baseline, lần này sửa logic nhưng không format (tránh trộn commit) | Gộp vào commit format BASE-01 |
 | - | S4 | `admin/ArticleEditorPage.tsx`: sau `changeStatus` thành công, refetch `article` chạy lại `setForm` --> ghi đè nội dung đang gõ chưa lưu | Kiểm ở QA-4 (INV-14.3) |
 | - | S4 | CLAUDE.md Phần 9 nhắc `npm run reindex` nhưng `backend/package.json` không có script này | Sửa tài liệu hoặc thêm script |
 
@@ -265,18 +364,26 @@ Test mới: `backend/test/qa.core.test.js` (23 test) + 1 test ở `mobile/src/li
 | mobile | [v] | [v] | **95/95** (21 suite) | không đổi mã runtime |
 | admin | [v] | [v] | 9/9 | [v] |
 
+**Kết quả sau sửa (QA-2):**
+
+| Workspace | Lint | Type | Test | Build |
+|---|---|---|---|---|
+| backend | [v] | n/a | **198/198** (174 + 24 mới) · golden 26/26 | n/a |
+| mobile | [v] | [v] | **99/99** (23 suite) | — |
+| admin | [v] | [v] | 9/9 | [v] |
+
 ---
 
-## 6. CHẤM MỤC TIÊU G1-G12 (sau QA-1)
+## 6. CHẤM MỤC TIÊU G1-G12 (sau QA-2)
 
 | # | Chấm | Ghi chú |
 |---|---|---|
-| G1 | Chưa kiểm được | QA-2/QA-3. [!] QA-D13 (SOS chưa verified) cần chốt |
-| G2 | Chưa kiểm được | QA-2 (golden 26/26 ở baseline; mutation testing H-06.a chưa làm) |
+| G1 | Đạt một phần | Bài luật: 5 trạng thái bị chặn ở list/detail/search/đếm/RAG (QA-2, có test). Còn favorites, incidents, quick phrase, alerts (QA-3). [!] QA-D13 SOS chưa verified cần chốt |
+| G2 | **Đạt** (có điều kiện) | Golden 26/26; guard chặn marker bịa + 9 dạng định lượng; spy LLM = 0 khi dưới ngưỡng; lỗi provider --> fallback. Mutation 1 và 3 từng sống sót --> đã thêm test. Điều kiện: QA2-M06-04 (câu hỏi nhắc nước khác bằng tên ngắn vẫn được trả lời bằng luật KR) cần chốt |
 | G3 | **Đạt** | Sweep RBAC + test mới cho token xấu, khóa/hạ quyền, refresh xoay vòng/ân hạn/reuse/đồng thời |
-| G4 | Chưa kiểm được | QA-2 (chat) / QA-3 (favorites, trips, progress) |
-| G5 | Chưa kiểm được | QA-4 (M15) |
-| G6 | Đạt một phần | Quota nguyên tử có test đồng thời; cache/rate limit kiểm ở QA-2 |
+| G4 | Đạt một phần | Chat: 5 thao tác IDOR đều 404 (QA-2). Trips, favorites, progress, preferences ở QA-3 |
+| G5 | Chưa kiểm được | QA-4 (M15). Fixture `public.legalArticle.json` đã đổi trong QA-2, test 2 phía xanh |
+| G6 | Đạt một phần | Quota user + global nguyên tử có test đồng thời; không trừ khi validate lỗi; cache không trả bằng chứng cũ; rate limit trước controller. Dịch (translate) kiểm ở QA-3 |
 | G7 | Chưa kiểm được | QA-3/QA-4 |
 | G8 | Đạt một phần | Optimistic concurrency bài luật có test; toàn vẹn tham chiếu Country/Topic đã sửa; QA-M04-03 phụ thuộc index |
 | G9 | Chưa kiểm được | QA-4 |
@@ -292,12 +399,15 @@ Test mới: `backend/test/qa.core.test.js` (23 test) + 1 test ở `mobile/src/li
    lịch sử git public. Nếu `backend/.env` đang khai `SEED_ADMIN_PASSWORD` bằng giá trị cũ, đổi luôn.
 2. Quyết định có rewrite lịch sử git để xóa email/mật khẩu/host cluster đã từng commit hay không
    (thao tác phá hủy, ảnh hưởng mọi clone).
-3. Chốt QA-D13 (SOS chỉ trả điểm đã xác minh?), QA-M04-01 (đồ thị trạng thái), QA-M04-03 (transaction
-   hay chấp nhận index) — mỗi mục có phương án ở 4.2.
+3. Chốt các mục ở 4.2 (mỗi mục có phương án): QA-D13 (SOS chỉ trả điểm đã xác minh?), QA-M04-01 (đồ thị
+   trạng thái), QA-M04-03 (transaction hay chấp nhận index), **QA2-M06-04 (bí danh quốc gia để chặn câu hỏi
+   nước khác — ưu tiên cao, ảnh hưởng G2)**, QA2-M06-05 (bắt buộc citation cho mọi câu trả lời).
 4. Xác nhận partial unique index `{countryCode, slug}` `isCurrent:true` đã tồn tại trên Atlas.
 5. Bổ sung PHAN 6-12 cho `docs/07_QA_BugHunt.md` trước phiên QA-5.
+6. (QA-2) Nếu từng đổi `EMBEDDING_MODEL` trên môi trường thật mà chưa re-index toàn bộ: sau bản sửa
+   QA2-M06-02, chunk của model cũ không còn được dùng --> chạy "Reindex quốc gia" ở Admin A04 để AI trả lời lại được.
 
 ## 8. PHIÊN TIẾP THEO
 
-**QA-2: M05-M07** (public content, RAG/guard/quota/cache, chat/feedback) — lõi sản phẩm. Đủ điều kiện,
-không phụ thuộc quyết định ở mục 7 (trừ QA-D13 thuộc QA-3).
+**QA-3: M08-M12** (SOS, incidents, translate, alerts, favorites/trips/preferences). Đủ điều kiện. QA-D13 thuộc
+M08 — nếu người chưa chốt, QA-3 chỉ kiểm và ghi nhận, không đổi hành vi SOS.

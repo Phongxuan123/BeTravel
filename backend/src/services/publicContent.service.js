@@ -3,7 +3,7 @@ import LegalTopic from "../models/LegalTopic.js";
 import LegalArticle from "../models/LegalArticle.js";
 import { ContentStatus } from "../core/constants.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
-import { normalizeVi } from "../utils/textNormalize.js";
+import { normalizeVi, toDStrokeInsensitivePattern } from "../utils/textNormalize.js";
 
 /*
  * Tang truy van CONG KHAI cho noi dung phap ly (B3). Khac voi cac service o
@@ -13,6 +13,11 @@ import { normalizeVi } from "../utils/textNormalize.js";
  * pending_review/superseded lot ra day la BUG NGHIEM TRONG (CLAUDE.md Phan 4.1).
  */
 const PUBLISHED_CURRENT_FILTER = { status: ContentStatus.PUBLISHED, isCurrent: true };
+
+// Truong noi bo cua quy trinh bien tap/index -- khong thuoc hop dong cong khai
+// (reviewNote co the chua ghi chu noi bo, indexState.error chua loi provider).
+const INTERNAL_ARTICLE_FIELDS =
+  "-titleNorm -summaryNorm -reviewNote -reviewedBy -indexState -createdBy -updatedBy -__v";
 
 // Khong loc theo status: mobile can biet ca quoc gia 'coming_soon' de hien
 // trang thai ro rang thay vi 404 (DoD B3 muc 12).
@@ -59,7 +64,8 @@ export const listArticles = async (query) => {
     LegalArticle.find(filter)
       .sort({ updatedAt: -1 })
       .skip(pagination.skip)
-      .limit(pagination.limit),
+      .limit(pagination.limit)
+      .select(INTERNAL_ARTICLE_FIELDS),
     LegalArticle.countDocuments(filter),
   ]);
 
@@ -73,7 +79,7 @@ export const getArticle = async (countryCode, slug) => {
     ...PUBLISHED_CURRENT_FILTER,
     countryCode: countryCode.toUpperCase(),
     slug: slug.toLowerCase(),
-  });
+  }).select(INTERNAL_ARTICLE_FIELDS);
 
   if (!article) return null;
 
@@ -107,7 +113,7 @@ export const searchArticles = async (query) => {
   const words = normalizeVi(query.q)
     .split(/\s+/)
     .filter(Boolean)
-    .map((word) => new RegExp(escapeRegex(word), "i"));
+    .map((word) => new RegExp(toDStrokeInsensitivePattern(escapeRegex(word)), "i"));
 
   const filter = {
     ...PUBLISHED_CURRENT_FILTER,

@@ -72,8 +72,12 @@ export async function fetchArticle(countryCode: string, slug: string): Promise<E
   return { ok: true, data: raw ? adaptArticle(raw) : null };
 }
 
+// Khop gioi han cua backend (validators/publicContent.validator.js) -- cat o
+// day de mot doan van dan vao o tim kiem khong bien thanh loi 400.
+const SEARCH_QUERY_MAX_LENGTH = 200;
+
 export async function searchArticles(query: string, countryCode: string): Promise<Envelope<SearchResultItem[]>> {
-  const q = query.trim();
+  const q = query.trim().slice(0, SEARCH_QUERY_MAX_LENGTH).trim();
   if (!q) return { ok: true, data: [] };
 
   const params = new URLSearchParams({ q, country: countryCode });

@@ -1,5 +1,6 @@
 import LegalChunk from "../../models/LegalChunk.js";
 import { ContentStatus } from "../../core/constants.js";
+import { foldDStroke } from "../../utils/textNormalize.js";
 
 /*
  * MemorySearchDriver -- phuong an du phong khi Atlas Search truc trac hoac
@@ -52,6 +53,7 @@ function projectHit(chunk) {
     text: chunk.text,
     textNorm: chunk.textNorm,
     kind: chunk.kind,
+    embeddingModel: chunk.embeddingModel,
     countryCode: chunk.countryCode,
     topicSlug: chunk.topicSlug,
   };
@@ -77,10 +79,12 @@ export function createMemorySearchDriver() {
       if (words.length === 0) return [];
 
       const chunks = await loadPublishedChunks();
+      const foldedWords = words.map(foldDStroke);
       return chunks
         .filter((c) => matchesFilter(c, { countryCode, topicSlug }))
         .map((c) => {
-          const matched = words.filter((w) => c.textNorm.includes(w)).length;
+          const folded = foldDStroke(c.textNorm);
+          const matched = foldedWords.filter((w) => folded.includes(w)).length;
           return { chunk: c, matched };
         })
         .filter((x) => x.matched > 0)
