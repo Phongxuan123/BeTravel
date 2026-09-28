@@ -1,6 +1,22 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-28 · Phiên: rà soát sau B9, bảo vệ dữ liệu và hoàn thiện favorites
+Cập nhật lần cuối: 2026-09-28 · Phiên: QA-1 (docs/07_QA_BugHunt.md: Pha 0, Pha 1, M01-M04)
+
+## Đợt QA (docs/07_QA_BugHunt.md) — chi tiết ở docs/QA_REPORT.md
+
+| Phiên | Trạng thái | Ghi chú |
+|---|---|---|
+| QA-1 Pha 0 + Pha 1 + M01-M04 | xong | Nhánh `feature/qa-20260928`. Sửa 5 lỗi (2 S1 lộ PII/mật khẩu mặc định, 1 S2 xóa Country/Topic đang tham chiếu, 2 S3). Backend 174, mobile 95, admin 9 test xanh |
+| QA-2 M05-M07 | chưa làm | Đủ điều kiện |
+| QA-3..QA-5 | chưa làm | QA-5 cần người bổ sung PHAN 6-12 của 07 |
+
+Việc của người phát sinh từ QA-1 (chi tiết QA_REPORT mục 7): đổi ngay mật khẩu admin đã
+seed; quyết định rewrite lịch sử git; chốt QA-D13 (SOS chưa xác minh), QA-M04-01 (đồ thị
+trạng thái bài luật), QA-M04-03 (transaction publish); xác nhận partial unique index trên Atlas.
+Thay đổi cấu hình: `SEED_ADMIN_PASSWORD` không còn giá trị mặc định -- để trống thì `npm run seed`
+bỏ qua bước tạo admin.
+
+## Lịch sử phiên trước
 Nhánh: `feature/audit-20260928`, tách từ `feature/trip-management` tại `bbe3378`.
 Nhánh gốc ahead origin 18 commit trước phiên; không tự pull/rebase/push hoặc merge.
 
@@ -188,14 +204,14 @@ kiểm tra dependency/build, cập nhật tài liệu. Đây không phải phầ
   MapView khi mất mạng và thao tác soạn/khôi phục bản nháp trong trình duyệt.
 - **(B9) Đã chạy `npm run seed` VÀ `npm run seed:demo` thật trên Atlas trong
   phiên này** (không phải test cô lập, dữ liệu còn tồn tại thật): tạo tài
-  khoản admin `admin@betravel.local` (mật khẩu mặc định `Matkhau123` từ
-  `SEED_ADMIN_PASSWORD` -- **PHẢI đổi ngay**), 5 `IncidentType` (published),
+  khoản admin seed theo `SEED_ADMIN_EMAIL` (mật khẩu mặc định lấy từ
+  `SEED_ADMIN_PASSWORD` -- **PHẢI đổi ngay**, không ghi mật khẩu vào tài liệu
+  public), 5 `IncidentType` (published),
   25 `QuickPhrase` KR (published). KHÔNG tạo `support_locations`/`geo_alerts`
   (giữ nguyên quyết định không bịa dữ liệu an toàn thời gian thực). Phát
   hiện thêm: Atlas đã có sẵn 4 countries/6 topics/8 legal articles (draft) từ
-  trước, và 3 tài khoản người dùng thật KHÔNG do AI tạo (email
-  `doraemondat0605@gmail.com`, `admin123@betravel.local`,
-  `phong123@gmail.com`) -- không đụng tới các bản ghi này.
+  trước, và 3 tài khoản do người dùng tạo (không liệt kê định danh trong repo
+  public) -- không đụng tới các bản ghi này.
 - **(B9) Chưa triển khai thật** lên Render/Vercel/EAS -- `docs/DEPLOY.md`,
   `backend/render.yaml`, `mobile/eas.json`, `.github/workflows/keepalive.yml`
   đã viết đầy đủ nhưng cần tài khoản dịch vụ thật của người phụ trách để

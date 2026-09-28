@@ -569,6 +569,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.09.28-qa1 | 28/09/2026 | QA-1 (07_QA_BugHunt) | Baseline 3 workspace + detector D01-D40 + M01-M04; 23 test backend + 1 test mobile mới; sửa E11000 gắn nhãn sai, dò tài khoản bị khóa khi đăng nhập, xóa Country/Topic đang tham chiếu (+ hiện lỗi xóa ở admin), gỡ PII/mật khẩu mặc định khỏi tài liệu và `env.js`; tồn đọng S2-S4 ở docs/QA_REPORT.md mục 4.3; 174/95/9 test |
 | 2026.09.28 | 28/09/2026 | Rà soát sau B9 | Favorites/content visibility, incident/CAS, GeoAlert, GPS/consent, dismiss, saved filter; 151/94/9 test |
 | v0.2.0    |      | —     | Trạng thái ban đầu |
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |

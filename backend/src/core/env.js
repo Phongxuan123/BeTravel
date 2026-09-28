@@ -102,8 +102,12 @@ const envSchema = z.object({
   // Chi dung boi scripts/seed-content.js (npm run seed) -- tao/nang quyen
   // 1 tai khoan admin de dang nhap Admin Portal ngay sau khi seed. Doi mat
   // khau NGAY sau lan dang nhap dau tien, dac biet o moi truong da trien khai.
+  // KHONG co mat khau mac dinh: repo public, gia tri mac dinh = ai cung biet.
   SEED_ADMIN_EMAIL: z.string().optional().default("admin@betravel.local"),
-  SEED_ADMIN_PASSWORD: z.string().optional().default("Matkhau123"),
+  SEED_ADMIN_PASSWORD: z
+    .string()
+    .optional()
+    .transform((value) => value || undefined),
 });
 
 const parsed = envSchema.safeParse(process.env);
