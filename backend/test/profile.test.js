@@ -45,7 +45,11 @@ test("PUT /api/users/preferences chi ghi de dung field duoc gui, con lai giu ngu
   });
 
   const me = await request(app).get("/api/auth/me").set("Authorization", auth(accessToken));
-  assert.equal(me.body.data.user.preferences.locationConsent, false, "phai con nguyen sau khi doc lai");
+  assert.equal(
+    me.body.data.user.preferences.locationConsent,
+    false,
+    "phai con nguyen sau khi doc lai",
+  );
 });
 
 test("chua dang nhap goi PUT /api/users/preferences bi 401 UNAUTHORIZED", async () => {
@@ -57,7 +61,11 @@ test("PATCH /api/chat/sessions/:id doi ten phien, rieng tung user", async () => 
   const userA = await registerAndLogin(app, { role: "user" });
   const userB = await registerAndLogin(app, { role: "user" });
 
-  const session = await ChatSession.create({ userId: userA.user.id, countryCode: "KR", title: "Câu hỏi test" });
+  const session = await ChatSession.create({
+    userId: userA.user.id,
+    countryCode: "KR",
+    title: "Câu hỏi test",
+  });
   const sessionId = session._id;
 
   const renameRes = await request(app)
@@ -76,7 +84,11 @@ test("PATCH /api/chat/sessions/:id doi ten phien, rieng tung user", async () => 
 
 test("PATCH /api/chat/sessions/:id tu choi ten rong", async () => {
   const { accessToken, user } = await registerAndLogin(app, { role: "user" });
-  const session = await ChatSession.create({ userId: user.id, countryCode: "KR", title: "Câu hỏi test" });
+  const session = await ChatSession.create({
+    userId: user.id,
+    countryCode: "KR",
+    title: "Câu hỏi test",
+  });
 
   const res = await request(app)
     .patch(`/api/chat/sessions/${session._id}`)

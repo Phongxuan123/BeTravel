@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, Bookmark, Info, Phone, Languages, MapPin, MessageCircleQuestion, ExternalLink, LogIn } from 'lucide-react-native';
@@ -12,8 +12,9 @@ import { StepProgress } from '@/components/ui/StepProgress';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
+import { openPhone, openUrl } from '@/lib/openExternal';
 import { fetchIncident, getIncidentProgress, setIncidentProgress, fetchFavorites, addFavorite, removeFavorite } from '@/lib/data';
-import type { Incident } from '@/mocks/schemas';
+import type { Incident } from '@/lib/data';
 
 type IncidentCta = { type: 'map' | 'call' | 'ai' | 'link'; label: string; payload: Record<string, unknown> };
 
@@ -25,7 +26,7 @@ function runCta(cta: IncidentCta, embassyPhone?: string) {
   }
   if (cta.type === 'call') {
     const phone = (typeof cta.payload.phone === 'string' && cta.payload.phone) || embassyPhone;
-    if (phone) Linking.openURL(`tel:${phone}`);
+    void openPhone(phone);
     return;
   }
   if (cta.type === 'ai') {
@@ -33,7 +34,7 @@ function runCta(cta: IncidentCta, embassyPhone?: string) {
     router.push({ pathname: '/chat', params: question ? { q: question } : {} } as never);
     return;
   }
-  if (typeof cta.payload.url === 'string') Linking.openURL(cta.payload.url);
+  if (typeof cta.payload.url === 'string') void openUrl(cta.payload.url);
 }
 
 const CTA_ICON: Record<IncidentCta['type'], typeof MapPin> = { map: MapPin, call: Phone, ai: MessageCircleQuestion, link: ExternalLink };
@@ -209,7 +210,7 @@ export default function IncidentDetailScreen() {
       <BottomActionBar>
         <Pressable
           className="h-14 flex-1 flex-row items-center justify-center gap-2 rounded-lg bg-primary"
-          onPress={() => country && Linking.openURL(`tel:${country.embassy.phone}`)}
+          onPress={() => void openPhone(country?.embassy.phone)}
         >
           <Phone size={18} color="#fff" />
           <Text className="text-base font-body-bold text-white">Gọi Đại sứ quán</Text>

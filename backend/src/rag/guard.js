@@ -1,19 +1,27 @@
 import { FallbackReason } from "../core/constants.js";
 
 /*
- * ★ HAU KIEM BANG CODE -- PHAN QUAN TRONG NHAT CUA B4 (CLAUDE.md muc 7,
+ * [!] HAU KIEM BANG CODE -- PHAN QUAN TRONG NHAT CUA B4 (CLAUDE.md muc 7,
  * docs/03_Contracts_v2.md muc 8). KHONG BAO GIO tin LLM tu kiem duyet chinh
  * no. Day la pure function de test de dang, khong phu thuoc DB/network.
  */
 
 // Bat tuyen bo phap ly dinh luong -- thu LLM hay bia nhat.
+const CURRENCY_UNIT = String.raw`KRW|won|원|THB|baht|บาท|USD|\$|SGD|JPY|yen|円|VNĐ|VND|đồng|₫`;
+// Ky hieu tien dat TRUOC so ("₩3,000,000", "$500") -- LLM hay viet kieu nay.
+const CURRENCY_PREFIX = String.raw`[₩$฿¥€]\s*\d`;
 const QUANTITATIVE_CLAIM = new RegExp(
   [
-    String.raw`\d[\d.,]*\s*(KRW|won|원|THB|baht|บาท|USD|\$|SGD|JPY|yen|円|VNĐ|VND|đồng|₫|triệu|nghìn)`,
+    String.raw`\d[\d.,]*\s*(${CURRENCY_UNIT}|triệu|nghìn)`,
+    CURRENCY_PREFIX,
+    // So viet bang chu: "ba triệu won" -- bat qua cum "don vi lon + tien te".
+    String.raw`(triệu|nghìn|ngàn|tỷ|trăm)\s*(${CURRENCY_UNIT})`,
     String.raw`điều\s+\d+`,
     String.raw`khoản\s+\d+`,
     String.raw`\d+\s*(năm|tháng|ngày)\s*(tù|giam|phạt)`,
-    String.raw`(bị\s+)?phạt\s+(tiền|hành chính|từ|đến|tới)`,
+    // "tù 1 năm", "tù đến 3 năm" -- dang pho bien trong nguon KR.
+    String.raw`(^|\s)tù\s+((đến|tới|từ)\s+)?\d`,
+    String.raw`(bị\s+)?phạt\s+(tiền|hành chính|tù|từ|đến|tới)`,
     String.raw`(bị\s+)?(cấm|trục xuất|bắt giữ|khởi tố)`,
   ].join("|"),
   "iu",
@@ -54,7 +62,7 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
     return "";
   });
 
-  // (b) ★ Tuyen bo dinh luong ma KHONG co nguon -> tu choi hien thi hoan toan
+  // (b) [!] Tuyen bo dinh luong ma KHONG co nguon -> tu choi hien thi hoan toan
   // (khong phai chi xoa cau do -- neu LLM bia so lieu thi ca cau tra loi
   // khong con dang tin, ha cap xuong fallback an toan).
   if (QUANTITATIVE_CLAIM.test(answer) && found.size === 0) {
@@ -78,11 +86,11 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
     const sourceText = markers.map((marker) => retrieved.get(marker)?.text ?? "").join(" ");
     const amounts = [
       ...prose.matchAll(
-        /\d[\d.,]*\s*(?:KRW|won|원|THB|baht|USD|SGD|JPY|yen|VNĐ|VND|đồng|triệu|nghìn)/giu,
+        /\d[\d.,]*\s*(?:KRW|won|원|THB|baht|USD|SGD|JPY|yen|VNĐ|VND|đồng|triệu|nghìn)|[₩$฿¥€]\s*\d[\d.,]*/giu,
       ),
     ].map(([amount]) =>
       amount
-        .match(/^[\d.,]+/)[0]
+        .match(/\d[\d.,]*/)[0]
         .replace(/[.,]+$/g, "")
         .replace(/[.,]/g, ""),
     );

@@ -1,5 +1,7 @@
 import Trip from "../models/Trip.js";
+import Country from "../models/Country.js";
 import { AppError, ErrorCode } from "../core/errors.js";
+import { CountryStatus } from "../core/constants.js";
 
 /*
  * Chuyen di cua rieng tung user -- moi ham deu nhan userId va loc theo dung
@@ -13,7 +15,19 @@ export const listTrips = async (userId) => Trip.find({ userId }).sort({ startDat
  * mock/that dong nhat (khong tu dong "chuyen di vua tao la chuyen di chinh").
  * Nguoi dung tu bam "dat lam chuyen di chinh" qua setCurrentTrip.
  */
-export const createTrip = async (userId, data) => Trip.create({ ...data, userId, isCurrent: false });
+export const createTrip = async (userId, data) => {
+  await assertCountryOpenForTrips(data.countryCode);
+  return Trip.create({ ...data, userId, isCurrent: false });
+};
+
+// UI da an quoc gia 'coming_soon', backend van phai chan (client cu/goi thang API)
+// -- chuyen di toi noi chua co du lieu se kich hoat canh bao/SOS rong.
+async function assertCountryOpenForTrips(countryCode) {
+  const isOpen = await Country.exists({ code: countryCode, status: CountryStatus.ACTIVE });
+  if (!isOpen) {
+    throw new AppError(ErrorCode.VALIDATION_ERROR, "Quốc gia này chưa hỗ trợ tạo chuyến đi");
+  }
+}
 
 const getOwnedTrip = async (userId, tripId) => {
   const trip = await Trip.findOne({ _id: tripId, userId });
@@ -30,6 +44,8 @@ const getOwnedTrip = async (userId, tripId) => {
 
 export const updateTrip = async (userId, tripId, data) => {
   const trip = await getOwnedTrip(userId, tripId);
+  // Chi kiem khi DOI quoc gia: chuyen di cu toi nuoc sau nay bi dong van sua ngay duoc.
+  if (data.countryCode !== trip.countryCode) await assertCountryOpenForTrips(data.countryCode);
 
   trip.countryCode = data.countryCode;
   trip.destinationCity = data.destinationCity;

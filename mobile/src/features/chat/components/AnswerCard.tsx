@@ -97,6 +97,15 @@ export function AnswerCard({
         <Badge label="Có nguồn pháp lý" tone="success" dot />
         <Text className="text-[13px] text-subtle">Cập nhật {answer.updatedAt}</Text>
       </View>
+      {answer.needsOfficialHelp && (
+        <View testID="answer-card-official-help" className="mt-3">
+          <Button
+            label="Liên hệ hỗ trợ khẩn cấp"
+            iconLeft={<Phone size={18} color="#fff" />}
+            onPress={() => router.push('/sos')}
+          />
+        </View>
+      )}
       <View className="mt-3" style={{ gap: 4 }}>
         {bodyLines.map((line, i) =>
           line.startsWith('- ') ? (

@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
-import { PageHeader } from '@/components/common/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconTile } from '@/components/ui/IconTile';
@@ -14,7 +13,9 @@ import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 import { haversineKm } from '@/lib/geo';
+import { openPhone } from '@/lib/openExternal';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function SosHubScreen() {
   const insets = useSafeAreaInsets();
@@ -22,16 +23,34 @@ export default function SosHubScreen() {
   const [currentCity, setCurrentCity] = useState('');
   const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
   const [locatingGps, setLocatingGps] = useState(false);
+  const queryClient = useQueryClient();
 
-  if (!country) return (
-    <AppShell active="sos">
-      <PageHeader title="Hỗ trợ khẩn cấp" />
-      <View className="gap-4 p-[18px]">
-        <Text className="text-base text-muted">Chưa có thông tin hỗ trợ của quốc gia. Bạn vẫn có thể lấy GPS và gửi vị trí cho người thân.</Text>
-        <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
-      </View>
-    </AppShell>
-  );
+  // Chua co du lieu quoc gia (mo app lan dau khi mat mang): KHONG duoc tra man
+  // hinh trang -- van giu nut quay lai, cho thu tai lai va chia se vi tri GPS.
+  if (!country) {
+    return (
+      <AppShell active="sos">
+        <View testID="sos-country-unavailable" className="flex-1 bg-danger-tint px-[18px]" style={{ paddingTop: insets.top + 12 }}>
+          <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
+          <Text className="mt-6 font-display text-ink" style={{ fontSize: 22 }}>
+            Chưa tải được số khẩn cấp
+          </Text>
+          <Text className="mt-2 text-base leading-6 text-ink">
+            Hãy kết nối mạng rồi thử lại. Nếu đang gặp nguy hiểm, hãy gọi số khẩn cấp của nước sở tại hoặc nhờ người xung quanh hỗ trợ.
+          </Text>
+          <Pressable
+            className="mt-5 h-[52px] items-center justify-center rounded-md bg-danger"
+            onPress={() => queryClient.invalidateQueries({ queryKey: ['countries'] })}
+          >
+            <Text className="font-body-bold text-white">Thử lại</Text>
+          </Pressable>
+          <View className="mt-3">
+            <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
+          </View>
+        </View>
+      </AppShell>
+    );
+  }
 
   const hasEmbassyCoordinates = Number.isFinite(country.embassy.lat) &&
     Number.isFinite(country.embassy.lng) && (country.embassy.lat !== 0 || country.embassy.lng !== 0);
@@ -96,7 +115,7 @@ export default function SosHubScreen() {
             </Text>
             <Pressable
               className="mt-4 h-[58px] flex-row items-center justify-center gap-2 rounded-lg bg-white"
-              disabled={!country.emergencyNumbers.police} onPress={() => openLink(`tel:${country.emergencyNumbers.police}`)}
+              disabled={!country.emergencyNumbers.police} onPress={() => void openPhone(country.emergencyNumbers.police)}
               accessibilityLabel={`Gọi cảnh sát số ${country.emergencyNumbers.police}`}
             >
               <Phone size={20} color={colors.danger} />
@@ -126,7 +145,7 @@ export default function SosHubScreen() {
               )}
             </View>
             <View className="mt-3 flex-row" style={{ gap: 10 }}>
-              <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" disabled={!country.embassy.phone} onPress={() => openLink(`tel:${country.embassy.phone}`)}>
+              <Pressable className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-primary" disabled={!country.embassy.phone} onPress={() => void openPhone(country.embassy.phone)}>
                 <Phone size={18} color="#fff" />
                 <Text className="font-body-bold text-white">Gọi ngay</Text>
               </Pressable>
@@ -166,7 +185,7 @@ export default function SosHubScreen() {
 function ServiceTile({ label, number, tone, icon }: { label: string; number: string; tone: 'red' | 'orange' | 'blue'; icon: React.ReactNode }) {
   const textColor = tone === 'red' ? colors.danger : tone === 'orange' ? colors.warning : colors.primary;
   return (
-    <Pressable disabled={!number} onPress={() => Linking.openURL(`tel:${number}`).catch(() => Alert.alert('Không gọi được', `Vui lòng gọi trực tiếp số ${number}.`))} className="h-[104px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface">
+    <Pressable disabled={!number} onPress={() => void openPhone(number)} className="h-[104px] flex-1 items-center justify-center gap-1.5 rounded-lg border border-line bg-surface">
       <IconTile tone={tone} size={36}>
         {icon}
       </IconTile>

@@ -26,7 +26,12 @@ const retrievalMetaSchema = new mongoose.Schema(
 
 const chatMessageSchema = new mongoose.Schema(
   {
-    sessionId: { type: mongoose.Schema.Types.ObjectId, ref: "ChatSession", required: true, index: true },
+    sessionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ChatSession",
+      required: true,
+      index: true,
+    },
     role: { type: String, enum: Object.values(ChatRole), required: true },
     text: { type: String, required: true },
 

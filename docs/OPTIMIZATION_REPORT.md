@@ -587,6 +587,11 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.09.28-qa5 | 28/09/2026 | QA-5 (07_QA_BugHunt) | M16-M17 + E2E + edge; update schema incident/geo-alert không còn ghi đè mảng rỗng; `parseEnv` + ràng buộc production; smoke test import server; Rule 12 (README/contracts/src/UI); commit format backend riêng (BASE-01); 227(+1 todo)/111/11 test, export iOS/Android đạt |
+| 2026.09.28-qa4 | 28/09/2026 | QA-4 (07_QA_BugHunt) | M13-M15; ErrorBoundary cấp route (Thử lại + SOS); helper `openExternal` chuẩn hóa `tel:` và bắt lỗi Linking; màn hình chỉ import từ `@/lib/data`; admin xác nhận xác minh hàng loạt/re-index, lấy quốc gia từ API; `/auth/refresh` bỏ cờ nội bộ; mọi fixture có backend + client; 214(+1 todo)/111/11 test |
+| 2026.09.28-qa3 | 28/09/2026 | QA-3 (07_QA_BugHunt) | M08-M12; mobile cache danh sách quốc gia + SOS Hub có màn dự phòng thay vì trắng; translate giới hạn from/to; favorites dùng chung projection bỏ trường nội bộ; trip chỉ tới quốc gia active; tái hiện nợ H-09.a bằng test `todo`; 211(+1 todo)/102/9 test |
+| 2026.09.28-qa2 | 28/09/2026 | QA-2 (07_QA_BugHunt) | M05-M07 + mutation testing RAG (3 đột biến, 2 sống sót --> thêm test); guard bắt thêm ký hiệu tiền đứng trước/phạt tù/số bằng chữ; retrieval bỏ chunk khác embedding model + báo lỗi sai số chiều; tìm kiếm khớp d/đ, giới hạn q 200; bài luật công khai bỏ trường nội bộ (contract + fixture); mobile chat chặn gửi trùng + nút hỗ trợ khẩn cấp khi needsOfficialHelp; 198/99/9 test |
+| 2026.09.28-qa1 | 28/09/2026 | QA-1 (07_QA_BugHunt) | Baseline 3 workspace + detector D01-D40 + M01-M04; 23 test backend + 1 test mobile mới; sửa E11000 gắn nhãn sai, dò tài khoản bị khóa khi đăng nhập, xóa Country/Topic đang tham chiếu (+ hiện lỗi xóa ở admin), gỡ PII/mật khẩu mặc định khỏi tài liệu và `env.js`; tồn đọng S2-S4 ở docs/QA_REPORT.md mục 4.3; 174/95/9 test |
 | 2026.09.28 | 28/09/2026 | Rà soát sau B9 | Favorites/content visibility, incident/CAS, GeoAlert, GPS/consent, dismiss, saved filter; 151/94/9 test |
 | v0.2.0    |      | —     | Trạng thái ban đầu |
 | v0.3.0    | 22/09/2026 | B1 | contracts/, envelope {ok,data}, auth thật (mobile + backend), refresh xoay vòng + ân hạn, prettier/eslint backend |

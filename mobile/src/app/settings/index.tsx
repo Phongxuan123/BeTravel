@@ -15,7 +15,7 @@ import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
 import { fetchCountries, fetchPreferences, updatePreferences, listChatSessions, deleteChatSession } from '@/lib/data';
-import type { Preferences } from '@/mocks/schemas';
+import type { Preferences } from '@/lib/data';
 import type { PreferencesPatch } from '@/lib/api/preferences';
 import { changePassword } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/http';

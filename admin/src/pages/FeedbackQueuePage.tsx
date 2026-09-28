@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
-import { feedbackApi } from '../lib/api';
+import { countriesApi, feedbackApi } from '../lib/api';
 import { ApiError } from '../lib/apiClient';
 import { PageHeader } from '../components/ui/PageHeader';
 import { Select, Textarea } from '../components/ui/Field';
@@ -39,6 +39,9 @@ export default function FeedbackQueuePage() {
   const [countryCode, setCountryCode] = useState('');
   const [page, setPage] = useState(1);
   const [detailId, setDetailId] = useState<string | null>(null);
+  // Country-driven (CLAUDE.md 4.1): danh sach quoc gia lay tu DB, khong hard-code.
+  const { data: countriesRes } = useQuery({ queryKey: ['admin', 'countries'], queryFn: () => countriesApi.list({ limit: 100 }) });
+  const countryCodes = (countriesRes?.data ?? []).map((country) => country.code);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'feedback', status, countryCode, page],
@@ -79,7 +82,7 @@ export default function FeedbackQueuePage() {
             }}
           >
             <option value="">Tất cả</option>
-            {['KR', 'JP', 'TH', 'SG'].map((code) => (
+            {countryCodes.map((code) => (
               <option key={code} value={code}>
                 {code}
               </option>

@@ -5,7 +5,7 @@ import { adaptMessage, stripTrailingDisclaimer } from '../chat';
 // khoi AnswerCard.test.tsx (chi test render).
 describe('chat.ts adapter', () => {
   it('cat disclaimer co dinh o cuoi cau tra loi that (rag/guard.js#DEFAULT_DISCLAIMER)', () => {
-    const withDisclaimer = 'Câu trả lời thật [S1].\n\n---\n⚠️ Thông tin dựa trên nguồn đã kiểm chứng...';
+    const withDisclaimer = 'Câu trả lời thật [S1].\n\n---\nThông tin dựa trên nguồn đã kiểm chứng...';
     expect(stripTrailingDisclaimer(withDisclaimer)).toBe('Câu trả lời thật [S1].');
   });
 
@@ -39,7 +39,7 @@ describe('chat.ts adapter', () => {
         _id: 'm2',
         sessionId: 's1',
         role: 'assistant',
-        text: 'Trả lời [S1].\n\n---\n⚠️ Disclaimer',
+        text: 'Trả lời [S1].\n\n---\nDisclaimer',
         citations: [{ marker: 'S1', articleId: 'a1', articleSlug: 'qua-han-luu-tru', title: 'Mức phạt quá hạn', heading: 'Mức phạt' }],
         retrieval: { topScore: 0.9, chunkIds: ['a1'], passed: true },
         fallbackReason: null,

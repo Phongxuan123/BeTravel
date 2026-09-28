@@ -17,7 +17,7 @@ import { ApiError } from '@/lib/api/http';
 import { formatTripRange, tripDurationDays } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 import { colors } from '@/lib/theme';
-import type { Trip } from '@/mocks/schemas';
+import type { Trip } from '@/lib/data';
 
 type FilterTab = 'ongoing' | 'upcoming' | 'past';
 

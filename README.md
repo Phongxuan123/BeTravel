@@ -37,7 +37,7 @@ cp .env.example .env   # điền MONGODB_URI, JWT secret, GEMINI_API_KEY...
 npm run dev
 ```
 
-Lệnh hữu ích khác: `npm run test` (unit + integration), `npm run test:golden` (kiểm tra chất lượng RAG bằng bộ câu hỏi cố định), `npm run seed` (nạp dữ liệu mẫu: 4 quốc gia, 8 bài luật KR có nguồn thật ở trạng thái nháp, 1 admin, 5 hướng dẫn xử lý sự cố, 25 câu dịch sẵn — **không** seed điểm SOS/cảnh báo vị trí, xem `docs/PROGRESS.md`), `npm run seed:demo` (seed + reindex bài đã xuất bản), `npm run create-admin` (tạo/nâng quyền admin theo email tuỳ chỉnh).
+Lệnh hữu ích khác: `npm run test` (unit + integration), `npm run test:golden` (kiểm tra chất lượng RAG bằng bộ câu hỏi cố định), `npm run seed` (nạp dữ liệu mẫu: 4 quốc gia, 8 bài luật KR có nguồn thật ở trạng thái nháp, 1 admin nếu đã khai `SEED_ADMIN_PASSWORD` (không có mật khẩu mặc định), 5 hướng dẫn xử lý sự cố, 25 câu dịch sẵn — **không** seed điểm SOS/cảnh báo vị trí, xem `docs/PROGRESS.md`), `npm run seed:demo` (seed + reindex bài đã xuất bản), `npm run create-admin` (tạo/nâng quyền admin theo email tuỳ chỉnh).
 
 ### Mobile
 
@@ -86,14 +86,14 @@ Không hard-code quốc gia vào business logic — mọi thứ đi qua dữ li�
 
 | Batch | Nội dung | Trạng thái |
 |---|---|---|
-| B1 | Auth thật (đăng ký/đăng nhập/refresh token) | ✅ |
-| B2 | Content backbone + Admin Portal | ✅ |
-| B3 | API công khai (countries/legal/trips) + nối mobile | ✅ |
-| B4 | RAG engine + guardrail chống ảo giác | ✅ |
-| B5 | Chat mobile + feedback | ✅ |
-| B6 | SOS: bản đồ + điểm hỗ trợ | ✅ (chờ dữ liệu thật đã xác minh) |
-| B7 | Incidents + dịch khẩn cấp | ✅ |
-| B8 | Cảnh báo vị trí + hồ sơ cá nhân | ✅ |
+| B1 | Auth thật (đăng ký/đăng nhập/refresh token) | xong |
+| B2 | Content backbone + Admin Portal | xong |
+| B3 | API công khai (countries/legal/trips) + nối mobile | xong |
+| B4 | RAG engine + guardrail chống ảo giác | xong |
+| B5 | Chat mobile + feedback | xong |
+| B6 | SOS: bản đồ + điểm hỗ trợ | xong (chờ dữ liệu thật đã xác minh) |
+| B7 | Incidents + dịch khẩn cấp | xong |
+| B8 | Cảnh báo vị trí + hồ sơ cá nhân | xong |
 | B9 | Hardening, seed, build, demo | một phần: mã nguồn/seed/QA/tài liệu bàn giao xong; còn triển khai thật (Render/Vercel/EAS) và kiểm tra thiết bị thật |
 
 Chi tiết từng quyết định kỹ thuật và việc còn tồn đọng: xem [`docs/PROGRESS.md`](docs/PROGRESS.md).
@@ -115,3 +115,8 @@ trạng thái đã đọc riêng tài khoản và editor không ghi đè khi ref
 lọc bài đã lưu theo quốc gia/chủ đề, nhận phiên bản hiện hành, chống ghi đè
 workflow bằng updatedAt. Backend 151, mobile 94, admin 9 test đạt; native export
 hai nền tảng đạt. Tiến độ và các kiểm tra còn chờ xem đầu `docs/PROGRESS.md`.
+
+## Đợt QA 28/09/2026
+
+Kiểm định toàn hệ thống theo `docs/07_QA_BugHunt.md` (QA-1..QA-5): kết quả, lỗi đã
+sửa, việc còn cần người quyết định ở [`docs/QA_REPORT.md`](docs/QA_REPORT.md).

@@ -17,13 +17,25 @@ export const getAnalyticsOverview = async ({ days = DEFAULT_DAYS } = {}) => {
     await Promise.all([
       AiEvent.countDocuments(filter),
       AiEvent.countDocuments({ ...filter, fallbackReason: { $ne: null } }),
-      AiEvent.aggregate([{ $match: filter }, { $group: { _id: null, avgLatencyMs: { $avg: "$latencyMs" } } }]),
-      AiEvent.aggregate([{ $match: filter }, { $group: { _id: null, total: { $sum: "$costEstimateUsd" } } }]),
+      AiEvent.aggregate([
+        { $match: filter },
+        { $group: { _id: null, avgLatencyMs: { $avg: "$latencyMs" } } },
+      ]),
+      AiEvent.aggregate([
+        { $match: filter },
+        { $group: { _id: null, total: { $sum: "$costEstimateUsd" } } },
+      ]),
       AiEvent.aggregate([
         // $exists can $ne "" -- AiEvent tao TRUOC khi them field `question`
         // (du lieu that tu B4) khong co field nay, $ne "" khong loai duoc
         // truong hop thieu han field, se lam $first tra ve null.
-        { $match: { ...filter, fallbackReason: { $ne: null }, question: { $exists: true, $ne: "" } } },
+        {
+          $match: {
+            ...filter,
+            fallbackReason: { $ne: null },
+            question: { $exists: true, $ne: "" },
+          },
+        },
         { $group: { _id: "$questionHash", question: { $first: "$question" }, count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: TOP_FALLBACK_LIMIT },
@@ -39,6 +51,9 @@ export const getAnalyticsOverview = async ({ days = DEFAULT_DAYS } = {}) => {
     avgLatencyMs: Math.round(latencyAgg[0]?.avgLatencyMs ?? 0),
     costEstimateUsd: costAgg[0]?.total ?? 0,
     pendingFeedbackCount,
-    topFallbackQuestions: topFallbackRaw.map((row) => ({ question: row.question, count: row.count })),
+    topFallbackQuestions: topFallbackRaw.map((row) => ({
+      question: row.question,
+      count: row.count,
+    })),
   };
 };

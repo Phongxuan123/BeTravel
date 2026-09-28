@@ -205,6 +205,8 @@ export type ChatAnswer =
       updatedAt: string;
       content: string;
       sources: { name: string; url: string; marker?: string; articleSlug?: string; countryCode?: string }[];
+      // Backend dat true cho tinh huong khan cap (bi bat, tai nan, mat giay to).
+      needsOfficialHelp?: boolean;
     }
   | {
       status: 'insufficient_evidence';

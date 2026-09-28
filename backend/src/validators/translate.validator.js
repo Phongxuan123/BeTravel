@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { normalizeLanguage } from "../translation/languages.js";
 
+// from/to duoc chen vao prompt LLM -- gioi han do dai (QA-3) va chuan hoa ve
+// danh sach ngon ngu ho tro de chan prompt injection dai.
 const languageSchema = z
   .string()
   .trim()

@@ -78,3 +78,16 @@ export const fetchPreferences = USE_MOCKS ? mock.fetchPreferences : preferencesA
 export const updatePreferences = USE_MOCKS ? mock.updatePreferences : preferencesApi.updatePreferences;
 
 export type { ChatAnswer, ChatSession, ChatUiMessage } from '@/mocks/client';
+// Man hinh chi import tu @/lib/data, ke ca kieu du lieu -- khong tro thang
+// vao @/mocks (dau hieu hoan thanh B8 trong CLAUDE.md, detector D25).
+export type {
+  Alert,
+  Article,
+  FavoriteItem,
+  Incident,
+  Preferences,
+  QuickPhrase,
+  SupportLocation,
+  Topic,
+  Trip,
+} from '@/mocks/schemas';

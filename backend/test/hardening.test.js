@@ -33,6 +33,9 @@ import { generateAccessToken } from "../src/utils/token.js";
 import app from "../src/app.js";
 
 const today = () => new Date().toISOString().slice(0, 10);
+// Chunk phai cung model voi provider dang dung, neu khong retrieval loai bo
+// (INV-06.17) va cac test "khong lot RAG" se xanh vo nghia.
+const MOCK_EMBEDDING_MODEL = createMockEmbeddingProvider().model;
 const createUser = () =>
   User.create({
     username: "audit_user",
@@ -155,7 +158,7 @@ async function seedEvidence() {
       text: `Hướng dẫn kiểm thử ${order}`,
       textNorm: `huong dan ${order}`,
       order,
-      embeddingModel: "mock",
+      embeddingModel: MOCK_EMBEDDING_MODEL,
     })),
   );
   const hits = chunks.map((chunk) => ({
@@ -187,7 +190,7 @@ test("focusArticle không đưa chunk quốc gia khác vào câu trả lời", a
     text: "Other country",
     textNorm: "other country",
     order: 0,
-    embeddingModel: "mock",
+    embeddingModel: MOCK_EMBEDDING_MODEL,
   });
   const result = await retrieve({
     question: "test",
