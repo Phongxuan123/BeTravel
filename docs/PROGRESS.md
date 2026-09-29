@@ -2,6 +2,13 @@
 
 Cập nhật lần cuối: 2026-09-29 · Nhánh: `feature/trip-city-suggestions` (tính năng theo yêu cầu người dùng, không thuộc batch hay đợt QA).
 
+## Phong tỏa tra cứu pháp luật tạm thời (29/09, theo yêu cầu người dùng)
+
+Cờ `LEGAL_LOOKUP_ENABLED` (mặc định `false`) chặn `/api/legal/*` và `/api/chat/*` ở backend
+(`FORBIDDEN` + `details.reason = FEATURE_DISABLED`); mobile hiện thông báo "tạm ngưng" ở Khám
+phá, Tìm kiếm, chi tiết bài và AI Legal. Bật lại: đặt `LEGAL_LOOKUP_ENABLED=true`. Việc gỡ/xóa bài
+luật KR trên Atlas làm riêng, ghi ở mục bên dưới khi hoàn tất.
+
 ## Tính năng: gợi ý thành phố lớn ở wizard tạo chuyến đi (29/09)
 
 Yêu cầu: bước 1 của wizard tạo chuyến đi (`mobile/src/app/trips/new.tsx`) chỉ có ô nhập tự do

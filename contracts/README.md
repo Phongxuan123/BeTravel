@@ -357,6 +357,12 @@ Rong (`[]`) la hop le, UI chi an phan goi y neu vay.
 
 ### 8.2. Legal content
 
+[!] **Cong chan tam thoi (`LEGAL_LOOKUP_ENABLED`, mac dinh `false`)**: khi tat, moi
+`/api/legal/*` va `/api/chat/*` tra `403 FORBIDDEN` kem `error.details.reason =
+"FEATURE_DISABLED"` (khong them ErrorCode moi -- enum dong). Client phan biet loi nay
+voi loi phan quyen that qua `details.reason`, khong qua message. `/api/countries`,
+SOS, incidents, dich, canh bao khong bi anh huong. Bat lai: `LEGAL_LOOKUP_ENABLED=true`.
+
 ```
 GET /legal/topics?country=KR                          200, kem articleCount/chu de
 GET /legal/articles?country=KR&topic=&page=&limit=     200, meta {page,limit,total}

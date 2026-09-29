@@ -28,6 +28,19 @@ export class ApiError extends Error {
   }
 }
 
+/*
+ * Backend tam khoa tra cuu phap luat (LEGAL_LOOKUP_ENABLED=false) tra FORBIDDEN
+ * kem details.reason = FEATURE_DISABLED -- khac voi loi phan quyen that, nen
+ * man hinh hien thong bao "tam ngung" thay vi bao nham la mat ket noi mang.
+ */
+export function isFeatureDisabledError(error: unknown): error is ApiError {
+  return (
+    error instanceof ApiError &&
+    error.code === 'FORBIDDEN' &&
+    (error.details as { reason?: string } | undefined)?.reason === 'FEATURE_DISABLED'
+  );
+}
+
 type Envelope<T> = { ok: true; data: T; meta?: unknown } | { ok: false; error: { code: ErrorCode; message: string; details?: unknown } };
 
 /*
