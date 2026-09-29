@@ -1,9 +1,9 @@
-import { useMemo, useReducer, useRef, useState } from 'react';
+import { useMemo, useReducer, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Search, Info, ArrowRight, MapPin, Check } from 'lucide-react-native';
+import { Search, Info, ArrowRight, MapPin, Check, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { StepProgress } from '@/components/ui/StepProgress';
@@ -84,12 +84,10 @@ export default function TripWizardScreen() {
     regulationAlerts: true,
   });
   const [query, setQuery] = useState('');
-  // Danh sach goi y thanh pho lon (Country.majorCities, B8) hien khi focus o
-  // vao khung nhap -- an bang timeout thay vi ngay tren onBlur de kip nhan
-  // su kien onPress cua nguoi dung chon trong danh sach (blur luon den truoc
-  // press tren React Native).
+  // Danh sach goi y thanh pho lon (Country.majorCities, B8) KHONG tu hien khi
+  // focus -- chi mo khi nguoi dung bam mui ten cuoi o nhap, tranh che khuat
+  // ban phim ngay khi vua cham vao o.
   const [cityListVisible, setCityListVisible] = useState(false);
-  const cityBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [month, setMonth] = useState(() => now());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +122,8 @@ export default function TripWizardScreen() {
     const q = stripDiacritics(query);
     return countries.filter((c) => stripDiacritics(c.name).includes(q));
   }, [query, countries]);
+
+  const hasCitySuggestions = (country?.majorCities?.length ?? 0) > 0;
 
   // Loc theo tu da go, khong dau -- khong ep nguoi dung phai chon dung trong
   // danh sach, ho van go tu do va gia tri se duoc giu nguyen (BE khong rang
@@ -242,7 +242,14 @@ export default function TripWizardScreen() {
         </View>
       )}
 
-      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}>
+      {/* keyboardShouldPersistTaps="handled": neu khong co prop nay, cham lan dau
+          vao goi y thanh pho trong luc ban phim dang mo chi dong ban phim lai
+          (khong bam trung Pressable) -- day dung la loi "click chon khong duoc"
+          da bao cao, phai bam lan 2 moi chon duoc. */}
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+      >
         {step === 1 && (
           <View className="px-[18px] pt-5">
             <Text className="font-display text-ink" style={{ fontSize: 26 }}>
@@ -335,36 +342,45 @@ export default function TripWizardScreen() {
                 </Text>
 
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Thành phố / khu vực *</Text>
-                <TextInput
-                  className="h-14 rounded-md border border-line bg-[#F9FBFD] px-4 text-base text-ink"
-                  placeholder="Ví dụ: Seoul, Busan, Jeju..."
-                  placeholderTextColor={colors.subtle}
-                  value={state.destinationCity}
-                  onChangeText={(value) => {
-                    dispatch({ type: 'SET_DESTINATION_CITY', value });
-                    setCityListVisible(true);
-                  }}
-                  onFocus={() => {
-                    if (cityBlurTimeout.current) clearTimeout(cityBlurTimeout.current);
-                    setCityListVisible(true);
-                  }}
-                  onBlur={() => {
-                    cityBlurTimeout.current = setTimeout(() => setCityListVisible(false), 150);
-                  }}
-                  autoCapitalize="words"
-                  maxLength={100}
-                />
-                {cityListVisible && citySuggestions.length > 0 && (
+                <View className="relative">
+                  <TextInput
+                    className={`h-14 rounded-md border border-line bg-[#F9FBFD] pl-4 text-base text-ink ${hasCitySuggestions ? 'pr-11' : 'pr-4'}`}
+                    placeholder="Ví dụ: Seoul, Busan, Jeju..."
+                    placeholderTextColor={colors.subtle}
+                    value={state.destinationCity}
+                    onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_CITY', value })}
+                    autoCapitalize="words"
+                    maxLength={100}
+                  />
+                  {hasCitySuggestions && (
+                    <Pressable
+                      accessibilityLabel={cityListVisible ? 'Ẩn danh sách gợi ý thành phố' : 'Hiện danh sách gợi ý thành phố'}
+                      onPress={() => setCityListVisible((visible) => !visible)}
+                      className="absolute right-0 top-0 h-14 w-11 items-center justify-center"
+                    >
+                      {cityListVisible ? (
+                        <ChevronUp size={20} color={colors.subtle} />
+                      ) : (
+                        <ChevronDown size={20} color={colors.subtle} />
+                      )}
+                    </Pressable>
+                  )}
+                </View>
+                {cityListVisible && (
                   <View className="mt-1 overflow-hidden rounded-md border border-line bg-surface">
-                    {citySuggestions.map((city, index) => (
-                      <Pressable
-                        key={city}
-                        onPress={() => selectCity(city)}
-                        className={`px-4 py-3 ${index < citySuggestions.length - 1 ? 'border-b border-line' : ''}`}
-                      >
-                        <Text className="text-base text-ink">{city}</Text>
-                      </Pressable>
-                    ))}
+                    {citySuggestions.length > 0 ? (
+                      citySuggestions.map((city, index) => (
+                        <Pressable
+                          key={city}
+                          onPress={() => selectCity(city)}
+                          className={`px-4 py-3 ${index < citySuggestions.length - 1 ? 'border-b border-line' : ''}`}
+                        >
+                          <Text className="text-base text-ink">{city}</Text>
+                        </Pressable>
+                      ))
+                    ) : (
+                      <Text className="px-4 py-3 text-sm text-muted">Không có gợi ý phù hợp, bạn có thể tự nhập.</Text>
+                    )}
                   </View>
                 )}
 

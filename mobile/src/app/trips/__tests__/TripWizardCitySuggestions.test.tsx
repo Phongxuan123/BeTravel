@@ -29,49 +29,73 @@ const KR_COUNTRY = {
   majorCities: ['Seoul', 'Busan', 'Incheon'],
 };
 
-async function setup() {
-  (fetchCountries as jest.Mock).mockResolvedValue({ ok: true, data: [KR_COUNTRY] });
+// status 'active' de con chon duoc trong wizard (quoc gia 'coming_soon' bi
+// disabled o buoc chon, khong lien quan gi den tinh nang goi y thanh pho).
+const NO_CITY_COUNTRY = {
+  code: 'SG',
+  name: 'Singapore',
+  region: 'Đông Nam Á',
+  regulationsCount: 1,
+  status: 'active' as const,
+  majorCities: [] as string[],
+};
+
+async function setup(country: typeof KR_COUNTRY | typeof NO_CITY_COUNTRY = KR_COUNTRY) {
+  (fetchCountries as jest.Mock).mockResolvedValue({ ok: true, data: [country] });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const screen = await render(
     <QueryClientProvider client={client}>
       <TripWizardScreen />
     </QueryClientProvider>,
   );
-  await waitFor(() => expect(screen.getAllByText('Hàn Quốc').length).toBeGreaterThan(0));
-  // "Hàn Quốc" xuat hien o ca chip "Pho bien" lan danh sach day du -- lay cai
-  // dau tien, ca hai deu goi cung dispatch SET_COUNTRY.
-  await fireEvent.press(screen.getAllByText('Hàn Quốc')[0]);
+  await waitFor(() => expect(screen.getAllByText(country.name).length).toBeGreaterThan(0));
+  // Ten quoc gia xuat hien o ca chip "Pho bien" lan danh sach day du -- lay
+  // cai dau tien, ca hai deu goi cung dispatch SET_COUNTRY.
+  await fireEvent.press(screen.getAllByText(country.name)[0]);
   await waitFor(() => expect(screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...')).toBeTruthy());
   return screen;
 }
 
-test('chon quoc gia xong, focus vao o thanh pho thi hien goi y tu majorCities', async () => {
+test('danh sach goi y KHONG tu hien khi focus o nhap -- chi hien khi bam mui ten', async () => {
   const screen = await setup();
   const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
   await fireEvent(input, 'focus');
+  expect(screen.queryByText('Seoul')).toBeNull();
+
+  await fireEvent.press(screen.getByLabelText('Hiện danh sách gợi ý thành phố'));
   expect(screen.getByText('Seoul')).toBeTruthy();
   expect(screen.getByText('Busan')).toBeTruthy();
   expect(screen.getByText('Incheon')).toBeTruthy();
 });
 
-test('go tim khong dau van loc dung goi y va chon xong thi dien vao o nhap', async () => {
+test('bam chon 1 thanh pho trong goi y thi dien duoc vao o nhap (tai hien loi click khong chon duoc)', async () => {
   const screen = await setup();
-  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
-  await fireEvent(input, 'focus');
-  await fireEvent.changeText(input, 'busa');
-  expect(screen.getByText('Busan')).toBeTruthy();
-  expect(screen.queryByText('Seoul')).toBeNull();
+  await fireEvent.press(screen.getByLabelText('Hiện danh sách gợi ý thành phố'));
 
   await fireEvent.press(screen.getByText('Busan'));
   expect(screen.getByDisplayValue('Busan')).toBeTruthy();
-  // Chon xong thi an danh sach goi y, khong con render lai item da chon nhu goi y.
+  // Chon xong thi an danh sach goi y, khong con render lai cac muc khac.
   expect(screen.queryByText('Incheon')).toBeNull();
+});
+
+test('go tim khong dau van loc dung goi y trong luc danh sach dang mo', async () => {
+  const screen = await setup();
+  await fireEvent.press(screen.getByLabelText('Hiện danh sách gợi ý thành phố'));
+
+  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
+  await fireEvent.changeText(input, 'busa');
+  expect(screen.getByText('Busan')).toBeTruthy();
+  expect(screen.queryByText('Seoul')).toBeNull();
 });
 
 test('go ten khong co trong danh sach van duoc giu nguyen, khong bi ep chon', async () => {
   const screen = await setup();
   const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
-  await fireEvent(input, 'focus');
   await fireEvent.changeText(input, 'Gangneung');
   expect(screen.getByDisplayValue('Gangneung')).toBeTruthy();
+});
+
+test('quoc gia chua co majorCities thi khong hien mui ten goi y', async () => {
+  const screen = await setup(NO_CITY_COUNTRY);
+  expect(screen.queryByLabelText('Hiện danh sách gợi ý thành phố')).toBeNull();
 });
