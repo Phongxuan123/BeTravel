@@ -11,6 +11,9 @@ process.env.NODE_ENV = "test";
 process.env.LLM_PROVIDER = "mock";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
+// Mac dinh production la TAT tra cuu phap luat (env.js); test nghiep vu can BAT.
+// File test kiem cong chan tu dat "false" truoc khi nap app (xem legalLookup.lockdown.test.js).
+process.env.LEGAL_LOOKUP_ENABLED ??= "true";
 // File test import model/service tinh (truoc startTestDb) lam env.js validate
 // ngay luc nap: may khong co backend/.env se hong ca file. URI that cua DB tam
 // van do startTestDb gan va dung de ket noi; gia tri nay chi de qua validate.

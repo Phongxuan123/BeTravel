@@ -15,6 +15,7 @@ import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchTopics, fetchArticles, fetchCountries } from '@/lib/data';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
+import { isFeatureDisabledError } from '@/lib/api/http';
 import type { Topic, Article } from '@/lib/data';
 
 const TOPIC_ICON: Record<Topic['iconKey'], { icon: typeof FileText; tone: Tone }> = {
@@ -57,6 +58,8 @@ export default function ExploreScreen() {
     (article) => !savedOnly || useServerSavedFilter || isSaved(article.id),
   );
 
+  const disabledError = [topicsQuery.error, articlesQuery.error].find(isFeatureDisabledError);
+
   const topicFilterLabel = topicsQuery.data?.data.find((t) => t.key === topicFilter)?.label ?? 'Chủ đề';
 
   const onPickTopic = (key: string | null) => {
@@ -98,7 +101,9 @@ export default function ExploreScreen() {
         )}
         {(topicsQuery.isError || articlesQuery.isError) && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-center text-sm text-danger">Không tải được dữ liệu. Kiểm tra kết nối mạng.</Text>
+            <Text className="text-center text-sm text-danger">
+              {disabledError ? disabledError.message : 'Không tải được dữ liệu. Kiểm tra kết nối mạng.'}
+            </Text>
           </View>
         )}
 

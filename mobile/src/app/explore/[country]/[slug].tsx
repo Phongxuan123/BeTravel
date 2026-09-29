@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { colors } from '@/lib/theme';
+import { isFeatureDisabledError } from '@/lib/api/http';
 import { fetchArticle } from '@/lib/data';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
 
@@ -31,7 +32,11 @@ export default function ArticleDetailScreen() {
     return (
       <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
         <Text className="text-center text-base font-body-bold text-ink">Không tải được bài luật này</Text>
-        <Text className="text-center text-sm text-muted">Kiểm tra kết nối mạng hoặc bài có thể đã bị gỡ.</Text>
+        <Text className="text-center text-sm text-muted">
+          {isFeatureDisabledError(articleQuery.error)
+            ? articleQuery.error.message
+            : 'Kiểm tra kết nối mạng hoặc bài có thể đã bị gỡ.'}
+        </Text>
         <Button label="Quay lại" variant="secondary" onPress={() => router.back()} />
       </View>
     );
