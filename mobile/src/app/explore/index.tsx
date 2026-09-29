@@ -37,11 +37,21 @@ export default function ExploreScreen() {
   const { isSaved, toggleSaved } = useSavedArticles();
 
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
-  const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
+  // enabled: !!countryCode -- countryCode rong trong luc CountryProvider con
+  // dang xac dinh quoc gia mac dinh (xem lib/countryContext.tsx). Thieu guard
+  // nay thi goi API voi countryCode rong, backend tra 400 VALIDATION_ERROR va
+  // man hinh hien nham banner "Kiem tra ket noi mang" ngay khi vao app, phai
+  // tu chon quoc gia moi het (cung mau voi app/index.tsx#L79).
+  const topicsQuery = useQuery({
+    queryKey: ['topics', countryCode],
+    queryFn: () => fetchTopics(countryCode),
+    enabled: !!countryCode,
+  });
   const useServerSavedFilter = savedOnly && process.env.EXPO_PUBLIC_USE_MOCKS !== 'true';
   const articlesQuery = useQuery({
     queryKey: ['articles', countryCode, topicFilter, savedOnly],
     queryFn: () => fetchArticles(countryCode, { topicKey: topicFilter ?? undefined, savedOnly: useServerSavedFilter }),
+    enabled: !!countryCode,
   });
   const visibleArticles = (articlesQuery.data?.data ?? []).filter(
     (article) => !savedOnly || useServerSavedFilter || isSaved(article.id),
@@ -83,7 +93,7 @@ export default function ExploreScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 24 }}>
-        {(topicsQuery.isLoading || articlesQuery.isLoading) && (
+        {(!countryCode || topicsQuery.isLoading || articlesQuery.isLoading) && (
           <Text className="text-center text-sm text-muted">Đang tải…</Text>
         )}
         {(topicsQuery.isError || articlesQuery.isError) && (
