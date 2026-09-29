@@ -1,4 +1,4 @@
-import { useMemo, useReducer, useState } from 'react';
+import { useMemo, useReducer, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -84,6 +84,12 @@ export default function TripWizardScreen() {
     regulationAlerts: true,
   });
   const [query, setQuery] = useState('');
+  // Danh sach goi y thanh pho lon (Country.majorCities, B8) hien khi focus o
+  // vao khung nhap -- an bang timeout thay vi ngay tren onBlur de kip nhan
+  // su kien onPress cua nguoi dung chon trong danh sach (blur luon den truoc
+  // press tren React Native).
+  const [cityListVisible, setCityListVisible] = useState(false);
+  const cityBlurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [month, setMonth] = useState(() => now());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,6 +124,21 @@ export default function TripWizardScreen() {
     const q = stripDiacritics(query);
     return countries.filter((c) => stripDiacritics(c.name).includes(q));
   }, [query, countries]);
+
+  // Loc theo tu da go, khong dau -- khong ep nguoi dung phai chon dung trong
+  // danh sach, ho van go tu do va gia tri se duoc giu nguyen (BE khong rang
+  // buoc destinationCity theo majorCities).
+  const citySuggestions = useMemo(() => {
+    const pool = country?.majorCities ?? [];
+    const typed = stripDiacritics(state.destinationCity.trim());
+    const matches = typed ? pool.filter((city) => stripDiacritics(city).includes(typed)) : pool;
+    return matches.slice(0, 8);
+  }, [country, state.destinationCity]);
+
+  const selectCity = (city: string) => {
+    dispatch({ type: 'SET_DESTINATION_CITY', value: city });
+    setCityListVisible(false);
+  };
 
   const editReady = !editingTripId || hydratedTripId === editingTripId;
 
@@ -319,10 +340,33 @@ export default function TripWizardScreen() {
                   placeholder="Ví dụ: Seoul, Busan, Jeju..."
                   placeholderTextColor={colors.subtle}
                   value={state.destinationCity}
-                  onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_CITY', value })}
+                  onChangeText={(value) => {
+                    dispatch({ type: 'SET_DESTINATION_CITY', value });
+                    setCityListVisible(true);
+                  }}
+                  onFocus={() => {
+                    if (cityBlurTimeout.current) clearTimeout(cityBlurTimeout.current);
+                    setCityListVisible(true);
+                  }}
+                  onBlur={() => {
+                    cityBlurTimeout.current = setTimeout(() => setCityListVisible(false), 150);
+                  }}
                   autoCapitalize="words"
                   maxLength={100}
                 />
+                {cityListVisible && citySuggestions.length > 0 && (
+                  <View className="mt-1 overflow-hidden rounded-md border border-line bg-surface">
+                    {citySuggestions.map((city, index) => (
+                      <Pressable
+                        key={city}
+                        onPress={() => selectCity(city)}
+                        className={`px-4 py-3 ${index < citySuggestions.length - 1 ? 'border-b border-line' : ''}`}
+                      >
+                        <Text className="text-base text-ink">{city}</Text>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
 
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Địa điểm cụ thể (không bắt buộc)</Text>
                 <TextInput

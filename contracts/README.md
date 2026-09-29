@@ -349,6 +349,12 @@ GET /countries/:code        200, hoac 404 NOT_FOUND
 nguoi dung — client phai TU hien trang thai ro rang (vi du "Sap ra mat"),
 KHONG bia noi dung, khong loi.
 
+`majorCities: string[]` — danh sach thanh pho lon goi y cho wizard tao chuyen
+di (mobile `trips/new.tsx` buoc 1). Thuan tuy la du lieu dia ly tham khao de
+goi y nhanh, KHONG rang buoc gia tri `destinationCity` nguoi dung tu go —
+khong ap dung Rule "8 bai co nguon that" vi day khong phai noi dung phap ly.
+Rong (`[]`) la hop le, UI chi an phan goi y neu vay.
+
 ### 8.2. Legal content
 
 ```

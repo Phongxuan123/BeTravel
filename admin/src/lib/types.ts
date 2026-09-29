@@ -16,6 +16,7 @@ export type Country = {
   language?: string;
   emergencyNumbers?: { police?: string; ambulance?: string; fire?: string; marine?: string };
   embassy?: { name?: string; address?: string; phone?: string; lat?: number; lng?: number };
+  majorCities?: string[];
   status: CountryStatus;
   createdAt: string;
   updatedAt: string;

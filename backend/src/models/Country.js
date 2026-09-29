@@ -46,6 +46,12 @@ const countrySchema = new mongoose.Schema(
     emergencyNumbers: { type: emergencyNumbersSchema, default: () => ({}) },
     embassy: { type: embassySchema, default: () => ({}) },
 
+    // Goi y thanh pho lon cho wizard tao chuyen di (mobile) -- chi la du lieu
+    // dia ly tham khao, khong phai noi dung phap ly nen khong ap luat "8 bai
+    // co nguon that" cua Rule noi dung. Nguoi dung van go tu do, danh sach
+    // nay chi goi y de gom nhanh, khong rang buoc gia tri destinationCity.
+    majorCities: { type: [String], default: [] },
+
     status: {
       type: String,
       enum: Object.values(CountryStatus),

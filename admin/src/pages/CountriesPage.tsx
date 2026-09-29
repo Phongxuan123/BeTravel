@@ -12,8 +12,19 @@ import { Table, Thead, Th, Tbody, Td } from '../components/ui/Table';
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/Feedback';
 import { Badge } from '../components/ui/Badge';
 
-type FormState = { code: string; name: string; nameEn: string; status: CountryStatus };
-const EMPTY_FORM: FormState = { code: '', name: '', nameEn: '', status: 'coming_soon' };
+// majorCitiesText giu dang chuoi cach nhau boi dau phay trong form -- chi
+// tach thanh mang khi gui len API (payloadFromForm), tranh ep nguoi dung go
+// dung dinh dang moi ky tu.
+type FormState = { code: string; name: string; nameEn: string; status: CountryStatus; majorCitiesText: string };
+const EMPTY_FORM: FormState = { code: '', name: '', nameEn: '', status: 'coming_soon', majorCitiesText: '' };
+
+function payloadFromForm(form: FormState) {
+  const majorCities = form.majorCitiesText
+    .split(',')
+    .map((city) => city.trim())
+    .filter((city) => city.length > 0);
+  return { code: form.code, name: form.name, nameEn: form.nameEn, status: form.status, majorCities };
+}
 
 export default function CountriesPage() {
   const queryClient = useQueryClient();
@@ -30,7 +41,7 @@ export default function CountriesPage() {
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['admin', 'countries'] });
 
   const createMutation = useMutation({
-    mutationFn: (payload: FormState) => countriesApi.create(payload),
+    mutationFn: (payload: FormState) => countriesApi.create(payloadFromForm(payload)),
     onSuccess: () => {
       invalidate();
       setModalOpen(false);
@@ -39,7 +50,7 @@ export default function CountriesPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: (payload: FormState) => countriesApi.update(editing!._id, payload),
+    mutationFn: (payload: FormState) => countriesApi.update(editing!._id, payloadFromForm(payload)),
     onSuccess: () => {
       invalidate();
       setModalOpen(false);
@@ -61,7 +72,13 @@ export default function CountriesPage() {
 
   const openEdit = (country: Country) => {
     setEditing(country);
-    setForm({ code: country.code, name: country.name, nameEn: country.nameEn ?? '', status: country.status });
+    setForm({
+      code: country.code,
+      name: country.name,
+      nameEn: country.nameEn ?? '',
+      status: country.status,
+      majorCitiesText: (country.majorCities ?? []).join(', '),
+    });
     setFormError(null);
     setModalOpen(true);
   };
@@ -152,6 +169,12 @@ export default function CountriesPage() {
             <option value="coming_soon">Sắp mở</option>
             <option value="active">Đang hoạt động</option>
           </Select>
+          <Input
+            label="Thành phố lớn (gợi ý cho wizard tạo chuyến đi, cách nhau bởi dấu phẩy)"
+            value={form.majorCitiesText}
+            onChange={(e) => setForm({ ...form, majorCitiesText: e.target.value })}
+            placeholder="Vd: Seoul, Busan, Incheon"
+          />
 
           {formError && <ErrorState message={formError} />}
 

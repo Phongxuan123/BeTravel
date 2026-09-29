@@ -1,6 +1,33 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-29 · Nhánh: `main` sau khi gộp PR QA (#21) và `feature/translation-location-sharing`.
+Cập nhật lần cuối: 2026-09-29 · Nhánh: `feature/trip-city-suggestions` (tính năng theo yêu cầu người dùng, không thuộc batch hay đợt QA).
+
+## Tính năng: gợi ý thành phố lớn ở wizard tạo chuyến đi (29/09)
+
+Yêu cầu: bước 1 của wizard tạo chuyến đi (`mobile/src/app/trips/new.tsx`) chỉ có ô nhập tự do
+cho "Thành phố / khu vực", không có danh sách gợi ý — người dùng dễ gõ sai hoặc không biết
+thành phố lớn nào của nước đó. Bổ sung danh sách gợi ý theo quốc gia, gõ để lọc (không dấu),
+chọn xong điền vào ô nhập; người dùng vẫn có thể gõ tự do tên không có trong danh sách.
+
+Thay đổi:
+- Backend: `Country.majorCities: string[]` (model + `admin.validator.js`). Cố ý **không** đặt
+  `.default([])` trên field Zod vì `countryUpdateSchema` dùng `.partial()` của cùng schema —
+  Zod 4 vẫn áp `.default()` khi field bị bỏ qua ở PATCH (đúng bẫy QA-5 đã gặp với
+  incident/geo-alert), sẽ xóa mất danh sách mỗi khi admin sửa quốc gia mà không gửi lại
+  `majorCities`. Có test tái hiện bẫy này ở `admin.test.js`.
+- Seed: KR/JP/TH có sẵn danh sách thành phố lớn (kiến thức địa lý phổ thông, không phải nội
+  dung pháp lý nên không áp Rule "8 bài có nguồn thật").
+- Admin: `CountriesPage.tsx` thêm ô nhập thành phố cách nhau bởi dấu phẩy.
+- Mobile: `trips/new.tsx` — danh sách gợi ý hiện khi focus vào ô, ẩn sau 150ms kể từ blur (để
+  kịp nhận sự kiện chọn), lọc theo `stripDiacritics` đã có sẵn trong file.
+- Contracts: `contracts/README.md` mục 8.1 + hai fixture `admin.country.json`/`public.country.json`.
+
+### Kiểm tra
+
+- Backend: 257 test xanh (+1 todo cũ), golden 26/26, lint + format sạch.
+- Mobile: 156 test xanh (34 suite, +3 test mới), tsc + lint sạch, export Android OK.
+- Admin: typecheck + build sạch (chưa thêm test riêng cho ô nhập mới — form đơn giản, theo
+  đúng mẫu các field text khác trong cùng trang).
 
 ## Nhánh Quy — quét test và gộp main (29/09)
 

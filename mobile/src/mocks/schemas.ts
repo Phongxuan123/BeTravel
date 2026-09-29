@@ -34,6 +34,8 @@ export const countrySchema = z.object({
   // Chi API that (B3) moi dat field nay -- 'coming_soon' nghia la da co du
   // lieu trong DB nhung chua mo cho nguoi dung (xem adapters.ts#adaptCountry).
   status: z.enum(['active', 'coming_soon']).optional(),
+  // Optional + default de fixture/mock cu chua co field nay van parse duoc.
+  majorCities: z.array(z.string()).optional().default([]),
   emergencyNumbers: emergencyNumbersSchema,
   embassy: embassySchema,
 });
