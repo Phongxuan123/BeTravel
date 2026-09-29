@@ -55,6 +55,15 @@ const embassySchema = z
   .partial()
   .optional();
 
+// Khong dung .default([]) o day -- countryUpdateSchema tai su dung qua
+// .partial(), va Zod 4 van ap dung .default() ke ca khi field bi omit khoi
+// PATCH (QA-5 da phat hien loi nay o incident/geo-alert), se xoa mat danh
+// sach thanh pho cu moi lan sua quoc gia ma khong gui lai majorCities.
+const majorCitiesSchema = z
+  .array(z.string().trim().min(1).max(80))
+  .max(40, "Toi da 40 thanh pho goi y")
+  .optional();
+
 export const countryCreateSchema = z.object({
   code: countryCodeSchema,
   name: z.string().trim().min(1, "Ten quoc gia khong duoc de trong"),
@@ -62,6 +71,7 @@ export const countryCreateSchema = z.object({
   language: z.string().trim().optional(),
   emergencyNumbers: emergencyNumbersSchema,
   embassy: embassySchema,
+  majorCities: majorCitiesSchema,
   status: z.enum(Object.values(CountryStatus)).optional(),
 });
 

@@ -2,6 +2,21 @@
 > Trạng thái hiện hành: xem **Rà soát 29/09/2026** ngay dưới đây và
 > `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
 
+## Rà soát 29/09/2026 (2) — gợi ý thành phố lớn ở wizard tạo chuyến đi
+
+Tính năng mới theo yêu cầu người dùng (không thuộc batch/QA). Chi tiết ở
+`PROGRESS.md`. Điểm tối ưu áp dụng:
+
+- Rule 6 (không magic number/string): giới hạn 40 thành phố/quốc gia và 80
+  ký tự/tên đặt thành hằng số có comment lý do trong `admin.validator.js`,
+  không rải số trần trong code.
+- Rule 8 (điều kiện rõ ràng): tách `citySuggestions` thành `useMemo` riêng
+  thay vì lồng điều kiện trực tiếp trong JSX.
+- Rule 11 (comment tiếng Việt giải thích lý do): giải thích rõ vì sao
+  `majorCitiesSchema` không dùng `.default([])` — tránh lặp lại đúng bẫy
+  Zod 4 `.partial()` mà QA-5 đã phát hiện ở incident/geo-alert.
+- Không warning mới phát sinh (lint + typecheck sạch cả 3 workspace).
+
 ## Rà soát 29/09/2026 — dịch và chia sẻ vị trí
 
 | File/nhóm | Lỗi hoặc thiếu sót | Cách sửa và bằng chứng |

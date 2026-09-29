@@ -60,6 +60,26 @@ test("admin CRUD Country hoat dong dung, ghi audit log", async () => {
   assert.equal(deleteRes.body.data.deleted, true);
 });
 
+test("Country.majorCities: PATCH truong khac KHONG xoa danh sach thanh pho", async () => {
+  // Tai hien bay Zod 4 .partial() van ap .default() khi field bi omit (QA-5
+  // da gap voi incident/geo-alert) -- majorCitiesSchema co chu y KHONG dat
+  // .default([]) de tranh dung bay nay khi PATCH.
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+
+  const createRes = await request(app)
+    .post("/api/admin/countries")
+    .set("Authorization", auth(accessToken))
+    .send({ code: "KR", name: "Han Quoc", status: "active", majorCities: ["Seoul", "Busan"] });
+  assert.deepEqual(createRes.body.data.majorCities, ["Seoul", "Busan"]);
+
+  const updateRes = await request(app)
+    .patch(`/api/admin/countries/${createRes.body.data._id}`)
+    .set("Authorization", auth(accessToken))
+    .send({ name: "Dai Han Dan Quoc" });
+  assert.equal(updateRes.status, 200);
+  assert.deepEqual(updateRes.body.data.majorCities, ["Seoul", "Busan"]);
+});
+
 // Tao san mot Country + Topic hop le de cac test article dung chung.
 const seedCountryAndTopic = async (accessToken) => {
   await request(app)

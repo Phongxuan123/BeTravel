@@ -10,6 +10,7 @@ export const countries: Country[] = [
     language: 'Tiếng Nhật',
     regulationsCount: 128,
     currentCity: 'Shinjuku, Tokyo',
+    majorCities: ['Tokyo', 'Osaka', 'Kyoto', 'Yokohama', 'Nagoya', 'Fukuoka', 'Sapporo'],
     emergencyNumbers: { police: '110', ambulance: '119', fire: '119', marine: '118' },
     embassy: {
       name: 'Đại sứ quán Việt Nam',
@@ -30,6 +31,7 @@ export const countries: Country[] = [
     language: 'Tiếng Hàn',
     regulationsCount: 96,
     currentCity: 'Seoul',
+    majorCities: ['Seoul', 'Busan', 'Incheon', 'Daegu', 'Daejeon', 'Gwangju', 'Jeju'],
     emergencyNumbers: { police: '112', ambulance: '119', fire: '119', marine: '122' },
     embassy: {
       name: 'Đại sứ quán Việt Nam',
@@ -50,6 +52,7 @@ export const countries: Country[] = [
     language: 'Tiếng Thái',
     regulationsCount: 84,
     currentCity: 'Bangkok',
+    majorCities: ['Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya'],
     emergencyNumbers: { police: '191', ambulance: '1669', fire: '199', marine: '1196' },
     embassy: {
       name: 'Đại sứ quán Việt Nam',
@@ -70,6 +73,7 @@ export const countries: Country[] = [
     language: 'Tiếng Anh',
     regulationsCount: 72,
     currentCity: 'Singapore',
+    majorCities: [],
     emergencyNumbers: { police: '999', ambulance: '995', fire: '995', marine: '999' },
     embassy: {
       name: 'Đại sứ quán Việt Nam',
@@ -90,6 +94,7 @@ export const countries: Country[] = [
     language: 'Tiếng Pháp',
     regulationsCount: 110,
     currentCity: 'Paris',
+    majorCities: [],
     emergencyNumbers: { police: '17', ambulance: '15', fire: '18', marine: '196' },
     embassy: {
       name: 'Đại sứ quán Việt Nam',
@@ -110,6 +115,7 @@ export const countries: Country[] = [
     language: 'Tiếng Đức',
     regulationsCount: 104,
     currentCity: 'Berlin',
+    majorCities: [],
     emergencyNumbers: { police: '110', ambulance: '112', fire: '112', marine: '124124' },
     embassy: {
       name: 'Đại sứ quán Việt Nam',

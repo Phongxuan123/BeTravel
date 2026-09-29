@@ -16,6 +16,7 @@ export type ApiCountry = {
   nameEn?: string;
   language?: string;
   status: 'active' | 'coming_soon';
+  majorCities?: string[];
   emergencyNumbers?: ApiEmergencyNumbers;
   embassy?: ApiEmbassy;
   articleCount: number;
@@ -97,6 +98,7 @@ export function adaptCountry(api: ApiCountry): Country {
     // Country khong phai la vi tri hien tai cua user. Khong bia thu do lam vi tri.
     currentCity: '',
     status: api.status,
+    majorCities: api.majorCities ?? [],
     emergencyNumbers: {
       police: api.emergencyNumbers?.police ?? '',
       ambulance: api.emergencyNumbers?.ambulance ?? '',

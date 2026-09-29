@@ -14,6 +14,7 @@
         "phone": "+82-2-720-5510"
       },
       "status": "active",
+      "majorCities": ["Seoul", "Busan", "Incheon", "Daegu", "Daejeon", "Gwangju", "Jeju"],
       "createdAt": "2026-09-20T10:00:00.000Z",
       "updatedAt": "2026-09-22T08:30:00.000Z",
       "articleCount": 8,
@@ -28,6 +29,7 @@
       "emergencyNumbers": { "police": "110", "ambulance": "119", "fire": "119", "marine": "118" },
       "embassy": { "name": "", "address": "", "phone": "" },
       "status": "coming_soon",
+      "majorCities": [],
       "createdAt": "2026-09-20T10:00:00.000Z",
       "updatedAt": "2026-09-20T10:00:00.000Z",
       "articleCount": 0,
