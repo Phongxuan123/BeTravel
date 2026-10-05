@@ -10,7 +10,7 @@ import type { Preferences } from '@/mocks/schemas';
 const DEFAULT_PREFERENCES: Preferences = {
   locale: 'vi',
   alerts: { legal: true, safety: true, tripReminder: false },
-  locationConsent: true,
+  locationConsent: false,
 };
 
 export async function fetchPreferences(): Promise<{ ok: true; data: Preferences }> {

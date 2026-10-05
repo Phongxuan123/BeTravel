@@ -1,5 +1,19 @@
 # BE.TRAVEL — CONTRACT API
 
+## Bản vá hợp đồng API 05/10/2026
+
+- `Country.aliases?: string[]` cho admin và dữ liệu quốc gia; AI nhận diện thêm tên tiếng Anh, thành phố và bí danh có sẵn KR/JP/TH/SG, kể cả khi chưa seed lại. Tên ngắn dễ trùng từ như “Thái” chỉ khớp ngữ cảnh quốc gia/di chuyển.
+- Incident trả `steps[].stepId: string` ổn định. `GET/PUT /api/users/incident-progress/:incidentId` trả/nhận `completedSteps: string[]`, mỗi phần tử là `stepId`. API từ chối payload tiến độ dạng số; dữ liệu cũ trong DB vẫn được đọc/migrate an toàn. Triển khai mobile và backend tương ứng cùng đợt.
+- Admin PATCH incident yêu cầu phiên bản `updatedAt` để chống ghi đè (thiếu hoặc cũ trả CONFLICT). Khi reorder/xóa bước, tiến độ cũ được chuyển sang ID trong cùng transaction; dấu tick của bước đã xóa không được trả.
+- Public SOS list và nearby chỉ trả `verified: true`, kể cả nhánh mở rộng bán kính. Admin vẫn xem được mọi điểm.
+- Các API công khai incidents/quick-phrases/alerts/SOS bỏ `createdBy` và `updatedBy`; quick-phrases/alerts/SOS bỏ `__v`.
+- Tài khoản mới mặc định `preferences.locationConsent = false`; giữ nguyên lựa chọn đã lưu của tài khoản cũ.
+- Xuất bản bài luật: draft → pending_review → published; pending_review → draft; published/superseded → archived; archived → draft. Không cho draft/archived/superseded → published trực tiếp. `isCurrent = true` khi xuất bản, false sau lưu trữ. Thay thế phiên bản + tạo job reindex/purge trong cùng transaction.
+- AI phải có ít nhất một marker hợp lệ để được trả nội dung. Thiếu marker → GUARD_REJECTED. Thông báo đổi quốc gia là từ chối INSUFFICIENT_EVIDENCE (giá trị thực: `INSUFFICIENT_EVIDENCE`), không gọi provider. Cache cũ không được dùng lại nhờ phiên bản cache mới.
+- Điều kiện nguồn luật giữ nguyên `url + authority + publishedAt`; chưa cho accessedAt thay ngày công bố.
+
+
+
 > Nguon su that duy nhat ve hinh dang API. Backend, mobile va admin deu doi chieu vao day.
 > Doi hinh dang API --> sua file nay + `fixtures/*.json` TRUOC, roi moi sua code, trong CUNG MOT commit.
 

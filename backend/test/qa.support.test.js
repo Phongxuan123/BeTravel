@@ -112,35 +112,34 @@ test("INV-09.3 PUT tien do dong thoi cua cung user chi tao 1 ban ghi", async () 
       request(app)
         .put(`/api/users/incident-progress/${incident._id}`)
         .set(as(accessToken))
-        .send({ completedSteps }),
+        .send({ completedSteps: completedSteps.map((order) => incident.steps[order].stepId) }),
     ),
   );
   assert.ok(results.every((res) => res.status === 200));
   assert.equal(await m.UserIncidentProgress.countDocuments({ userId: user.id }), 1);
 });
 
-test(
-  "H-09.a doi thu tu buoc giu nguyen so buoc thi tick gan sai buoc (no ky thuat da biet)",
-  { todo: "Can nguoi chot id on dinh cho buoc -- xem QA_REPORT QA3-M09-01" },
-  async () => {
-    const incident = await createIncident();
-    await m.UserIncidentProgress.create({
-      userId: (await m.User.create({ username: "u", fullName: "U", email: "u@x.test" }))._id,
-      incidentId: incident._id,
-      completedSteps: [0],
-    });
-    // Admin dao buoc 0 va 2: tick "Trinh bao cong an" gio tro vao "Xin giay thong hanh".
-    const reordered = [incident.steps[2], incident.steps[1], incident.steps[0]].map((s, order) => ({
-      ...s.toObject(),
-      order,
-    }));
-    await m.IncidentType.updateOne({ _id: incident._id }, { $set: { steps: reordered } });
-    const after = await m.IncidentType.findById(incident._id).lean();
-    const progress = await m.UserIncidentProgress.findOne().lean();
-    const tickedTitle = after.steps.find((s) => s.order === progress.completedSteps[0]).title;
-    assert.equal(tickedTitle, "Trình báo công an");
-  },
-);
+test("H-09.a đảo thứ tự bước vẫn giữ đúng dấu tick, kể cả tiến độ cũ dạng số", async () => {
+  const incident = await createIncident();
+  const { user: loginUser } = await registerAndLogin(app);
+  const user = { _id: loginUser.id };
+  await m.UserIncidentProgress.create({
+    userId: user._id,
+    incidentId: incident._id,
+    completedSteps: [0],
+  });
+  const service = await import("../src/services/incident.service.js");
+  const reordered = [incident.steps[2], incident.steps[1], incident.steps[0]].map((step) =>
+    step.toObject(),
+  );
+  const after = await service.updateIncident(
+    incident._id,
+    { steps: reordered, updatedAt: incident.updatedAt.toISOString() },
+    user._id,
+  );
+  const progress = await service.getProgress(user._id, incident._id);
+  assert.equal(after.steps.find((step) => step.stepId === progress[0]).title, "Trình báo công an");
+});
 
 test("QA5-E2E PATCH chi doi status/title khong xoa steps (incident) va behaviorsToAvoid (geo-alert)", async () => {
   // Zod 4: .partial() van ap .default([]) cua schema tao --> field khong gui bi ghi de rong.

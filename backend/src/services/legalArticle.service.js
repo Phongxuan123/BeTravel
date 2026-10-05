@@ -170,66 +170,67 @@ const findMissingPublishFields = (article) => {
  * Roi khoi 'published' (unpublish/supersede) --> enqueue 'purge_chunks' cho
  * CHINH bai do va cho moi ban bi supersede trong cung luot publish.
  */
+const NEXT_STATUS = Object.freeze({
+  draft: [ContentStatus.PENDING_REVIEW],
+  pending_review: [ContentStatus.DRAFT, ContentStatus.PUBLISHED],
+  published: [ContentStatus.ARCHIVED],
+  superseded: [ContentStatus.ARCHIVED],
+  archived: [ContentStatus.DRAFT],
+});
+
 export const changeArticleStatus = async (id, { status: nextStatus, note }, actorId) => {
-  const article = await LegalArticle.findById(id);
-
-  if (!article) {
-    throw new AppError(ErrorCode.NOT_FOUND, "Không tìm thấy bài luật");
-  }
-
-  const previousStatus = article.status;
-  const isPublishing = nextStatus === ContentStatus.PUBLISHED;
-
-  if (isPublishing) {
-    const missingFields = findMissingPublishFields(article);
-
-    const topicExists = await LegalTopic.exists({
-      countryCode: article.countryCode,
-      slug: article.topicSlug,
-    });
-    if (!topicExists) {
-      missingFields.push({ path: "topicSlug", message: "Chủ đề (topicSlug) không tồn tại" });
+  // Both the content changes and queue entries commit or roll back together.
+  // Atlas replica sets support this; standalone Mongo must be upgraded first.
+  await LegalArticle.init();
+  return LegalArticle.db.transaction(async (session) => {
+    const article = await LegalArticle.findById(id).session(session);
+    if (!article) throw new AppError(ErrorCode.NOT_FOUND, "Không tìm thấy bài luật");
+    const previousStatus = article.status;
+    if (!NEXT_STATUS[previousStatus]?.includes(nextStatus)) {
+      throw new AppError(
+        ErrorCode.CONFLICT,
+        "Bước chuyển trạng thái không hợp lệ; hãy gửi duyệt trước khi xuất bản",
+      );
     }
-
-    if (missingFields.length > 0) {
-      throw new AppError(ErrorCode.CONFLICT, "Bài chưa đủ điều kiện để xuất bản", missingFields);
-    }
-
-    const supersededSiblings = await LegalArticle.find({
-      countryCode: article.countryCode,
-      slug: article.slug,
-      isCurrent: true,
-      _id: { $ne: article._id },
-    }).select("_id");
-
-    if (supersededSiblings.length > 0) {
+    const isPublishing = nextStatus === ContentStatus.PUBLISHED;
+    if (isPublishing) {
+      const missingFields = findMissingPublishFields(article);
+      const topicExists = await LegalTopic.exists({
+        countryCode: article.countryCode,
+        slug: article.topicSlug,
+      }).session(session);
+      if (!topicExists) missingFields.push({ path: "topicSlug", message: "Chủ đề không tồn tại" });
+      if (missingFields.length)
+        throw new AppError(ErrorCode.CONFLICT, "Bài chưa đủ điều kiện để xuất bản", missingFields);
+      const siblings = await LegalArticle.find({
+        countryCode: article.countryCode,
+        slug: article.slug,
+        isCurrent: true,
+        _id: { $ne: article._id },
+      })
+        .select("_id")
+        .session(session);
       await LegalArticle.updateMany(
-        { _id: { $in: supersededSiblings.map((doc) => doc._id) } },
+        { _id: { $in: siblings.map((doc) => doc._id) } },
         { $set: { isCurrent: false, status: ContentStatus.SUPERSEDED } },
+        { session },
       );
-
-      await Promise.all(
-        supersededSiblings.map((doc) =>
-          enqueueJob(JobName.PURGE_CHUNKS, { articleId: doc._id.toString() }),
-        ),
+      for (const sibling of siblings)
+        await enqueueJob(JobName.PURGE_CHUNKS, { articleId: sibling._id.toString() }, session);
+    }
+    article.isCurrent = isPublishing;
+    article.status = nextStatus;
+    article.reviewedBy = actorId;
+    article.reviewedAt = new Date();
+    if (note !== undefined) article.reviewNote = note;
+    await article.save({ session });
+    if (isPublishing || previousStatus === ContentStatus.PUBLISHED) {
+      await enqueueJob(
+        isPublishing ? JobName.REINDEX_ARTICLE : JobName.PURGE_CHUNKS,
+        { articleId: article._id.toString() },
+        session,
       );
     }
-
-    article.isCurrent = true;
-  }
-
-  article.status = nextStatus;
-  article.reviewedBy = actorId;
-  article.reviewedAt = new Date();
-  if (note) article.reviewNote = note;
-
-  await article.save();
-
-  if (isPublishing) {
-    await enqueueJob(JobName.REINDEX_ARTICLE, { articleId: article._id.toString() });
-  } else if (previousStatus === ContentStatus.PUBLISHED) {
-    await enqueueJob(JobName.PURGE_CHUNKS, { articleId: article._id.toString() });
-  }
-
-  return article;
+    return article;
+  });
 };

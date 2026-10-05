@@ -23,6 +23,11 @@ const incidentChecklistItemSchema = new mongoose.Schema(
 
 const incidentStepSchema = new mongoose.Schema(
   {
+    stepId: {
+      type: String,
+      required: true,
+      default: () => new mongoose.Types.ObjectId().toString(),
+    },
     order: { type: Number, required: true },
     title: { type: String, required: true, trim: true },
     body: { type: [String], default: [] },

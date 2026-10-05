@@ -108,7 +108,7 @@ function IncidentEditor() {
   const updateMutation = useMutation({
     mutationFn: () => incidentsApi.update(id!, buildPayload()),
     onSuccess: (res) => {
-      setForm((current) => current ? { ...current, updatedAt: res.data.updatedAt } : current);
+      setForm((current) => current ? { ...current, steps: res.data.steps, updatedAt: res.data.updatedAt } : current);
       queryClient.setQueryData(['admin', 'incidents', id], res);
       queryClient.invalidateQueries({ queryKey: ['admin', 'incidents', id] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'incidents'] });

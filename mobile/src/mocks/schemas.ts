@@ -99,6 +99,7 @@ export const incidentCtaSchema = z.object({
 });
 
 export const incidentStepSchema = z.object({
+  stepId: z.string().optional(),
   // order + contactRefs/articleRefs/ctas la field MO RONG cho B7 (tien do
   // luu server theo step.order, CTA ngu canh tung buoc) -- optional de fixture
   // cu (neu con) khong vo type, nhung du lieu that/moi luon co day du.

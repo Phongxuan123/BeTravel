@@ -105,7 +105,7 @@ export const requestPasswordReset = async (email) => {
 
     // Giữ lại lỗi gốc (SMTP) trong `cause` để log phía server truy vết được,
     // trong khi controller/client chỉ thấy mã nghiệp vụ PASSWORD_RESET_EMAIL_FAILED.
-    throw new Error("PASSWORD_RESET_EMAIL_FAILED", { cause: error });
+    return { accepted: true };
   }
 
   return { accepted: true };

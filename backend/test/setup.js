@@ -1,4 +1,4 @@
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
 /*
@@ -38,7 +38,12 @@ process.env.RAG_MIN_CHUNKS ??= "1";
 let mongod;
 
 export const startTestDb = async () => {
-  mongod = await MongoMemoryServer.create();
+  mongod = await MongoMemoryReplSet.create({
+    replSet: { count: 1 },
+    instanceOpts: [
+      { args: ["--nounixsocket", "--setParameter", "diagnosticDataCollectionEnabled=false"] },
+    ],
+  });
   process.env.MONGODB_URI = mongod.getUri();
   await mongoose.connect(mongod.getUri());
 };

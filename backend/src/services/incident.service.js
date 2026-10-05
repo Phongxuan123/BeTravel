@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import IncidentType from "../models/IncidentType.js";
 import UserIncidentProgress from "../models/UserIncidentProgress.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
@@ -5,8 +6,16 @@ import { AppError, ErrorCode } from "../core/errors.js";
 
 // Ep lai order theo dung vi tri trong mang -- admin keo tha/them/xoa buoc chi
 // can gui dung THU TU mong muon, khong phai tu tay dien so order.
-const withNormalizedStepOrder = (steps = []) =>
-  steps.map((step, index) => ({ ...step, order: index }));
+const withNormalizedStepOrder = (steps = []) => {
+  const normalized = steps.map((step, index) => ({
+    ...step,
+    stepId: step.stepId ?? crypto.randomUUID(),
+    order: index,
+  }));
+  if (new Set(normalized.map((step) => step.stepId)).size !== normalized.length)
+    throw new AppError(ErrorCode.VALIDATION_ERROR, "ID bước xử lý không được trùng");
+  return normalized;
+};
 
 // ── Admin CRUD (dung voi core/adminCrudController.js) ───────────────────
 export const listIncidentsAdmin = async (query) => {
@@ -16,14 +25,28 @@ export const listIncidentsAdmin = async (query) => {
   if (query.status) filter.status = query.status;
 
   const [items, total] = await Promise.all([
-    IncidentType.find(filter).sort({ title: 1 }).skip(pagination.skip).limit(pagination.limit),
+    IncidentType.find(filter)
+      .sort({ title: 1 })
+      .skip(pagination.skip)
+      .limit(pagination.limit)
+      .lean(),
     IncidentType.countDocuments(filter),
   ]);
 
-  return { items, meta: buildPageMeta(pagination, total) };
+  return { items: items.map(stableSteps), meta: buildPageMeta(pagination, total) };
 };
 
-export const getIncidentById = async (id) => IncidentType.findById(id);
+const stableSteps = (incident) =>
+  incident
+    ? {
+        ...incident,
+        steps: incident.steps.map((step) => ({
+          ...step,
+          stepId: step.stepId ?? `legacy-${incident._id}-${step.order}`,
+        })),
+      }
+    : null;
+export const getIncidentById = async (id) => stableSteps(await IncidentType.findById(id).lean());
 
 export const createIncident = async (data, actorId) =>
   IncidentType.create({
@@ -33,24 +56,39 @@ export const createIncident = async (data, actorId) =>
     updatedBy: actorId,
   });
 
-export const updateIncident = async (id, data, actorId) => {
-  const { updatedAt, ...fields } = data;
-  const payload = { ...fields, updatedBy: actorId };
-  if (data.steps) payload.steps = withNormalizedStepOrder(data.steps);
-  // So sánh phiên bản ngay trong UPDATE, tránh hai người cùng ghi đè workflow.
-  const filter = { _id: id, ...(updatedAt ? { updatedAt: new Date(updatedAt) } : {}) };
-  const updated = await IncidentType.findOneAndUpdate(filter, payload, { returnDocument: "after" });
-  if (!updated) {
-    if (await IncidentType.exists({ _id: id })) {
+export const updateIncident = async (id, data, actorId) =>
+  IncidentType.db.transaction(async (session) => {
+    const current = stableSteps(await IncidentType.findById(id).session(session).lean());
+    if (!current) throw new AppError(ErrorCode.NOT_FOUND, "Không tìm thấy hướng dẫn xử lý sự cố");
+    if (!data.updatedAt || new Date(data.updatedAt).getTime() !== current.updatedAt.getTime()) {
       throw new AppError(
         ErrorCode.CONFLICT,
-        "Hướng dẫn đã được sửa. Tải lại bản mới trước khi lưu.",
+        "Hướng dẫn đã được sửa hoặc thiếu phiên bản. Tải lại trước khi lưu.",
       );
     }
-    throw new AppError(ErrorCode.NOT_FOUND, "Không tìm thấy hướng dẫn xử lý sự cố");
-  }
-  return updated;
-};
+    const { updatedAt, ...fields } = data;
+    const payload = { ...fields, updatedBy: actorId };
+    if (data.steps) {
+      payload.steps = withNormalizedStepOrder(data.steps);
+      const ids = payload.steps.map((step) => step.stepId);
+      if (new Set(ids).size !== ids.length)
+        throw new AppError(ErrorCode.VALIDATION_ERROR, "ID bước xử lý không được trùng");
+      // Translate numeric legacy progress BEFORE the old order is changed.
+      const progress = await UserIncidentProgress.find({ incidentId: id }).session(session);
+      for (const item of progress) {
+        item.completedSteps = cleanCompletedSteps(current, item.completedSteps);
+        await item.save({ session });
+      }
+    }
+    const updated = await IncidentType.findOneAndUpdate(
+      { _id: id, updatedAt: new Date(updatedAt) },
+      payload,
+      { returnDocument: "after", runValidators: true, session },
+    ).lean();
+    if (!updated)
+      throw new AppError(ErrorCode.CONFLICT, "Hướng dẫn đã được sửa. Tải lại trước khi lưu.");
+    return stableSteps(updated);
+  });
 
 export const deleteIncident = async (id) => IncidentType.findByIdAndDelete(id);
 
@@ -64,11 +102,20 @@ export const listIncidentsForCountry = async (countryCode) => {
     ? { status: "published", $or: [{ countryCode: code }, { countryCode: null }] }
     : { status: "published", countryCode: null };
 
-  return IncidentType.find(filter).sort({ urgent: -1, title: 1 });
+  return (
+    await IncidentType.find(filter)
+      .select("-createdBy -updatedBy")
+      .sort({ urgent: -1, title: 1 })
+      .lean()
+  ).map(stableSteps);
 };
 
 export const getIncidentBySlug = async (slug) =>
-  IncidentType.findOne({ slug: slug.trim().toLowerCase(), status: "published" });
+  stableSteps(
+    await IncidentType.findOne({ slug: slug.trim().toLowerCase(), status: "published" })
+      .select("-createdBy -updatedBy")
+      .lean(),
+  );
 
 // ── Tien do rieng tung user (B7 muc 5) ───────────────────────────────────
 export const getProgress = async (userId, incidentId) => {
@@ -93,14 +140,17 @@ export const setProgress = async (userId, incidentId, completedSteps) => {
 
 // Không cho dò các bước của bản nháp qua endpoint tiến độ riêng tư.
 async function getPublishedIncident(incidentId) {
-  const incident = await IncidentType.findOne({ _id: incidentId, status: "published" }).select(
-    "steps",
-  );
+  const incident = await IncidentType.findOne({ _id: incidentId, status: "published" })
+    .select("steps")
+    .lean();
   if (!incident) throw new AppError(ErrorCode.NOT_FOUND, "Không tìm thấy hướng dẫn xử lý sự cố");
-  return incident;
+  return stableSteps(incident);
 }
 
 function cleanCompletedSteps(incident, completedSteps) {
-  const validOrders = new Set(incident.steps.map((step) => step.order));
-  return [...new Set(completedSteps)].filter((order) => validOrders.has(order));
+  const validIds = new Set(incident.steps.map((step) => step.stepId));
+  const ids = completedSteps.map((value) =>
+    typeof value === "number" ? incident.steps.find((step) => step.order === value)?.stepId : value,
+  );
+  return [...new Set(ids)].filter((id) => validIds.has(id));
 }

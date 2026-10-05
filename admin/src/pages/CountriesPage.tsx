@@ -15,15 +15,15 @@ import { Badge } from '../components/ui/Badge';
 // majorCitiesText giu dang chuoi cach nhau boi dau phay trong form -- chi
 // tach thanh mang khi gui len API (payloadFromForm), tranh ep nguoi dung go
 // dung dinh dang moi ky tu.
-type FormState = { code: string; name: string; nameEn: string; status: CountryStatus; majorCitiesText: string };
-const EMPTY_FORM: FormState = { code: '', name: '', nameEn: '', status: 'coming_soon', majorCitiesText: '' };
+type FormState = { code: string; name: string; nameEn: string; status: CountryStatus; majorCitiesText: string; aliasesText: string };
+const EMPTY_FORM: FormState = { code: '', name: '', nameEn: '', status: 'coming_soon', majorCitiesText: '', aliasesText: '' };
 
 function payloadFromForm(form: FormState) {
   const majorCities = form.majorCitiesText
     .split(',')
     .map((city) => city.trim())
     .filter((city) => city.length > 0);
-  return { code: form.code, name: form.name, nameEn: form.nameEn, status: form.status, majorCities };
+  return { code: form.code, name: form.name, nameEn: form.nameEn, status: form.status, majorCities, aliases: form.aliasesText.split(',').map((name) => name.trim()).filter(Boolean) };
 }
 
 export default function CountriesPage() {
@@ -78,6 +78,7 @@ export default function CountriesPage() {
       nameEn: country.nameEn ?? '',
       status: country.status,
       majorCitiesText: (country.majorCities ?? []).join(', '),
+      aliasesText: (country.aliases ?? []).join(', '),
     });
     setFormError(null);
     setModalOpen(true);
@@ -160,6 +161,7 @@ export default function CountriesPage() {
             required
           />
           <Input label="Tên tiếng Việt" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          <Input label="Bí danh (cách nhau bằng dấu phẩy)" value={form.aliasesText} onChange={(e) => setForm({ ...form, aliasesText: e.target.value })} />
           <Input label="Tên tiếng Anh" value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} />
           <Select
             label="Trạng thái"
