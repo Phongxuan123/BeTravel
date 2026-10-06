@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, MessageCircle, Search as SearchIcon, X, Check } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { QuickChip } from '@/components/ui/QuickChip';
@@ -45,6 +46,11 @@ export default function SearchScreen() {
   const hasResults = results.length > 0;
   const hasError = resultsQuery.isError;
 
+  // Tra cuu phap luat dang bi phong toa o backend: chan ca man thay vi bao nham loi mang.
+  if (isFeatureDisabledError(resultsQuery.error)) {
+    return <ComingSoonScreen title="Tìm quy định" detail={resultsQuery.error.message} />;
+  }
+
   return (
     <View className="flex-1 bg-bg">
       <PageHeader title="Bạn muốn tìm gì?" />
@@ -80,11 +86,7 @@ export default function SearchScreen() {
 
         {hasQuery && hasError && (
           <View className="rounded-md bg-danger-tint p-4">
-            <Text className="text-center text-sm text-danger">
-              {isFeatureDisabledError(resultsQuery.error)
-                ? resultsQuery.error.message
-                : 'Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.'}
-            </Text>
+            <Text className="text-center text-sm text-danger">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
           </View>
         )}
 

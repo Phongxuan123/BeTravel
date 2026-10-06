@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
 
+import { env } from "../core/env.js";
+
 let transporter = null;
 
 const getTransporter = () => {
@@ -42,7 +44,8 @@ export const sendPasswordResetOtpEmail = async ({
     throw new Error("OTP_MISSING");
   }
 
-  if (process.env.NODE_ENV === "test") return;
+  // Cau hinh tuong minh thay vi do NODE_ENV: test/dev khong co SMTP dat SMTP_DISABLED=true.
+  if (env.SMTP_DISABLED) return;
 
   const mailer = getTransporter();
 

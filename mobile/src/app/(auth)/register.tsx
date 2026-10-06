@@ -13,6 +13,14 @@ import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
 import { isPasswordValid, passwordValidationMessage } from '@/lib/password';
 
+// Van ban Dieu khoan / Chinh sach bao mat CHUA co (can nguoi chiu trach nhiem phap ly cung cap, xem
+// docs/USER_INPUT_FORM.md muc E1). Khong tu soan van ban phap ly -- mo man chan noi ro dang hoan thien.
+const openPendingLegalText = (title: string) =>
+  router.push({
+    pathname: '/coming-soon',
+    params: { title, detail: 'Văn bản này đang được hoàn thiện và sẽ được công bố trước khi ứng dụng phát hành chính thức.' },
+  } as never);
+
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
   const { register } = useAuth();
@@ -114,8 +122,14 @@ export default function RegisterScreen() {
         <Pressable className="flex-row items-start" style={{ gap: 10 }} onPress={() => setAgree((v) => !v)}>
           <Checkbox checked={agree} onChange={setAgree} accessibilityLabel="Đồng ý điều khoản" />
           <Text className="flex-1 text-sm leading-5 text-[#3B4A63]">
-            Tôi đồng ý với <Text className="font-body-bold text-primary">Điều khoản</Text> và{' '}
-            <Text className="font-body-bold text-primary">Chính sách bảo mật</Text>.
+            Tôi đồng ý với <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Điều khoản sử dụng')}>
+              Điều khoản
+            </Text>{' '}
+            và{' '}
+            <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Chính sách bảo mật')}>
+              Chính sách bảo mật
+            </Text>
+            .
           </Text>
         </Pressable>
 

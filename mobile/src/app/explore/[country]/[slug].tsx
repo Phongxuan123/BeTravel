@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Info, MessageCircle, Star, Share as ShareIcon } from 'lucide-react-native';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { IconButton } from '@/components/ui/IconButton';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -28,15 +29,16 @@ export default function ArticleDetailScreen() {
     Share.share({ message: `${article.title} — ${article.source.url}` }).catch(() => {});
   };
 
+  // Tra cuu phap luat dang bi phong toa o backend: man chan thay vi bao "co the bai da bi go".
+  if (isFeatureDisabledError(articleQuery.error)) {
+    return <ComingSoonScreen title="Bài luật" detail={articleQuery.error.message} />;
+  }
+
   if (articleQuery.isError || (!articleQuery.isLoading && !article)) {
     return (
       <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
         <Text className="text-center text-base font-body-bold text-ink">Không tải được bài luật này</Text>
-        <Text className="text-center text-sm text-muted">
-          {isFeatureDisabledError(articleQuery.error)
-            ? articleQuery.error.message
-            : 'Kiểm tra kết nối mạng hoặc bài có thể đã bị gỡ.'}
-        </Text>
+        <Text className="text-center text-sm text-muted">Kiểm tra kết nối mạng hoặc bài có thể đã bị gỡ.</Text>
         <Button label="Quay lại" variant="secondary" onPress={() => router.back()} />
       </View>
     );

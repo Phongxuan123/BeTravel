@@ -11,6 +11,8 @@ process.env.NODE_ENV = "test";
 process.env.LLM_PROVIDER = "mock";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
+// Test khong gui email that (xem email.service.js).
+process.env.SMTP_DISABLED = "true";
 // Mac dinh production la TAT tra cuu phap luat (env.js); test nghiep vu can BAT.
 // File test kiem cong chan tu dat "false" truoc khi nap app (xem legalLookup.lockdown.test.js).
 process.env.LEGAL_LOOKUP_ENABLED ??= "true";
