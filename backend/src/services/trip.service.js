@@ -16,9 +16,26 @@ export const listTrips = async (userId) => Trip.find({ userId }).sort({ startDat
  * Nguoi dung tu bam "dat lam chuyen di chinh" qua setCurrentTrip.
  */
 export const createTrip = async (userId, data) => {
-  await assertCountryOpenForTrips(data.countryCode);
-  return Trip.create({ ...data, userId, isCurrent: false });
+  const stops = normalizeStops(data);
+  for (const code of new Set(stops.map((stop) => stop.countryCode)))
+    await assertCountryOpenForTrips(code);
+  const fields = { ...data };
+  delete fields.updatedAt;
+  return Trip.create({ ...fields, stops, userId, isCurrent: false });
 };
+
+function normalizeStops(data) {
+  return (
+    data.stops ?? [
+      {
+        countryCode: data.countryCode,
+        destinationCity: data.destinationCity,
+        destinationDetail: data.destinationDetail ?? "",
+        startDate: data.startDate,
+      },
+    ]
+  );
+}
 
 // UI da an quoc gia 'coming_soon', backend van phai chan (client cu/goi thang API)
 // -- chuyen di toi noi chua co du lieu se kich hoat canh bao/SOS rong.
@@ -44,19 +61,29 @@ const getOwnedTrip = async (userId, tripId) => {
 
 export const updateTrip = async (userId, tripId, data) => {
   const trip = await getOwnedTrip(userId, tripId);
+  if (!data.stops && trip.stops?.length > 1) {
+    throw new AppError(ErrorCode.CONFLICT, "Hãy cập nhật ứng dụng để sửa lịch trình nhiều chặng");
+  }
+  const stops = normalizeStops(data);
+  const oldCountries = new Set(
+    trip.stops?.length ? trip.stops.map((stop) => stop.countryCode) : [trip.countryCode],
+  );
+  for (const code of new Set(stops.map((stop) => stop.countryCode))) {
+    if (!oldCountries.has(code)) await assertCountryOpenForTrips(code);
+  }
   // Chi kiem khi DOI quoc gia: chuyen di cu toi nuoc sau nay bi dong van sua ngay duoc.
   if (data.countryCode !== trip.countryCode) await assertCountryOpenForTrips(data.countryCode);
 
-  trip.countryCode = data.countryCode;
-  trip.destinationCity = data.destinationCity;
-  trip.destinationDetail = data.destinationDetail ?? "";
-  trip.startDate = data.startDate;
-  trip.endDate = data.endDate;
-  trip.locationAlerts = data.locationAlerts;
-  trip.regulationAlerts = data.regulationAlerts;
-
-  await trip.save();
-  return trip;
+  const { updatedAt, ...fields } = data;
+  // Compare-and-swap bảo vệ cả thao tác song song và form cũ đã mở từ trước.
+  const updated = await Trip.findOneAndUpdate(
+    { _id: tripId, userId, updatedAt: updatedAt ? new Date(updatedAt) : trip.updatedAt },
+    { $set: { ...fields, stops } },
+    { returnDocument: "after", runValidators: true },
+  );
+  if (!updated)
+    throw new AppError(ErrorCode.CONFLICT, "Chuyến đi đã thay đổi. Tải lại trước khi lưu.");
+  return updated;
 };
 
 export const setCurrentTrip = async (userId, tripId) => {

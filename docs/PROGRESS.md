@@ -1,6 +1,35 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-10-06 · Kết nối bản đồ và rà soát hồi quy ba workspace.
+Cập nhật lần cuối: 2026-10-06 · Khôi phục cẩm nang/dịch, Google Maps iOS, lịch trình nhiều nước.
+
+## Sửa cẩm nang, dịch và lịch trình — 06/10/2026
+
+Nhánh `feature/itinerary-guide-translation-20261006`, từ `2a71d9d`.
+Tiến độ mã nguồn/kiểm tra local: `[######] 6/6`; chưa nghiệm thu thiết bị.
+
+| Bước | Trạng thái |
+|---|---|
+| Phân tích cấu trúc, Docs, contract và nguyên nhân | xong |
+| Mở lại cẩm nang (chỉ nội dung published/current) | xong phần code |
+| Tách model dịch, thử lại lỗi 503 có giới hạn | xong; Gemini 3.5 Flash Lite dịch thử thật thành công |
+| Lịch trình nhiều nước/ngày chặng, quyền vị trí, khóa phiên sửa cũ | xong phần code |
+| Hồi quy toàn hệ thống và exports | xong local: backend 269/269 gồm golden 26; mobile 188/188 (45 suites); admin 18/18; lint/typecheck/format/build và exports iOS/Android |
+| Nghiệm thu, bàn giao, commit | xong phần code/tài liệu; commit ghi trong lịch sử Git của nhánh, thiết bị còn mở |
+
+Google Maps native chưa nghiệm thu: chưa có key Android/iOS trong môi trường.
+Đã nối config plugin và provider; iOS thiếu key vẫn dùng Apple Maps, Android thiếu
+key có danh sách và liên kết mở Google Maps. Người quản lý phải tạo key Google Cloud
+và build lại; không sử dụng khóa Gemini cho Maps. Phiên này không sửa dữ liệu Atlas.
+Các mục phong tỏa cẩm nang trong lịch sử bên dưới đã được yêu cầu mới thay thế:
+`LEGAL_LOOKUP_ENABLED` mặc định true; vẫn có thể đặt false để tạm khóa vận hành.
+
+Hướng dẫn tiếp tục: `TRIP_ITINERARY.md`, `MAPS_SETUP.md`, `USER_INPUT_FORM.md`.
+Backend chạy lại cần nạp cấu hình mới; nếu deployment đặt explicit false thì đổi
+LEGAL_LOOKUP_ENABLED=true. Model dịch riêng cấu hình TRANSLATION_MODEL, giữ nguyên
+LLM_MODEL của AI pháp lý. Smoke service thực đạt cả vi->en và en->vi. Retry có
+giới hạn không bảo đảm provider hết 503/429. Chưa push/deploy phiên này.
+Các dependency advisory chưa có bản vá upstream ghi ở phần audit Maps bên dưới
+vẫn chưa đóng. Phạm vi rà soát là repo/cấu hình/kiểm thử, không chứng nhận toàn OS.
 
 ## Bản đồ và rà soát hệ thống — 06/10/2026
 

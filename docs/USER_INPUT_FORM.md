@@ -5,7 +5,7 @@ URI database hoặc chứng thư private vào tài liệu/chat/repository.
 
 | Nhóm | Cần cung cấp hoặc cấu hình | Nơi sử dụng |
 |---|---|---|
-| Maps Android | Project Google Cloud, Maps SDK bật, API key restricted, package + SHA-1, quota cap | Env local/EAS; hướng dẫn MAPS_SETUP.md |
+| Maps Android/iOS | Project Google Cloud, Maps SDK bật, key riêng restricted; Android package + SHA-1, iOS bundle ID, quota cap | Env local/EAS; hướng dẫn MAPS_SETUP.md |
 | App iOS | Bundle ID được nhóm chốt và tài khoản/chứng thư build | IOS_BUNDLE_IDENTIFIER, native build |
 | Điểm hỗ trợ | Quốc gia, loại, tên/tên bản địa, địa chỉ, tọa độ thật [lng,lat], phone/website, giờ mở, ngày verify | Admin Locations, mẫu sos-locations-template.csv; verify sau kiểm nguồn |
 | Cảnh báo khu vực | Quốc gia, nguồn/nội dung kiểm chứng, thời gian hiệu lực; tâm/bán kính nếu area | Admin Geo Alerts |

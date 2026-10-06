@@ -18,6 +18,7 @@ import { formatTripRange, tripDurationDays } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 import { colors } from '@/lib/theme';
 import type { Trip } from '@/lib/data';
+import { tripStops } from '@/features/trips/itinerary';
 
 type FilterTab = 'ongoing' | 'upcoming' | 'past';
 
@@ -230,6 +231,7 @@ function OngoingTripCard({
       <Text className="mt-3 text-[15px] text-muted">
         {formatTripRange(trip.startDate, trip.endDate)} · {tripDurationDays(trip.startDate, trip.endDate)} ngày
       </Text>
+      {tripStops(trip).length > 1 && <Text className="mt-2 text-sm text-muted">{tripStops(trip).map((stop) => `${stop.countryCode} · ${stop.destinationCity} (${stop.startDate})`).join(' → ')}</Text>}
 
       <View className="mt-3 h-2 rounded-full bg-primary-soft">
         <View
@@ -295,6 +297,7 @@ function SimpleTripCard({
         <View className="ml-3 flex-1">
           <Text className="text-base font-body-bold text-ink">{trip.destinationCity}</Text>
           <Text className="text-sm text-muted">{country.name}</Text>
+          {tripStops(trip).length > 1 && <Text className="mt-1 text-sm text-muted">{tripStops(trip).map((stop) => `${stop.countryCode} · ${stop.destinationCity} (${stop.startDate})`).join(' → ')}</Text>}
           {!!trip.destinationDetail && (
             <Text className="text-sm text-muted" numberOfLines={1}>
               {trip.destinationDetail}

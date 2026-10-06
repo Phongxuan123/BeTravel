@@ -1,5 +1,24 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Cẩm nang/dịch/lịch trình 06/10/2026 — hiện hành
+
+| Tiêu chí | Kết quả |
+|---|---|
+| Cẩm nang mặc định mở, vẫn chỉ published/current; explicit false vẫn khóa | Đạt tự động (qa.config, publicContent, lockdown) |
+| Dịch Việt–Anh hai chiều qua provider thật | Đạt smoke service Google; mẫu offline giữ nguyên; AI mở cần đăng nhập/quota |
+| Google Maps key riêng Android/iOS, không lộ vào extra | Đạt config tests; chưa có key thật/native tile nghiệm thu |
+| Một/nhiều nước, ngày chuyển chặng, sửa lịch trình | Đạt backend trips, mobile itinerary/editor/wizard/adapters |
+| Ngày sai/trùng/ngoài lịch/stops rỗng và quốc gia chưa mở | Đạt validation tests |
+| Cross-user, client cũ, phiên sửa cũ không ghi đè | Đạt trips tests; mobile giữ updatedAt lúc hydrate |
+| Từ chối vị trí vẫn tạo được; chuyến tắt vị trí không đọc GPS | Code foreground + helper tests + usePollAlerts test |
+| Hồi quy workspace | Backend 269/269 gồm golden 26; mobile 188/188 (45 suites); admin 18/18 |
+| Build/check | Backend lint/format; mobile/admin lint/typecheck; admin build; iOS/Android exports đạt |
+
+Nghiệm thu thật còn mở: Maps key/billing/restrictions/rebuild, tile native,
+quyền OS và UI trên điện thoại, Atlas/dữ liệu published/verified. Xem
+TRIP_ITINERARY.md, MAPS_SETUP.md và USER_INPUT_FORM.md. Không triển khai push
+hoặc GPS nền; tùy chọn cảnh báo luật không tạo nguồn thông báo mới.
+
 ## Bản đồ 06/10/2026 — hiện hành
 
 Tiến độ local `[######] 6/6`; phát hành/kiểm chứng thiết bị **xong một phần**.

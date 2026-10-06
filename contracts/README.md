@@ -1,5 +1,17 @@
 # BE.TRAVEL — CONTRACT API
 
+## Lịch trình nhiều chặng — 06/10/2026
+
+Trip có `stops: [{countryCode,destinationCity,destinationDetail,startDate}]` (1–20).
+Chặng đầu bắt đầu đúng startDate chuyến đi, các chặng sau tăng ngày nghiêm ngặt,
+không vượt endDate. Ngày chuyển nước thuộc chặng mới, chặng cuối kéo tới endDate.
+Top-level country/city/detail phản ánh chặng đầu cho client cũ. Client cũ sửa
+chuyến nhiều chặng mà không gửi stops -> 409 CONFLICT, tránh mất dữ liệu.
+Dữ liệu cũ đọc được không migration. Ngày YYYY-MM-DD, quốc gia thêm mới phải active.
+PUT nhận `updatedAt` của bản GET gốc (ISO datetime); phiên cũ trả 409 CONFLICT.
+Mobile giữ phiên bản lúc mở form. Legacy không gửi vẫn có compare-and-swap trong
+request, nhưng không phát hiện form cũ đã mở từ trước.
+
 ## Bản vá hợp đồng API 05/10/2026
 
 - `Country.aliases?: string[]` cho admin và dữ liệu quốc gia; AI nhận diện thêm tên tiếng Anh, thành phố và bí danh có sẵn KR/JP/TH/SG, kể cả khi chưa seed lại. Tên ngắn dễ trùng từ như “Thái” chỉ khớp ngữ cảnh quốc gia/di chuyển.

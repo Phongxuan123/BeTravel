@@ -3,6 +3,7 @@ const config = jest.requireActual('../../../app.json').expo;
 const originalEnv = { ...process.env };
 beforeEach(() => {
   delete process.env.GOOGLE_MAPS_ANDROID_API_KEY;
+  delete process.env.GOOGLE_MAPS_IOS_API_KEY;
   delete process.env.ANDROID_PACKAGE;
   delete process.env.IOS_BUNDLE_IDENTIFIER;
 });
@@ -29,4 +30,13 @@ test('key chỉ vào config plugin, không vào extra', () => {
 test('key mẫu không được đưa vào native build', () => {
   process.env.GOOGLE_MAPS_ANDROID_API_KEY = 'REPLACE_WITH_REAL_ANDROID_MAPS_API_KEY';
   expect(() => configure({ config })).toThrow('không hợp lệ');
+});
+
+test('Google Maps iOS nhận key riêng và không đưa key vào extra', () => {
+  const key = `AIza${'y'.repeat(35)}`;
+  process.env.GOOGLE_MAPS_IOS_API_KEY = key;
+  const result = configure({ config });
+  expect(result.plugins).toContainEqual(['react-native-maps', { iosGoogleMapsApiKey: key }]);
+  expect(result.extra.iosGoogleMapsConfigured).toBe(true);
+  expect(JSON.stringify(result.extra)).not.toContain(key);
 });

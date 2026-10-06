@@ -50,6 +50,8 @@ describe('adapters.ts chuyen du lieu API that sang dung shape man hinh dang dung
 
   it('adaptTrip(trip.json) khop tripSchema va cat ngay ve dang YYYY-MM-DD', () => {
     const trip = adaptTrip(tripFixture.data);
+    expect(trip.stops?.[0].startDate).toBe('2026-10-01');
+    expect(trip.updatedAt).toBe(tripFixture.data.updatedAt);
     expect(tripSchema.parse(trip)).toBeTruthy();
     expect(trip.destinationCity).toBe('Seoul');
     expect(trip.destinationDetail).toBe('Gangnam-gu');

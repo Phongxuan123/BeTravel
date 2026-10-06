@@ -82,6 +82,7 @@ export type { ChatAnswer, ChatSession, ChatUiMessage } from '@/mocks/client';
 // vao @/mocks (dau hieu hoan thanh B8 trong CLAUDE.md, detector D25).
 export type {
   Alert,
+  Country,
   Article,
   FavoriteItem,
   Incident,
@@ -90,4 +91,5 @@ export type {
   SupportLocation,
   Topic,
   Trip,
+  TripStop,
 } from '@/mocks/schemas';

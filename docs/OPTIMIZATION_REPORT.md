@@ -1,5 +1,22 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Cẩm nang, dịch và lịch trình — 06/10/2026
+
+| Nhóm | Nguyên nhân / sửa chữa |
+|---|---|
+| Cẩm nang | Cờ LEGAL_LOOKUP_ENABLED mặc định false làm màn hiện đang phát triển. Mặc định true theo yêu cầu mới, vẫn giữ gate published/isCurrent và test khóa explicit false. Không seed luật giả. |
+| Dịch | Smoke Gemini 3.6 Flash trả 503 high demand. Tách TRANSLATION_MODEL mặc định gemini-3.5-flash-lite; retry tối đa một lần 502/503/504, chung timeout, không retry quota 429. Dịch hai chiều qua service thực thành công; không đảm bảo nhà cung cấp luôn sẵn sàng/chính xác. |
+| Maps | iOS thêm key/plugin/provider Google; Android đã có env/plugin. Thiếu key có Apple Maps/list/link ngoài. Key hiện vẫn thiếu nên chưa chứng nhận tile native. |
+| Trips backend | stops 1–20, validate ngày thực/thứ tự/điểm đầu/quốc gia active. Đọc legacy, chặn PUT legacy làm mất nhiều chặng. Lọc userId + updatedAt compare-and-swap, không ghi đè phiên cũ. stops rỗng trả validation, không dereference undefined. |
+| Trips mobile | Chọn nhiều nước ở bước 1, ngày chặng bước 2, quyền foreground bước 3, xác nhận các chặng bước 4; edit giữ version gốc. Home/context theo chặng, cards hiện tuyến đầy đủ. Consent không tự bật khi sửa chuyến cũ; GPS cần consent + tùy chọn chuyến + quyền OS. |
+| Hệ thống | Giữ ba workspace, design tokens, public verified gate, quota, contract fixture và index. Không sửa OS, không reset/seed Atlas, không ghi secret. Full regression và exports native; web export không thuộc nền tảng nghiệm thu (thiếu react-native-web). |
+
+Kiểm tra cuối: backend 269/269 (có 26 golden cases); mobile 188/188, 45 suites;
+admin 18/18. Lint/format backend, lint/typecheck mobile/admin, admin build và
+Expo export iOS/Android đạt. Kiểm thử stops rỗng được chạy lại sau sửa validator.
+Dependency advisories chưa có bản vá upstream của phiên trước vẫn còn;
+không diễn giải các kết quả này thành chứng nhận mọi lỗi hệ thống đã hết.
+
 ## Rà soát 06/10/2026 — Maps và hồi quy hệ thống
 
 Inventory ba workspace và Docs/contract; rà API SOS, quyền/GPS, camera/cache,

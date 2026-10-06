@@ -6,7 +6,7 @@ Cập nhật: 06/10/2026. Nhánh triển khai: `feature/maps-integration-2026100
 
 | Lớp | Trách nhiệm |
 |---|---|
-| `mobile/app.config.js` | Nạp key Android lúc build vào config plugin; extra chỉ chứa cờ đã cấu hình |
+| `mobile/app.config.js` | Nạp key Android/iOS lúc build vào config plugin; extra chỉ chứa cờ đã cấu hình |
 | `mobile/src/app/sos/map.tsx` | Bản đồ native, danh sách, tìm kiếm, lọc loại, bán kính, GPS chủ động, sheet liên hệ |
 | `mobile/src/features/sos/mapHelpers.ts` | Tìm không dấu/tên bản địa/địa chỉ, kiểm tọa độ, tạo URL chỉ đường |
 | `mobile/src/lib/locationPermission.ts` | Giải thích quyền foreground, xử lý từ chối/GPS tắt/timeout 15 giây/tọa độ cũ |
@@ -48,9 +48,19 @@ Không đổi endpoint, không thêm collection/index/migration. API contract v�
    danh sách, gọi và chỉ đường. Key đúng định dạng chưa chứng minh key được Google
    cấp quyền hoặc có quota; cần kiểm dashboard lỗi nếu tile trắng.
 
-iOS giữ Apple Maps mặc định, không cần Google Maps key. Expo Go dùng cấu hình
+### Google Maps trên iOS
+
+Bật **Maps SDK for iOS** trong Google Cloud, tạo key riêng restricted theo
+`IOS_BUNDLE_IDENTIFIER` và giới hạn API Maps SDK for iOS. Điền
+`GOOGLE_MAPS_IOS_API_KEY` trong mobile/.env/EAS rồi build lại iOS. Config plugin
+nhúng key; màn map chọn `PROVIDER_GOOGLE` khi có cấu hình. Kiểm tile trên bản dựng
+thật sau khi cài đặt. Không dùng key Gemini hoặc key Android restricted cho iOS.
+Hướng dẫn Google: [Android](https://developers.google.com/maps/documentation/android-sdk/get-api-key),
+[iOS](https://developers.google.com/maps/documentation/ios-sdk/get-api-key).
+
+iOS không có key giữ Apple Maps mặc định. Expo Go dùng cấu hình
 native riêng của Expo và chạy được khi chưa cấu hình key của Be.Travel.
-Android standalone chưa có key chuyển sang danh sách; không mount Google Maps
+Android standalone chưa có key chuyển sang danh sách và có nút mở Google Maps bên ngoài; không mount Google Maps
 với key placeholder. Thiếu hoặc sai package/SHA-1/quota cần người quản lý tài khoản xử lý.
 
 Tài liệu chính thức đã đối chiếu:

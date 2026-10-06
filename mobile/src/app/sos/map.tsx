@@ -5,7 +5,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe } from 'lucide-react-native';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
@@ -179,9 +179,9 @@ export default function SosMapScreen() {
           </View>
         }
       >
-        {/* Khong truyen `provider` -- mac dinh la PROVIDER_DEFAULT (Apple Maps tren
-            iOS, mien phi, khong can key; Google Maps tren Android). CLAUDE.md muc 10. */}
+        {/* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */}
         <MapView ref={mapRef} style={{ flex: 1 }} initialRegion={region} customMapStyle={LIGHT_MAP_STYLE}
+          provider={Platform.OS === 'android' || Constants.expoConfig?.extra?.iosGoogleMapsConfigured ? PROVIDER_GOOGLE : undefined}
           onMapReady={() => setMapReady(true)} showsMyLocationButton={false}>
           {coords && <Marker coordinate={{ latitude: coords.lat, longitude: coords.lng }}
             title="Vị trí của bạn tại lần đo gần nhất" pinColor={colors.primary} />}
@@ -195,6 +195,10 @@ export default function SosMapScreen() {
           {listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này'}
         </Text>
         <Text className="mt-2 text-center text-sm text-muted">Bạn vẫn có thể tìm địa điểm, gọi và mở chỉ đường từ danh sách.</Text>
+        <Pressable className="mt-3 rounded-md bg-primary px-4 py-3" onPress={() => void openUrl(
+          center ? `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}` : 'https://www.google.com/maps')}>
+          <Text className="font-body-bold text-white">Mở Google Maps</Text>
+        </Pressable>
       </View>}
 
       <View className="absolute inset-x-0" style={{ top: insets.top + 12, paddingHorizontal: 18 }}>

@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchCountries } from '@/lib/data';
+import { fetchCountries, fetchTrips } from '@/lib/data';
+import { useAuth } from '@/lib/auth';
+import { activeStop } from '@/features/trips/itinerary';
 import type { Country } from '@/mocks/schemas';
 
 type CountryContextValue = {
@@ -21,10 +23,15 @@ const CountryContext = createContext<CountryContextValue | null>(null);
  */
 export function CountryProvider({ children }: { children: ReactNode }) {
   const [countryCode, setCountryCode] = useState('');
+  const { isGuest } = useAuth();
+  const tripsQuery = useQuery({ queryKey: ['trips'], queryFn: fetchTrips, enabled: !isGuest });
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
 
   const available = countriesQuery.data?.data ?? [];
+  const currentTrip = tripsQuery.data?.data.find((trip) => trip.isCurrent);
+  const itineraryCode = currentTrip ? activeStop(currentTrip).countryCode : '';
   const selectedCode = available.find((item) => item.code === countryCode)?.code
+    ?? available.find((item) => item.code === itineraryCode)?.code
     ?? available.find((item) => item.status !== 'coming_soon')?.code ?? available[0]?.code ?? '';
 
   const value = useMemo(

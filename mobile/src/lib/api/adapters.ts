@@ -63,6 +63,8 @@ export type ApiSearchHit = {
 };
 
 export type ApiTrip = {
+  updatedAt?: string;
+  stops?: { countryCode: string; destinationCity: string; destinationDetail?: string; startDate: string }[];
   _id: string;
   countryCode: string;
   destinationCity?: string;
@@ -201,6 +203,9 @@ function toDateOnly(iso: string): string {
 
 export function adaptTrip(api: ApiTrip): Trip {
   return {
+    updatedAt: api.updatedAt,
+    stops: api.stops?.length ? api.stops.map((stop) => ({ ...stop, startDate: toDateOnly(stop.startDate) })) :
+      [{ countryCode: api.countryCode, destinationCity: api.destinationCity ?? '', destinationDetail: api.destinationDetail ?? '', startDate: toDateOnly(api.startDate) }],
     id: api._id,
     countryCode: api.countryCode,
     destinationCity: api.destinationCity ?? '',

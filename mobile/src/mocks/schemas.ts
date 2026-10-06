@@ -75,6 +75,11 @@ export const articleSchema = z.object({
 });
 export type Article = z.infer<typeof articleSchema>;
 
+export const tripStopSchema = z.object({
+  countryCode: z.string(), destinationCity: z.string(),
+  destinationDetail: z.string().optional(), startDate: z.string(),
+});
+export type TripStop = z.infer<typeof tripStopSchema>;
 export const tripSchema = z.object({
   __mock: z.literal(true).optional(),
   id: z.string(),
@@ -86,6 +91,8 @@ export const tripSchema = z.object({
   startDate: z.string(),
   endDate: z.string(),
   isCurrent: z.boolean(),
+  stops: z.array(tripStopSchema).optional(),
+  updatedAt: z.string().optional(),
 });
 export type Trip = z.infer<typeof tripSchema>;
 

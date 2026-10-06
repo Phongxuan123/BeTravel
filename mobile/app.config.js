@@ -1,6 +1,8 @@
 // Key được nạp lúc build native; không đưa giá trị key vào extra/public JS.
 module.exports = ({ config }) => {
   const androidGoogleMapsApiKey = process.env.GOOGLE_MAPS_ANDROID_API_KEY?.trim();
+  const iosGoogleMapsApiKey = process.env.GOOGLE_MAPS_IOS_API_KEY?.trim();
+  if (iosGoogleMapsApiKey && !/^AIza[\w-]{35}$/.test(iosGoogleMapsApiKey)) throw new Error('GOOGLE_MAPS_IOS_API_KEY không hợp lệ.');
   if (androidGoogleMapsApiKey && !/^AIza[\w-]{35}$/.test(androidGoogleMapsApiKey)) {
     throw new Error('GOOGLE_MAPS_ANDROID_API_KEY không hợp lệ; hãy bỏ key mẫu.');
   }
@@ -17,8 +19,9 @@ module.exports = ({ config }) => {
     },
     plugins: [
       ...(config.plugins ?? []),
-      ['react-native-maps', { ...(androidGoogleMapsApiKey ? { androidGoogleMapsApiKey } : {}) }],
+      ['react-native-maps', { ...(androidGoogleMapsApiKey ? { androidGoogleMapsApiKey } : {}),
+        ...(iosGoogleMapsApiKey ? { iosGoogleMapsApiKey } : {}) }],
     ],
-    extra: { ...config.extra, androidMapsConfigured: Boolean(androidGoogleMapsApiKey) },
+    extra: { ...config.extra, androidMapsConfigured: Boolean(androidGoogleMapsApiKey), iosGoogleMapsConfigured: Boolean(iosGoogleMapsApiKey) },
   };
 };

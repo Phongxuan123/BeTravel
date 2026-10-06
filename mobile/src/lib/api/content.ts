@@ -102,6 +102,8 @@ export async function fetchTrips(): Promise<Envelope<Trip[]>> {
 }
 
 export type TripInput = {
+  updatedAt?: string;
+  stops?: import('@/mocks/schemas').TripStop[];
   countryCode: string;
   destinationCity: string;
   destinationDetail?: string;
