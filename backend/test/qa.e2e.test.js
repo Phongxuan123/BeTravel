@@ -89,6 +89,10 @@ const ARTICLE = {
 };
 
 async function publish(adminToken, id) {
+  await request(app)
+    .post(`/api/admin/legal/articles/${id}/status`)
+    .set(as(adminToken))
+    .send({ status: "pending_review" });
   const res = await request(app)
     .post(`/api/admin/legal/articles/${id}/status`)
     .set(as(adminToken))
@@ -244,7 +248,7 @@ test("E2E-Q4 workflow su co: nhap an --> publish --> nguoi dung ghi tien do --> 
     request(app)
       .put(`/api/users/incident-progress/${id}`)
       .set(as(user.accessToken))
-      .send({ completedSteps: steps });
+      .send({ completedSteps: steps.map((order) => created.body.data.steps[order].stepId) });
 
   assert.equal((await request(app).get("/api/incidents/mat-ho-chieu")).status, 404);
   assert.equal((await progress([0])).status, 404);

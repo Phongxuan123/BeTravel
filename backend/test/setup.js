@@ -1,4 +1,4 @@
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
 /*
@@ -37,8 +37,19 @@ process.env.RAG_MIN_CHUNKS ??= "1";
 
 let mongod;
 
+// --nounixsocket chi ton tai tren mongod Linux/macOS; tren Windows mongod thoat
+// ngay voi ma 2 va TOAN BO test backend do. Chi them co nay ngoai Windows.
+const MONGOD_ARGS = [
+  ...(process.platform === "win32" ? [] : ["--nounixsocket"]),
+  "--setParameter",
+  "diagnosticDataCollectionEnabled=false",
+];
+
 export const startTestDb = async () => {
-  mongod = await MongoMemoryServer.create();
+  mongod = await MongoMemoryReplSet.create({
+    replSet: { count: 1 },
+    instanceOpts: [{ args: MONGOD_ARGS }],
+  });
   process.env.MONGODB_URI = mongod.getUri();
   await mongoose.connect(mongod.getUri());
 };

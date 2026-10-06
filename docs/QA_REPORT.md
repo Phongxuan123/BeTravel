@@ -1,5 +1,8 @@
 # QA_REPORT — Đợt QA / bug hunt Be.Travel
 
+> Cập nhật 05/10/2026: xem [PATCH_2026_10_05.md](PATCH_2026_10_05.md) cho kết quả hiện hành. Bản vá đã giải quyết các lỗi quốc gia/bí danh, SOS chưa verified, mặc định consent, đồ thị trạng thái, transaction publish, ID bước ổn định và một số nợ kỹ thuật. Các mục bên dưới là lịch sử rà soát trước bản vá; danh sách chưa hoàn thành được tổng hợp trong báo cáo mới.
+
+
 > Đặc tả: `docs/07_QA_BugHunt.md`. Báo cáo này cập nhật dần theo từng phiên (QA-1 --> QA-5).
 > Rule 12: không emoji, chỉ dùng `[v] [X] [!] [*] --> ---`.
 > Chú giải chấm INV: `[v]` có test cụ thể chứng minh · `[*]` đã đọc code, chưa có test ·

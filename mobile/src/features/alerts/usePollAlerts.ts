@@ -74,6 +74,6 @@ export function usePollAlerts() {
     };
   }, [countryCode, locationConsent, isGuest, owner, queryClient]);
 
-  const alertsQuery = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts, enabled: Boolean(countryCode) && !isGuest });
+  const alertsQuery = useQuery({ queryKey: ['alerts', countryCode, owner], queryFn: fetchAlerts, enabled: Boolean(countryCode) && !isGuest });
   return { alerts: !isGuest && safetyEnabled ? alertsQuery.data?.data ?? [] : [] };
 }

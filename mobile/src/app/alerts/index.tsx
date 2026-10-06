@@ -11,6 +11,8 @@ import { colors } from '@/lib/theme';
 import { fetchAlerts, markAlertRead, markAllAlertsRead } from '@/lib/data';
 import type { Alert } from '@/lib/data';
 import { now } from '@/lib/date';
+import { useCountry } from '@/lib/countryContext';
+import { useAuth } from '@/lib/auth';
 
 const CATEGORY_META: Record<Alert['category'], { icon: typeof CircleAlert; tone: Tone; badge: BadgeTone; label: string }> = {
   safety: { icon: CircleAlert, tone: 'red', badge: 'danger', label: 'An toàn' },
@@ -27,7 +29,9 @@ const FILTERS: { key: 'all' | Alert['category']; label: string }[] = [
 
 export default function AlertsScreen() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all');
-  const alertsQuery = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
+  const { countryCode } = useCountry();
+  const { user, isGuest } = useAuth();
+  const alertsQuery = useQuery({ queryKey: ['alerts', countryCode, user?.email ?? null], queryFn: fetchAlerts, enabled: !isGuest });
   const queryClient = useQueryClient();
   const alerts = (alertsQuery.data?.data ?? []).filter((a) => filter === 'all' || a.category === filter);
 
