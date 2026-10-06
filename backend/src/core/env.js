@@ -87,6 +87,10 @@ const envSchema = z.object({
   SEARCH_DRIVER: z.enum(["atlas", "memory"]).default("memory"),
   VECTOR_INDEX_NAME: z.string().default("vec_idx"),
   TEXT_INDEX_NAME: z.string().default("txt_idx"),
+  // Cong tat tam thoi toan bo tra cuu phap luat (cam nang, tim kiem, AI Legal).
+  // Mac dinh TAT theo yeu cau van hanh: noi dung phap ly dang duoc go de nhap
+  // lai tu nguon that. Bat lai bang LEGAL_LOOKUP_ENABLED=true, khong sua code.
+  LEGAL_LOOKUP_ENABLED: booleanish(false),
   RAG_TOP_K: numeric(8),
   RAG_NUM_CANDIDATES: numeric(150),
   RAG_MIN_TOP_SCORE: numeric(0.62),

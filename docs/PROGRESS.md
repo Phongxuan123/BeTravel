@@ -14,6 +14,15 @@ API tiến độ đổi sang `completedSteps: string[]` chứa `stepId`; phải 
 
 Xem [PATCH_2026_10_05.md](PATCH_2026_10_05.md) cho hướng dẫn cài, bằng chứng kiểm tra và từng mục chưa thực hiện. Lịch sử QA bên dưới phản ánh thời điểm cũ, không thay thế báo cáo bản vá này.
 
+## Phong tỏa tra cứu pháp luật tạm thời (29/09, theo yêu cầu người dùng)
+
+Cờ `LEGAL_LOOKUP_ENABLED` (mặc định `false`) chặn `/api/legal/*` và `/api/chat/*` ở backend
+(`FORBIDDEN` + `details.reason = FEATURE_DISABLED`); mobile hiện thông báo "tạm ngưng" ở Khám
+phá, Tìm kiếm, chi tiết bài và AI Legal. Bật lại: đặt `LEGAL_LOOKUP_ENABLED=true`. Đã xóa khỏi Atlas
+(database `test`) theo yêu cầu người dùng, 29/09: 8 bài luật KR (3 published + 5 draft), 12 chunk,
+15 job reindex/purge. Chưa xóa: bản ghi Favorite trỏ tới bài cũ, cache AI (`ai_caches`). Dựng
+lại nội dung: `npm run seed` (tạo lại 8 bài draft) rồi bổ sung nguồn thật và publish.
+
 ## Tính năng: gợi ý thành phố lớn ở wizard tạo chuyến đi (29/09)
 
 Yêu cầu: bước 1 của wizard tạo chuyến đi (`mobile/src/app/trips/new.tsx`) chỉ có ô nhập tự do

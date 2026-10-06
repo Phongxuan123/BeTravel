@@ -63,3 +63,26 @@ test('co countryCode thi goi API binh thuong, khong con banner loi', async () =>
   await waitFor(() => expect(fetchTopics).toHaveBeenCalledWith('KR'));
   expect(screen.queryByText('Không tải được dữ liệu. Kiểm tra kết nối mạng.')).toBeNull();
 });
+
+test('backend tam khoa tra cuu phap luat -- hien thong bao tam ngung, khong bao nham loi mang', async () => {
+  const { ApiError } = jest.requireActual('@/lib/api/http');
+  const disabled = new ApiError('FORBIDDEN', 'Tính năng tra cứu pháp luật đang tạm ngưng.', 403, {
+    reason: 'FEATURE_DISABLED',
+  });
+  mockUseCountry.mockReturnValue({
+    countryCode: 'KR',
+    country: { code: 'KR', name: 'Hàn Quốc' },
+    setCountryCode: jest.fn(),
+  });
+  (fetchTopics as jest.Mock).mockRejectedValue(disabled);
+  (fetchArticles as jest.Mock).mockRejectedValue(disabled);
+
+  const screen = await render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })}>
+      <ExploreScreen />
+    </QueryClientProvider>,
+  );
+
+  await waitFor(() => expect(screen.getByText('Tính năng tra cứu pháp luật đang tạm ngưng.')).toBeTruthy());
+  expect(screen.queryByText('Không tải được dữ liệu. Kiểm tra kết nối mạng.')).toBeNull();
+});

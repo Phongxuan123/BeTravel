@@ -14,7 +14,7 @@ import { AnswerCard } from '@/features/chat/components/AnswerCard';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { ApiError } from '@/lib/api/http';
+import { ApiError, isFeatureDisabledError } from '@/lib/api/http';
 import {
   askLegalAssistant,
   listChatSessions,
@@ -168,9 +168,10 @@ export default function ChatScreen() {
       // them mot loai bubble loi rieng. QUOTA_EXCEEDED can thong bao rieng,
       // ro rang (DoD B5), khong the dung chung wording "mat ket noi mang".
       const isQuota = error instanceof ApiError && error.code === 'QUOTA_EXCEEDED';
+      const showServerMessage = isQuota || isFeatureDisabledError(error);
       const errorAnswer: ChatAnswer = {
         status: 'insufficient_evidence',
-        reason: isQuota
+        reason: showServerMessage
           ? (error as ApiError).message
           : 'Không thể kết nối tới trợ lý AI lúc này. Kiểm tra kết nối mạng và thử lại.',
         suggestions: [],

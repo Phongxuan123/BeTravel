@@ -14,6 +14,7 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { searchArticles, fetchTopics } from '@/lib/data';
+import { isFeatureDisabledError } from '@/lib/api/http';
 
 export default function SearchScreen() {
   const params = useLocalSearchParams<{ q?: string }>();
@@ -79,7 +80,11 @@ export default function SearchScreen() {
 
         {hasQuery && hasError && (
           <View className="rounded-md bg-danger-tint p-4">
-            <Text className="text-center text-sm text-danger">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
+            <Text className="text-center text-sm text-danger">
+              {isFeatureDisabledError(resultsQuery.error)
+                ? resultsQuery.error.message
+                : 'Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.'}
+            </Text>
           </View>
         )}
 
