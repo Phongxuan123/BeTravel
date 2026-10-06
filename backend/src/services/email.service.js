@@ -42,6 +42,8 @@ export const sendPasswordResetOtpEmail = async ({
     throw new Error("OTP_MISSING");
   }
 
+  if (process.env.NODE_ENV === "test") return;
+
   const mailer = getTransporter();
 
   await mailer.sendMail({

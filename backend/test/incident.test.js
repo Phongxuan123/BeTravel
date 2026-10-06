@@ -126,6 +126,7 @@ test("Tien do xu ly su co: luu/doc rieng theo tung user, khong lan nhau", async 
     .set("Authorization", auth(admin.accessToken))
     .send(globalIncident);
   const incidentId = created.body.data._id;
+  const stepIds = created.body.data.steps.map((step) => step.stepId);
 
   const userA = await registerAndLogin(app, { role: "user" });
   const userB = await registerAndLogin(app, { role: "user" });
@@ -133,14 +134,14 @@ test("Tien do xu ly su co: luu/doc rieng theo tung user, khong lan nhau", async 
   const putRes = await request(app)
     .put(`/api/users/incident-progress/${incidentId}`)
     .set("Authorization", auth(userA.accessToken))
-    .send({ completedSteps: [0] });
+    .send({ completedSteps: [stepIds[0]] });
   assert.equal(putRes.status, 200);
-  assert.deepEqual(putRes.body.data.completedSteps, [0]);
+  assert.deepEqual(putRes.body.data.completedSteps, [stepIds[0]]);
 
   const getA = await request(app)
     .get(`/api/users/incident-progress/${incidentId}`)
     .set("Authorization", auth(userA.accessToken));
-  assert.deepEqual(getA.body.data.completedSteps, [0]);
+  assert.deepEqual(getA.body.data.completedSteps, [stepIds[0]]);
 
   const getB = await request(app)
     .get(`/api/users/incident-progress/${incidentId}`)
@@ -155,15 +156,16 @@ test("Tien do bo qua step.order khong con ton tai trong workflow hien hanh", asy
     .set("Authorization", auth(admin.accessToken))
     .send(globalIncident);
   const incidentId = created.body.data._id;
+  const stepIds = created.body.data.steps.map((step) => step.stepId);
 
   const user = await registerAndLogin(app, { role: "user" });
   const res = await request(app)
     .put(`/api/users/incident-progress/${incidentId}`)
     .set("Authorization", auth(user.accessToken))
-    .send({ completedSteps: [0, 1, 99] });
+    .send({ completedSteps: [...stepIds, "unknown-step"] });
 
   assert.equal(res.status, 200);
-  assert.deepEqual(res.body.data.completedSteps, [0, 1]);
+  assert.deepEqual(res.body.data.completedSteps, stepIds);
 });
 
 test("chua dang nhap goi /api/users/incident-progress bi 401 UNAUTHORIZED", async () => {
@@ -179,22 +181,26 @@ test("Tiến độ không đọc/ghi incident nháp và lọc bước đã xóa 
     .set("Authorization", auth(admin.accessToken))
     .send(globalIncident);
   const id = created.body.data._id;
+  const stepIds = created.body.data.steps.map((step) => step.stepId);
   const user = await registerAndLogin(app);
   const url = `/api/users/incident-progress/${id}`;
   await request(app)
     .put(url)
     .set("Authorization", auth(user.accessToken))
-    .send({ completedSteps: [0, 1] });
+    .send({ completedSteps: stepIds });
   await request(app)
     .patch(`/api/admin/incidents/${id}`)
     .set("Authorization", auth(admin.accessToken))
-    .send({ steps: [globalIncident.steps[0]] });
+    .send({ steps: [created.body.data.steps[0]], updatedAt: created.body.data.updatedAt });
   const read = await request(app).get(url).set("Authorization", auth(user.accessToken));
-  assert.deepEqual(read.body.data.completedSteps, [0]);
+  assert.deepEqual(read.body.data.completedSteps, [stepIds[0]]);
+  const latest = await request(app)
+    .get(`/api/admin/incidents/${id}`)
+    .set("Authorization", auth(admin.accessToken));
   await request(app)
     .patch(`/api/admin/incidents/${id}`)
     .set("Authorization", auth(admin.accessToken))
-    .send({ status: "draft" });
+    .send({ status: "draft", updatedAt: latest.body.data.updatedAt });
   assert.equal(
     (await request(app).get(url).set("Authorization", auth(user.accessToken))).status,
     404,
@@ -204,7 +210,7 @@ test("Tiến độ không đọc/ghi incident nháp và lọc bước đã xóa 
       await request(app)
         .put(url)
         .set("Authorization", auth(user.accessToken))
-        .send({ completedSteps: [0] })
+        .send({ completedSteps: [stepIds[0]] })
     ).status,
     404,
   );

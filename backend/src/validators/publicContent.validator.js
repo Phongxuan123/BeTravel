@@ -90,7 +90,7 @@ export const incidentListQuerySchema = z.object({
 
 // ── Incident progress (/api/users/incident-progress/:incidentId, B7) ────
 export const incidentProgressUpdateSchema = z.object({
-  completedSteps: z.array(z.number().int().min(0)).max(200),
+  completedSteps: z.array(z.string().trim().min(1).max(100)).max(200),
 });
 
 // ── Quick phrases cong khai (/api/quick-phrases, B7) ────────────────────

@@ -24,6 +24,7 @@ async function geoNear({ lat, lng, countryQuery, maxDistanceMeters, limit }) {
     // GAN NHAT quan trong hon nhan "da kiem chung".
     { $sort: { distanceMeters: 1, verified: -1 } },
     { $limit: limit },
+    { $project: { createdBy: 0, updatedBy: 0, __v: 0 } },
   ]);
 }
 
@@ -34,7 +35,7 @@ async function geoNear({ lat, lng, countryQuery, maxDistanceMeters, limit }) {
  */
 export const findNearby = async ({ lat, lng, country, type, radiusKm, limit }) => {
   const effectiveLimit = limit ?? DEFAULT_LIMIT;
-  const countryQuery = {};
+  const countryQuery = { verified: true };
   if (country) countryQuery.countryCode = country;
   if (type) countryQuery.type = type;
 
@@ -53,8 +54,10 @@ export const findNearby = async ({ lat, lng, country, type, radiusKm, limit }) =
 // Fallback khi tu choi GPS (spec B6 muc 10) -- danh sach thuan theo quoc gia,
 // khong can toa do nguoi dung.
 export const listByCountry = async ({ country, type }) => {
-  const filter = {};
+  const filter = { verified: true };
   if (country) filter.countryCode = country;
   if (type) filter.type = type;
-  return SupportLocation.find(filter).sort({ verified: -1, name: 1 });
+  return SupportLocation.find(filter)
+    .select("-createdBy -updatedBy -__v")
+    .sort({ verified: -1, name: 1 });
 };

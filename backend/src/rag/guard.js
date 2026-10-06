@@ -112,6 +112,16 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER) {
     }
   }
 
+  if (found.size === 0) {
+    violations.push("MISSING_CITATION");
+    return {
+      answer: FALLBACK_MESSAGE,
+      citations: [],
+      fallbackReason: FallbackReason.GUARD_REJECTED,
+      violations,
+    };
+  }
+
   // (c) Disclaimer LUON duoc gan, khong co ngoai le.
   answer = `${answer.trim()}\n\n---\n${disclaimer}`;
 

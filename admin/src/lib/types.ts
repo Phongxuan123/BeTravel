@@ -13,6 +13,7 @@ export type Country = {
   code: string;
   name: string;
   nameEn?: string;
+  aliases?: string[];
   language?: string;
   emergencyNumbers?: { police?: string; ambulance?: string; fire?: string; marine?: string };
   embassy?: { name?: string; address?: string; phone?: string; lat?: number; lng?: number };
@@ -212,6 +213,7 @@ export type IncidentStatus = 'draft' | 'published';
 export type IncidentCta = { type: IncidentCtaType; label: string; payload: Record<string, unknown> };
 export type IncidentChecklistItem = { label: string };
 export type IncidentStep = {
+  stepId?: string;
   order: number;
   title: string;
   body: string[];

@@ -412,6 +412,7 @@ test("INV-04.10 khong xoa duoc Country/Topic con bai luat tham chieu", async () 
 test("INV-04.6 roi khoi published enqueue purge_chunks, publish lai enqueue reindex", async () => {
   await seedTopic();
   const article = await createArticleDoc();
+  await articleService.changeArticleStatus(article._id, { status: "pending_review" }, null);
   await articleService.changeArticleStatus(article._id, { status: "published" }, null);
   await articleService.changeArticleStatus(article._id, { status: "archived" }, null);
   const jobs = await models.Job.find().sort({ createdAt: 1 }).lean();
@@ -429,7 +430,12 @@ test("H-04.b publish dong thoi 2 ban nhap cung slug: dung 1 ban hien hanh, khong
   await createArticleDoc({ status: "published" });
   const drafts = await Promise.all(
     [2, 3].map((version) =>
-      createArticleDoc({ version, isCurrent: false, title: `Ban ${version}` }),
+      createArticleDoc({
+        version,
+        status: "pending_review",
+        isCurrent: false,
+        title: `Ban ${version}`,
+      }),
     ),
   );
   await Promise.allSettled(

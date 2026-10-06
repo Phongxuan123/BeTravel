@@ -68,14 +68,14 @@ export default function IncidentDetailScreen() {
   const completedSteps = useMemo(() => progressQuery.data?.data.completedSteps ?? [], [progressQuery.data]);
 
   const progressMutation = useMutation({
-    mutationFn: (next: number[]) => setIncidentProgress(incident!._id!, next),
+    mutationFn: (next: string[]) => setIncidentProgress(incident!._id!, next),
     onSuccess: (res) => {
       queryClient.setQueryData(['incident-progress', incident?._id], res);
     },
   });
 
-  const toggleStepDone = (order: number) => {
-    const next = completedSteps.includes(order) ? completedSteps.filter((o) => o !== order) : [...completedSteps, order];
+  const toggleStepDone = (stepId: string) => {
+    const next = completedSteps.includes(stepId) ? completedSteps.filter((o) => o !== stepId) : [...completedSteps, stepId];
     progressMutation.mutate(next);
   };
 
@@ -147,10 +147,10 @@ export default function IncidentDetailScreen() {
 
         <View className="mt-6">
           {incident.steps.map((step, i) => {
-            const order = step.order ?? i;
-            const done = completedSteps.includes(order);
+            const stepId = step.stepId ?? `mock-${incident._id ?? incident.slug}-${step.order ?? i}`;
+            const done = completedSteps.includes(stepId);
             return (
-              <View key={`${step.title}-${i}`} className="flex-row" style={{ gap: 14 }}>
+              <View key={stepId} className="flex-row" style={{ gap: 14 }}>
                 <View className="items-center">
                   <View className={`h-10 w-10 items-center justify-center rounded-full ${done ? 'bg-success' : i === 0 ? 'bg-primary' : 'bg-primary-soft'}`}>
                     <Text className={`text-sm font-body-bold ${done || i === 0 ? 'text-white' : 'text-primary-strong'}`}>{i + 1}</Text>
@@ -161,7 +161,7 @@ export default function IncidentDetailScreen() {
                   <View className="flex-row items-center justify-between">
                     <Text className="flex-1 text-[19px] font-body-bold text-ink">{step.title}</Text>
                     {!isGuest && (
-                      <Checkbox checked={done} onChange={() => toggleStepDone(order)} accessibilityLabel={`Đánh dấu đã xong: ${step.title}`} />
+                      <Checkbox checked={done} onChange={() => toggleStepDone(stepId)} accessibilityLabel={`Đánh dấu đã xong: ${step.title}`} />
                     )}
                   </View>
                   {step.body.length > 0 && (

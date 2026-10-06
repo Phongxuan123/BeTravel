@@ -178,6 +178,10 @@ test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, erro
     slug: "bang-lai-nuoc-ngoai",
     title: "Bằng lái nước ngoài",
   });
+  await request(app)
+    .post(`/api/admin/legal/articles/${draft.body.data._id}/status`)
+    .set(as)
+    .send({ status: "pending_review" });
   const conflict = await request(app)
     .post(`/api/admin/legal/articles/${draft.body.data._id}/status`)
     .set(as)
@@ -186,6 +190,11 @@ test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, erro
   assert.equal(conflict.status, 409);
   assertSameKeys(conflict.body.error, conflictFixture.error, "error.conflict");
 
+  await request(app)
+    .post(`/api/admin/legal/articles/${draft.body.data._id}/status`)
+    .set(as)
+    .send({ status: "draft" });
+  const latest = await request(app).get(`/api/admin/legal/articles/${draft.body.data._id}`).set(as);
   const patched = await request(app)
     .patch(`/api/admin/legal/articles/${draft.body.data._id}`)
     .set(as)
@@ -200,8 +209,12 @@ test("admin country/legalArticle va loi CONFLICT khop fixture admin.*.json, erro
           publishedAt: "2024-01-01",
         },
       ],
-      updatedAt: draft.body.data.updatedAt,
+      updatedAt: latest.body.data.updatedAt,
     });
+  await request(app)
+    .post(`/api/admin/legal/articles/${patched.body.data._id}/status`)
+    .set(as)
+    .send({ status: "pending_review" });
   await request(app)
     .post(`/api/admin/legal/articles/${patched.body.data._id}/status`)
     .set(as)

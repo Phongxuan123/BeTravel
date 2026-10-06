@@ -32,7 +32,7 @@ export function StepsEditor({ steps, onChange }: { steps: IncidentStep[]; onChan
   const update = (index: number, patch: Partial<IncidentStep>) =>
     onChange(steps.map((s, i) => (i === index ? { ...s, ...patch } : s)));
   const remove = (index: number) => onChange(steps.filter((_, i) => i !== index));
-  const add = () => onChange([...steps, { ...EMPTY_STEP, order: steps.length }]);
+  const add = () => onChange([...steps, { ...EMPTY_STEP, stepId: crypto.randomUUID(), order: steps.length }]);
   const move = (index: number, dir: -1 | 1) => {
     const target = index + dir;
     if (target < 0 || target >= steps.length) return;
@@ -44,7 +44,7 @@ export function StepsEditor({ steps, onChange }: { steps: IncidentStep[]; onChan
   return (
     <div className="flex flex-col gap-4">
       {steps.map((step, index) => (
-        <div key={index} className="rounded-md border border-line p-3">
+        <div key={step.stepId ?? index} className="rounded-md border border-line p-3">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted">Bước {index + 1}</span>
             <div className="flex items-center gap-1">

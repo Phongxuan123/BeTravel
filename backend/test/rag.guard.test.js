@@ -19,7 +19,7 @@ test("guard xoa marker khong nam trong tap da truy hoi", () => {
 
   const result = guardAnswer(raw, retrieved);
 
-  assert.equal(result.fallbackReason, null); // khong co tuyen bo dinh luong -> chi xoa marker, khong ha cap
+  assert.equal(result.fallbackReason, "GUARD_REJECTED"); // mọi câu trả lời phải có citation hợp lệ
   assert.doesNotMatch(result.answer, /\[S9\]/);
   assert.ok(result.violations.includes("HALLUCINATED_MARKER:S9"));
 });

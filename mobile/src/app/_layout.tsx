@@ -39,18 +39,18 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const [beVietnamProLoaded] = useBeVietnamProFonts({
+  const [beVietnamProLoaded, beVietnamProError] = useBeVietnamProFonts({
     BeVietnamPro_400Regular,
     BeVietnamPro_500Medium,
     BeVietnamPro_600SemiBold,
     BeVietnamPro_700Bold,
   });
-  const [bricolageLoaded] = useBricolageFonts({
+  const [bricolageLoaded, bricolageError] = useBricolageFonts({
     BricolageGrotesque_700Bold,
     BricolageGrotesque_800ExtraBold,
   });
 
-  const fontsLoaded = beVietnamProLoaded && bricolageLoaded;
+  const fontsLoaded = (beVietnamProLoaded || Boolean(beVietnamProError)) && (bricolageLoaded || Boolean(bricolageError));
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {

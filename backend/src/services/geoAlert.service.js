@@ -72,11 +72,15 @@ export const findApplicable = async ({ country, lat, lng }) => {
     $or: [{ effectiveTo: null }, { effectiveTo: { $gte: now } }],
   };
 
-  const countryAlerts = await GeoAlert.find({ ...baseFilter, scope: "country" });
+  const countryAlerts = await GeoAlert.find({ ...baseFilter, scope: "country" }).select(
+    "-createdBy -updatedBy -__v",
+  );
 
   let areaAlerts = [];
   if (lat !== undefined && lng !== undefined) {
-    const candidates = await GeoAlert.find({ ...baseFilter, scope: "area" });
+    const candidates = await GeoAlert.find({ ...baseFilter, scope: "area" }).select(
+      "-createdBy -updatedBy -__v",
+    );
     areaAlerts = candidates.filter((alert) => {
       // Bỏ bản ghi cũ sai cấu trúc để một cảnh báo lỗi không làm hỏng toàn bộ danh sách.
       if (
