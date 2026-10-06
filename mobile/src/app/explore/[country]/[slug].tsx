@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Share } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Info, MessageCircle, Star, Share as ShareIcon } from 'lucide-react-native';
+import { ChevronLeft, Info, MessageCircle, Star, Share as ShareIcon, TriangleAlert, X, ShieldCheck } from 'lucide-react-native';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { IconButton } from '@/components/ui/IconButton';
@@ -46,11 +46,12 @@ export default function ArticleDetailScreen() {
   }
 
   const accordionItems = [
-    { title: 'Mức phạt cụ thể', content: article.fines },
     { title: 'Trường hợp ngoại lệ', content: article.exceptions.length ? article.exceptions : ['Không có ngoại lệ được ghi nhận.'] },
     { title: 'Lưu ý cho người nước ngoài', content: article.foreignerNotes.length ? article.foreignerNotes : ['Không có lưu ý riêng cho người nước ngoài.'] },
     { title: 'Nguồn pháp lý', content: [`${article.source.agency} · Cập nhật ${article.updatedAt}`, article.source.url] },
   ];
+
+  const criminalPoints = article.keyPoints.filter((point) => point.severity === 'criminal');
 
   return (
     <View className="flex-1 bg-bg">
@@ -79,6 +80,14 @@ export default function ArticleDetailScreen() {
         <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
           <Badge label="Đang hiệu lực" tone="success" dot />
           <Text className="text-sm text-subtle">Cập nhật {article.updatedAt}</Text>
+        </View>
+
+        <View className="mt-4 flex-row items-center gap-3 rounded-lg border border-line bg-surface p-3.5">
+          <ShieldCheck size={20} color={colors.successStrong} />
+          <View className="flex-1">
+            <Text className="text-[13px] font-body-bold text-ink">Nguồn chính thống đã xác minh</Text>
+            <Text className="text-xs text-muted" numberOfLines={1}>{article.source.agency}</Text>
+          </View>
         </View>
 
         <View className="mt-4 rounded-lg bg-primary-soft p-4">
@@ -113,6 +122,30 @@ export default function ArticleDetailScreen() {
                 </View>
               ))}
             </View>
+          </View>
+        )}
+
+        {criminalPoints.length > 0 && (
+          <View className="mt-6 rounded-lg border border-danger-line bg-danger-tint p-4">
+            <View className="flex-row items-center" style={{ gap: 8 }}>
+              <TriangleAlert size={18} color={colors.dangerStrong} />
+              <Text className="text-[15px] font-body-bold text-danger-strong">Lưu ý pháp lý quan trọng</Text>
+            </View>
+            {criminalPoints.map((point, i) => (
+              <Text key={i} className="mt-2 text-sm leading-relaxed text-ink">{point.text}</Text>
+            ))}
+          </View>
+        )}
+
+        {article.fines.length > 0 && (
+          <View className="mt-4 rounded-lg border bg-warning-tint p-4" style={{ borderColor: colors.creamLine }}>
+            <Text className="text-[15px] font-body-bold text-warning-strong">Điều bạn cần tránh</Text>
+            {article.fines.map((fine, i) => (
+              <View key={i} className="mt-2 flex-row items-start" style={{ gap: 8 }}>
+                <X size={16} color={colors.warningStrong} style={{ marginTop: 2 }} />
+                <Text className="flex-1 text-sm leading-relaxed text-ink">{fine}</Text>
+              </View>
+            ))}
           </View>
         )}
 

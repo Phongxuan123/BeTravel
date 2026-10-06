@@ -48,18 +48,18 @@ export default function SearchScreen() {
     <View className="flex-1 bg-bg">
       <PageHeader title="Bạn muốn tìm gì?" />
       <View className="border-b border-line bg-surface px-[18px] pb-3 pt-3">
-        <View className={`h-14 flex-row items-center rounded-lg border bg-[#F9FBFD] px-4 ${query ? 'border-primary' : 'border-line'}`}>
+        <View className={`h-14 flex-row items-center rounded-lg border bg-bg px-4 ${query ? 'border-primary' : 'border-line'}`}>
           <SearchIcon size={20} color={colors.primary} />
           <TextInput
             className="ml-2.5 flex-1 text-base text-ink"
-            placeholder="Tìm quy định..."
+            placeholder={`Ở ${country?.name ?? 'đây'} có được hút thuốc trên đường không?`}
             placeholderTextColor={colors.subtle}
             value={query}
             onChangeText={setQuery}
             autoFocus
           />
           {query.length > 0 && (
-            <Pressable accessibilityLabel="Xoá" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center rounded-md bg-[#F0F4F9]">
+            <Pressable accessibilityLabel="Xoá" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center rounded-md bg-[#F3F4F6]">
               <X size={18} color={colors.muted} />
             </Pressable>
           )}
@@ -116,7 +116,7 @@ export default function SearchScreen() {
                 <MessageCircle size={20} color={colors.primary} />
               </View>
               <Text className="ml-3 flex-1 text-[15px] font-body-semibold text-primary-strong">
-                Chưa đúng ý bạn? Hỏi AI Legal Assistant bằng tiếng Việt.
+                Chưa đúng ý bạn? Hỏi AI bằng tiếng Việt.
               </Text>
               <View className="h-10 w-10 items-center justify-center rounded-md bg-primary">
                 <ArrowRight size={18} color="#fff" />
@@ -131,7 +131,7 @@ export default function SearchScreen() {
               title="Không tìm thấy quy định phù hợp"
               description={`Chúng tôi chưa có văn bản nào khớp với truy vấn này cho ${country?.name}.`}
             >
-              <Button label="Hỏi AI Legal Assistant" iconLeft={<MessageCircle size={18} color="#fff" />} onPress={() => router.push(`/chat?q=${encodeURIComponent(query)}` as never)} />
+              <Button label="Hỏi AI" iconLeft={<MessageCircle size={18} color="#fff" />} onPress={() => router.push(`/chat?q=${encodeURIComponent(query)}` as never)} />
               <Button label="Xem tất cả chủ đề" variant="secondary" onPress={() => router.push('/explore')} />
             </EmptyState>
 
@@ -139,6 +139,13 @@ export default function SearchScreen() {
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>
               {['Thuốc mang theo người', 'Hàng cấm nhập cảnh', 'Khai báo hải quan'].map((s) => (
                 <QuickChip key={s} label={s} onPress={() => setQuery(s)} />
+              ))}
+            </View>
+
+            <Text className="mb-3 mt-5 text-[11px] font-body-bold uppercase tracking-wider text-muted">CHỦ ĐỀ PHỔ BIẾN</Text>
+            <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+              {(topicsQuery.data?.data ?? []).slice(0, 6).map((topic) => (
+                <QuickChip key={topic.key} label={topic.label} onPress={() => router.push('/explore')} />
               ))}
             </View>
           </View>
@@ -154,7 +161,7 @@ export default function SearchScreen() {
               setTopicFilter(null);
               setPickingTopic(false);
             }}
-            className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${topicFilter === null ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+            className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${topicFilter === null ? 'border-[1.5px] border-primary bg-bg' : 'border-line bg-surface'}`}
           >
             <Text className="text-base font-body-semibold text-ink">Tất cả chủ đề</Text>
             {topicFilter === null && <Check size={18} color={colors.primary} />}
@@ -170,7 +177,7 @@ export default function SearchScreen() {
                   setTopicFilter(topic.label);
                   setPickingTopic(false);
                 }}
-                className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+                className={`h-14 flex-row items-center justify-between rounded-lg border px-4 ${selected ? 'border-[1.5px] border-primary bg-bg' : 'border-line bg-surface'}`}
               >
                 <Text className="text-base font-body-semibold text-ink">{topic.label}</Text>
                 {selected && <Check size={18} color={colors.primary} />}

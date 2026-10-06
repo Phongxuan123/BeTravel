@@ -13,7 +13,7 @@ const NAV_HEIGHT = 72;
 const tabs: { key: Exclude<ActiveTab, 'sos'>; label: string; icon: typeof House; href: '/' | '/explore' | '/chat' | '/profile' }[] = [
   { key: 'home', label: 'Trang chủ', icon: House, href: '/' },
   { key: 'explore', label: 'Khám phá', icon: Compass, href: '/explore' },
-  { key: 'chat', label: 'AI Legal', icon: MessageCircle, href: '/chat' },
+  { key: 'chat', label: 'AI pháp lý', icon: MessageCircle, href: '/chat' },
   { key: 'profile', label: 'Cá nhân', icon: User, href: '/profile' },
 ];
 

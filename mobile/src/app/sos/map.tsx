@@ -17,8 +17,8 @@ import { requestLocationWithExplanation } from '@/lib/locationPermission';
 import type { SupportLocation } from '@/lib/data';
 
 const LIGHT_MAP_STYLE = [
-  { elementType: 'geometry', stylers: [{ color: '#EAF1FE' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#5A6B87' }] },
+  { elementType: 'geometry', stylers: [{ color: '#EAF4FF' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#6B7280' }] },
   { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#DCE8FB' }] },
   { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#FFFFFF' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
@@ -146,13 +146,13 @@ export default function SosMapScreen() {
             accessibilityLabel="Quay lại"
             onPress={() => router.back()}
             className="h-[52px] w-[52px] items-center justify-center rounded-lg bg-surface"
-            style={{ shadowColor: '#0E1C33', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
+            style={{ shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
           >
             <ChevronLeft size={20} color={colors.ink} />
           </Pressable>
           <View
             className="h-[52px] flex-1 flex-row items-center rounded-lg bg-surface px-4"
-            style={{ shadowColor: '#0E1C33', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
+            style={{ shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
           >
             <Search size={18} color={colors.subtle} />
             <TextInput className="ml-2.5 flex-1 text-base text-ink" placeholder="Tìm địa điểm hỗ trợ" placeholderTextColor={colors.subtle} />
@@ -167,7 +167,7 @@ export default function SosMapScreen() {
                   key={f.key}
                   onPress={() => setFilter(f.key)}
                   className={`h-9 items-center justify-center rounded-full px-3.5 ${active ? 'bg-primary' : 'bg-surface'}`}
-                  style={{ shadowColor: '#0E1C33', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2 }}
+                  style={{ shadowColor: '#102A43', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2 }}
                 >
                   <Text className={`text-sm font-body-semibold ${active ? 'text-white' : 'text-ink'}`} numberOfLines={1}>
                     {f.label}
@@ -192,7 +192,7 @@ export default function SosMapScreen() {
           accessibilityLabel="Định vị lại"
           onPress={() => mapRef.current?.animateToRegion(region, 400)}
           className="absolute right-[18px] h-14 w-14 items-center justify-center rounded-lg bg-surface"
-          style={{ bottom: 300, shadowColor: '#0E1C33', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
+          style={{ bottom: 300, shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
         >
           <LocateFixed size={22} color={colors.primary} />
         </Pressable>

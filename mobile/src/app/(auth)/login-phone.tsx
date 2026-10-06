@@ -91,7 +91,7 @@ export default function LoginPhoneScreen() {
 
         <Pressable className="flex-row items-center" style={{ gap: 8 }} onPress={() => setRemember((v) => !v)}>
           <Checkbox checked={remember} onChange={setRemember} accessibilityLabel="Ghi nhớ đăng nhập" />
-          <Text className="text-[15px] text-[#3B4A63]">Ghi nhớ đăng nhập</Text>
+          <Text className="text-[15px] text-[#334E68]">Ghi nhớ đăng nhập</Text>
         </Pressable>
 
         {error && (

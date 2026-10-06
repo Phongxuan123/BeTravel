@@ -108,7 +108,7 @@ export default function SosHubScreen() {
         </View>
 
         <View className="px-[18px]">
-          <View className="mt-5 rounded-xl bg-danger p-[18px]" style={{ shadowColor: 'rgba(214,40,40,1)', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
+          <View className="mt-5 rounded-xl bg-danger p-[18px]" style={{ shadowColor: 'rgba(239,68,68,1)', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
             <Text className="text-xs font-body-bold text-white/80">SỐ KHẨN CẤP TẠI {country.name.toUpperCase()}</Text>
             <Text className="mt-1 font-display text-white" style={{ fontSize: 26 }}>
               Cảnh sát · {country.emergencyNumbers.police}
@@ -119,7 +119,7 @@ export default function SosHubScreen() {
               accessibilityLabel={`Gọi cảnh sát số ${country.emergencyNumbers.police}`}
             >
               <Phone size={20} color={colors.danger} />
-              <Text className="text-[22px] font-body-bold text-danger">Gọi ngay {country.emergencyNumbers.police}</Text>
+              <Text className="font-mono-bold text-[22px] text-danger">Gọi ngay {country.emergencyNumbers.police}</Text>
             </Pressable>
             <Text className="mt-2 text-center text-[13px] text-white/85">Cuộc gọi miễn phí, kể cả khi hết dữ liệu di động</Text>
           </View>
@@ -190,7 +190,7 @@ function ServiceTile({ label, number, tone, icon }: { label: string; number: str
         {icon}
       </IconTile>
       <Text className="text-[14px] font-body-bold text-ink">{label}</Text>
-      <Text className="text-base font-body-bold" style={{ color: textColor }}>
+      <Text className="font-mono-bold text-base" style={{ color: textColor }}>
         {number || 'Chưa có số'}
       </Text>
     </Pressable>

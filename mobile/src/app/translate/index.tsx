@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Speech from 'expo-speech';
 import * as Clipboard from 'expo-clipboard';
-import { ArrowUpDown, Mic, X, Languages, Volume2, Copy, Maximize, Shrink } from 'lucide-react-native';
+import { ArrowUpDown, Mic, X, Languages, Volume2, Copy, Maximize, Shrink, Star } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
@@ -13,8 +13,11 @@ import { fetchQuickPhrases, translateText } from '@/lib/data';
 import type { QuickPhrase } from '@/lib/data';
 import { englishPhrases, phrasebookLicense, phrasebookLicenseUrl } from '@/features/translate/phrasebook';
 import { useAuth } from '@/lib/auth';
+import { useUserStorage } from '@/lib/useUserStorage';
 
 const MAX_LENGTH = 500;
+
+type SavedPhrase = { vi: string; translated: string; phonetic: string };
 
 // expo-speech can ma ngon ngu BCP-47, khong doan duoc tu ten hien thi
 // ("Tiếng Hàn") -- anh xa theo countryCode, giong REGION_BY_CODE o adapters.ts.
@@ -42,6 +45,7 @@ function TranslatorForm() {
   const [translateError, setTranslateError] = useState<string | null>(null);
   const [englishMode, setEnglishMode] = useState(true);
   const requestId = useRef(0);
+  const savedPhrases = useUserStorage<SavedPhrase[]>('saved-phrases', []);
   useEffect(() => () => { requestId.current += 1; void Speech.stop(); }, []);
 
   const phrasesQuery = useQuery({ queryKey: ['quick-phrases', countryCode], queryFn: () => fetchQuickPhrases(countryCode), enabled: !englishMode });
@@ -104,6 +108,22 @@ function TranslatorForm() {
     setResult({ translated: reversed ? phrase.vi : phrase.translated, phonetic: reversed ? '' : phrase.phonetic });
   };
 
+  // Câu đã lưu luôn lưu theo chiều Việt -> ngôn ngữ đích để hiển thị thống nhất.
+  const currentPhrase: SavedPhrase | null = result
+    ? reversed
+      ? { vi: result.translated, translated: input.trim(), phonetic: '' }
+      : { vi: input.trim(), translated: result.translated, phonetic: result.phonetic }
+    : null;
+  const isCurrentSaved = !!currentPhrase && savedPhrases.value.some((p) => p.vi === currentPhrase.vi && p.translated === currentPhrase.translated);
+  const onToggleSave = () => {
+    if (!currentPhrase) return;
+    void savedPhrases.update((list) =>
+      isCurrentSaved
+        ? list.filter((p) => !(p.vi === currentPhrase.vi && p.translated === currentPhrase.translated))
+        : [currentPhrase, ...list],
+    );
+  };
+
   const onCopy = async () => {
     if (!result) return;
     try {
@@ -125,7 +145,7 @@ function TranslatorForm() {
     <View className="flex-1 bg-bg">
       <PageHeader
         title="Dịch khẩn cấp"
-        subtitle="Câu mẫu dùng ngoại tuyến; câu tự nhập cần mạng"
+        subtitle="Đưa màn hình cho cảnh sát hoặc bác sĩ xem · câu tự nhập cần mạng"
         right={<Badge label={englishMode ? 'Câu mẫu có sẵn' : isOffline ? 'Bản lưu' : phrasesQuery.isLoading ? 'Đang tải' : phrasesQuery.isError ? 'Lỗi tải' : 'Đã tải'} tone={!englishMode && (isOffline || phrasesQuery.isError) ? 'warning' : 'success'} />}
       />
       <ScrollView contentContainerStyle={{ padding: 18, gap: 16, paddingBottom: 48 }}>
@@ -209,17 +229,22 @@ function TranslatorForm() {
         </View>
 
         {result && (
-          <View className="rounded-xl bg-primary p-[18px]" style={{ shadowColor: 'rgba(15,91,215,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
+          <View className="rounded-xl bg-ink p-[18px]" style={{ shadowColor: 'rgba(16,42,67,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
             <View className="flex-row items-center justify-between">
               <Text className="text-xs font-body-bold text-white/70">BẢN DỊCH · {toLabel.toUpperCase()}</Text>
-              <Pressable onPress={() => setFullscreen(true)} accessibilityLabel="Phóng to toàn màn hình" className="h-10 w-10 items-center justify-center rounded-md bg-white/15">
-                <Maximize size={18} color="#fff" />
-              </Pressable>
+              <View className="flex-row" style={{ gap: 8 }}>
+                <Pressable onPress={onToggleSave} accessibilityLabel={isCurrentSaved ? 'Bỏ lưu câu này' : 'Lưu câu này'} className="h-11 w-11 items-center justify-center rounded-md bg-white/15">
+                  <Star size={18} color="#fff" fill={isCurrentSaved ? '#fff' : 'none'} />
+                </Pressable>
+                <Pressable onPress={() => setFullscreen(true)} accessibilityLabel="Phóng to toàn màn hình" className="h-11 w-11 items-center justify-center rounded-md bg-white/15">
+                  <Maximize size={18} color="#fff" />
+                </Pressable>
+              </View>
             </View>
             <Text className="mt-2 font-display text-white" style={{ fontSize: 34 }}>
               {result.translated}
             </Text>
-            {result.phonetic ? <Text className="mt-1 text-[17px] italic text-white/80">{result.phonetic}</Text> : null}
+            {result.phonetic ? <Text className="mt-2 font-mono text-[16px] text-white/85">{result.phonetic}</Text> : null}
             <View className="mt-4 flex-row" style={{ gap: 10 }}>
               <Pressable onPress={onSpeak} className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-white">
                 <Volume2 size={18} color={colors.primaryStrong} />
@@ -229,6 +254,24 @@ function TranslatorForm() {
                 <Copy size={18} color="#fff" />
                 <Text className="font-body-bold text-white">Sao chép</Text>
               </Pressable>
+            </View>
+          </View>
+        )}
+
+        {savedPhrases.value.length > 0 && (
+          <View>
+            <Text className="text-base font-body-bold text-ink">Câu đã lưu</Text>
+            <View className="mt-3" style={{ gap: 10 }}>
+              {savedPhrases.value.map((phrase) => (
+                <Pressable
+                  key={`${phrase.vi}|${phrase.translated}`}
+                  onPress={() => { invalidateResult(); setReversed(false); setInput(phrase.vi); setResult({ translated: phrase.translated, phonetic: phrase.phonetic }); }}
+                  className="min-h-[60px] flex-row items-center gap-3 rounded-lg border border-line bg-surface px-3 py-3"
+                >
+                  <Star size={18} color={colors.warning} fill={colors.warning} />
+                  <Text className="flex-1 text-base font-body-bold text-ink">{phrase.vi}</Text>
+                </Pressable>
+              ))}
             </View>
           </View>
         )}
@@ -289,11 +332,11 @@ function FullscreenTranslation({
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} animationType="fade" onRequestClose={onClose}>
-      <Pressable className="flex-1 items-center justify-center bg-primary px-8" onPress={onClose} style={{ paddingTop: insets.top }}>
+      <Pressable className="flex-1 items-center justify-center bg-ink px-8" onPress={onClose} style={{ paddingTop: insets.top }}>
         <Text className="text-center font-display text-white" style={{ fontSize: 48, lineHeight: 56 }}>
           {text}
         </Text>
-        {phonetic ? <Text className="mt-4 text-center text-xl italic text-white/80">{phonetic}</Text> : null}
+        {phonetic ? <Text className="mt-4 text-center font-mono text-xl text-white/85">{phonetic}</Text> : null}
         <View className="absolute flex-row items-center gap-2" style={{ bottom: insets.bottom + 24 }}>
           <Shrink size={16} color="rgba(255,255,255,0.7)" />
           <Text className="text-sm text-white/70">Chạm để đóng</Text>

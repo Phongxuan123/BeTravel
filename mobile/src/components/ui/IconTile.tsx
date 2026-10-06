@@ -22,5 +22,5 @@ export function IconTile({ tone = 'blue', size = 40, children }: { tone?: Tone; 
 }
 
 export function toneColor(tone: Tone): string {
-  return { blue: '#0F5BD7', red: '#D62828', orange: '#C2650A', green: '#0F8A5F' }[tone];
+  return { blue: '#1677FF', red: '#EF4444', orange: '#D97706', green: '#22C55E' }[tone];
 }

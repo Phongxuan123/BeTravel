@@ -7,17 +7,18 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
-  useFonts as useBeVietnamProFonts,
-  BeVietnamPro_400Regular,
-  BeVietnamPro_500Medium,
-  BeVietnamPro_600SemiBold,
-  BeVietnamPro_700Bold,
-} from '@expo-google-fonts/be-vietnam-pro';
+  useFonts as usePlusJakartaFonts,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import {
-  useFonts as useBricolageFonts,
-  BricolageGrotesque_700Bold,
-  BricolageGrotesque_800ExtraBold,
-} from '@expo-google-fonts/bricolage-grotesque';
+  useFonts as useJetBrainsMonoFonts,
+  JetBrainsMono_500Medium,
+  JetBrainsMono_700Bold,
+} from '@expo-google-fonts/jetbrains-mono';
 import { AuthProvider } from '@/lib/auth';
 import { CountryProvider } from '@/lib/countryContext';
 import { AppGate } from '@/components/common/AppGate';
@@ -39,18 +40,19 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const [beVietnamProLoaded] = useBeVietnamProFonts({
-    BeVietnamPro_400Regular,
-    BeVietnamPro_500Medium,
-    BeVietnamPro_600SemiBold,
-    BeVietnamPro_700Bold,
+  const [plusJakartaLoaded] = usePlusJakartaFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
   });
-  const [bricolageLoaded] = useBricolageFonts({
-    BricolageGrotesque_700Bold,
-    BricolageGrotesque_800ExtraBold,
+  const [monoLoaded] = useJetBrainsMonoFonts({
+    JetBrainsMono_500Medium,
+    JetBrainsMono_700Bold,
   });
 
-  const fontsLoaded = beVietnamProLoaded && bricolageLoaded;
+  const fontsLoaded = plusJakartaLoaded && monoLoaded;
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {

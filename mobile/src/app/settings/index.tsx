@@ -214,7 +214,7 @@ export default function SettingsScreen() {
                   setCountryCode(c.code);
                   setPickingCountry(false);
                 }}
-                className={`h-16 flex-row items-center rounded-lg border px-3 ${selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}
+                className={`h-16 flex-row items-center rounded-lg border px-3 ${selected ? 'border-[1.5px] border-primary bg-[#F5F9FF]' : 'border-line bg-surface'}`}
               >
                 <CountryFlag code={c.code} width={36} height={26} />
                 <Text className="ml-3 flex-1 text-base font-body-semibold text-ink">{c.name}</Text>

@@ -3,6 +3,8 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, TriangleAlert, Calendar } from 'lucide-react-native';
+import { SimpleSheet } from '@/components/common/SimpleSheet';
+import { Button } from '@/components/ui/Button';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
@@ -18,6 +20,14 @@ const CATEGORY_META: Record<Alert['category'], { icon: typeof CircleAlert; tone:
   trip: { icon: Calendar, tone: 'green', badge: 'success', label: 'Chuyến đi' },
 };
 
+// Mức độ ưu tiên thị giác theo spec 3.13; dữ liệu hiện có 3 mức severity nên
+// 'Medium' chưa có nguồn và được gộp vào 'Thông tin'.
+const SEVERITY_META: Record<NonNullable<Alert['severity']>, { label: string; badge: BadgeTone }> = {
+  danger: { label: 'Nguy cấp', badge: 'danger' },
+  warn: { label: 'Cao', badge: 'warning' },
+  info: { label: 'Thông tin', badge: 'info' },
+};
+
 const FILTERS: { key: 'all' | Alert['category']; label: string }[] = [
   { key: 'all', label: 'Tất cả' },
   { key: 'legal', label: 'Pháp lý' },
@@ -27,6 +37,7 @@ const FILTERS: { key: 'all' | Alert['category']; label: string }[] = [
 
 export default function AlertsScreen() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all');
+  const [detail, setDetail] = useState<Alert | null>(null);
   const alertsQuery = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
   const queryClient = useQueryClient();
   const alerts = (alertsQuery.data?.data ?? []).filter((a) => filter === 'all' || a.category === filter);
@@ -46,15 +57,19 @@ export default function AlertsScreen() {
   }, [alerts]);
 
   const onOpen = async (alert: Alert) => {
+    setDetail(alert);
     try {
       await markAlertRead(alert.id);
       queryClient.invalidateQueries({ queryKey: ['alerts'] });
     } catch {
       // Danh dau da doc that bai khong nen chan nguoi dung xem noi dung --
-      // van dieu huong tiep, chi la thong bao co the con hien "chua doc".
+      // chi la thong bao co the con hien "chua doc".
     }
-    if (alert.category === 'trip') router.push('/trips');
-    else router.push('/explore');
+  };
+
+  const openRelated = (alert: Alert) => {
+    setDetail(null);
+    router.push(alert.category === 'trip' ? '/trips' : '/explore');
   };
 
   const onReadAll = async () => {
@@ -116,6 +131,28 @@ export default function AlertsScreen() {
           );
         })}
       </ScrollView>
+
+      <SimpleSheet visible={detail !== null} onClose={() => setDetail(null)} title={detail?.title ?? ''}>
+        {detail && (
+          <View style={{ gap: 12 }}>
+            <View className="flex-row items-center" style={{ gap: 8 }}>
+              <Badge label={CATEGORY_META[detail.category].label} tone={CATEGORY_META[detail.category].badge} />
+              {detail.severity && <Badge label={SEVERITY_META[detail.severity].label} tone={SEVERITY_META[detail.severity].badge} />}
+              <Text className="flex-1 text-xs text-subtle" numberOfLines={1}>{detail.meta}</Text>
+            </View>
+            <Text className="text-base leading-6 text-ink">{detail.body}</Text>
+            {!!detail.behaviorsToAvoid?.length && (
+              <View className="rounded-lg border border-creamLine bg-warning-tint p-4" style={{ borderColor: colors.creamLine, gap: 6 }}>
+                <Text className="text-[15px] font-body-bold text-warning-strong">Khuyến nghị: điều cần tránh</Text>
+                {detail.behaviorsToAvoid.map((item, i) => (
+                  <Text key={i} className="text-sm leading-relaxed text-ink">- {item}</Text>
+                ))}
+              </View>
+            )}
+            <Button label="Xem thông tin liên quan" onPress={() => openRelated(detail)} />
+          </View>
+        )}
+      </SimpleSheet>
     </AppShell>
   );
 }
@@ -142,6 +179,7 @@ function AlertCard({ alert, onPress }: { alert: Alert; onPress: () => void }) {
           </Text>
           <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
             <Badge label={meta.label} tone={meta.badge} />
+            {alert.severity && <Badge label={SEVERITY_META[alert.severity].label} tone={SEVERITY_META[alert.severity].badge} />}
             <Text className="text-[13px] text-subtle" numberOfLines={1}>
               {alert.meta}
             </Text>
@@ -153,5 +191,5 @@ function AlertCard({ alert, onPress }: { alert: Alert; onPress: () => void }) {
 }
 
 function toneColor(tone: Tone): string {
-  return { blue: colors.primary, red: colors.danger, orange: colors.warning, green: colors.success }[tone];
+  return { blue: colors.primary, red: colors.danger, orange: colors.warning, green: colors.successStrong }[tone];
 }

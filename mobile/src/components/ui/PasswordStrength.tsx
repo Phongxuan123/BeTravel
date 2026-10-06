@@ -3,10 +3,10 @@ import { View, Text } from 'react-native';
 export type StrengthLevel = 'weak' | 'medium' | 'good' | 'strong';
 
 const levelMeta: Record<StrengthLevel, { bars: number; label: string; color: string }> = {
-  weak: { bars: 1, label: 'Yếu', color: '#D62828' },
-  medium: { bars: 2, label: 'Trung bình', color: '#C2650A' },
-  good: { bars: 2, label: 'Khá mạnh', color: '#0F8A5F' },
-  strong: { bars: 3, label: 'Mạnh', color: '#0F8A5F' },
+  weak: { bars: 1, label: 'Yếu', color: '#EF4444' },
+  medium: { bars: 2, label: 'Trung bình', color: '#D97706' },
+  good: { bars: 2, label: 'Khá mạnh', color: '#22C55E' },
+  strong: { bars: 3, label: 'Mạnh', color: '#22C55E' },
 };
 
 export function scorePasswordStrength(password: string): StrengthLevel {
