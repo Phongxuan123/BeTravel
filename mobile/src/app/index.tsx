@@ -9,9 +9,7 @@ import {
   FileText,
   TriangleAlert,
   CircleAlert,
-  House,
   Phone,
-  MapPin,
   Languages,
   Map as MapIcon,
   Search,
@@ -153,6 +151,11 @@ export default function HomeScreen() {
               destinationDetail={currentTrip.destinationDetail}
               startDate={currentTrip.startDate}
               endDate={currentTrip.endDate}
+              keyNote={articlesQuery.data?.data[0]?.title}
+              onKeyNotePress={() => {
+                const first = articlesQuery.data?.data[0];
+                if (first) router.push(`/explore/${countryCode}/${first.slug}` as never);
+              }}
             />
           ) : (
             <View className="items-center rounded-xl border border-dashed border-primary bg-surface px-5 py-8">
@@ -251,19 +254,13 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Trợ giúp nhanh */}
+        {/* Dải gọi nhanh khẩn cấp */}
         <View className="mt-7">
-          <SectionHeader title="Trợ giúp nhanh" />
-          <View className="mt-3 flex-row flex-wrap" style={{ gap: 10 }}>
-            <HelpTile label="Đại sứ quán" tone="blue" icon={<House size={18} color={colors.primary} />} onPress={() => router.push('/sos')} />
-            <HelpTile
-              label={`Cảnh sát ${country?.emergencyNumbers.police ?? ''}`}
-              tone="red"
-              icon={<Phone size={18} color={colors.danger} />}
-              onPress={() => void openPhone(country?.emergencyNumbers.police)}
-            />
-            <HelpTile label="Hỗ trợ gần bạn" tone="green" icon={<MapPin size={18} color={colors.success} />} onPress={() => router.push('/sos/map')} />
-            <HelpTile label="Dịch khẩn cấp" tone="blue" icon={<Languages size={18} color={colors.primary} />} onPress={() => router.push('/translate')} />
+          <SectionHeader title="Gọi nhanh khẩn cấp" actionLabel="Trung tâm SOS" onAction={() => router.push('/sos')} />
+          <View className="mt-3 flex-row" style={{ gap: 10 }}>
+            <CallTile label="Cảnh sát" number={country?.emergencyNumbers.police} tone="red" />
+            <CallTile label="Cấp cứu" number={country?.emergencyNumbers.ambulance} tone="red" />
+            <CallTile label="Đại sứ quán" number={country?.embassy.phone} tone="blue" compact />
           </View>
         </View>
       </ScrollView>
@@ -278,6 +275,8 @@ function CurrentTripCard({
   destinationDetail,
   startDate,
   endDate,
+  keyNote,
+  onKeyNotePress,
 }: {
   countryCode: string;
   countryName?: string;
@@ -285,6 +284,8 @@ function CurrentTripCard({
   destinationDetail?: string;
   startDate: string;
   endDate: string;
+  keyNote?: string;
+  onKeyNotePress?: () => void;
 }) {
   const today = now();
   const start = parseISODate(startDate);
@@ -301,37 +302,67 @@ function CurrentTripCard({
   const timingLabel = upcoming ? `Khởi hành sau ${daysUntilStart} ngày` : past ? 'Đã kết thúc' : `Còn ${remaining} ngày`;
 
   return (
-    <View className="rounded-xl bg-primary p-5" style={{ shadowColor: 'rgba(22,119,255,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
+    <View
+      className="overflow-hidden rounded-xl bg-primary p-5"
+      style={{ shadowColor: 'rgba(22,119,255,1)', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 8 }}
+    >
+      {/* Vòng tròn mờ làm nền trang trí, giữ chữ trắng đủ tương phản */}
+      <View className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
+      <View className="absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-black/10" />
+
       <View className="flex-row items-start justify-between">
-        <Text className="text-xs font-body-bold tracking-wide text-white/80">CHUYẾN ĐI HIỆN TẠI</Text>
+        <View className="flex-row items-center" style={{ gap: 8 }}>
+          <View className="overflow-hidden rounded-sm border border-white/60">
+            <CountryFlag code={countryCode} width={30} height={22} />
+          </View>
+          <Text className="text-xs font-body-bold tracking-wide text-white/85">BẠN ĐANG Ở</Text>
+        </View>
         <View className="flex-row items-center gap-1.5 rounded-full bg-white px-2.5 py-1">
           <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
           <Text className="text-[13px] font-body-bold" style={{ color: statusColor }}>{statusLabel}</Text>
         </View>
       </View>
-      <Text className="mt-2 font-display text-white" style={{ fontSize: 24 }}>
+
+      <Text className="mt-3 font-display text-white" style={{ fontSize: 28, lineHeight: 34 }}>
         {destinationCity || countryName || countryCode}
       </Text>
       {!!destinationDetail && (
-        <Text className="mt-1 text-sm font-body-semibold text-white/80" numberOfLines={1}>
+        <Text className="mt-0.5 text-sm font-body-semibold text-white/80" numberOfLines={1}>
           {destinationDetail}
         </Text>
       )}
       <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
         <Calendar size={16} color="#fff" />
-        <Text className="text-[15px] font-body-semibold text-white">{formatTripRange(startDate, endDate)}</Text>
+        <Text className="font-mono text-[13px] text-white">{formatTripRange(startDate, endDate)}</Text>
         <Text className="text-white/60">·</Text>
-        <Text className="text-white/85">{timingLabel}</Text>
+        <Text className="text-[13px] text-white/90">{timingLabel}</Text>
       </View>
-      <View className="mt-4 h-1.5 rounded-full bg-white/30">
+      <View className="mt-3 h-1.5 rounded-full bg-white/30">
         <View className="h-1.5 rounded-full bg-white" style={{ width: `${Math.round(progress * 100)}%` }} />
       </View>
+
+      {!!keyNote && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onKeyNotePress}
+          className="mt-4 flex-row items-center rounded-lg bg-white/15 px-3.5 py-3"
+          style={{ gap: 10 }}
+        >
+          <TriangleAlert size={18} color="#fff" />
+          <View className="flex-1">
+            <Text className="text-[11px] font-body-bold tracking-wide text-white/75">LƯU Ý PHÁP LÝ QUAN TRỌNG</Text>
+            <Text className="mt-0.5 text-[13px] font-body-semibold text-white" numberOfLines={2}>{keyNote}</Text>
+          </View>
+          <ChevronRight size={18} color="#fff" />
+        </Pressable>
+      )}
+
       <Pressable
         accessibilityRole="button"
         onPress={() => router.push('/trips')}
-        className="mt-4 h-12 items-center justify-center rounded-md bg-white/15"
+        className="mt-3 h-12 items-center justify-center rounded-md bg-white"
       >
-        <Text className="text-base font-body-bold text-white">Xem chuyến đi</Text>
+        <Text className="text-base font-body-bold text-primary-strong">Xem chuyến đi</Text>
       </Pressable>
     </View>
   );
@@ -366,29 +397,38 @@ function QuickTile({
   );
 }
 
-function HelpTile({
+function CallTile({
   label,
+  number,
   tone,
-  icon,
-  onPress,
+  compact,
 }: {
   label: string;
-  tone: 'blue' | 'red' | 'green';
-  icon: React.ReactNode;
-  onPress: () => void;
+  number?: string;
+  tone: 'red' | 'blue';
+  compact?: boolean;
 }) {
+  const isRed = tone === 'red';
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={onPress}
-      style={{ width: '48%' }}
-      className="h-[62px] flex-row items-center gap-2.5 rounded-lg border border-line bg-surface px-3"
+      accessibilityLabel={`Gọi ${label}`}
+      disabled={!number}
+      onPress={() => void openPhone(number)}
+      className={`min-h-[84px] flex-1 items-center justify-center rounded-lg border px-2 ${
+        isRed ? 'border-danger-line bg-danger-tint' : 'border-line bg-surface'
+      }`}
+      style={{ gap: 4 }}
     >
-      <IconTile tone={tone} size={36}>
-        {icon}
-      </IconTile>
-      <Text className="flex-1 text-[15px] font-body-bold text-ink" numberOfLines={1}>
-        {label}
+      <Phone size={18} color={isRed ? colors.dangerStrong : colors.primary} />
+      <Text className="text-[13px] font-body-bold text-ink" numberOfLines={1}>{label}</Text>
+      <Text
+        className="font-mono-bold text-[15px]"
+        style={{ color: isRed ? colors.dangerStrong : colors.primaryStrong }}
+        numberOfLines={1}
+        adjustsFontSizeToFit={compact}
+      >
+        {number || '--'}
       </Text>
     </Pressable>
   );
