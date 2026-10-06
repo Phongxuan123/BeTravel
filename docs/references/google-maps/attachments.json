@@ -1,0 +1,56 @@
+{
+  "receivedAt": "2026-10-06",
+  "status": "collecting",
+  "attachments": [
+    {
+      "attachmentId": "523a663e-d047-49e6-9025-df816f48c3c8",
+      "file": "01-commutes-and-destinations.html",
+      "sha256": "ee0f7cadc1375049bcb349e9c853c797e3de18e6e3c9538e4f9ab45db82cb38b"
+    },
+    {
+      "attachmentId": "56f3ae26-8de8-4db8-8d87-4aeeb02b8dee",
+      "file": "02-address-selection.html",
+      "sha256": "f419eef2945c6b891e1a037109d1a48fa4603dcae1ee22526df5624c728597be"
+    },
+    {
+      "attachmentId": "d9998948-9d35-4032-bdfc-0ffcf6bfdcab",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "e248edf1-41c8-4cc5-8c1b-8490f68a804b",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "473847a1-ac25-438e-9340-cd9192820e42",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "d196ba22-8318-46e1-8fb6-e818556f44ba",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "33a393a9-49db-46e2-ae95-21be447dcfe4",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "e5b3447a-4c30-4672-a45c-5252a1f224d8",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "855ddd21-3b86-41ac-a4cb-442c14f1206f",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "180d0fb2-0b7e-4d87-907b-998e2088f7e0",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    }
+  ]
+}

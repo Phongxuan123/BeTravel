@@ -1,5 +1,12 @@
 # TIEN DO BE.TRAVEL
 
+## Thu thập mẫu Google Maps — 06/10/2026
+
+Trạng thái: **đang chờ bổ sung, chưa bắt đầu tích hợp các mẫu mới** theo yêu cầu.
+Đã lưu 10 tệp đính kèm + 1 đoạn HTML thành 4 mẫu độc lập tại
+`docs/references/google-maps/`. Có danh mục và hash ánh xạ các bản trùng nhau.
+Tiếp tục nhận mẫu; chỉ khởi tạo/tích hợp khi người dùng báo đủ và yêu cầu thực hiện.
+
 Cập nhật lần cuối: 2026-10-06 · Khôi phục cẩm nang/dịch, Google Maps iOS, lịch trình nhiều nước.
 
 ## Sửa cẩm nang, dịch và lịch trình — 06/10/2026
