@@ -1,6 +1,6 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-09-29 · Nhánh: `feature/trip-city-suggestions` (tính năng theo yêu cầu người dùng, không thuộc batch hay đợt QA).
+Cập nhật lần cuối: 2026-10-06 · Nhánh: `feature/ui-redesign-spec` (thiết kế lại giao diện mobile theo FRONTEND_UI_SPECIFICATION.md, theo yêu cầu người dùng).
 
 ## Tính năng: gợi ý thành phố lớn ở wizard tạo chuyến đi (29/09)
 
@@ -898,3 +898,22 @@ soát TOÀN BỘ 21 màn hình mobile + component dùng chung, tìm ra 32 vấn 
     rõ "đã CHUẨN BỊ đủ để triển khai" với "ĐÃ triển khai thật", tránh báo
     cáo sai một tiêu chí chưa thực sự hoàn thành (nguyên tắc minh bạch nhất
     quán với toàn bộ sổ tiến độ từ B1).
+
+
+## Quyết định phát sinh (UI redesign 2026-10-06)
+
+- Design tokens mobile đổi theo FRONTEND_UI_SPECIFICATION.md: Brand Blue `#1677FF`, nền `#F5F9FF`,
+  chữ `#102A43`, SOS `#EF4444`; font Plus Jakarta Sans + JetBrains Mono (số liệu); bo góc 16/24.
+  Thêm biến thể `*-strong` cho chữ xanh lá/vàng/đỏ vì màu gốc của spec không đủ tương phản trên nền trắng.
+- Emoji trong spec (cờ, dấu tích) thay bằng icon `lucide-react-native` (Rule 12).
+- Be.Travel AI tạm khóa bằng màn chờ theo quyết định của người dùng: `EXPO_PUBLIC_AI_CHAT_ENABLED`
+  (mặc định false). Code chat chuyển sang `src/features/chat/ChatScreen.tsx`, không xóa.
+- Người dùng cho phép publish 2 bài KR mẫu (`qua-han-luu-tru`, `bang-lai-nuoc-ngoai`) để xem giao diện:
+  `npm run seed:samples`. Chỉ dùng bài đã có nguồn `gov`, không tạo nội dung mới; `reviewNote` ghi rõ
+  CHƯA qua đối chiếu nguồn bởi người thật. Hai bài chưa được reindex cho RAG (AI đang khóa).
+
+## Nợ kỹ thuật (UI redesign)
+
+- Spec yêu cầu 11 chuyên mục pháp lý; DB hiện có 6 chủ đề KR. Cần seed thêm khi có bài có nguồn.
+- Câu trả lời AI 4 phần cần đổi contract `ChatAnswer` + prompt/guard -- làm khi mở lại AI.
+- Mẫu câu dịch chưa có trường danh mục (7 tình huống); alerts chưa có mức "Medium".
