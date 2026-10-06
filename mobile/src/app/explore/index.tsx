@@ -10,6 +10,7 @@ import { FilterChip } from '@/components/ui/FilterChip';
 import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
@@ -60,6 +61,15 @@ export default function ExploreScreen() {
 
   const disabledError = [topicsQuery.error, articlesQuery.error].find(isFeatureDisabledError);
 
+  // Tra cuu phap luat dang bi phong toa o backend: chan ca man, khong hien noi dung rong/loi mang.
+  if (disabledError) {
+    return (
+      <AppShell active="explore">
+        <ComingSoonScreen title="Cẩm nang pháp luật" detail={disabledError.message} showHeader={false} />
+      </AppShell>
+    );
+  }
+
   const topicFilterLabel = topicsQuery.data?.data.find((t) => t.key === topicFilter)?.label ?? 'Chủ đề';
 
   const onPickTopic = (key: string | null) => {
@@ -101,9 +111,7 @@ export default function ExploreScreen() {
         )}
         {(topicsQuery.isError || articlesQuery.isError) && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-center text-sm text-danger">
-              {disabledError ? disabledError.message : 'Không tải được dữ liệu. Kiểm tra kết nối mạng.'}
-            </Text>
+            <Text className="text-center text-sm text-danger">Không tải được dữ liệu. Kiểm tra kết nối mạng.</Text>
           </View>
         )}
 

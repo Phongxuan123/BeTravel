@@ -2,6 +2,12 @@
 
 Cập nhật lần cuối: 2026-10-05 · Bản vá từ ZIP người dùng cung cấp; chưa push hoặc triển khai.
 
+## Màn chặn cho phần chưa hoàn thiện (06/10)
+
+Theo yêu cầu: phần nào chưa làm được thì chặn bằng màn hình "đang hoàn thiện" (`ComingSoonScreen`, route `/coming-soon`) để app chạy được. Đã chặn: Khám phá, Tìm kiếm, chi tiết bài, AI Legal (khi backend phong tỏa tra cứu luật, `FEATURE_DISABLED`); Trang chủ ẩn mục bài luật thay vì báo lỗi mạng; liên kết Điều khoản và Chính sách bảo mật ở màn đăng ký mở màn chặn (chưa có văn bản, không tự soạn). Backend: `SMTP_DISABLED` thay cho dò `NODE_ENV` trong email; ghi log rõ khi gửi OTP thất bại.
+
+Vẫn chưa làm được (cần dữ liệu từ người, xem `docs/USER_INPUT_FORM.md`): nội dung pháp lý KR, điểm SOS/GeoAlert, văn bản Điều khoản/Bảo mật, đóng gói số khẩn cấp offline, định danh app và triển khai.
+
 ## Tích hợp bản vá 05/10 vào GitHub (06/10)
 
 Bản vá của ThanhDatDora (`fix/betravel-qa-20261005`) được gộp qua nhánh tích hợp. Hai chỗ bản vá khai nhưng thiếu/lỗi đã được bổ sung: `backend/test/setup.js` bỏ cờ `--nounixsocket` trên Windows (mongod Windows thoát mã 2, làm đỏ toàn bộ test backend), và thêm thật `.github/workflows/ci.yml` + `.gitattributes`. Kiểm tra trên Windows: backend 262/262, golden 26/26.
