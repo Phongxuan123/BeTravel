@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Info, MessageCircle, Star, Share as ShareIcon, TriangleAlert, X, ShieldCheck } from 'lucide-react-native';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { IconButton } from '@/components/ui/IconButton';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { colors } from '@/lib/theme';
+import { isFeatureDisabledError } from '@/lib/api/http';
 import { fetchArticle } from '@/lib/data';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
 
@@ -26,6 +28,11 @@ export default function ArticleDetailScreen() {
     if (!article) return;
     Share.share({ message: `${article.title} — ${article.source.url}` }).catch(() => {});
   };
+
+  // Tra cuu phap luat dang bi phong toa o backend: man chan thay vi bao "co the bai da bi go".
+  if (isFeatureDisabledError(articleQuery.error)) {
+    return <ComingSoonScreen title="Bài luật" detail={articleQuery.error.message} />;
+  }
 
   if (articleQuery.isError || (!articleQuery.isLoading && !article)) {
     return (

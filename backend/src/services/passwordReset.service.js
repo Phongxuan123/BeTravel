@@ -101,11 +101,11 @@ export const requestPasswordReset = async (email) => {
       userId: user._id,
     });
 
-    console.error("Password reset email error:", error.message);
-
-    // Giữ lại lỗi gốc (SMTP) trong `cause` để log phía server truy vết được,
-    // trong khi controller/client chỉ thấy mã nghiệp vụ PASSWORD_RESET_EMAIL_FAILED.
-    throw new Error("PASSWORD_RESET_EMAIL_FAILED", { cause: error });
+    // Van tra accepted de khong lo email nao ton tai (chong do tai khoan). He qua: SMTP loi
+    // chi thay duoc o log server -- can giam sat dong log nay, neu khong nguoi dung se khong
+    // nhan duoc OTP ma khong ai biet vi sao.
+    console.error("[password-reset] Gui email OTP that bai:", error.message);
+    return { accepted: true };
   }
 
   return { accepted: true };

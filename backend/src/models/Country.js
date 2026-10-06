@@ -41,6 +41,7 @@ const countrySchema = new mongoose.Schema(
 
     name: { type: String, required: true, trim: true },
     nameEn: { type: String, default: "" },
+    aliases: { type: [String], default: [] },
     language: { type: String, default: "" },
 
     emergencyNumbers: { type: emergencyNumbersSchema, default: () => ({}) },

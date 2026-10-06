@@ -26,7 +26,7 @@ test("GET /api/auth/me tra ve preferences mac dinh", async () => {
   assert.deepEqual(res.body.data.user.preferences, {
     locale: "vi",
     alerts: { legal: true, safety: true, tripReminder: false },
-    locationConsent: true,
+    locationConsent: false,
   });
 });
 

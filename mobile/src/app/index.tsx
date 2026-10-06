@@ -30,6 +30,7 @@ import { openPhone } from '@/lib/openExternal';
 import { useCountry } from '@/lib/countryContext';
 import { useAuth } from '@/lib/auth';
 import { fetchTrips, fetchAlerts, fetchArticles, fetchCountries } from '@/lib/data';
+import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 
@@ -82,6 +83,8 @@ export default function HomeScreen() {
     enabled: !!countryCode,
   });
   const unreadAlertItems = (alertsQuery.data?.data ?? []).filter((a) => !a.read).slice(0, 2);
+  // Tra cuu phap luat dang bi phong toa o backend: khong bao nham la loi mang.
+  const articlesDisabled = isFeatureDisabledError(articlesQuery.error);
   const unreadAlerts = alertsQuery.data?.data.filter((a) => !a.read).length ?? 0;
 
   const initials = user ? user.name.slice(0, 2).toUpperCase() : '';
@@ -91,7 +94,7 @@ export default function HomeScreen() {
       <ScrollView
         contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, paddingHorizontal: 18 }}
       >
-        {(tripsQuery.isError || articlesQuery.isError) && (
+        {(tripsQuery.isError || (articlesQuery.isError && !articlesDisabled)) && (
           <View className="mb-3 rounded-md bg-danger-tint p-3">
             <Text className="text-center text-sm text-danger">Không tải được một số dữ liệu. Kiểm tra kết nối mạng.</Text>
           </View>
@@ -224,7 +227,9 @@ export default function HomeScreen() {
         <View className="mt-7">
           <SectionHeader title="Pháp lý & mẹo du lịch" actionLabel="Xem tất cả" onAction={() => router.push('/explore')} />
           <View className="mt-3" style={{ gap: 10 }}>
-            {articlesQuery.isLoading ? (
+            {articlesDisabled ? (
+              <Text className="text-sm text-muted">Mục tra cứu pháp luật đang tạm ngưng để cập nhật nội dung.</Text>
+            ) : articlesQuery.isLoading ? (
               <>
                 <Skeleton className="h-[66px] rounded-lg" />
                 <Skeleton className="h-[66px] rounded-lg" />

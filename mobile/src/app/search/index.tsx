@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, MessageCircle, Search as SearchIcon, X, Check } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { QuickChip } from '@/components/ui/QuickChip';
@@ -14,6 +15,7 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { searchArticles, fetchTopics } from '@/lib/data';
+import { isFeatureDisabledError } from '@/lib/api/http';
 
 export default function SearchScreen() {
   const params = useLocalSearchParams<{ q?: string }>();
@@ -43,6 +45,11 @@ export default function SearchScreen() {
   const hasQuery = debounced.trim().length > 0;
   const hasResults = results.length > 0;
   const hasError = resultsQuery.isError;
+
+  // Tra cuu phap luat dang bi phong toa o backend: chan ca man thay vi bao nham loi mang.
+  if (isFeatureDisabledError(resultsQuery.error)) {
+    return <ComingSoonScreen title="Tìm quy định" detail={resultsQuery.error.message} />;
+  }
 
   return (
     <View className="flex-1 bg-bg">

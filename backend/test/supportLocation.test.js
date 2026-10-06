@@ -86,6 +86,7 @@ test("GET /api/support-locations/nearby -- khong co diem trong ban kinh thi tu m
 
 test("GET /api/support-locations -- fallback theo quoc gia khi khong co GPS", async () => {
   await SupportLocation.create({
+    verified: true,
     countryCode: "KR",
     type: "hospital",
     name: "Benh vien KR",

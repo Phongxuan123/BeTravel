@@ -8,6 +8,7 @@ import type { Incident } from '@/mocks/schemas';
 
 export type ApiIncidentCta = { type: 'map' | 'call' | 'ai' | 'link'; label: string; payload: Record<string, unknown> };
 export type ApiIncidentStep = {
+  stepId?: string;
   order: number;
   title: string;
   body: string[];
@@ -63,16 +64,16 @@ export async function fetchIncident(slug: string): Promise<{ ok: true; data: Inc
   }
 }
 
-export async function getIncidentProgress(incidentId: string): Promise<{ ok: true; data: { completedSteps: number[] } }> {
-  const data = await apiRequest<{ completedSteps: number[] }>(`/users/incident-progress/${incidentId}`);
+export async function getIncidentProgress(incidentId: string): Promise<{ ok: true; data: { completedSteps: string[] } }> {
+  const data = await apiRequest<{ completedSteps: string[] }>(`/users/incident-progress/${incidentId}`);
   return { ok: true, data };
 }
 
 export async function setIncidentProgress(
   incidentId: string,
-  completedSteps: number[],
-): Promise<{ ok: true; data: { completedSteps: number[] } }> {
-  const data = await apiRequest<{ completedSteps: number[] }>(`/users/incident-progress/${incidentId}`, {
+  completedSteps: string[],
+): Promise<{ ok: true; data: { completedSteps: string[] } }> {
+  const data = await apiRequest<{ completedSteps: string[] }>(`/users/incident-progress/${incidentId}`, {
     method: 'PUT',
     body: { completedSteps },
   });

@@ -1,5 +1,5 @@
 import { ScrollView, View, Text } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, Redirect } from 'expo-router';
 import { colors, radii, spacing, shadows, typography } from '@/lib/theme';
 
 type Swatch = { token: string; hex: string };
@@ -82,6 +82,7 @@ function SectionTitle({ children }: { children: string }) {
 }
 
 export default function DesignSystemScreen() {
+  if (!__DEV__) return <Redirect href="/" />;
   return (
     <>
       <Stack.Screen options={{ headerShown: true, title: 'Design System' }} />

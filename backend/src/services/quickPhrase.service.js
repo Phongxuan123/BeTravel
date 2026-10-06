@@ -30,4 +30,6 @@ export const deleteQuickPhrase = async (id) => QuickPhrase.findByIdAndDelete(id)
 
 // ── Cong khai (/api/quick-phrases) ───────────────────────────────────────
 export const listQuickPhrasesForCountry = async (countryCode) =>
-  QuickPhrase.find({ countryCode: countryCode.trim().toUpperCase() }).sort({ order: 1 });
+  QuickPhrase.find({ countryCode: countryCode.trim().toUpperCase() })
+    .select("-createdBy -updatedBy -__v")
+    .sort({ order: 1 });

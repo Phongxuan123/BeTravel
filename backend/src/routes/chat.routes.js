@@ -1,6 +1,7 @@
 import express from "express";
 
 import { authenticateToken } from "../middleware/auth.middleware.js";
+import { requireLegalLookupEnabled } from "../middleware/legalLookup.middleware.js";
 import { validateBody } from "../middleware/validate.middleware.js";
 import { chatRateLimit } from "../middleware/rateLimit.middleware.js";
 import * as chatController from "../controllers/chat.controller.js";
@@ -18,6 +19,8 @@ import {
  */
 const router = express.Router();
 
+// Chat AI dua tren kho phap ly -- tat cung cong tra cuu (LEGAL_LOOKUP_ENABLED).
+router.use(requireLegalLookupEnabled);
 router.use(authenticateToken);
 
 router.get("/sessions", chatController.listSessions);

@@ -68,6 +68,7 @@ export const countryCreateSchema = z.object({
   code: countryCodeSchema,
   name: z.string().trim().min(1, "Ten quoc gia khong duoc de trong"),
   nameEn: z.string().trim().optional(),
+  aliases: z.array(z.string().trim().min(1).max(80)).max(80).optional(),
   language: z.string().trim().optional(),
   emergencyNumbers: emergencyNumbersSchema,
   embassy: embassySchema,
@@ -268,6 +269,7 @@ const incidentChecklistItemSchema = z.object({
 });
 
 const incidentStepSchema = z.object({
+  stepId: z.string().trim().min(1).max(100).optional(),
   title: z.string().trim().min(1, "Tieu de buoc khong duoc de trong"),
   body: z.array(z.string().trim()).optional().default([]),
   checklist: z.array(incidentChecklistItemSchema).optional().default([]),

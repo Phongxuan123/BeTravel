@@ -9,11 +9,13 @@ import { FilterChip } from '@/components/ui/FilterChip';
 import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchTopics, fetchArticles, fetchCountries } from '@/lib/data';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
+import { isFeatureDisabledError } from '@/lib/api/http';
 import type { Article } from '@/lib/data';
 
 // Lối tắt công cụ dưới thanh tìm kiếm (spec 3.5).
@@ -52,6 +54,17 @@ export default function ExploreScreen() {
   const visibleArticles = (articlesQuery.data?.data ?? []).filter(
     (article) => !savedOnly || useServerSavedFilter || isSaved(article.id),
   );
+
+  const disabledError = [topicsQuery.error, articlesQuery.error].find(isFeatureDisabledError);
+
+  // Tra cuu phap luat dang bi phong toa o backend: chan ca man, khong hien noi dung rong/loi mang.
+  if (disabledError) {
+    return (
+      <AppShell active="explore">
+        <ComingSoonScreen title="Cẩm nang pháp luật" detail={disabledError.message} showHeader={false} />
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell active="explore">

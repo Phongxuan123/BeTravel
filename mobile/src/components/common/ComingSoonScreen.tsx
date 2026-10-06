@@ -12,10 +12,19 @@ const DEFAULT_MESSAGE = 'Tính năng đang trong quá trình nâng cấp và ho�
  * hoàn thiện. Dùng qua route dùng chung `app/coming-soon.tsx`, không tạo màn
  * hình riêng cho từng tính năng.
  */
-export function ComingSoonScreen({ title, detail }: { title: string; detail?: string }) {
+// showHeader=false: dung ben trong man co AppShell (tab) da co header rieng.
+export function ComingSoonScreen({
+  title,
+  detail,
+  showHeader = true,
+}: {
+  title: string;
+  detail?: string;
+  showHeader?: boolean;
+}) {
   return (
     <View className="flex-1 bg-surface">
-      <PageHeader title={title} />
+      {showHeader && <PageHeader title={title} />}
       <View className="flex-1 items-center justify-center px-8">
         <View
           className="mb-6 items-center justify-center rounded-full"

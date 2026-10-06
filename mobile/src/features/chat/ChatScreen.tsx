@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, MessageCircle, Plus, Send, TriangleAlert, Pencil, Trash2, Check, X } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
+import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { QuickChip } from '@/components/ui/QuickChip';
 import { IconButton } from '@/components/ui/IconButton';
@@ -14,7 +15,7 @@ import { AnswerCard } from '@/features/chat/components/AnswerCard';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { ApiError } from '@/lib/api/http';
+import { ApiError, isFeatureDisabledError } from '@/lib/api/http';
 import {
   askLegalAssistant,
   listChatSessions,
@@ -81,6 +82,8 @@ export default function ChatScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const focusArticleIdUsedRef = useRef(false);
   const sendingRef = useRef(false);
+  // Backend phong toa tra cuu phap luat (FEATURE_DISABLED): chan ca man chat.
+  const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
   const [historyOpen, setHistoryOpen] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -117,7 +120,11 @@ export default function ChatScreen() {
 
         setMessages(toLocalMessages(history.data));
         setFeedback(buildFeedbackMap(history.data));
-      } catch {
+      } catch (error) {
+        if (isFeatureDisabledError(error)) {
+          if (!cancelled) setBlockedMessage(error.message);
+          return;
+        }
         // Khong tai duoc lich su -- khong chan man hinh, nguoi dung van hoi duoc cau moi.
       }
     })();
@@ -126,6 +133,10 @@ export default function ChatScreen() {
       cancelled = true;
     };
   }, [isGuest, countryCode, params.focusArticleId]);
+
+  if (blockedMessage) {
+    return <ComingSoonScreen title="AI Legal Assistant" detail={blockedMessage} />;
+  }
 
   if (isGuest) {
     return (
@@ -167,6 +178,10 @@ export default function ChatScreen() {
       // dang insufficient_evidence de tai su dung AnswerCard co san thay vi
       // them mot loai bubble loi rieng. QUOTA_EXCEEDED can thong bao rieng,
       // ro rang (DoD B5), khong the dung chung wording "mat ket noi mang".
+      if (isFeatureDisabledError(error)) {
+        setBlockedMessage(error.message);
+        return;
+      }
       const isQuota = error instanceof ApiError && error.code === 'QUOTA_EXCEEDED';
       const errorAnswer: ChatAnswer = {
         status: 'insufficient_evidence',

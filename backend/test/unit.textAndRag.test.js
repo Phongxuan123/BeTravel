@@ -192,11 +192,10 @@ test("guard giu nhieu marker lien tiep va gom citation khong trung", () => {
   assert.equal(result.citations.length, 2);
 });
 
-test("guard tra loi khong dinh luong, khong marker van qua va co disclaimer", () => {
-  const result = guardAnswer({ answer: "Bạn nên mang hộ chiếu.", usedSources: [] }, new Map());
-  assert.equal(result.fallbackReason, null);
-  assert.match(result.answer, /\n\n---\n/);
-  assert.deepEqual(result.citations, []);
+test("guard từ chối mọi câu trả lời không có citation", () => {
+  const result = guardAnswer({ answer: "Hãy giữ bình tĩnh.", usedSources: [] }, new Map());
+  assert.equal(result.fallbackReason, "GUARD_REJECTED");
+  assert.ok(result.violations.includes("MISSING_CITATION"));
 });
 
 // --- parseLlmJson / buildUserPrompt ---

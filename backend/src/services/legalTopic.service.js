@@ -23,8 +23,22 @@ export const getTopicById = async (id) => LegalTopic.findById(id);
 export const createTopic = async (data, actorId) =>
   LegalTopic.create({ ...data, createdBy: actorId, updatedBy: actorId });
 
-export const updateTopic = async (id, data, actorId) =>
-  LegalTopic.findByIdAndUpdate(id, { ...data, updatedBy: actorId }, { returnDocument: "after" });
+export const updateTopic = async (id, data, actorId) => {
+  const current = await LegalTopic.findById(id);
+  if (!current) return null;
+  if (
+    (data.slug && data.slug !== current.slug) ||
+    (data.countryCode && data.countryCode !== current.countryCode)
+  ) {
+    if (await LegalArticle.exists({ countryCode: current.countryCode, topicSlug: current.slug }))
+      throw new AppError(ErrorCode.CONFLICT, "Không đổi khóa chủ đề đang được bài luật tham chiếu");
+  }
+  return LegalTopic.findByIdAndUpdate(
+    id,
+    { ...data, updatedBy: actorId },
+    { returnDocument: "after", runValidators: true },
+  );
+};
 
 // Xoa chu de con bai tham chieu se de bai "mo coi" topicSlug -- admin phai
 // chuyen bai sang chu de khac truoc (INV-04.10, docs/07_QA_BugHunt.md).
