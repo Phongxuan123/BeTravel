@@ -39,7 +39,7 @@ export const createAdminCrudController = ({ entityType, notFoundMessage, service
         action: "CREATE",
         entityType,
         entityId: entity._id,
-        after: entity.toObject(),
+        after: entity.toObject?.() ?? entity,
         ip: req.ip,
       });
 
@@ -61,8 +61,8 @@ export const createAdminCrudController = ({ entityType, notFoundMessage, service
         action: "UPDATE",
         entityType,
         entityId: after._id,
-        before: before.toObject(),
-        after: after.toObject(),
+        before: before.toObject?.() ?? before,
+        after: after.toObject?.() ?? after,
         ip: req.ip,
       });
 
@@ -84,7 +84,7 @@ export const createAdminCrudController = ({ entityType, notFoundMessage, service
         action: "DELETE",
         entityType,
         entityId: before._id,
-        before: before.toObject(),
+        before: before.toObject?.() ?? before,
         ip: req.ip,
       });
 

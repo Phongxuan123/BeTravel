@@ -2,7 +2,10 @@ import crypto from "node:crypto";
 import Job from "../models/Job.js";
 import { JobStatus } from "../core/constants.js";
 
-export const enqueueJob = async (name, payload = {}) => Job.create({ name, payload });
+export const enqueueJob = async (name, payload = {}, session = null) => {
+  const [job] = await Job.create([{ name, payload }], session ? { session } : {});
+  return job;
+};
 const LOCK_STALE_MS = 60_000;
 const DEFAULT_POLL_INTERVAL_MS = 3000;
 const handlers = new Map();

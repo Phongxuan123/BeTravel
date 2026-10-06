@@ -467,7 +467,7 @@ test("H-06.c so khong phai phap ly khong bi ha cap nham", () => {
     "Tổng đài 1345 hỗ trợ người nước ngoài.",
     "Đại sứ quán mở cửa lúc 9 giờ.",
   ]) {
-    const result = guard.guardAnswer({ answer, usedSources: [] }, retrieved);
+    const result = guard.guardAnswer({ answer: `${answer} [S1]`, usedSources: ["S1"] }, retrieved);
     assert.equal(result.fallbackReason, null, answer);
   }
 });

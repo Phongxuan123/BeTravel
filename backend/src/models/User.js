@@ -91,7 +91,7 @@ const userSchema = new mongoose.Schema(
         safety: { type: Boolean, default: true },
         tripReminder: { type: Boolean, default: false },
       },
-      locationConsent: { type: Boolean, default: true },
+      locationConsent: { type: Boolean, default: false },
     },
   },
   {

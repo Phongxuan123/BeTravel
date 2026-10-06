@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { mentionsCountry } from "../utils/countryAliases.js";
 
 import ChatSession from "../models/ChatSession.js";
 import ChatMessage from "../models/ChatMessage.js";
@@ -10,7 +11,7 @@ import { buildSystemPrompt, buildUserPrompt, parseLlmJson } from "../rag/prompt.
 import { guardAnswer, FALLBACK_MESSAGE, DEFAULT_DISCLAIMER } from "../rag/guard.js";
 import { getLlmProvider } from "../rag/llm/index.js";
 import { getEmbeddingProvider } from "../rag/embedding/index.js";
-import { containsPhrase, normalizeVi } from "../utils/textNormalize.js";
+import { normalizeVi } from "../utils/textNormalize.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
 import { FallbackReason, ChatRole } from "../core/constants.js";
 import { env } from "../core/env.js";
@@ -92,9 +93,9 @@ const buildCacheKey = (question, countryCode, chunks, model) => {
  */
 async function detectOtherCountryMention(question, currentCountry) {
   const otherCountries = await Country.find({ code: { $ne: currentCountry.code } })
-    .select("code name")
+    .select("code name nameEn aliases majorCities")
     .lean();
-  return otherCountries.find((c) => containsPhrase(question, c.name)) ?? null;
+  return otherCountries.find((c) => mentionsCountry(question, c)) ?? null;
 }
 
 async function persistAssistantMessage({ sessionId, result, model, latencyMs }) {
@@ -169,7 +170,7 @@ export const sendMessage = async ({ userId, sessionId, question, focusArticleId 
       citations: [],
       confidence: "high",
       needsOfficialHelp: false,
-      fallbackReason: null,
+      fallbackReason: FallbackReason.INSUFFICIENT_EVIDENCE,
       retrieval: { topScore: 0, chunkIds: [], passed: false },
     };
     const message = await persistAssistantMessage({
@@ -230,7 +231,12 @@ export const sendMessage = async ({ userId, sessionId, question, focusArticleId 
   }
 
   const llm = getLlmProvider();
-  const cacheKey = buildCacheKey(question, countryCode, retrieval.chunks, llm.model);
+  const cacheKey = buildCacheKey(
+    question,
+    countryCode,
+    retrieval.chunks,
+    `${llm.model}:citations-v2`,
+  );
   // TTL Mongo dọn theo chu kỳ, do đó phải tự lọc thời điểm hết hạn khi đọc.
   const cached = await AiCache.findOne({ key: cacheKey, expiresAt: { $gt: new Date() } }).lean();
   let confidence = cached?.confidence ?? "low";

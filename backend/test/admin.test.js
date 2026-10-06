@@ -111,6 +111,10 @@ test("publish bai luat thieu source bi tu choi voi CONFLICT liet ke field thieu"
 
   const articleId = createRes.body.data._id;
 
+  await request(app)
+    .post(`/api/admin/legal/articles/${articleId}/status`)
+    .set("Authorization", auth(accessToken))
+    .send({ status: "pending_review" });
   const publishRes = await request(app)
     .post(`/api/admin/legal/articles/${articleId}/status`)
     .set("Authorization", auth(accessToken))
@@ -149,6 +153,10 @@ test("publish bai luat hop le -> published, isCurrent=true, enqueue reindex_arti
     });
   const articleId = createRes.body.data._id;
 
+  await request(app)
+    .post(`/api/admin/legal/articles/${articleId}/status`)
+    .set("Authorization", auth(accessToken))
+    .send({ status: "pending_review" });
   const publishRes = await request(app)
     .post(`/api/admin/legal/articles/${articleId}/status`)
     .set("Authorization", auth(accessToken))
@@ -194,6 +202,10 @@ test("publish version 2 -> version 1 tu dong superseded + isCurrent=false", asyn
   await request(app)
     .post(`/api/admin/legal/articles/${v1Id}/status`)
     .set("Authorization", auth(accessToken))
+    .send({ status: "pending_review" });
+  await request(app)
+    .post(`/api/admin/legal/articles/${v1Id}/status`)
+    .set("Authorization", auth(accessToken))
     .send({ status: "published" });
 
   const newVersionRes = await request(app)
@@ -214,6 +226,10 @@ test("publish version 2 -> version 1 tu dong superseded + isCurrent=false", asyn
       updatedAt: newVersionRes.body.data.updatedAt,
     });
 
+  await request(app)
+    .post(`/api/admin/legal/articles/${v2Id}/status`)
+    .set("Authorization", auth(accessToken))
+    .send({ status: "pending_review" });
   const publishV2Res = await request(app)
     .post(`/api/admin/legal/articles/${v2Id}/status`)
     .set("Authorization", auth(accessToken))

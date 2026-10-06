@@ -30,15 +30,15 @@ test('fetchIncident tra ve null (khong nem loi) khi 404', async () => {
 });
 
 test('getIncidentProgress/setIncidentProgress goi dung endpoint', async () => {
-  (apiRequest as jest.Mock).mockResolvedValueOnce({ completedSteps: [0] });
+  (apiRequest as jest.Mock).mockResolvedValueOnce({ completedSteps: ['step-a'] });
   const got = await getIncidentProgress('i1');
   expect(apiRequest).toHaveBeenCalledWith('/users/incident-progress/i1');
-  expect(got.data.completedSteps).toEqual([0]);
+  expect(got.data.completedSteps).toEqual(['step-a']);
 
-  (apiRequest as jest.Mock).mockResolvedValueOnce({ completedSteps: [0, 1] });
-  const put = await setIncidentProgress('i1', [0, 1]);
-  expect(apiRequest).toHaveBeenCalledWith('/users/incident-progress/i1', { method: 'PUT', body: { completedSteps: [0, 1] } });
-  expect(put.data.completedSteps).toEqual([0, 1]);
+  (apiRequest as jest.Mock).mockResolvedValueOnce({ completedSteps: ['step-a', 'step-b'] });
+  const put = await setIncidentProgress('i1', ['step-a', 'step-b']);
+  expect(apiRequest).toHaveBeenCalledWith('/users/incident-progress/i1', { method: 'PUT', body: { completedSteps: ['step-a', 'step-b'] } });
+  expect(put.data.completedSteps).toEqual(['step-a', 'step-b']);
 });
 
  test('fetchIncident giữ lỗi mạng để giao diện có thể báo lỗi và thử lại', async () => {

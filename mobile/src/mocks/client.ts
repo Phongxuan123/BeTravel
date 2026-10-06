@@ -139,13 +139,13 @@ export async function fetchIncident(slug: string) {
 // Tien do xu ly su co (B7) -- luu trong RAM cho phien mock, du de demo UI
 // resume dung sau khi quay lai man hinh (khong ton tai qua lan mo app moi,
 // chap nhan duoc vi day la mock).
-const mockIncidentProgress = new Map<string, number[]>();
+const mockIncidentProgress = new Map<string, string[]>();
 
 export async function getIncidentProgress(incidentId: string) {
   return delay({ completedSteps: mockIncidentProgress.get(incidentId) ?? [] });
 }
 
-export async function setIncidentProgress(incidentId: string, completedSteps: number[]) {
+export async function setIncidentProgress(incidentId: string, completedSteps: string[]) {
   mockIncidentProgress.set(incidentId, completedSteps);
   return delay({ completedSteps });
 }
@@ -309,7 +309,7 @@ export async function translateText(
 let mockPreferences: Preferences = {
   locale: 'vi',
   alerts: { legal: true, safety: true, tripReminder: false },
-  locationConsent: true,
+  locationConsent: false,
 };
 
 export async function fetchPreferences() {

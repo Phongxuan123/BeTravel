@@ -1,4 +1,4 @@
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
 /*
@@ -11,6 +11,11 @@ process.env.NODE_ENV = "test";
 process.env.LLM_PROVIDER = "mock";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
+// Test khong gui email that (xem email.service.js).
+process.env.SMTP_DISABLED = "true";
+// Mac dinh production la TAT tra cuu phap luat (env.js); test nghiep vu can BAT.
+// File test kiem cong chan tu dat "false" truoc khi nap app (xem legalLookup.lockdown.test.js).
+process.env.LEGAL_LOOKUP_ENABLED ??= "true";
 // File test import model/service tinh (truoc startTestDb) lam env.js validate
 // ngay luc nap: may khong co backend/.env se hong ca file. URI that cua DB tam
 // van do startTestDb gan va dung de ket noi; gia tri nay chi de qua validate.
@@ -37,8 +42,19 @@ process.env.RAG_MIN_CHUNKS ??= "1";
 
 let mongod;
 
+// --nounixsocket chi ton tai tren mongod Linux/macOS; tren Windows mongod thoat
+// ngay voi ma 2 va TOAN BO test backend do. Chi them co nay ngoai Windows.
+const MONGOD_ARGS = [
+  ...(process.platform === "win32" ? [] : ["--nounixsocket"]),
+  "--setParameter",
+  "diagnosticDataCollectionEnabled=false",
+];
+
 export const startTestDb = async () => {
-  mongod = await MongoMemoryServer.create();
+  mongod = await MongoMemoryReplSet.create({
+    replSet: { count: 1 },
+    instanceOpts: [{ args: MONGOD_ARGS }],
+  });
   process.env.MONGODB_URI = mongod.getUri();
   await mongoose.connect(mongod.getUri());
 };

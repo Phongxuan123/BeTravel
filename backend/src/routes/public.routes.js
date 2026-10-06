@@ -1,6 +1,7 @@
 import express from "express";
 
 import { validateQuery } from "../middleware/validate.middleware.js";
+import { requireLegalLookupEnabled } from "../middleware/legalLookup.middleware.js";
 import * as contentController from "../controllers/publicContent.controller.js";
 import * as locationController from "../controllers/publicSupportLocation.controller.js";
 import * as incidentController from "../controllers/publicIncident.controller.js";
@@ -26,6 +27,9 @@ const router = express.Router();
 
 router.get("/countries", contentController.listCountries);
 router.get("/countries/:code", contentController.getCountry);
+
+// Tam phong toa tra cuu phap luat (LEGAL_LOOKUP_ENABLED) -- chi ap cho /legal/*.
+router.use("/legal", requireLegalLookupEnabled);
 
 router.get("/legal/topics", validateQuery(topicListQuerySchema), contentController.listTopics);
 router.get(

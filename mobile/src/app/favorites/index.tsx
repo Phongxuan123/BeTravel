@@ -69,7 +69,7 @@ export default function FavoritesScreen() {
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 24 }}>
         {favoritesQuery.isLoading && <Text className="mt-8 text-center text-sm text-muted">Đang tải…</Text>}
         {favoritesQuery.isError && <Text className="mt-8 text-center text-sm text-danger">Không tải được danh sách đã lưu.</Text>}
-        {!favoritesQuery.isLoading && favorites.length === 0 && (
+        {!favoritesQuery.isLoading && !favoritesQuery.isError && favorites.length === 0 && (
           <Text className="mt-8 text-center text-sm text-muted">
             Chưa có gì được lưu. Bấm biểu tượng ngôi sao/bookmark trên bài luật hoặc hướng dẫn xử lý sự cố để lưu lại.
           </Text>

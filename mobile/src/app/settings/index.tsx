@@ -29,7 +29,7 @@ function toast(message: string) {
 const DEFAULT_PREFERENCES: Preferences = {
   locale: 'vi',
   alerts: { legal: true, safety: true, tripReminder: false },
-  locationConsent: true,
+  locationConsent: false,
 };
 
 export default function SettingsScreen() {
@@ -136,20 +136,25 @@ export default function SettingsScreen() {
           <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={country?.name} onPress={() => setPickingCountry(true)} />
         </SettingsGroup>
 
+        {preferencesQuery.isError && <View className="gap-2"><Text className="text-danger">Không tải được cài đặt. Các công tắc tạm khóa.</Text><Button label="Thử lại" onPress={() => { void preferencesQuery.refetch(); }} /></View>}
+        {preferencesMutation.isError && <Text className="text-danger">Không lưu được cài đặt. Vui lòng thử lại.</Text>}
         <SettingsGroup title="THÔNG BÁO">
           <SettingsSwitchRow
+            disabled={preferencesQuery.isLoading || preferencesQuery.isError || preferencesMutation.isPending}
             label="Cảnh báo pháp lý"
             description="Khi quy định ở quốc gia bạn đến thay đổi"
             value={preferences.alerts.legal}
             onValueChange={(v) => preferencesMutation.mutate({ alerts: { legal: v } })}
           />
           <SettingsSwitchRow
+            disabled={preferencesQuery.isLoading || preferencesQuery.isError || preferencesMutation.isPending}
             label="Cảnh báo an toàn"
             description="Theo vị trí hiện tại của bạn"
             value={preferences.alerts.safety}
             onValueChange={(v) => preferencesMutation.mutate({ alerts: { safety: v } })}
           />
           <SettingsSwitchRow
+            disabled={preferencesQuery.isLoading || preferencesQuery.isError || preferencesMutation.isPending}
             label="Nhắc chuyến đi"
             description="Trước ngày khởi hành 3 ngày"
             value={preferences.alerts.tripReminder}
@@ -172,6 +177,7 @@ export default function SettingsScreen() {
           <View className="h-px bg-line" />
           <SettingsRow label="Truy cập vị trí" value="Khi dùng ứng dụng" onPress={() => toast('Mở cài đặt trình duyệt/hệ thống để thay đổi quyền vị trí')} />
           <SettingsSwitchRow
+            disabled={preferencesQuery.isLoading || preferencesQuery.isError || preferencesMutation.isPending}
             label="Cảnh báo theo vị trí"
             description="Dùng GPS để nhận cảnh báo khu vực; tắt vẫn nhận cảnh báo cấp quốc gia"
             value={preferences.locationConsent}
@@ -271,11 +277,13 @@ function SettingsSwitchRow({
   description,
   value,
   onValueChange,
+  disabled = false,
 }: {
   label: string;
   description: string;
   value: boolean;
   onValueChange: (next: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <View className="min-h-[64px] flex-row items-center justify-between px-4 py-3">
@@ -283,7 +291,7 @@ function SettingsSwitchRow({
         <Text className="text-[17px] font-body-semibold text-ink">{label}</Text>
         <Text className="text-[13px] text-muted">{description}</Text>
       </View>
-      <Switch value={value} onValueChange={onValueChange} accessibilityLabel={label} />
+      <Switch disabled={disabled} value={value} onValueChange={onValueChange} accessibilityLabel={label} />
     </View>
   );
 }

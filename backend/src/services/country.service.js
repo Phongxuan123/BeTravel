@@ -21,8 +21,23 @@ export const getCountryById = async (id) => Country.findById(id);
 export const createCountry = async (data, actorId) =>
   Country.create({ ...data, createdBy: actorId, updatedBy: actorId });
 
-export const updateCountry = async (id, data, actorId) =>
-  Country.findByIdAndUpdate(id, { ...data, updatedBy: actorId }, { returnDocument: "after" });
+export const updateCountry = async (id, data, actorId) => {
+  const current = await Country.findById(id);
+  if (!current) return null;
+  if (data.code && data.code !== current.code) {
+    const refs = await Promise.all([
+      LegalArticle.exists({ countryCode: current.code }),
+      LegalTopic.exists({ countryCode: current.code }),
+    ]);
+    if (refs.some(Boolean))
+      throw new AppError(ErrorCode.CONFLICT, "Không đổi mã quốc gia đang có nội dung tham chiếu");
+  }
+  return Country.findByIdAndUpdate(
+    id,
+    { ...data, updatedBy: actorId },
+    { returnDocument: "after", runValidators: true },
+  );
+};
 
 // Giong deleteTopic: quoc gia con bai luat/chu de thi khong xoa (INV-04.10).
 export const deleteCountry = async (id) => {

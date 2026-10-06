@@ -10,7 +10,7 @@ const userIncidentProgressSchema = new mongoose.Schema(
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     incidentId: { type: mongoose.Schema.Types.ObjectId, ref: "IncidentType", required: true },
     // Danh sach step.order da tick -- doi chieu voi IncidentType.steps khi doc.
-    completedSteps: { type: [Number], default: [] },
+    completedSteps: { type: [mongoose.Schema.Types.Mixed], default: [] },
   },
   { timestamps: true },
 );

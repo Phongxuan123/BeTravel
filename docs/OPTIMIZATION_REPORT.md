@@ -1,4 +1,7 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
+
+> Cập nhật 05/10/2026: xem [PATCH_2026_10_05.md](PATCH_2026_10_05.md) cho kết quả hiện hành. Bản vá đã giải quyết các lỗi quốc gia/bí danh, SOS chưa verified, mặc định consent, đồ thị trạng thái, transaction publish, ID bước ổn định và một số nợ kỹ thuật. Các mục bên dưới là lịch sử rà soát trước bản vá; danh sách chưa hoàn thành được tổng hợp trong báo cáo mới.
+
 > Trạng thái hiện hành: xem **Rà soát 29/09/2026** ngay dưới đây và
 > `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
 

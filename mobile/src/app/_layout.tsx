@@ -40,19 +40,19 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
-  const [plusJakartaLoaded] = usePlusJakartaFonts({
+  const [plusJakartaLoaded, plusJakartaError] = usePlusJakartaFonts({
     PlusJakartaSans_400Regular,
     PlusJakartaSans_500Medium,
     PlusJakartaSans_600SemiBold,
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
   });
-  const [monoLoaded] = useJetBrainsMonoFonts({
+  const [monoLoaded, monoError] = useJetBrainsMonoFonts({
     JetBrainsMono_500Medium,
     JetBrainsMono_700Bold,
   });
 
-  const fontsLoaded = plusJakartaLoaded && monoLoaded;
+  const fontsLoaded = (plusJakartaLoaded || Boolean(plusJakartaError)) && (monoLoaded || Boolean(monoError));
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {

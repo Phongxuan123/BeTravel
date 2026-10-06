@@ -149,6 +149,9 @@ function TranslatorForm() {
         right={<Badge label={englishMode ? 'Câu mẫu có sẵn' : isOffline ? 'Bản lưu' : phrasesQuery.isLoading ? 'Đang tải' : phrasesQuery.isError ? 'Lỗi tải' : 'Đã tải'} tone={!englishMode && (isOffline || phrasesQuery.isError) ? 'warning' : 'success'} />}
       />
       <ScrollView contentContainerStyle={{ padding: 18, gap: 16, paddingBottom: 48 }}>
+        {!englishMode && phrasesQuery.isLoading && <Text className="text-muted">Đang tải câu mẫu…</Text>}
+        {!englishMode && phrasesQuery.isError && <View className="gap-2"><Text className="text-danger">Không tải được câu mẫu.</Text><Pressable onPress={() => { void phrasesQuery.refetch(); }}><Text className="font-body-bold text-primary">Thử lại</Text></Pressable></View>}
+        {!englishMode && !phrasesQuery.isLoading && !phrasesQuery.isError && phrases.length === 0 && <Text className="text-muted">Chưa có câu mẫu cho quốc gia này.</Text>}
         <View className="flex-row gap-2">
           {[true, false].map((english) => (
             <Pressable key={String(english)} accessibilityRole="button" accessibilityState={{ selected: englishMode === english }}
