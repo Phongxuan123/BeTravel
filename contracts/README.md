@@ -522,6 +522,11 @@ GET /admin/analytics/overview?days=7   200
 
 ## 14. ENDPOINT SOS LOCATIONS CONG KHAI — `/api/support-locations/*` (B6)
 
+Mobile 06/10: giữ nguyên shape API và GeoJSON `[lng,lat]`. Các lựa chọn bán kính
+5/20/50 km dùng query hiện có, limit=50; tìm tên/địa chỉ diễn ra trên danh sách
+đã tải (không phải tìm toàn bộ địa điểm Google). Mọi điểm công khai phải verified.
+Location và incident lồng trong favorites cũng không trả `createdBy`, `updatedBy`, `__v`.
+
 ```
 GET /support-locations/nearby?lat&lng&country=&type=&radiusKm=&limit=   200
      -- $geoNear, tra kem distanceMeters. Khong co diem trong radiusKm ->

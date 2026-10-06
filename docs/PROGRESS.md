@@ -1,6 +1,53 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-10-06 · Dọn code chết toàn hệ thống (xem OPTIMIZATION_REPORT.md, rà soát 06/10).
+Cập nhật lần cuối: 2026-10-06 · Kết nối bản đồ và rà soát hồi quy ba workspace.
+
+## Bản đồ và rà soát hệ thống — 06/10/2026
+
+Nhánh `feature/maps-integration-20261006`, tách tại `e02bbd7` từ nhánh
+`fix/betravel-qa-20261005` đang ahead origin 14 commit. Không tự sửa lịch sử/push.
+Tiến độ mã nguồn/kiểm tra local: `[######] 6/6`. Phát hành bản đồ Android:
+**xong một phần**, còn key, định danh/chứng thư và nghiệm thu thiết bị.
+
+| Bước | Trạng thái | Bằng chứng |
+|---|---|---|
+| Định vị cấu trúc/quy tắc | xong | CLAUDE, AGENTS mobile, Docs audit/master plan/tối ưu/B6, contracts, inventory ba workspace |
+| Cấu hình Maps SDK | xong phần code | app.config.js nạp key vào plugin; iOS Apple Maps; Android thiếu key dùng list; native introspection đạt |
+| Tính năng bổ trợ | xong local | Tìm không dấu/tên bản địa/địa chỉ; loại, bán kính 5/20/50 km; GPS chủ động; camera; list-only; ngày verify; gọi/chỉ đường/copy |
+| Sửa lỗi/bảo vệ dữ liệu | xong local | Camera, GPS timeout/lỗi/cũ; cache list/nearby/hỏng/chưa verify; Favorites không lộ ID biên tập; warning test Explore |
+| Kiểm tra ba workspace | xong local | Backend 266/266 tuần tự + golden 26/26; mobile 183/183 (43 suites); admin 18/18; lint/typecheck/build/exports |
+| Ghi sổ bàn giao | xong | MAPS_SETUP, PROGRESS, OPTIMIZATION_REPORT, ACCEPTANCE, contracts, .env.example |
+
+### Cấu trúc hiện hành để người/AI tiếp theo tiếp tục
+
+| Khu vực | Luồng và giới hạn |
+|---|---|
+| Backend routes -> middleware/validators -> controllers -> services -> models | Express envelope/RBAC/Zod/Mongo; public SOS chỉ verified, $geoNear + index 2dsphere |
+| Backend rag/translation | Retrieval/guard/provider/quota; giữ cờ phong tỏa luật/chat, không seed luật/điểm giả |
+| Mobile app/components/styles | Expo Router/design system; Maps route /sos/map, phần chưa có data vẫn có màn chặn |
+| Mobile lib/data/api/features | Mock/API qua công tắc; adapters giữ contract; cache/query tách quốc gia/mode, foreground GPS chủ động |
+| Admin pages/components/lib | CRUD/CSV/verify, Leaflet picker; cùng model và [lng,lat], không dùng Places |
+| Contracts/Docs/CI | Shape/fixtures, sổ bàn giao, CI lint/test/build ba workspace độc lập; không thêm migration/index/collection |
+
+### Bằng chứng, phạm vi và việc còn mở
+
+- Backend lint/format sạch; **266/266** qua
+  `node --test --test-concurrency=1 --test-timeout=30000 test/*.test.js`; golden **26/26**,
+  SOS/Favorites riêng **24/24**. DB tạm/provider mock, không đọc/sửa Atlas.
+- Hai lần concurrency=2 gặp nhiễu localhost: HTTP parser nhận JDWP/HTTP2, test treo,
+  mongod báo port đã dùng. Chạy riêng/tuần tự xanh; chưa chứng nhận ổn định concurrency=2 trên máy này.
+- Mobile thiếu hai font từ phiên trước: `npm ci` khôi phục theo lockfile; không đổi font/design.
+  Lint/typecheck, **183/183 (43 suites)** đạt. Admin **18/18**, lint/typecheck/build đạt.
+- Vá `source-map-js@1.2.2` ở mobile/admin và `postcss-selector-parser@7.1.6` ở mobile;
+  giữ SDK 57/native libraries. Native config introspection và iOS/Android export đạt.
+  Artifact `/tmp/betravel-map-*-20261006`, không commit. NO_COLOR/FORCE_COLOR là warning môi trường.
+- Dependency chưa khép: npm ci trước vá báo 68 (9 moderate/59 high), gồm lan truyền qua gói cha.
+  Đã vá hai gói; bốn gói khác chưa có bản vá upstream (OPTIMIZATION_REPORT).
+  Audit offline trả 0 nhưng không đủ dữ liệu advisory, **không coi là hết lỗ hổng**.
+- Cần người: key Maps Android + quota/package/SHA-1, iOS bundle ID, SOS verified thật,
+  nghiệm thu điện thoại. Hướng dẫn: [MAPS_SETUP.md](MAPS_SETUP.md).
+- Phạm vi là repository/config/dependency/test ứng dụng. Không chứng nhận toàn macOS
+  hoặc mọi lỗi tiềm ẩn đã hết; chưa triển khai production/native build ký.
 
 ## Màn chặn cho phần chưa hoàn thiện (06/10)
 

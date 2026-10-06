@@ -1,9 +1,61 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Rà soát 06/10/2026 — Maps và hồi quy hệ thống
+
+Inventory ba workspace và Docs/contract; rà API SOS, quyền/GPS, camera/cache,
+Favorites, dependency và test hệ thống. Không tuyên bố đọc từng dòng mọi file
+hoặc sửa toàn macOS. Kết quả cuối ở PROGRESS; vận hành ở [MAPS_SETUP.md](MAPS_SETUP.md).
+
+| File/nhóm | Loại lỗi/nguyên nhân | Phương án đã chọn |
+|---|---|---|
+| mobile app.json/app.config.js/.env.example | Config: key mẫu, thiếu plugin native | Loại placeholder, env -> plugin; extra chỉ boolean, Android thiếu key dùng list, iOS Apple Maps |
+| mobile app/sos/map.tsx | UI/logic: search chưa nối, initialRegion chỉ đọc một lần, icon gọi sai, không retry/copy reject | Nối search, camera theo GPS/API/quốc gia, snapshot marker; bán kính/loại/list, copy feedback/retry/ngày verify, reset sheet khi đổi nước |
+| mobile lib/locationPermission.ts | Runtime/data: permission reject ngoài catch, GPS chờ vô hạn, thiếu kiểm age/range | Catch toàn bộ, GPS tắt -> null, timeout 15s, timestamp <=60s, lat/lng trong biên |
+| mobile lib/api/sos.ts | Data: nearby giới hạn ghi đè list; cache cũ hỏng/chưa verified, offline bỏ radius/limit | Cache list/nearby riêng, schema/range/verified gate, tính lại distance/radius/limit; banner partial/stale |
+| backend favorite.service.js | W5: location/incident trong favorites lộ actor ID và __v | Projection giống public; test dữ liệu có actor ID không lộ; không đổi DB |
+| mobile ExploreScreen.test.tsx | Test warning: kết thúc trước QueryClient notify | waitFor client hết fetch, không che console.error |
+| mobile node_modules | TS2307: hai font đã khai báo nhưng chưa cài | npm ci phục hồi đúng lockfile, không đổi thiết kế |
+| docs USER_INPUT_FORM.md | Progress tham chiếu file chưa tồn tại | Bổ sung phiếu dữ liệu/cấu hình còn cần người, không yêu cầu gửi secret vào chat |
+
+Rule chính: 6 (constants/env), 7 (lỗi rõ), 11 (lý do tiếng Việt), 13 (tái hiện/phân loại/hồi quy).
+Tests mới kiểm config key, search/camera/GPS, từ chối/timeout/cũ, retry/no country,
+đổi quốc gia, Android thiếu key, cache hỏng/chưa verify/radius/limit, Favorites privacy.
+
+### Dependency W5 — đã vá và còn mở
+
+Đọc advisory report trong log local của npm ci; không coi audit offline 0 là sạch.
+Đã vá `source-map-js` 1.2.1 -> 1.2.2 ở mobile/admin:
+[GHSA-68fv-2mgg-jv7q](https://github.com/advisories/GHSA-68fv-2mgg-jv7q).
+Override `postcss-selector-parser` 6.1.4 -> 7.1.6 ở mobile:
+[GHSA-rj75-hqrm-r3gf](https://github.com/advisories/GHSA-rj75-hqrm-r3gf).
+[Release v7](https://github.com/postcss/postcss-selector-parser/releases/tag/v7.0.0)
+đổi semantics chèn node khi iterate; chạy lại tests và export --clear kiểm pipeline
+NativeWind/Tailwind. Không nâng major Expo/React Native.
+
+Upstream chưa có bản vá công bố ngày 06/10/2026:
+
+| Gói | Đường dependency | Nguồn |
+|---|---|---|
+| braces 3.0.3 | Tailwind/chokidar/micromatch mobile; nodemon/chokidar backend | [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm) |
+| http-cache-semantics 4.2.0 | @expo/ngrok -> got -> cacheable-request | [GHSA-ch52-4w7c-c8xp](https://github.com/advisories/GHSA-ch52-4w7c-c8xp) |
+| node-forge 1.4.0 | Expo CLI/code-signing-certificates | [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv) |
+| sprintf-js 1.0.3 | jest-expo -> istanbul config -> js-yaml -> argparse | [GHSA-hp3w-g68c-fv3c](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) |
+
+Chủ yếu tooling/build/test; không suy ra app đang bị khai thác chỉ từ số audit.
+Giữ mở và theo dõi upstream; không tự fork crypto hoặc audit fix --force làm lệch SDK.
+Chưa có đánh giá exploitability đầy đủ/audit trực tuyến ba workspace sau vá.
+
+### Giới hạn kiểm chứng
+
+Backend concurrency=2 có nhiễu localhost (JDWP/HTTP2, port mongod trùng, test treo);
+toàn bộ tuần tự **266/266**, SOS/Favorites riêng **24/24**, golden **26/26** đạt.
+Không sửa production network/dừng dịch vụ người dùng để che lỗi môi trường.
+Key/data/thiết bị và phát hành còn mở trong MAPS_SETUP/ACCEPTANCE.
+
 > Cập nhật 05/10/2026: xem [PATCH_2026_10_05.md](PATCH_2026_10_05.md) cho kết quả hiện hành. Bản vá đã giải quyết các lỗi quốc gia/bí danh, SOS chưa verified, mặc định consent, đồ thị trạng thái, transaction publish, ID bước ổn định và một số nợ kỹ thuật. Các mục bên dưới là lịch sử rà soát trước bản vá; danh sách chưa hoàn thành được tổng hợp trong báo cáo mới.
 
-> Trạng thái hiện hành: xem **Rà soát 29/09/2026** ngay dưới đây và
-> `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
+> Trạng thái hiện hành: xem **Maps và hồi quy hệ thống 06/10/2026** ở đầu file
+> và `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
 
 ## Rà soát 06/10/2026 — dọn code chết toàn hệ thống (Chế độ C, theo yêu cầu người dùng)
 
@@ -627,6 +679,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.10.06-maps | 06/10/2026 | Maps + rà soát | Config env, search/radius/GPS/camera/list/cache verified, Favorites privacy; vá 2 dependency; backend tuần tự 266, mobile 183, admin 18 |
 | 2026.09.29-quy | 29/09/2026 | Quét test (nhánh Quy) | Test module thuần + hồi quy; guard đối chiếu đủ đơn vị tiền (dùng chung CURRENCY_UNIT); containsPhrase cho tên nước; username Google; script test đa nền tảng; 255(+1 todo)/153/18 test |
 | 2026.09.28-qa5 | 28/09/2026 | QA-5 (07_QA_BugHunt) | M16-M17 + E2E + edge; update schema incident/geo-alert không còn ghi đè mảng rỗng; `parseEnv` + ràng buộc production; smoke test import server; Rule 12 (README/contracts/src/UI); commit format backend riêng (BASE-01); 227(+1 todo)/111/11 test, export iOS/Android đạt |
 | 2026.09.28-qa4 | 28/09/2026 | QA-4 (07_QA_BugHunt) | M13-M15; ErrorBoundary cấp route (Thử lại + SOS); helper `openExternal` chuẩn hóa `tel:` và bắt lỗi Linking; màn hình chỉ import từ `@/lib/data`; admin xác nhận xác minh hàng loạt/re-index, lấy quốc gia từ API; `/auth/refresh` bỏ cờ nội bộ; mọi fixture có backend + client; 214(+1 todo)/111/11 test |

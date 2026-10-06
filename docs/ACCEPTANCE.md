@@ -1,5 +1,30 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Bản đồ 06/10/2026 — hiện hành
+
+Tiến độ local `[######] 6/6`; phát hành/kiểm chứng thiết bị **xong một phần**.
+Backend 266/266 tuần tự, golden 26/26; mobile 183/183; admin 18/18;
+lint/typecheck/format/admin build đạt. Xem PROGRESS cho nhiễu localhost
+concurrency=2 và dependency advisory chưa có bản vá upstream.
+
+| Tiêu chí | Trạng thái | Bằng chứng/cần làm |
+|---|---|---|
+| Plugin native/key env/loại placeholder | Đạt local | mapsConfig tests và native introspection; extra không chứa key |
+| Android thiếu key dùng list | Đạt tự động | SosMapScreen tests; Expo Go có config native riêng |
+| GPS chủ động, từ chối/tắt/lỗi/cũ/timeout | Đạt tự động | locationPermission/SosMapScreen tests; foreground snapshot |
+| Search, bán kính, camera và query khớp API | Đạt tự động | mapHelpers/SosMapScreen tests; country/type/radius/limit đúng |
+| verified gate, đúng [lng,lat] | Đạt tự động | backend supportLocation/supplement/E2E tests |
+| Cache list/nearby riêng, loại dữ liệu hỏng/chưa verify | Đạt tự động | api/sos tests, offline radius/limit và banner stale/partial |
+| Đổi quốc gia đóng sheet cũ | Đạt tự động | SosMapScreen tests |
+| Favorites không lộ actor ID | Đạt tự động | backend favorites.test.js; projection location/incident |
+| iOS/Android bundle sau dependency patch | Đạt local | Expo export --clear; không phải binary ký |
+| Gọi/chỉ đường/copy/tile/GPS/font lớn thực tế | Cần thiết bị | iPhone/Android, approximate, mất mạng, không Google Play Services |
+| Điểm hỗ trợ thật | Cần dữ liệu | Admin nhập/verify; không seed điểm giả |
+| Android Maps native phát hành | Cần cấu hình | Key, SDK, package/SHA-1/quota và rebuild; MAPS_SETUP.md |
+
+Phiên này rà source/config/test ứng dụng; không chứng nhận toàn máy hoặc mọi lỗi
+tiềm ẩn. Không thay thế nghiệm thu Atlas/provider/điện thoại thật.
+
 Cập nhật 29/09/2026: backend 156/156, mobile 124/124, admin 9/9 test đạt;
 lint/typecheck/admin build và export iOS/Android đạt. Phiên này bổ sung dịch
 Việt-Anh hai chiều có câu mẫu nguồn mở, quota AI và chia sẻ snapshot GPS chủ động.
