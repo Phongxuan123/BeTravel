@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import SosMapScreen from '@/app/sos/map';
@@ -7,6 +7,7 @@ import { requestLocationWithExplanation } from '@/lib/locationPermission';
 
 const mockAnimate = jest.fn();
 const mockFit = jest.fn();
+let mockMapAutoReady = true;
 let mockCountry: { code: string; name: string; embassy: { name: string; lat: number; lng: number } } | undefined;
 jest.mock('expo-router', () => ({ router: { back: jest.fn() }, useLocalSearchParams: () => ({}) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -19,12 +20,12 @@ jest.mock('react-native-maps', () => {
   const { View: NativeView } = jest.requireActual('react-native');
   return {
     __esModule: true,
-    default: React.forwardRef(function MockMap({ children, onMapReady }: { children: React.ReactNode; onMapReady: () => void }, ref: unknown) {
+    default: React.forwardRef(function MockMap({ children, onMapReady, mapType }: { children: React.ReactNode; onMapReady: () => void; mapType: string }, ref: unknown) {
       React.useImperativeHandle(ref, () => ({ animateToRegion: mockAnimate, fitToCoordinates: mockFit }));
       // Native onMapReady chỉ phát khi mount, không phát lại vì callback đổi identity.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      React.useEffect(() => { onMapReady(); }, []);
-      return <NativeView testID="native-map">{children}</NativeView>;
+      React.useEffect(() => { if (mockMapAutoReady) onMapReady(); }, []);
+      return <NativeView testID="native-map" accessibilityLabel={`map-${mapType}`}>{children}</NativeView>;
     }),
     Marker: () => null,
   };
@@ -38,10 +39,37 @@ const point = { id: '1', name: 'Đồn cảnh sát Seoul', address: 'Gangnam', t
   meta: 'Cảnh sát', phone: '112', lat: 37, lng: 127, verified: true };
 beforeEach(() => {
   jest.clearAllMocks();
+  mockMapAutoReady = true;
   mockCountry = { code: 'KR', name: 'Hàn Quốc', embassy: { name: '', lat: 0, lng: 0 } };
   (fetchSupportLocations as jest.Mock).mockResolvedValue({ ok: true, data: [point] });
   (fetchNearbyLocations as jest.Mock).mockResolvedValue({ ok: true, data: [{ ...point, distanceKm: 0 }] });
   (requestLocationWithExplanation as jest.Mock).mockResolvedValue({ latitude: 37, longitude: 127 });
+});
+
+test('camera về tâm và vệ tinh hoạt động sau khởi tạo', async () => {
+  const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await waitFor(() => expect(mockAnimate).toHaveBeenCalled());
+  await fireEvent.press(screen.getByLabelText('Chế độ vệ tinh'));
+  expect(screen.getByLabelText('map-hybrid')).toBeTruthy();
+  await fireEvent.press(screen.getByLabelText('Đưa bản đồ về tâm'));
+  expect(mockAnimate).toHaveBeenLastCalledWith(expect.objectContaining({ latitude: 37, longitude: 127 }), 400);
+});
+
+test('native không khởi tạo: hết hạn dùng danh sách và thử lại được', async () => {
+  jest.useFakeTimers();
+  mockMapAutoReady = false;
+  try {
+    const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+    expect(screen.getByText('Đang khởi tạo bản đồ...')).toBeTruthy();
+    await act(async () => { jest.advanceTimersByTime(20000); });
+    expect(screen.queryByTestId('native-map')).toBeNull();
+    expect(screen.getByText('Bản đồ chưa khởi tạo được')).toBeTruthy();
+    mockMapAutoReady = true;
+    await fireEvent.press(screen.getByText('Thử tải lại bản đồ'));
+    expect(screen.getByTestId('native-map')).toBeTruthy();
+    expect(screen.queryByText('Đang khởi tạo bản đồ...')).toBeNull();
+    await screen.unmount();
+  } finally { jest.useRealTimers(); }
 });
 
 function wrapper() {

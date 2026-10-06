@@ -17,6 +17,7 @@ import { fetchNearbyLocations, fetchSupportLocations } from '@/lib/data';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 import type { SupportLocation } from '@/lib/data';
 import { MAP_RADIUS_OPTIONS, MAP_LOCATION_LIMIT, searchLocations, validCoordinates, directionsUrl } from '@/features/sos/mapHelpers';
+import { mapRuntime, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
 
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#EAF4FF' }] },
@@ -82,13 +83,29 @@ export default function SosMapScreen() {
   const [radiusKm, setRadiusKm] = useState<number>(20);
   const [locating, setLocating] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [mapTimedOut, setMapTimedOut] = useState(false);
+  const [mapAttempt, setMapAttempt] = useState(0);
+  const [mapType, setMapType] = useState<'standard' | 'hybrid'>('standard');
   const [listOnly, setListOnly] = useState(false);
   const [previousCountry, setPreviousCountry] = useState(country?.code);
   const mapRef = useRef<MapView>(null);
   const mounted = useRef(true);
   const locatingRef = useRef(false);
-  const canRenderMap = Platform.OS === 'ios' || (Platform.OS === 'android' &&
-    (Constants.executionEnvironment === 'storeClient' || Constants.expoConfig?.extra?.androidMapsConfigured === true));
+  const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
+  const canRenderMap = runtime.available;
+
+  useEffect(() => {
+    if (!canRenderMap || listOnly || mapReady || mapTimedOut) return;
+    const timer = setTimeout(() => { setMapTimedOut(true); setListOnly(true); }, MAP_STARTUP_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, [canRenderMap, listOnly, mapReady, mapTimedOut, mapAttempt]);
+
+  const restartMap = () => {
+    setMapReady(false);
+    setMapTimedOut(false);
+    setListOnly(false);
+    setMapAttempt((attempt) => attempt + 1);
+  };
 
   // Tải danh sách ngay; GPS chỉ chạy khi người dùng chủ động chọn định vị.
   useEffect(() => {
@@ -170,18 +187,22 @@ export default function SosMapScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      {canRenderMap && !listOnly ? <ErrorBoundary
+      {canRenderMap && !listOnly ? <ErrorBoundary key={mapAttempt}
         fallback={
           <View className="flex-1 items-center justify-center bg-bg px-8">
             <WifiOff size={40} color={colors.subtle} />
             <Text className="mt-3 text-center text-base font-body-bold text-ink">Không tải được bản đồ</Text>
             <Text className="mt-1 text-center text-sm text-muted">Dùng danh sách bên dưới thay thế.</Text>
+            <Pressable onPress={() => setListOnly(true)} className="mt-3 rounded-md bg-primary px-4 py-3">
+              <Text className="text-white">Xem danh sách hỗ trợ</Text>
+            </Pressable>
           </View>
         }
       >
         {/* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */}
-        <MapView ref={mapRef} style={{ flex: 1 }} initialRegion={region} customMapStyle={LIGHT_MAP_STYLE}
-          provider={Platform.OS === 'android' || Constants.expoConfig?.extra?.iosGoogleMapsConfigured ? PROVIDER_GOOGLE : undefined}
+        <MapView ref={mapRef} style={{ flex: 1 }} initialRegion={region}
+          mapType={mapType} customMapStyle={mapType === 'standard' ? LIGHT_MAP_STYLE : []}
+          provider={runtime.google ? PROVIDER_GOOGLE : undefined}
           onMapReady={() => setMapReady(true)} showsMyLocationButton={false}>
           {coords && <Marker coordinate={{ latitude: coords.lat, longitude: coords.lng }}
             title="Vị trí của bạn tại lần đo gần nhất" pinColor={colors.primary} />}
@@ -192,7 +213,7 @@ export default function SosMapScreen() {
       </ErrorBoundary> : <View className="flex-1 items-center justify-center px-8">
         <Globe size={40} color={colors.subtle} />
         <Text className="mt-3 text-center text-base text-ink">
-          {listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này'}
+          {mapTimedOut ? 'Bản đồ chưa khởi tạo được' : listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này'}
         </Text>
         <Text className="mt-2 text-center text-sm text-muted">Bạn vẫn có thể tìm địa điểm, gọi và mở chỉ đường từ danh sách.</Text>
         <Pressable className="mt-3 rounded-md bg-primary px-4 py-3" onPress={() => void openUrl(
@@ -202,6 +223,9 @@ export default function SosMapScreen() {
       </View>}
 
       <View className="absolute inset-x-0" style={{ top: insets.top + 12, paddingHorizontal: 18 }}>
+        {canRenderMap && !listOnly && !mapReady && <View accessibilityRole="progressbar" className="mb-2 self-center rounded-full bg-surface px-3 py-2">
+          <Text className="text-sm text-muted">Đang khởi tạo bản đồ...</Text>
+        </View>}
         <View className="flex-row items-center" style={{ gap: 10 }}>
           <Pressable
             accessibilityLabel="Quay lại"
@@ -245,9 +269,20 @@ export default function SosMapScreen() {
             className="rounded-full bg-surface px-3 py-2">
             <Text className="text-sm text-primary">{locating ? 'Đang định vị...' : 'Vị trí của tôi'}</Text>
           </Pressable>
-          {canRenderMap && <Pressable onPress={() => { setMapReady(false); setListOnly(!listOnly); }} className="rounded-full bg-surface px-3 py-2">
-            <Text className="text-sm text-primary">{listOnly ? 'Xem bản đồ' : 'Xem danh sách'}</Text>
+          {canRenderMap && <Pressable onPress={() => listOnly ? restartMap() : setListOnly(true)} className="rounded-full bg-surface px-3 py-2">
+            <Text className="text-sm text-primary">{listOnly ? mapTimedOut ? 'Thử tải lại bản đồ' : 'Xem bản đồ' : 'Xem danh sách'}</Text>
           </Pressable>}
+          {canRenderMap && !listOnly && <>
+            <Pressable accessibilityLabel="Đưa bản đồ về tâm" disabled={!mapReady}
+              onPress={() => mapRef.current?.animateToRegion(region, 400)} className="rounded-full bg-surface px-3 py-2">
+              <Text className="text-sm text-primary">Về tâm bản đồ</Text>
+            </Pressable>
+            <Pressable accessibilityLabel="Chế độ vệ tinh" accessibilityState={{ selected: mapType === 'hybrid' }}
+              onPress={() => setMapType((type) => type === 'standard' ? 'hybrid' : 'standard')}
+              className={`rounded-full px-3 py-2 ${mapType === 'hybrid' ? 'bg-primary' : 'bg-surface'}`}>
+              <Text className={mapType === 'hybrid' ? 'text-sm text-white' : 'text-sm text-primary'}>Vệ tinh</Text>
+            </Pressable>
+          </>}
           {canRenderMap && !listOnly && locations.length > 0 && <Pressable
             onPress={() => mapRef.current?.fitToCoordinates(locations.map((loc) => ({ latitude: loc.lat, longitude: loc.lng })),
               { edgePadding: { top: 220, right: 40, bottom: 340, left: 40 }, animated: true })}

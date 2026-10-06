@@ -8,6 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "maps:check": "node scripts/check-maps-config.cjs",
     "lint": "expo lint",
     "test": "jest",
     "postinstall": "patch-package"

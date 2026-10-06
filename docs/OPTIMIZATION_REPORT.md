@@ -1,5 +1,19 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Khởi tạo Maps Android/iOS từ mẫu tham khảo — 06/10/2026
+
+- Tách mapRuntime để Expo Go iOS không chọn Google provider chỉ vì env JS có key:
+  binary Expo dùng Apple, native Be.Travel cấu hình Google dùng key/plugin.
+- Khởi tạo không phản hồi có timeout 20 giây, list thay thế và retry remount cả
+  ErrorBoundary; readiness không chứng nhận tile/auth của Google.
+- Áp dụng điều khiển về tâm từ mẫu Custom Controls, thêm hybrid vệ tinh; giữ
+  tọa độ từ dữ liệu/GPS, không dùng Chicago/Mountain View demo làm điểm thật.
+- Chặn build với key mà thiếu định danh, thêm preflight cả hai nền tảng không in
+  secret hoặc gọi dịch vụ trả phí. Không thêm dependency/API/migration.
+- Lưu 8 mẫu độc lập (14 attachments, 3 snippets), giữ license/hash, không tự bật
+  Places/Aerial/feed HTTP. 193 test mobile và exports iOS/Android đạt;
+  nghiệm thu key/billing/restrictions/tile/thiết bị còn mở.
+
 ## Cẩm nang, dịch và lịch trình — 06/10/2026
 
 | Nhóm | Nguyên nhân / sửa chữa |

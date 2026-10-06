@@ -2,10 +2,22 @@
 
 ## Thu thập mẫu Google Maps — 06/10/2026
 
-Trạng thái: **đang chờ bổ sung, chưa bắt đầu tích hợp các mẫu mới** theo yêu cầu.
-Đã lưu 10 tệp đính kèm + 1 đoạn HTML thành 4 mẫu độc lập tại
+Trạng thái: **đã được yêu cầu khởi tạo cho cả Android và iOS**.
+Đã lưu 14 tệp đính kèm + 3 đoạn HTML thành 8 mẫu độc lập tại
 `docs/references/google-maps/`. Có danh mục và hash ánh xạ các bản trùng nhau.
-Tiếp tục nhận mẫu; chỉ khởi tạo/tích hợp khi người dùng báo đủ và yêu cầu thực hiện.
+Tiến độ code/kiểm tra `[#####] 5/5`; nghiệm thu bản đồ Google trên thiết bị còn mở.
+
+| Hạng mục | Trạng thái / bằng chứng |
+|---|---|
+| Lưu mẫu, xác định native/web/dịch vụ riêng | xong; bản đính kèm giữ nguyên byte, snippets chat bỏ escape; không chạy Places/Aerial/KML mẫu |
+| Khởi tạo hai nền tảng | MapView native + config plugin; mapRuntime chọn đúng Google/Apple/Expo Go, chặn build có key mà thiếu định danh |
+| Điều khiển và phục hồi | trạng thái khởi tạo, timeout 20 giây về list, retry remount ErrorBoundary, camera về tâm, vệ tinh hybrid; giữ GPS/search/filters/cache/verified list |
+| Kiểm tra | mobile lint/typecheck + 193/193 (46 suites); export iOS/Android đạt; native introspection key thử vào Info.plist/Android manifest, không vào extra; không đổi backend/API/DB |
+| Bàn giao | npm run maps:check, MAPS_SETUP và ACCEPTANCE; cấu hình hiện thiếu key/ID cả hai nền tảng, chưa push/deploy/native build |
+
+Không diễn giải onMapReady là tile được Google cấp quyền. Preflight chỉ kiểm
+định dạng env; cần key thật, SDK/billing, package/SHA-1 hoặc bundle restriction,
+rebuild và kiểm tile trên điện thoại. Quy tắc Places ngoài MVP vẫn giữ nguyên.
 
 Cập nhật lần cuối: 2026-10-06 · Khôi phục cẩm nang/dịch, Google Maps iOS, lịch trình nhiều nước.
 

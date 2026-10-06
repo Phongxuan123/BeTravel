@@ -69,6 +69,38 @@ Tài liệu chính thức đã đối chiếu:
 
 ## Luồng sử dụng
 
+### Khởi tạo hoàn chỉnh Android và iOS — cập nhật 06/10
+
+1. Điền key riêng và định danh trong `mobile/.env`/EAS như phần trên. Chưa có key
+   thật thì không thể xác minh Maps Google trên binary Be.Travel.
+2. Trong `mobile/`, chạy `npm run maps:check` (cả hai nền tảng) hoặc
+   `npm run maps:check -- --platform android` / `--platform ios`.
+   Lệnh dùng Node 22, chỉ kiểm định dạng, không in key, không gọi dịch vụ và
+   không xác minh billing/quota/restrictions. Exit 1 khi thiếu cấu hình.
+3. Sau khi preflight đạt, build binary mới với `npx expo run:android` và
+   `npx expo run:ios`, hoặc profile EAS đã cấu hình. Máy cần Android SDK/Xcode
+   tương ứng nếu build local; EAS cần tài khoản và credentials của nhóm.
+   Profile EAS hiện còn URL backend placeholder: thay bằng URL thật trước build.
+4. Mở SOS -> bản đồ. Kiểm cả hai thiết bị: tile đường/vệ tinh, về tâm, fit marker,
+   GPS cấp/từ chối, đổi nước/loại/bán kính, chế độ list, gọi và chỉ đường.
+
+Khởi tạo có trạng thái tải và watchdog 20 giây. Native chưa phát onMapReady
+thì chuyển sang list, cho thử lại bằng mount mới. onMapReady chỉ chứng minh
+MapView đã khởi tạo; tile trắng do key không có quyền vẫn cần kiểm Google Cloud
+và có thể chuyển list thủ công. JS ErrorBoundary không bắt mọi crash native.
+
+Nút **Về tâm bản đồ** dùng GPS chủ động nếu có, tiếp đến tọa độ đại sứ quán hoặc
+điểm hỗ trợ đã tải. Thiếu dữ liệu thì mở góc nhìn thế giới, không tạo tọa độ giả.
+**Vệ tinh** dùng hybrid của SDK, có nhãn đường, không phải video Aerial View.
+Expo Go iOS dùng Apple Maps của binary Expo ngay cả khi .env có Google key;
+Google iOS chỉ chọn trong binary native đã build với key.
+
+Mẫu HTML/snippet gốc nằm ở `references/google-maps/`. Simple Map/Custom Controls
+được áp dụng thành luồng native tương ứng. Checkout/Address Selection/Neighborhood
+Discovery/Current Place dùng Places, không phải điều kiện để khởi tạo SDK map;
+chưa bật Places theo CLAUDE phạm vi MVP. Aerial View và KML mẫu được lưu tham khảo,
+chưa nối thêm dịch vụ/feed. Backend vẫn chỉ trả điểm hỗ trợ verified.
+
 - Mở bản đồ: tải điểm verified theo quốc gia, không tự xin GPS.
 - Bấm **Vị trí của tôi**: giải thích trước khi xin quyền. Có GPS mới dùng nearby;
   từ chối/tắt dịch vụ/lỗi vẫn dùng danh sách, nhập thành phố/khu vực trong ô tìm kiếm.

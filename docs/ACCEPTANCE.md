@@ -1,5 +1,14 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Khởi tạo Maps hai nền tảng — 06/10/2026
+
+Mobile 193/193, 46 suites; lint/typecheck và iOS/Android exports đạt.
+Runtime Google/Apple/Expo Go, missing key guard, preflight không lộ key,
+startup timeout/retry, về tâm và vệ tinh được kiểm tự động. Bản gốc mẫu Google
+đã lưu, không gắn Places/Aerial/KML vào dữ liệu SOS đã kiểm chứng.
+Chưa đạt nghiệm thu Google tile/native binary: thiếu key và ID cho cả Android/iOS.
+Xem MAPS_SETUP.md cho thao tác cấu hình, rebuild và kiểm thiết bị.
+
 ## Cẩm nang/dịch/lịch trình 06/10/2026 — hiện hành
 
 | Tiêu chí | Kết quả |
