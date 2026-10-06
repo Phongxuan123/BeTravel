@@ -6,7 +6,7 @@ import { z } from 'zod';
  * Test trong __tests__/contracts.test.ts parse trực tiếp fixture bằng schema
  * này -- lệch hình dạng sẽ đỏ test ở đây, phát hiện trước khi tích hợp.
  */
-export const apiUserSchema = z.object({
+const apiUserSchema = z.object({
   id: z.string(),
   username: z.string(),
   fullName: z.string(),
@@ -18,7 +18,7 @@ export const apiUserSchema = z.object({
   updatedAt: z.string(),
 });
 
-export const apiMeUserSchema = apiUserSchema.extend({ googleLinked: z.boolean() });
+const apiMeUserSchema = apiUserSchema.extend({ googleLinked: z.boolean() });
 
 export const registerResponseSchema = z.object({ user: apiUserSchema });
 

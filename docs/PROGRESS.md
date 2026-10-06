@@ -1,6 +1,6 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-10-05 · Bản vá từ ZIP người dùng cung cấp; chưa push hoặc triển khai.
+Cập nhật lần cuối: 2026-10-06 · Dọn code chết toàn hệ thống (xem OPTIMIZATION_REPORT.md, rà soát 06/10).
 
 ## Màn chặn cho phần chưa hoàn thiện (06/10)
 

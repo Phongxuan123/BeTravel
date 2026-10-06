@@ -1,4 +1,4 @@
-import { ActivityIndicator, Pressable, Text, View, type PressableProps } from 'react-native';
+import { ActivityIndicator, Pressable, Text, type PressableProps } from 'react-native';
 import type { ReactNode } from 'react';
 import { colors, shadows } from '@/lib/theme';
 
@@ -80,6 +80,3 @@ export function Button({
   );
 }
 
-export function ButtonRow({ children }: { children: ReactNode }) {
-  return <View className="flex-row gap-3">{children}</View>;
-}

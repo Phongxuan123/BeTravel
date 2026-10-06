@@ -14,7 +14,7 @@ const outputSchema = z.object({
   phonetic: z.string().trim().max(MAX_TRANSLATED_LENGTH).optional().default(""),
 });
 
-export function buildTranslationPrompt({ text, from, to, mode }) {
+function buildTranslationPrompt({ text, from, to, mode }) {
   const bilingual = [from, to].every((code) => ["vi", "en"].includes(code));
   return {
     systemPrompt: [

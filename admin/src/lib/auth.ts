@@ -55,11 +55,6 @@ export async function logout(): Promise<void> {
   }
 }
 
-export async function me(): Promise<AdminUser> {
-  const { data } = await apiRequest<{ user: AdminUser }>('/auth/me');
-  return data.user;
-}
-
 let restoreInFlight: Promise<AdminUser | null> | null = null;
 export async function restoreSession(): Promise<AdminUser | null> {
   if (!restoreInFlight) restoreInFlight = restoreSessionOnce();

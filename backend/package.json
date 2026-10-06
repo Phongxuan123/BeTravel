@@ -16,7 +16,8 @@
     "create-admin": "node scripts/create-admin.js",
     "seed": "node scripts/seed-content.js",
     "seed:demo": "node scripts/seed-demo.js",
-    "seed:samples": "node scripts/publish-samples.js"
+    "seed:samples": "node scripts/publish-samples.js",
+    "check-indexes": "node scripts/check-content-indexes.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

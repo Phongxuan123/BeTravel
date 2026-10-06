@@ -1,4 +1,4 @@
-export const MAX_LOCATION_AGE_MS = 60_000;
+const MAX_LOCATION_AGE_MS = 60_000;
 export type LocationSnapshot = {
   latitude: number;
   longitude: number;
