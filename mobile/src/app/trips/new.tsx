@@ -257,7 +257,7 @@ export default function TripWizardScreen() {
             </Text>
             <Text className="mt-1 text-[15px] text-muted">Chúng tôi sẽ tải cẩm nang pháp luật của quốc gia đó.</Text>
 
-            <View className="mt-5 h-14 flex-row items-center rounded-md border border-line bg-[#F9FBFD] px-4">
+            <View className="mt-5 h-14 flex-row items-center rounded-md border border-line bg-[#F5F9FF] px-4">
               <Search size={20} color={colors.subtle} />
               <TextInput
                 className="ml-2.5 flex-1 text-base text-ink"
@@ -301,7 +301,7 @@ export default function TripWizardScreen() {
                     accessibilityState={{ checked: selected, disabled: comingSoon }}
                     onPress={() => dispatch({ type: 'SET_COUNTRY', code: c.code })}
                     className={`h-[70px] flex-row items-center rounded-lg border px-4 ${
-                      selected ? 'border-[1.5px] border-primary bg-[#F4F8FF]' : 'border-line bg-surface'
+                      selected ? 'border-[1.5px] border-primary bg-[#F5F9FF]' : 'border-line bg-surface'
                     } ${comingSoon ? 'opacity-50' : ''}`}
                   >
                     <CountryFlag code={c.code} width={40} height={30} />
@@ -344,7 +344,7 @@ export default function TripWizardScreen() {
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Thành phố / khu vực *</Text>
                 <View className="relative">
                   <TextInput
-                    className={`h-14 rounded-md border border-line bg-[#F9FBFD] pl-4 text-base text-ink ${hasCitySuggestions ? 'pr-11' : 'pr-4'}`}
+                    className={`h-14 rounded-md border border-line bg-[#F5F9FF] pl-4 text-base text-ink ${hasCitySuggestions ? 'pr-11' : 'pr-4'}`}
                     placeholder="Ví dụ: Seoul, Busan, Jeju..."
                     placeholderTextColor={colors.subtle}
                     value={state.destinationCity}
@@ -386,7 +386,7 @@ export default function TripWizardScreen() {
 
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Địa điểm cụ thể (không bắt buộc)</Text>
                 <TextInput
-                  className="min-h-[56px] rounded-md border border-line bg-[#F9FBFD] px-4 py-3 text-base text-ink"
+                  className="min-h-[56px] rounded-md border border-line bg-[#F5F9FF] px-4 py-3 text-base text-ink"
                   placeholder="Ví dụ: Gangnam-gu, tên khách sạn, địa chỉ..."
                   placeholderTextColor={colors.subtle}
                   value={state.destinationDetail}
@@ -419,7 +419,7 @@ export default function TripWizardScreen() {
             </View>
 
             <View className="mt-4 flex-row items-center justify-between px-[18px]">
-              <Text className="text-[15px] font-body-bold text-[#3B4A63]">
+              <Text className="text-[15px] font-body-bold text-[#334E68]">
                 {state.range.start && state.range.end
                   ? `Chuyến đi ${tripDurationDays(state.range.start, state.range.end)} ngày`
                   : 'Chọn ngày đi và ngày về'}
@@ -460,7 +460,7 @@ export default function TripWizardScreen() {
 
             <View className="mt-4 flex-row items-start gap-2 rounded-md bg-[#F0F5FD] p-3">
               <Info size={18} color={colors.primary} />
-              <Text className="flex-1 text-sm text-[#3B4A63]">Chúng tôi chỉ dùng vị trí để cảnh báo — không chia sẻ với bên thứ ba.</Text>
+              <Text className="flex-1 text-sm text-[#334E68]">Chúng tôi chỉ dùng vị trí để cảnh báo — không chia sẻ với bên thứ ba.</Text>
             </View>
           </View>
         )}
@@ -485,7 +485,7 @@ export default function TripWizardScreen() {
                 </Pressable>
               </View>
 
-              <View className="mt-4 rounded-md bg-[#F4F8FF] p-3">
+              <View className="mt-4 rounded-md bg-[#F5F9FF] p-3">
                 <View className="flex-row items-center" style={{ gap: 8 }}>
                   <MapPin size={17} color={colors.primary} />
                   <Text className="text-[13px] font-body-semibold text-muted">Điểm đến chính</Text>
@@ -532,14 +532,14 @@ export default function TripWizardScreen() {
                   <View className="h-[30px] w-[30px] items-center justify-center rounded-[8px] bg-success-soft">
                     <Check size={16} color={colors.success} />
                   </View>
-                  <Text className="flex-1 text-base text-[#3B4A63]">{line}</Text>
+                  <Text className="flex-1 text-base text-[#334E68]">{line}</Text>
                 </View>
               ))}
             </View>
 
             <View className="mt-4 flex-row items-start gap-2 rounded-md bg-[#F0F5FD] p-3">
               <Info size={18} color={colors.primary} />
-              <Text className="flex-1 text-sm text-[#3B4A63]">{editingTripId ? 'Các thay đổi sẽ được lưu vào chuyến đi hiện tại.' : 'Bạn có thể chỉnh sửa, chuyển quốc gia hoặc tạo thêm chuyến đi bất cứ lúc nào.'}</Text>
+              <Text className="flex-1 text-sm text-[#334E68]">{editingTripId ? 'Các thay đổi sẽ được lưu vào chuyến đi hiện tại.' : 'Bạn có thể chỉnh sửa, chuyển quốc gia hoặc tạo thêm chuyến đi bất cứ lúc nào.'}</Text>
             </View>
           </View>
         )}
@@ -566,7 +566,7 @@ export default function TripWizardScreen() {
 
 function DateBox({ label, value }: { label: string; value: string | null }) {
   return (
-    <View className={`h-[70px] flex-1 justify-center rounded-lg border px-4 ${value ? 'border-primary bg-[#F4F8FF]' : 'border-line bg-surface'}`}>
+    <View className={`h-[70px] flex-1 justify-center rounded-lg border px-4 ${value ? 'border-primary bg-[#F5F9FF]' : 'border-line bg-surface'}`}>
       <Text className="text-[13px] text-muted">{label}</Text>
       <Text className="mt-0.5 text-xl font-body-bold text-ink">{value ? formatFullDate(value).slice(0, 5) : '--/--'}</Text>
     </View>

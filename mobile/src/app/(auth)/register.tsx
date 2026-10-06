@@ -121,7 +121,7 @@ export default function RegisterScreen() {
 
         <Pressable className="flex-row items-start" style={{ gap: 10 }} onPress={() => setAgree((v) => !v)}>
           <Checkbox checked={agree} onChange={setAgree} accessibilityLabel="Đồng ý điều khoản" />
-          <Text className="flex-1 text-sm leading-5 text-[#3B4A63]">
+          <Text className="flex-1 text-sm leading-5 text-[#334E68]">
             Tôi đồng ý với <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Điều khoản sử dụng')}>
               Điều khoản
             </Text>{' '}

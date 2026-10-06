@@ -1,14 +1,14 @@
 import { colors, radii, spacing, typography } from '@/lib/theme';
 
 describe('design tokens', () => {
-  it('primary palette matches spec §2.1', () => {
-    expect(colors.primary).toBe('#0F5BD7');
-    expect(colors.danger).toBe('#D62828');
-    expect(colors.bg).toBe('#F6F9FE');
+  it('primary palette matches FRONTEND_UI_SPECIFICATION §1.1', () => {
+    expect(colors.primary).toBe('#1677FF');
+    expect(colors.danger).toBe('#EF4444');
+    expect(colors.bg).toBe('#F5F9FF');
   });
 
-  it('radius scale matches spec §2.3', () => {
-    expect(radii).toEqual({ sm: 11, md: 14, lg: 18, xl: 22, full: 999 });
+  it('radius scale matches FRONTEND_UI_SPECIFICATION §1.3', () => {
+    expect(radii).toEqual({ sm: 10, md: 12, lg: 16, xl: 24, full: 999 });
   });
 
   it('spacing scale matches spec §2.4', () => {

@@ -30,7 +30,7 @@ describe('AppShell (BottomNav + nút SOS)', () => {
     );
     expect(getByText('Trang chủ')).toBeTruthy();
     expect(getByText('Khám phá')).toBeTruthy();
-    expect(getByText('AI Legal')).toBeTruthy();
+    expect(getByText('AI pháp lý')).toBeTruthy();
     expect(getByText('Cá nhân')).toBeTruthy();
     expect(getByLabelText('Khẩn cấp — mở SOS Hub')).toBeTruthy();
     expect(getByText('Khẩn cấp')).toBeTruthy();

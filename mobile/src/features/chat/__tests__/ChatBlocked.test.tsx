@@ -1,6 +1,6 @@
 import { render, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
-import ChatScreen from '@/app/chat';
+import ChatScreen from '@/features/chat/ChatScreen';
 import { listChatSessions } from '@/lib/data';
 import { ApiError } from '@/lib/api/http';
 

@@ -1,6 +1,6 @@
 import { fireEvent, render } from '@testing-library/react-native';
 import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
-import ChatScreen from '@/app/chat';
+import ChatScreen from '@/features/chat/ChatScreen';
 import { askLegalAssistant } from '@/lib/data';
 
 // Test dat o features/ vi moi file trong app/ la mot route cua expo-router.
@@ -51,8 +51,8 @@ test('đang chờ trả lời thì không gửi thêm câu hỏi (nút gửi và
     </SafeAreaProvider>,
   );
 
-  void fireEvent.press(screen.getByText('Mất hộ chiếu thì sao?'));
-  void fireEvent.press(screen.getByText('Hàng cấm nhập cảnh'));
+  void fireEvent.press(screen.getByText('Tôi có quyền gì?'));
+  void fireEvent.press(screen.getByText('Có bị phạt không?'));
   void fireEvent.changeText(screen.getByPlaceholderText('Hỏi về quy định...'), 'Câu hỏi thứ ba');
   void fireEvent.press(screen.getByLabelText('Gửi câu hỏi'));
 

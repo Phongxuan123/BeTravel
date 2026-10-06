@@ -13,6 +13,9 @@ import {
   Phone,
   MapPin,
   Languages,
+  Map as MapIcon,
+  Search,
+  ChevronRight,
 } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
 import { ListRow } from '@/components/common/ListRow';
@@ -79,6 +82,7 @@ export default function HomeScreen() {
     queryFn: () => fetchArticles(countryCode),
     enabled: !!countryCode,
   });
+  const unreadAlertItems = (alertsQuery.data?.data ?? []).filter((a) => !a.read).slice(0, 2);
   // Tra cuu phap luat dang bi phong toa o backend: khong bao nham la loi mang.
   const articlesDisabled = isFeatureDisabledError(articlesQuery.error);
   const unreadAlerts = alertsQuery.data?.data.filter((a) => !a.read).length ?? 0;
@@ -163,23 +167,65 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* 4 quick tiles */}
+        {/* 4 thao tác nhanh theo spec 3.4 */}
         <View className="mt-5 flex-row" style={{ gap: 10 }}>
-          <QuickTile label="AI Legal" tone="blue" icon={<MessageCirclePlus size={20} color={colors.primary} />} onPress={() => router.push('/chat')} />
+          <QuickTile label="AI pháp lý" tone="blue" icon={<MessageCirclePlus size={22} color={colors.primary} />} onPress={() => router.push('/chat')} />
           <QuickTile
-            label="Khẩn cấp"
+            label="SOS"
             tone="red"
-            icon={<Text className="text-[13px] font-body-bold text-danger">SOS</Text>}
+            icon={<Text className="font-display text-[13px] text-danger">SOS</Text>}
             onPress={() => router.push('/sos')}
             danger
           />
-          <QuickTile label="Cẩm nang" tone="blue" icon={<FileText size={20} color={colors.primary} />} onPress={() => router.push('/explore')} />
-          <QuickTile label="Sự cố" tone="orange" icon={<TriangleAlert size={20} color={colors.warning} />} onPress={() => router.push('/incidents')} />
+          <QuickTile label="Dịch nhanh" tone="blue" icon={<Languages size={22} color={colors.primary} />} onPress={() => router.push('/translate')} />
+          <QuickTile label="Bản đồ" tone="green" icon={<MapIcon size={22} color={colors.successStrong} />} onPress={() => router.push('/sos/map')} />
         </View>
+
+        {/* Lối tắt phụ */}
+        <View className="mt-3" style={{ gap: 10 }}>
+          <ListRow
+            icon={<IconTile tone="orange"><TriangleAlert size={20} color={colors.warning} /></IconTile>}
+            title="Gặp sự cố khẩn cấp"
+            subtitle="Quy trình xử lý 5 bước"
+            onPress={() => router.push('/incidents')}
+          />
+          <ListRow
+            icon={<IconTile tone="blue"><Search size={20} color={colors.primary} /></IconTile>}
+            title="Tra cứu luật nhanh"
+            subtitle="Hỏi hoặc tìm trong cẩm nang đã xác minh"
+            onPress={() => router.push('/search')}
+          />
+        </View>
+
+        {/* Cảnh báo quan trọng */}
+        {unreadAlertItems.length > 0 && (
+          <View className="mt-7">
+            <SectionHeader title="Cảnh báo quan trọng" actionLabel="Xem tất cả" onAction={() => router.push('/alerts')} />
+            <View className="mt-3" style={{ gap: 10 }}>
+              {unreadAlertItems.map((alert) => (
+                <Pressable
+                  key={alert.id}
+                  accessibilityRole="button"
+                  onPress={() => router.push('/alerts')}
+                  className="flex-row items-start gap-3 rounded-lg border border-danger-line bg-danger-tint p-4"
+                >
+                  <CircleAlert size={20} color={colors.danger} />
+                  <View className="flex-1">
+                    <Text className="text-[14px] font-body-bold text-ink">{alert.title}</Text>
+                    <Text className="mt-0.5 text-xs leading-relaxed text-muted" numberOfLines={2}>
+                      {alert.body}
+                    </Text>
+                  </View>
+                  <ChevronRight size={18} color={colors.muted} />
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Thông tin dành cho bạn */}
         <View className="mt-7">
-          <SectionHeader title="Thông tin dành cho bạn" actionLabel="Xem tất cả" onAction={() => router.push('/alerts')} />
+          <SectionHeader title="Pháp lý & mẹo du lịch" actionLabel="Xem tất cả" onAction={() => router.push('/explore')} />
           <View className="mt-3" style={{ gap: 10 }}>
             {articlesDisabled ? (
               <Text className="text-sm text-muted">Mục tra cứu pháp luật đang tạm ngưng để cập nhật nội dung.</Text>
@@ -260,9 +306,9 @@ function CurrentTripCard({
   const timingLabel = upcoming ? `Khởi hành sau ${daysUntilStart} ngày` : past ? 'Đã kết thúc' : `Còn ${remaining} ngày`;
 
   return (
-    <View className="rounded-xl bg-primary p-5" style={{ shadowColor: 'rgba(15,91,215,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
+    <View className="rounded-xl bg-primary p-5" style={{ shadowColor: 'rgba(22,119,255,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
       <View className="flex-row items-start justify-between">
-        <Text className="text-xs font-body-bold text-white/75">CHUYẾN ĐI HIỆN TẠI</Text>
+        <Text className="text-xs font-body-bold tracking-wide text-white/80">CHUYẾN ĐI HIỆN TẠI</Text>
         <View className="flex-row items-center gap-1.5 rounded-full bg-white px-2.5 py-1">
           <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
           <Text className="text-[13px] font-body-bold" style={{ color: statusColor }}>{statusLabel}</Text>
@@ -290,7 +336,7 @@ function CurrentTripCard({
         onPress={() => router.push('/trips')}
         className="mt-4 h-12 items-center justify-center rounded-md bg-white/15"
       >
-        <Text className="text-base font-body-bold text-white">Xem chuyến đi ›</Text>
+        <Text className="text-base font-body-bold text-white">Xem chuyến đi</Text>
       </Pressable>
     </View>
   );
@@ -304,7 +350,7 @@ function QuickTile({
   danger,
 }: {
   label: string;
-  tone: 'blue' | 'red' | 'orange';
+  tone: 'blue' | 'red' | 'orange' | 'green';
   icon: React.ReactNode;
   onPress: () => void;
   danger?: boolean;

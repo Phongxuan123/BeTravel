@@ -5,17 +5,17 @@ export type BadgeTone = 'success' | 'info' | 'neutral' | 'danger' | 'warning';
 const containerClass: Record<BadgeTone, string> = {
   success: 'bg-success-soft',
   info: 'bg-primary-soft',
-  neutral: 'bg-[#F0F4F9]',
+  neutral: 'bg-[#F3F4F6]',
   danger: 'bg-danger-soft',
   warning: 'bg-amber-soft',
 };
 
 const textClass: Record<BadgeTone, string> = {
-  success: 'text-success',
+  success: 'text-success-strong',
   info: 'text-primary-strong',
   neutral: 'text-muted',
-  danger: 'text-danger',
-  warning: 'text-warning',
+  danger: 'text-danger-strong',
+  warning: 'text-warning-strong',
 };
 
 const dotClass: Record<BadgeTone, string> = {

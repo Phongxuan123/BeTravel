@@ -13,9 +13,9 @@ type Props = TextInputProps & {
 export function TextField({ label, iconLeft, slotRight, helperText, error, style, ...rest }: Props) {
   return (
     <View>
-      {label && <Text className="mb-1.5 text-sm font-body-semibold text-[#3B4A63]">{label}</Text>}
+      {label && <Text className="mb-1.5 text-sm font-body-semibold text-[#334E68]">{label}</Text>}
       <View
-        className={`h-14 flex-row items-center rounded-md border bg-[#F9FBFD] px-4 ${
+        className={`h-14 flex-row items-center rounded-md border bg-[#F5F9FF] px-4 ${
           error ? 'border-danger' : 'border-line'
         }`}
       >

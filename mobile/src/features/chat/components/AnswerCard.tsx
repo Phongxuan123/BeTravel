@@ -1,6 +1,7 @@
 import { View, Text, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
-import { ThumbsUp, ThumbsDown, Flag, BookOpen, Phone } from 'lucide-react-native';
+import * as Clipboard from 'expo-clipboard';
+import { ThumbsUp, ThumbsDown, Flag, BookOpen, Phone, Copy, RefreshCw } from 'lucide-react-native';
 import { Badge } from '@/components/ui/Badge';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
@@ -50,26 +51,28 @@ export function AnswerCard({
   feedback,
   onFeedback,
   onReport,
+  onRegenerate,
 }: {
   answer: ChatAnswer;
   feedback?: 'up' | 'down';
   onFeedback: (v: 'up' | 'down') => void;
   onReport?: () => void;
+  onRegenerate?: () => void;
 }) {
   if (answer.status === 'insufficient_evidence') {
     return (
       <View testID="answer-card-insufficient" className="rounded-[20px] border border-cream-line bg-cream p-4">
         <View className="self-start rounded-full bg-amber-soft px-2.5 py-1">
-          <Text className="text-[13px] font-body-bold" style={{ color: '#8A4B08' }}>
+          <Text className="text-[13px] font-body-bold" style={{ color: colors.warningStrong }}>
             Chưa đủ dữ liệu
           </Text>
         </View>
         <Text className="mt-3 text-[18px] font-body-bold text-ink">Chưa tìm thấy nguồn pháp lý phù hợp.</Text>
-        <Text className="mt-2 text-base leading-6" style={{ color: '#3B4A63' }}>
+        <Text className="mt-2 text-base leading-6" style={{ color: '#334E68' }}>
           {answer.reason}
         </Text>
         <View className="mt-3 rounded-lg border border-cream-line bg-surface p-3.5">
-          <Text className="text-[15px] font-body-bold" style={{ color: '#8A4B08' }}>
+          <Text className="text-[15px] font-body-bold" style={{ color: colors.warningStrong }}>
             Bạn nên làm
           </Text>
           <View className="mt-2" style={{ gap: 6 }}>
@@ -85,7 +88,7 @@ export function AnswerCard({
           <Button label="Xem Legal Handbook" iconLeft={<BookOpen size={18} color="#fff" />} onPress={() => router.push('/explore')} />
           <Button label="Liên hệ hỗ trợ" variant="secondary" iconLeft={<Phone size={18} color={colors.primary} />} onPress={() => router.push('/sos')} />
         </View>
-        <FeedbackRow feedback={feedback} onFeedback={onFeedback} showReport={false} />
+        <FeedbackRow feedback={feedback} onFeedback={onFeedback} showReport={false} onRegenerate={onRegenerate} />
       </View>
     );
   }
@@ -118,6 +121,9 @@ export function AnswerCard({
           ),
         )}
       </View>
+      {answer.sources.length > 0 && (
+        <Text className="mt-4 text-[11px] font-body-bold uppercase tracking-wider text-muted">Nguồn pháp lý tham chiếu</Text>
+      )}
       {answer.sources.map((s, i) => {
         const openInApp = s.articleSlug && s.countryCode;
         const onOpen = () =>
@@ -127,7 +133,7 @@ export function AnswerCard({
               ? Linking.openURL(s.url)
               : undefined;
         return (
-          <View key={s.marker ?? `${s.name}-${i}`} className="mt-3 rounded-lg border border-line bg-[#F4F8FF] p-3.5">
+          <View key={s.marker ?? `${s.name}-${i}`} className="mt-3 rounded-lg border border-line bg-bg p-3.5">
             <View className="mb-2 flex-row items-center self-start rounded-full bg-primary-soft px-2.5 py-1" style={{ gap: 6 }}>
               <Text className="text-[13px] font-body-bold text-primary-strong">
                 {s.marker ? `Nguồn pháp luật [${s.marker}]` : 'Nguồn pháp luật'}
@@ -140,7 +146,14 @@ export function AnswerCard({
           </View>
         );
       })}
-      <FeedbackRow feedback={feedback} onFeedback={onFeedback} showReport onReport={onReport} />
+      <FeedbackRow
+        feedback={feedback}
+        onFeedback={onFeedback}
+        showReport
+        onReport={onReport}
+        onRegenerate={onRegenerate}
+        copyText={answer.content}
+      />
     </View>
   );
 }
@@ -150,15 +163,27 @@ function FeedbackRow({
   onFeedback,
   showReport,
   onReport,
+  onRegenerate,
+  copyText,
 }: {
   feedback?: 'up' | 'down';
   onFeedback: (v: 'up' | 'down') => void;
   showReport: boolean;
   onReport?: () => void;
+  onRegenerate?: () => void;
+  copyText?: string;
 }) {
   return (
     <View className="mt-4 flex-row items-center justify-between">
       <View className="flex-row" style={{ gap: 8 }}>
+        {copyText !== undefined && (
+          <IconButton
+            accessibilityLabel="Sao chép câu trả lời"
+            variant="outline"
+            icon={<Copy size={18} color={colors.ink} />}
+            onPress={() => void Clipboard.setStringAsync(copyText)}
+          />
+        )}
         <IconButton
           accessibilityLabel="Hữu ích"
           variant={feedback === 'up' ? 'soft' : 'outline'}
@@ -171,6 +196,14 @@ function FeedbackRow({
           icon={<ThumbsDown size={18} color={feedback === 'down' ? colors.primary : colors.ink} />}
           onPress={() => onFeedback('down')}
         />
+        {onRegenerate && (
+          <IconButton
+            accessibilityLabel="Tạo lại câu trả lời"
+            variant="outline"
+            icon={<RefreshCw size={18} color={colors.ink} />}
+            onPress={onRegenerate}
+          />
+        )}
       </View>
       {showReport && (
         <Pressable

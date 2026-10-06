@@ -205,6 +205,27 @@ export default function IncidentDetailScreen() {
             );
           })}
         </View>
+
+        <Text className="mb-3 text-base font-body-bold text-ink">Công cụ hỗ trợ</Text>
+        <View className="flex-row flex-wrap" style={{ gap: 10 }}>
+          {[
+            { label: 'Gọi hỗ trợ', icon: Phone, onPress: () => void openPhone(country?.embassy.phone) },
+            { label: 'Mở bản đồ', icon: MapPin, onPress: () => router.push('/sos/map') },
+            { label: 'Hỏi AI', icon: MessageCircleQuestion, onPress: () => router.push({ pathname: '/chat', params: { q: incident.title } } as never) },
+            { label: 'Dịch câu', icon: Languages, onPress: () => router.push('/translate') },
+          ].map(({ label, icon: ToolIcon, onPress }) => (
+            <Pressable
+              key={label}
+              accessibilityRole="button"
+              onPress={onPress}
+              style={{ width: '48%' }}
+              className="h-12 flex-row items-center justify-center gap-2 rounded-lg border border-line bg-surface"
+            >
+              <ToolIcon size={18} color={colors.primary} />
+              <Text className="text-sm font-body-bold text-ink">{label}</Text>
+            </Pressable>
+          ))}
+        </View>
       </ScrollView>
 
       <BottomActionBar>

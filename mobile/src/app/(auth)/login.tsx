@@ -96,7 +96,7 @@ export default function LoginScreen() {
           <View className="flex-row items-center" style={{ gap: 8 }}>
             <Checkbox checked={remember} onChange={setRemember} accessibilityLabel="Ghi nhớ đăng nhập" />
             <Pressable accessibilityRole="button" onPress={() => setRemember((value) => !value)} hitSlop={8}>
-              <Text className="text-[15px] text-[#3B4A63]" numberOfLines={1}>
+              <Text className="text-[15px] text-[#334E68]" numberOfLines={1}>
                 Ghi nhớ đăng nhập
               </Text>
             </Pressable>
