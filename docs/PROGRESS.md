@@ -2,6 +2,10 @@
 
 Cập nhật lần cuối: 2026-10-05 · Bản vá từ ZIP người dùng cung cấp; chưa push hoặc triển khai.
 
+## Tích hợp bản vá 05/10 vào GitHub (06/10)
+
+Bản vá của ThanhDatDora (`fix/betravel-qa-20261005`) được gộp qua nhánh tích hợp. Hai chỗ bản vá khai nhưng thiếu/lỗi đã được bổ sung: `backend/test/setup.js` bỏ cờ `--nounixsocket` trên Windows (mongod Windows thoát mã 2, làm đỏ toàn bộ test backend), và thêm thật `.github/workflows/ci.yml` + `.gitattributes`. Kiểm tra trên Windows: backend 262/262, golden 26/26.
+
 ## Cập nhật 05/10/2026 — phiếu bổ sung
 
 Đã áp dụng đề xuất kỹ thuật B1, B2, B4, B5, B6, B7, B8. Giữ nghiêm điều kiện nguồn có ngày công bố (B9), chưa seed hoặc sửa Atlas. Các sửa bổ sung: khóa công tắc khi tải cài đặt lỗi; xử lý lỗi font; tách cache alerts theo quốc gia/tài khoản; ẩn màn dev; ẩn ID biên tập khỏi API công khai; chặn đổi khóa Country/Topic đang được tham chiếu; email reset không gọi SMTP trong test và không lộ tài khoản khi SMTP lỗi; audit thao tác reindex; CI cho ba workspace và chuẩn hóa LF.
