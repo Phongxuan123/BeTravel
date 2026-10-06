@@ -9,7 +9,7 @@ const levelMeta: Record<StrengthLevel, { bars: number; label: string; color: str
   strong: { bars: 3, label: 'Mạnh', color: '#22C55E' },
 };
 
-export function scorePasswordStrength(password: string): StrengthLevel {
+function scorePasswordStrength(password: string): StrengthLevel {
   let score = 0;
   if (password.length >= 8) score += 1;
   if (/[A-Z]/.test(password)) score += 1;

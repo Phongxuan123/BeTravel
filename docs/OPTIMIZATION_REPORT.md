@@ -5,6 +5,28 @@
 > Trạng thái hiện hành: xem **Rà soát 29/09/2026** ngay dưới đây và
 > `PROGRESS.md`. Các phần B1–B9 bên dưới là lịch sử.
 
+## Rà soát 06/10/2026 — dọn code chết toàn hệ thống (Chế độ C, theo yêu cầu người dùng)
+
+Công cụ: `knip` chạy trên cả 3 workspace, cộng grep TODO/FIXME, `console.log`, emoji.
+
+- Rule 10 (xóa dead code): xóa `mobile/src/components/ui/Card.tsx` và barrel
+  `ui/index.ts` (không nơi nào import); `ButtonRow`, `relativeTimeVi` (mobile);
+  `stopJobWorker` (backend, không nơi gọi); `me()` (admin, khôi phục phiên đi qua
+  `restoreSession`); `admin/public/icons.svg` (thừa từ scaffold Vite).
+- Dependency mobile không dùng đã gỡ: `@expo-google-fonts/be-vietnam-pro`,
+  `@expo-google-fonts/bricolage-grotesque` (font cũ, bản UI redesign đổi sang Plus Jakarta
+  Sans), `@gorhom/bottom-sheet` (`SimpleSheet` dựng bằng RN Modal), `expo-status-bar`.
+- Gỡ `export` ở hằng/hàm chỉ dùng nội bộ module (backend 4, mobile 4).
+- Thêm `npm run check-indexes` cho script read-only `check-content-indexes.js`.
+- Giữ có chủ đích (knip báo nhưng không phải code chết): `babel.config.js`/`metro.config.js`
+  (Expo tự nạp); `react-native-worklets` (peer của reanimated 4); `react-test-renderer`
+  (peer của jest-expo); `@expo/ngrok` (chế độ tunnel); `fetchCountry`/`createChatSession`
+  trong `data.ts` (giữ đồng bộ chữ ký với `mocks/client.ts`); `src/mocks/` (Rule 10);
+  `spacing`/`shadows` (màn dev design-system).
+- Không có TODO cũ, emoji hay `console.log` thừa (chỉ log khởi động server).
+- Đề xuất (chưa làm, cần thêm dependency): `app.json` đặt `userInterfaceStyle` nhưng
+  chưa cài `expo-system-ui`, nên trên Android giá trị này không có tác dụng.
+
 ## Rà soát 29/09/2026 (2) — gợi ý thành phố lớn ở wizard tạo chuyến đi
 
 Tính năng mới theo yêu cầu người dùng (không thuộc batch/QA). Chi tiết ở

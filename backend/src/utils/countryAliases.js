@@ -1,12 +1,12 @@
 import { containsPhrase, normalizeVi } from "./textNormalize.js";
 // Geographic names only; never legal content or emergency numbers.
-export const DEFAULT_COUNTRY_ALIASES = Object.freeze({
+const DEFAULT_COUNTRY_ALIASES = Object.freeze({
   KR: ["Hàn", "Korea", "South Korea", "대한민국", "한국", "Seoul", "Busan"],
   JP: ["Nhật", "Japan", "日本", "Tokyo", "Osaka", "Kyoto"],
   TH: ["Thái", "Thailand", "ประเทศไทย", "Bangkok", "Phuket", "Chiang Mai"],
   SG: ["Singapore", "Singapura", "新加坡"],
 });
-export const countryNames = (country) =>
+const countryNames = (country) =>
   [
     country.name,
     country.nameEn,

@@ -8,7 +8,7 @@ import { AppError, ErrorCode } from "../core/errors.js";
  * quyen that (client chi phan nhanh theo code + reason, khong theo message).
  * Doc env moi request de bat/tat khong can sua code.
  */
-export const FEATURE_DISABLED_REASON = "FEATURE_DISABLED";
+const FEATURE_DISABLED_REASON = "FEATURE_DISABLED";
 
 export const requireLegalLookupEnabled = (req, res, next) => {
   if (env.LEGAL_LOOKUP_ENABLED) return next();

@@ -92,7 +92,3 @@ export const startJobWorker = (intervalMs = DEFAULT_POLL_INTERVAL_MS) => {
     }
   }, intervalMs);
 };
-export const stopJobWorker = () => {
-  clearInterval(pollTimer);
-  pollTimer = null;
-};
