@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createGeminiLlmProvider } from "../src/rag/llm/gemini.llm.js";
+// Env bắt buộc phải có trước khi nạp module: CI không có .env như máy dev.
+process.env.MONGODB_URI ||= "mongodb://127.0.0.1:1/test";
+process.env.JWT_ACCESS_SECRET ||= "test-secret-test-secret-test-secret-1234";
+const { createGeminiLlmProvider } = await import("../src/rag/llm/gemini.llm.js");
 
 test("dịch thử lại 503 đúng một lần và giữ chung timeout; không thử lại 429", async () => {
   const original = globalThis.fetch;
