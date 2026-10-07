@@ -22,3 +22,14 @@ export function getLlmProvider() {
 export function __setLlmProviderForTest(provider) {
   cachedProvider = provider;
 }
+
+// Dịch dùng model riêng, không thay đổi cấu hình AI pháp lý; quota dự án vẫn chung.
+export function getTranslationProvider() {
+  if (env.LLM_PROVIDER === "gemini")
+    return createGeminiLlmProvider({
+      apiKey: env.GEMINI_API_KEY,
+      model: env.TRANSLATION_MODEL,
+      retryUnavailable: true,
+    });
+  return getLlmProvider();
+}

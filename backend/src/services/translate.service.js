@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { getLlmProvider } from "../rag/llm/index.js";
+import { getTranslationProvider } from "../rag/llm/index.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
 import { TRANSLATION_LANGUAGES } from "../translation/languages.js";
 import { readFileSync } from "node:fs";
@@ -48,7 +48,7 @@ export async function translateText(input, userId) {
   // Dịch cũng tốn lượt AI: rate limit RAM không thay thế ngân sách lưu DB.
   if (userId) await checkAndIncrementQuota(userId);
   try {
-    const llm = getLlmProvider();
+    const llm = getTranslationProvider();
     const rawText = await llm.complete({
       ...buildTranslationPrompt(input),
       task: "translate",

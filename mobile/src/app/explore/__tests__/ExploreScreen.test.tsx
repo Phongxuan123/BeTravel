@@ -31,13 +31,19 @@ beforeEach(() => {
   (fetchCountries as jest.Mock).mockResolvedValue({ ok: true, data: [] });
 });
 
+// Đợi QueryClient cập nhật giao diện, thay vì kết thúc test ngay khi fetch được gọi.
+async function renderExplore() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+  const screen = await render(
+    <QueryClientProvider client={client}><ExploreScreen /></QueryClientProvider>,
+  );
+  await waitFor(() => expect(client.isFetching()).toBe(0));
+  return screen;
+}
+
 test('countryCode rong (dang xac dinh quoc gia) -- KHONG goi API va KHONG hien loi mang', async () => {
   mockUseCountry.mockReturnValue({ countryCode: '', country: undefined, setCountryCode: jest.fn() });
-  const screen = await render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })}>
-      <ExploreScreen />
-    </QueryClientProvider>,
-  );
+  const screen = await renderExplore();
 
   expect(screen.getByText('Đang tải…')).toBeTruthy();
   expect(screen.queryByText('Không tải được dữ liệu. Kiểm tra kết nối mạng.')).toBeNull();
@@ -54,11 +60,7 @@ test('co countryCode thi goi API binh thuong, khong con banner loi', async () =>
   (fetchTopics as jest.Mock).mockResolvedValue({ ok: true, data: [] });
   (fetchArticles as jest.Mock).mockResolvedValue({ ok: true, data: [] });
 
-  const screen = await render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })}>
-      <ExploreScreen />
-    </QueryClientProvider>,
-  );
+  const screen = await renderExplore();
 
   await waitFor(() => expect(fetchTopics).toHaveBeenCalledWith('KR'));
   expect(screen.queryByText('Không tải được dữ liệu. Kiểm tra kết nối mạng.')).toBeNull();
@@ -77,11 +79,7 @@ test('backend tam khoa tra cuu phap luat -- hien thong bao tam ngung, khong bao 
   (fetchTopics as jest.Mock).mockRejectedValue(disabled);
   (fetchArticles as jest.Mock).mockRejectedValue(disabled);
 
-  const screen = await render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })}>
-      <ExploreScreen />
-    </QueryClientProvider>,
-  );
+  const screen = await renderExplore();
 
   await waitFor(() => expect(screen.getByText('Tính năng tra cứu pháp luật đang tạm ngưng.')).toBeTruthy());
   expect(screen.queryByText('Không tải được dữ liệu. Kiểm tra kết nối mạng.')).toBeNull();

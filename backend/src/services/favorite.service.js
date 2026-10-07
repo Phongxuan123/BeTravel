@@ -61,10 +61,14 @@ export const listFavorites = async (userId) => {
       ? SupportLocation.find({
           ...VISIBLE_FILTER.location,
           _id: { $in: idsByType.location },
-        }).lean()
+        })
+          .select("-createdBy -updatedBy -__v")
+          .lean()
       : [],
     idsByType.incident.length
-      ? IncidentType.find({ ...VISIBLE_FILTER.incident, _id: { $in: idsByType.incident } }).lean()
+      ? IncidentType.find({ ...VISIBLE_FILTER.incident, _id: { $in: idsByType.incident } })
+          .select("-createdBy -updatedBy -__v")
+          .lean()
       : [],
   ]);
 

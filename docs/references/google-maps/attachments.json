@@ -1,0 +1,93 @@
+{
+  "receivedAt": "2026-10-06",
+  "status": "implementation-authorized",
+  "attachments": [
+    {
+      "attachmentId": "523a663e-d047-49e6-9025-df816f48c3c8",
+      "file": "01-commutes-and-destinations.html",
+      "sha256": "ee0f7cadc1375049bcb349e9c853c797e3de18e6e3c9538e4f9ab45db82cb38b"
+    },
+    {
+      "attachmentId": "56f3ae26-8de8-4db8-8d87-4aeeb02b8dee",
+      "file": "02-address-selection.html",
+      "sha256": "f419eef2945c6b891e1a037109d1a48fa4603dcae1ee22526df5624c728597be"
+    },
+    {
+      "attachmentId": "d9998948-9d35-4032-bdfc-0ffcf6bfdcab",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "e248edf1-41c8-4cc5-8c1b-8490f68a804b",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "473847a1-ac25-438e-9340-cd9192820e42",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "d196ba22-8318-46e1-8fb6-e818556f44ba",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "33a393a9-49db-46e2-ae95-21be447dcfe4",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "e5b3447a-4c30-4672-a45c-5252a1f224d8",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "855ddd21-3b86-41ac-a4cb-442c14f1206f",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "180d0fb2-0b7e-4d87-907b-998e2088f7e0",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "409a980e-f629-403f-bad9-4a99a698e329",
+      "file": "03-neighborhood-discovery.html",
+      "sha256": "2bc5cbd6cd90003ad28de20df619d4d241780ab92d4bda83965244c866021c2a"
+    },
+    {
+      "attachmentId": "267b3a73-8068-4633-992e-7db141bf2aa0",
+      "file": "05-checkout-autocomplete.html",
+      "sha256": "6762e7d1706e395b68ca79c244f59994dcabfb770164a7386af5b99b2f55018f"
+    },
+    {
+      "attachmentId": "0df9a9c2-d362-4332-b113-4bec4fc2743b",
+      "file": "06-android-current-place.txt",
+      "sha256": "c14fe1f3cb4cd9bbbd81f091308f5e83ced605e4962345bcbe3401e0662cc155"
+    },
+    {
+      "attachmentId": "bc1c498c-ab31-4315-9fa9-1b075e50d198",
+      "file": "06-android-current-place.txt",
+      "sha256": "c14fe1f3cb4cd9bbbd81f091308f5e83ced605e4962345bcbe3401e0662cc155"
+    }
+  ],
+  "pastedSnippets": [
+    {
+      "file": "04-custom-controls.html",
+      "sha256": "764e26bfd262fbabb507b73a66efce28d6b74dacc300d19f6bbb75f03d07c28d",
+      "normalization": "chat escapes/whitespace normalized"
+    },
+    {
+      "file": "07-aerial-view.html",
+      "sha256": "f4979a6edaf3c27f37adb47fb3f3bdb907a0aa3b432fdc799825c8d0944d2a07",
+      "normalization": "chat escapes/whitespace normalized"
+    },
+    {
+      "file": "08-simple-map.html",
+      "sha256": "80783df2c3d59c659aaf7cd705f64fd596fede5c472c84dc7e5c239cdb3721f5",
+      "normalization": "chat escapes/whitespace normalized"
+    }
+  ]
+}

@@ -25,6 +25,84 @@ beforeEach(async () => {
 
 const auth = (token) => `Bearer ${token}`;
 
+test("lịch trình nhiều nước: kiểm ngày, phiên cũ, quyền sở hữu và client cũ", async () => {
+  const { accessToken } = await registerAndLogin(app);
+  const headers = { Authorization: auth(accessToken) };
+  const payload = {
+    countryCode: "KR",
+    destinationCity: "Seoul",
+    startDate: "2026-10-01",
+    endDate: "2026-10-10",
+    stops: [
+      { countryCode: "KR", destinationCity: "Seoul", startDate: "2026-10-01" },
+      { countryCode: "JP", destinationCity: "Osaka", startDate: "2026-10-05" },
+    ],
+  };
+  const created = await request(app).post("/api/users/trips").set(headers).send(payload);
+  assert.equal(created.status, 201);
+  assert.equal(created.body.data.stops.length, 2);
+  const url = `/api/users/trips/${created.body.data._id}`;
+  assert.equal(
+    (
+      await request(app)
+        .post("/api/users/trips")
+        .set(headers)
+        .send({ ...payload, stops: [] })
+    ).status,
+    400,
+  );
+  const updatedAt = created.body.data.updatedAt;
+  const saved = await request(app)
+    .put(url)
+    .set(headers)
+    .send({ ...payload, updatedAt, locationAlerts: false });
+  assert.equal(saved.status, 200);
+  const stale = await request(app)
+    .put(url)
+    .set(headers)
+    .send({ ...payload, updatedAt });
+  assert.equal(stale.status, 409);
+  const legacy = { ...payload };
+  delete legacy.stops;
+  assert.equal((await request(app).put(url).set(headers).send(legacy)).status, 409);
+  assert.equal(
+    (
+      await request(app)
+        .post("/api/users/trips")
+        .set(headers)
+        .send({
+          ...payload,
+          stops: [payload.stops[0], { ...payload.stops[1], startDate: "2026-10-01" }],
+        })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await request(app)
+        .post("/api/users/trips")
+        .set(headers)
+        .send({ ...payload, stops: [payload.stops[0], { ...payload.stops[1], countryCode: "US" }] })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await request(app)
+        .post("/api/users/trips")
+        .set(headers)
+        .send({ ...payload, endDate: "2026-02-30" })
+    ).status,
+    400,
+  );
+  const other = await registerAndLogin(app, { email: "other-itinerary@test.local" });
+  assert.equal(
+    (await request(app).put(url).set("Authorization", auth(other.accessToken)).send(payload))
+      .status,
+    404,
+  );
+});
+
 test("chua dang nhap goi /api/users/trips bi 401 UNAUTHORIZED", async () => {
   const res = await request(app).get("/api/users/trips");
   assert.equal(res.status, 401);

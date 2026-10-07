@@ -75,6 +75,8 @@ export async function fetchTrips() {
 }
 
 type TripInput = {
+  updatedAt?: string;
+  stops?: import('./schemas').TripStop[];
   countryCode: string;
   destinationCity: string;
   destinationDetail?: string;

@@ -82,6 +82,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional().default(""),
   OPENAI_API_KEY: z.string().optional().default(""),
   LLM_MODEL: z.string().default("gemini-3.6-flash"),
+  TRANSLATION_MODEL: z.string().default("gemini-3.5-flash-lite"),
   EMBEDDING_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   EMBEDDING_MODEL: z.string().default("gemini-embedding-001"),
   EMBEDDING_DIMS: numeric(768),
@@ -90,9 +91,9 @@ const envSchema = z.object({
   VECTOR_INDEX_NAME: z.string().default("vec_idx"),
   TEXT_INDEX_NAME: z.string().default("txt_idx"),
   // Cong tat tam thoi toan bo tra cuu phap luat (cam nang, tim kiem, AI Legal).
-  // Mac dinh TAT theo yeu cau van hanh: noi dung phap ly dang duoc go de nhap
-  // lai tu nguon that. Bat lai bang LEGAL_LOOKUP_ENABLED=true, khong sua code.
-  LEGAL_LOOKUP_ENABLED: booleanish(false),
+  // Mặc định mở theo yêu cầu khôi phục cẩm nang; chỉ trả nội dung đã xuất bản.
+  // Đặt false nếu vận hành cần tạm đóng tra cứu.
+  LEGAL_LOOKUP_ENABLED: booleanish(true),
   RAG_TOP_K: numeric(8),
   RAG_NUM_CANDIDATES: numeric(150),
   RAG_MIN_TOP_SCORE: numeric(0.62),

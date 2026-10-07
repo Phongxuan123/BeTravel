@@ -8,7 +8,7 @@ const API_BASE = "https://generativelanguage.googleapis.com/v1beta";
  * responseMimeType:'application/json' ep model tra JSON thuan, khong bao boc
  * markdown code fence -- dung cach hon parse thu cong.
  */
-export function createGeminiLlmProvider({ apiKey, model }) {
+export function createGeminiLlmProvider({ apiKey, model, retryUnavailable = false }) {
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY_MISSING");
   }
@@ -18,16 +18,23 @@ export function createGeminiLlmProvider({ apiKey, model }) {
     model,
     async complete({ systemPrompt, userPrompt }) {
       const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`;
-      const res = await fetch(url, {
+      const signal = AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS);
+      const options = {
         method: "POST",
-        signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
+        signal,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents: [{ role: "user", parts: [{ text: userPrompt }] }],
           generationConfig: { responseMimeType: "application/json", temperature: 0.2 },
         }),
-      });
+      };
+      let res = await fetch(url, options);
+      // Một lần thử lại lỗi tạm thời, dùng chung timeout để không kéo dài vô hạn.
+      if (retryUnavailable && [502, 503, 504].includes(res.status)) {
+        await res.body?.cancel();
+        res = await fetch(url, options);
+      }
 
       if (!res.ok) {
         const errorText = await res.text().catch(() => "");

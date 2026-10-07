@@ -31,6 +31,7 @@ import { fetchTrips, fetchAlerts, fetchArticles, fetchCountries } from '@/lib/da
 import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
 import { now, daysBetween, parseISODate } from '@/lib/date';
+import { activeStop } from '@/features/trips/itinerary';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -73,7 +74,8 @@ export default function HomeScreen() {
     pastTrips.find((trip) => trip.isCurrent) ??
     pastTrips[0];
 
-  const countryCode = currentTrip?.countryCode ?? selectedCountryCode;
+  const currentStop = currentTrip ? activeStop(currentTrip) : null;
+  const countryCode = currentStop?.countryCode ?? selectedCountryCode;
   const country = countriesQuery.data?.data.find((c) => c.code === countryCode) ?? selectedCountry;
   const articlesQuery = useQuery({
     queryKey: ['articles', countryCode],
@@ -148,9 +150,9 @@ export default function HomeScreen() {
             <Skeleton className="h-[190px] rounded-xl" />
           ) : currentTrip ? (
             <CurrentTripCard
-              countryCode={currentTrip.countryCode}
+              countryCode={countryCode}
               countryName={country?.name}
-              destinationCity={currentTrip.destinationCity}
+              destinationCity={currentStop?.destinationCity ?? currentTrip.destinationCity}
               destinationDetail={currentTrip.destinationDetail}
               startDate={currentTrip.startDate}
               endDate={currentTrip.endDate}

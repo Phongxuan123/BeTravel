@@ -14,11 +14,6 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "config": {
-        "googleMaps": {
-          "apiKey": "REPLACE_WITH_REAL_ANDROID_MAPS_API_KEY"
-        }
       }
     },
     "web": {
@@ -36,6 +31,13 @@
         }
       ],
       "expo-secure-store",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Be.Travel dùng micro khi bạn bấm nói để chuyển giọng nói thành văn bản. Ứng dụng không lưu file ghi âm.",
+          "speechRecognitionPermission": "Be.Travel dùng dịch vụ nhận giọng nói của thiết bị để nhập câu dịch. Dịch vụ có thể xử lý âm thanh qua mạng."
+        }
+      ],
       [
         "expo-location",
         {

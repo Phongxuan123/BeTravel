@@ -64,6 +64,22 @@ export const supportLocationListQuerySchema = z.object({
 });
 
 // ── Trips (/api/users/trips) ────────────────────────────────────────────
+const tripDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày phải là YYYY-MM-DD")
+  .refine(
+    (value) =>
+      !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value,
+    "Ngày không tồn tại",
+  )
+  .transform((value) => new Date(value));
+const tripStopSchema = z.object({
+  countryCode: countryCodeSchema,
+  destinationCity: z.string().trim().min(1).max(100),
+  destinationDetail: z.string().trim().max(240).optional().default(""),
+  startDate: tripDate,
+});
+
 export const tripCreateSchema = z
   .object({
     countryCode: countryCodeSchema,
@@ -71,12 +87,48 @@ export const tripCreateSchema = z
     destinationDetail: z.string().trim().max(240).optional().default(""),
     locationAlerts: z.boolean().optional().default(true),
     regulationAlerts: z.boolean().optional().default(true),
-    startDate: z.coerce.date(),
-    endDate: z.coerce.date(),
+    startDate: tripDate,
+    endDate: tripDate,
+    stops: z.array(tripStopSchema).min(1).max(20).optional(),
+    updatedAt: z.iso.datetime().optional(),
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: "Ngay ve phai sau hoac bang ngay di",
     path: ["endDate"],
+  })
+  .superRefine((data, context) => {
+    if (!data.stops?.length) return;
+    if (
+      !(data.startDate instanceof Date) ||
+      !(data.endDate instanceof Date) ||
+      data.stops.some((stop) => !(stop.startDate instanceof Date))
+    )
+      return;
+    const first = data.stops[0];
+    if (
+      first.startDate.getTime() !== data.startDate.getTime() ||
+      first.countryCode !== data.countryCode ||
+      first.destinationCity !== data.destinationCity ||
+      first.destinationDetail !== data.destinationDetail
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["stops"],
+        message: "Chặng đầu phải khớp điểm đến và ngày đi",
+      });
+    }
+    data.stops.forEach((stop, index) => {
+      if (
+        stop.startDate > data.endDate ||
+        (index > 0 && stop.startDate <= data.stops[index - 1].startDate)
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["stops", index, "startDate"],
+          message: "Ngày chuyển chặng phải tăng và nằm trong chuyến đi",
+        });
+      }
+    });
   });
 
 // Edit chuyến đi dùng cùng contract với create để tránh partial update làm dữ liệu

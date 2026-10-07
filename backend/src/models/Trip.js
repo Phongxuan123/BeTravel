@@ -11,6 +11,20 @@ const tripSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     countryCode: { type: String, required: true, uppercase: true, trim: true },
+    stops: {
+      type: [
+        new mongoose.Schema(
+          {
+            countryCode: { type: String, required: true },
+            destinationCity: { type: String, required: true, maxlength: 100 },
+            destinationDetail: { type: String, default: "", maxlength: 240 },
+            startDate: { type: Date, required: true },
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
     // Dia diem do NGUOI DUNG nhap khi tao chuyen di. Tuyet doi khong suy ra
     // tu thu do quoc gia (vi du KR != mac dinh Seoul).
     destinationCity: { type: String, required: true, trim: true, maxlength: 100 },

@@ -1,5 +1,76 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Nhập giọng nói và TTS — 07/10/2026
+
+| Tiêu chí | Kết quả |
+|---|---|
+| Plugin/quyền micro Android, speech/micro iOS, service visibility | Đạt native config introspection; chưa build ký/kiểm máy thật |
+| Nhận ngôn ngữ nguồn, text tối đa 500, không lưu audio | Đạt useVoiceInput tests; persist=false |
+| Quyền denied/late, đổi ngôn ngữ, app nền, timeout 30 giây | Đạt kiểm thử hủy phiên và bỏ callback cũ |
+| Đọc đúng locale đích, thiếu giọng thì báo lỗi | Đạt speechLocale/useTranslationSpeech/TranslatorScreen tests |
+| Tự phát API/câu mẫu, stop, tắt trong lúc chờ, bỏ speech cũ | Đạt kiểm tự động |
+| Câu lưu theo targetLanguage, legacy nhập lại để dịch | Đạt code review; giữ dữ liệu cũ, không đoán ngôn ngữ |
+| Hồi quy | Backend 269/269 gồm golden 26; mobile 206/206 (49 suites); admin 18/18 |
+| Checks/build | Backend lint/format; mobile/admin lint/typecheck; admin build; iOS/Android exports đạt |
+
+Nghiệm thu native và chất lượng nhận/phát âm trên điện thoại vẫn mở. Expo Go
+không có module mới; cần rebuild. Quyền/service/lang pack/giọng TTS cần người dùng
+tương tác trên thiết bị. Không chứng nhận mọi lỗi macOS hoặc tất cả dependency
+sạch advisory. Báo cáo dependency còn mở tại OPTIMIZATION_REPORT.
+
+## Khởi tạo Maps hai nền tảng — 06/10/2026
+
+Mobile 193/193, 46 suites; lint/typecheck và iOS/Android exports đạt.
+Runtime Google/Apple/Expo Go, missing key guard, preflight không lộ key,
+startup timeout/retry, về tâm và vệ tinh được kiểm tự động. Bản gốc mẫu Google
+đã lưu, không gắn Places/Aerial/KML vào dữ liệu SOS đã kiểm chứng.
+Chưa đạt nghiệm thu Google tile/native binary: thiếu key và ID cho cả Android/iOS.
+Xem MAPS_SETUP.md cho thao tác cấu hình, rebuild và kiểm thiết bị.
+
+## Cẩm nang/dịch/lịch trình 06/10/2026 — hiện hành
+
+| Tiêu chí | Kết quả |
+|---|---|
+| Cẩm nang mặc định mở, vẫn chỉ published/current; explicit false vẫn khóa | Đạt tự động (qa.config, publicContent, lockdown) |
+| Dịch Việt–Anh hai chiều qua provider thật | Đạt smoke service Google; mẫu offline giữ nguyên; AI mở cần đăng nhập/quota |
+| Google Maps key riêng Android/iOS, không lộ vào extra | Đạt config tests; chưa có key thật/native tile nghiệm thu |
+| Một/nhiều nước, ngày chuyển chặng, sửa lịch trình | Đạt backend trips, mobile itinerary/editor/wizard/adapters |
+| Ngày sai/trùng/ngoài lịch/stops rỗng và quốc gia chưa mở | Đạt validation tests |
+| Cross-user, client cũ, phiên sửa cũ không ghi đè | Đạt trips tests; mobile giữ updatedAt lúc hydrate |
+| Từ chối vị trí vẫn tạo được; chuyến tắt vị trí không đọc GPS | Code foreground + helper tests + usePollAlerts test |
+| Hồi quy workspace | Backend 269/269 gồm golden 26; mobile 188/188 (45 suites); admin 18/18 |
+| Build/check | Backend lint/format; mobile/admin lint/typecheck; admin build; iOS/Android exports đạt |
+
+Nghiệm thu thật còn mở: Maps key/billing/restrictions/rebuild, tile native,
+quyền OS và UI trên điện thoại, Atlas/dữ liệu published/verified. Xem
+TRIP_ITINERARY.md, MAPS_SETUP.md và USER_INPUT_FORM.md. Không triển khai push
+hoặc GPS nền; tùy chọn cảnh báo luật không tạo nguồn thông báo mới.
+
+## Bản đồ 06/10/2026 — hiện hành
+
+Tiến độ local `[######] 6/6`; phát hành/kiểm chứng thiết bị **xong một phần**.
+Backend 266/266 tuần tự, golden 26/26; mobile 183/183; admin 18/18;
+lint/typecheck/format/admin build đạt. Xem PROGRESS cho nhiễu localhost
+concurrency=2 và dependency advisory chưa có bản vá upstream.
+
+| Tiêu chí | Trạng thái | Bằng chứng/cần làm |
+|---|---|---|
+| Plugin native/key env/loại placeholder | Đạt local | mapsConfig tests và native introspection; extra không chứa key |
+| Android thiếu key dùng list | Đạt tự động | SosMapScreen tests; Expo Go có config native riêng |
+| GPS chủ động, từ chối/tắt/lỗi/cũ/timeout | Đạt tự động | locationPermission/SosMapScreen tests; foreground snapshot |
+| Search, bán kính, camera và query khớp API | Đạt tự động | mapHelpers/SosMapScreen tests; country/type/radius/limit đúng |
+| verified gate, đúng [lng,lat] | Đạt tự động | backend supportLocation/supplement/E2E tests |
+| Cache list/nearby riêng, loại dữ liệu hỏng/chưa verify | Đạt tự động | api/sos tests, offline radius/limit và banner stale/partial |
+| Đổi quốc gia đóng sheet cũ | Đạt tự động | SosMapScreen tests |
+| Favorites không lộ actor ID | Đạt tự động | backend favorites.test.js; projection location/incident |
+| iOS/Android bundle sau dependency patch | Đạt local | Expo export --clear; không phải binary ký |
+| Gọi/chỉ đường/copy/tile/GPS/font lớn thực tế | Cần thiết bị | iPhone/Android, approximate, mất mạng, không Google Play Services |
+| Điểm hỗ trợ thật | Cần dữ liệu | Admin nhập/verify; không seed điểm giả |
+| Android Maps native phát hành | Cần cấu hình | Key, SDK, package/SHA-1/quota và rebuild; MAPS_SETUP.md |
+
+Phiên này rà source/config/test ứng dụng; không chứng nhận toàn máy hoặc mọi lỗi
+tiềm ẩn. Không thay thế nghiệm thu Atlas/provider/điện thoại thật.
+
 Cập nhật 29/09/2026: backend 156/156, mobile 124/124, admin 9/9 test đạt;
 lint/typecheck/admin build và export iOS/Android đạt. Phiên này bổ sung dịch
 Việt-Anh hai chiều có câu mẫu nguồn mở, quota AI và chia sẻ snapshot GPS chủ động.

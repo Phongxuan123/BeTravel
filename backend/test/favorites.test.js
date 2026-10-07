@@ -21,6 +21,49 @@ beforeEach(clearTestDb);
 
 const auth = (token) => `Bearer ${token}`;
 
+test("favorites location/incident không lộ ID người biên tập và phiên bản DB", async () => {
+  const { accessToken, user } = await registerAndLogin(app);
+  const IncidentType = (await import("../src/models/IncidentType.js")).default;
+  const location = await SupportLocation.create({
+    countryCode: "KR",
+    type: "hospital",
+    name: "Điểm kiểm thử",
+    address: "Seoul",
+    phone: "112",
+    verified: true,
+    createdBy: user.id,
+    updatedBy: user.id,
+    location: { type: "Point", coordinates: [127, 37] },
+  });
+  const incident = await IncidentType.create({
+    slug: "test-privacy",
+    title: "Kiểm thử",
+    status: "published",
+    steps: [],
+    createdBy: user.id,
+    updatedBy: user.id,
+  });
+  for (const [targetType, target] of [
+    ["location", location],
+    ["incident", incident],
+  ]) {
+    const saved = await request(app)
+      .post("/api/users/favorites")
+      .set("Authorization", auth(accessToken))
+      .send({ targetType, targetId: String(target._id) });
+    assert.equal(saved.status, 201);
+  }
+  const res = await request(app)
+    .get("/api/users/favorites")
+    .set("Authorization", auth(accessToken));
+  assert.equal(res.status, 200);
+  assert.equal(res.body.data.length, 2);
+  for (const favorite of res.body.data) {
+    const target = favorite[favorite.targetType];
+    for (const key of ["createdBy", "updatedBy", "__v"]) assert.equal(key in target, false);
+  }
+});
+
 async function createArticle(overrides = {}) {
   return LegalArticle.create({
     countryCode: "KR",

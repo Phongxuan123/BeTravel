@@ -13,12 +13,14 @@ import { Switch } from '@/components/ui/Switch';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { DateRangeCalendar, type DateRange } from '@/components/common/DateRangeCalendar';
 import { colors } from '@/lib/theme';
-import { createTrip, updateTrip, setCurrentTrip, fetchCountries, fetchTrips } from '@/lib/data';
+import { createTrip, updateTrip, setCurrentTrip, fetchCountries, fetchTrips, updatePreferences, type Trip, type TripStop } from '@/lib/data';
 import { ApiError } from '@/lib/api/http';
 import { useAuth } from '@/lib/auth';
 import { now, parseISODate } from '@/lib/date';
 import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
-import type { Trip } from '@/lib/data';
+import { ItineraryEditor } from '@/features/trips/ItineraryEditor';
+import { itineraryError, tripStops } from '@/features/trips/itinerary';
+import { requestLocationWithExplanation } from '@/lib/locationPermission';
 
 type State = {
   countryCode: string | null;
@@ -80,7 +82,7 @@ export default function TripWizardScreen() {
     destinationCity: '',
     destinationDetail: '',
     range: { start: null, end: null },
-    locationAlerts: true,
+    locationAlerts: false,
     regulationAlerts: true,
   });
   const [query, setQuery] = useState('');
@@ -92,6 +94,10 @@ export default function TripWizardScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydratedTripId, setHydratedTripId] = useState<string | null>(null);
+  const [editVersion, setEditVersion] = useState<string | undefined>();
+  const [followingStops, setFollowingStops] = useState<TripStop[]>([]);
+  const [requestingPermission, setRequestingPermission] = useState(false);
+  const [locationPermissionGranted, setLocationPermissionGranted] = useState(false);
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
 
@@ -111,9 +117,11 @@ export default function TripWizardScreen() {
   // Đồng bộ một lần khi đổi bài đang sửa; state có guard nên không ghi đè
   // thay đổi của người dùng khi React Query refetch cùng chuyến đi.
   if (editingTripId && tripToEdit && hydratedTripId !== editingTripId) {
+    setEditVersion(tripToEdit.updatedAt);
     dispatch({ type: 'LOAD_TRIP', trip: tripToEdit });
     setMonth(parseISODate(tripToEdit.startDate));
     setHydratedTripId(editingTripId);
+    setFollowingStops(tripStops(tripToEdit).slice(1));
   }
 
   const country = countries.find((c) => c.code === state.countryCode);
@@ -141,10 +149,23 @@ export default function TripWizardScreen() {
   };
 
   const editReady = !editingTripId || hydratedTripId === editingTripId;
+  const stops: TripStop[] = [{ countryCode: state.countryCode ?? '', destinationCity: state.destinationCity.trim(),
+    destinationDetail: state.destinationDetail.trim(), startDate: state.range.start ?? '' }, ...followingStops];
+  const scheduleError = state.range.start && state.range.end ? itineraryError(stops, state.range.start, state.range.end) : null;
+  const enableLocation = async () => {
+    if (state.locationAlerts) { dispatch({ type: 'TOGGLE_LOCATION' }); return; }
+    if (requestingPermission) return;
+    setRequestingPermission(true);
+    try {
+      const location = await requestLocationWithExplanation();
+      if (location) { setLocationPermissionGranted(true); dispatch({ type: 'TOGGLE_LOCATION' }); }
+      else Alert.alert('Chưa bật vị trí', 'Bạn vẫn tạo được chuyến đi. Có thể cấp quyền trong Cài đặt điện thoại rồi thử lại.');
+    } finally { setRequestingPermission(false); }
+  };
 
   const canContinue = editReady && (
     (step === 1 && !!state.countryCode && state.destinationCity.trim().length > 0) ||
-    (step === 2 && !!state.range.start && !!state.range.end) ||
+    (step === 2 && !!state.range.start && !!state.range.end && !scheduleError) ||
     step === 3 ||
     step === 4
   );
@@ -154,7 +175,7 @@ export default function TripWizardScreen() {
       goStep(step + 1);
       return;
     }
-    if (!state.countryCode || !state.destinationCity.trim() || !state.range.start || !state.range.end) return;
+    if (!state.countryCode || !state.destinationCity.trim() || !state.range.start || !state.range.end || scheduleError) return;
 
     // Chuyen di thuoc ve mot user dang nhap (backend co /api/users/trips
     // yeu cau authenticateToken) -- khach chua dang nhap khong tao duoc,
@@ -178,7 +199,13 @@ export default function TripWizardScreen() {
         regulationAlerts: state.regulationAlerts,
         startDate: state.range.start,
         endDate: state.range.end,
+        stops,
+        ...(editingTripId && editVersion ? { updatedAt: editVersion } : {}),
       };
+      if (state.locationAlerts && locationPermissionGranted) {
+        await updatePreferences({ locationConsent: true });
+        await queryClient.invalidateQueries({ queryKey: ['preferences'] });
+      }
 
       if (editingTripId) {
         await updateTrip(editingTripId, payload);
@@ -288,7 +315,7 @@ export default function TripWizardScreen() {
               })}
             </View>
 
-            <Text className="mb-3 mt-6 text-[11px] font-body-bold uppercase tracking-wider text-muted">TẤT CẢ QUỐC GIA</Text>
+            <Text className="mb-3 mt-6 text-[11px] font-body-bold uppercase tracking-wider text-muted">QUỐC GIA ĐẦU TIÊN</Text>
             <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
               {filteredCountries.map((c) => {
                 const selected = state.countryCode === c.code;
@@ -330,6 +357,25 @@ export default function TripWizardScreen() {
                 );
               })}
             </View>
+
+            {country && (
+              <View className="mt-5" style={{ gap: 10 }}>
+                <Text className="font-body-bold text-ink">Các quốc gia tiếp theo (tùy chọn)</Text>
+                <Text className="text-sm text-muted">Chọn theo thứ tự ghé thăm. Bước tiếp theo sẽ nhập thành phố và ngày tới từng nước.</Text>
+                <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                  {countries.filter((c) => c.code !== state.countryCode && c.status !== 'coming_soon').map((c) => {
+                    const checked = followingStops.some((stop) => stop.countryCode === c.code);
+                    return <Pressable key={c.code} accessibilityRole="checkbox" accessibilityState={{ checked }}
+                      accessibilityLabel={`Ghé thêm ${c.name}`} onPress={() => setFollowingStops((previous) => checked
+                        ? previous.filter((stop) => stop.countryCode !== c.code)
+                        : previous.length < 19 ? [...previous, { countryCode: c.code, destinationCity: '', startDate: '' }] : previous)}
+                      className={`rounded-full px-3 py-2 ${checked ? 'bg-primary' : 'bg-primary-soft'}`}>
+                      <Text className={checked ? 'text-white' : 'text-primary'}>{c.name}</Text>
+                    </Pressable>;
+                  })}
+                </View>
+              </View>
+            )}
 
             {country && (
               <View className="mt-6 rounded-lg border border-line bg-surface p-4">
@@ -430,6 +476,8 @@ export default function TripWizardScreen() {
                 </Text>
               </Pressable>
             </View>
+            <ItineraryEditor countries={countries} stops={stops} onChange={(next) => setFollowingStops(next.slice(1))} />
+            {!!scheduleError && <Text className="mt-3 px-[18px] text-danger">{scheduleError}</Text>}
           </View>
         )}
 
@@ -446,13 +494,13 @@ export default function TripWizardScreen() {
                   <Text className="text-[15px] font-body-bold text-ink">Cảnh báo theo vị trí</Text>
                   <Text className="mt-1 text-sm text-muted">Nhận cảnh báo an ninh khi bạn ở gần khu vực rủi ro.</Text>
                 </View>
-                <Switch value={state.locationAlerts} onValueChange={() => dispatch({ type: 'TOGGLE_LOCATION' })} accessibilityLabel="Cảnh báo theo vị trí" />
+                <Switch value={state.locationAlerts} onValueChange={() => void enableLocation()} accessibilityLabel="Cảnh báo theo vị trí" />
               </View>
               <View className="h-px bg-line" />
               <View className="flex-row items-center justify-between px-4 py-4">
                 <View className="flex-1 pr-3">
                   <Text className="text-[15px] font-body-bold text-ink">Thông báo khi quy định thay đổi</Text>
-                  <Text className="mt-1 text-sm text-muted">Cập nhật ngay khi cẩm nang pháp luật của quốc gia này thay đổi.</Text>
+                  <Text className="mt-1 text-sm text-muted">Hiện cảnh báo pháp luật được hệ thống cung cấp trong ứng dụng. Chưa có thông báo đẩy khi đóng app.</Text>
                 </View>
                 <Switch value={state.regulationAlerts} onValueChange={() => dispatch({ type: 'TOGGLE_REGULATION' })} accessibilityLabel="Thông báo khi quy định thay đổi" />
               </View>
@@ -460,7 +508,7 @@ export default function TripWizardScreen() {
 
             <View className="mt-4 flex-row items-start gap-2 rounded-md bg-[#F0F5FD] p-3">
               <Info size={18} color={colors.primary} />
-              <Text className="flex-1 text-sm text-[#334E68]">Chúng tôi chỉ dùng vị trí để cảnh báo — không chia sẻ với bên thứ ba.</Text>
+              <Text className="flex-1 text-sm text-[#334E68]">Chỉ dùng GPS khi bạn cấp quyền và ứng dụng đang mở. Không theo dõi nền; thông báo hiện trong ứng dụng, chưa có push khi đóng app.</Text>
             </View>
           </View>
         )}
@@ -470,6 +518,7 @@ export default function TripWizardScreen() {
             <Text className="font-display text-ink" style={{ fontSize: 26 }}>
               {editingTripId ? 'Xác nhận thay đổi' : 'Xác nhận chuyến đi'}
             </Text>
+            {stops.map((stop, index) => <Text key={index} className="mt-2 text-ink">{index + 1}. {countries.find((c) => c.code === stop.countryCode)?.name ?? stop.countryCode}: {stop.destinationCity}, từ {stop.startDate}</Text>)}
 
             <View className="mt-5 rounded-lg border border-line bg-surface p-[18px]">
               <View className="flex-row items-center">

@@ -16,6 +16,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const backendDir = path.join(__dirname, "..");
 let parseEnv;
 
+test("cẩm nang mặc định mở, nhưng vẫn cho phép khóa rõ ràng", () => {
+  const opened = parseEnv({ ...base, NODE_ENV: "test" });
+  assert.equal(opened.success, true);
+  assert.equal(opened.data.LEGAL_LOOKUP_ENABLED, true);
+  assert.equal(
+    parseEnv({ ...base, NODE_ENV: "test", LEGAL_LOOKUP_ENABLED: "false" }).data
+      .LEGAL_LOOKUP_ENABLED,
+    false,
+  );
+});
+
 before(async () => {
   await startTestDb();
   ({ parseEnv } = await import("../src/core/env.js"));

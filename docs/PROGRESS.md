@@ -1,6 +1,122 @@
 # TIEN DO BE.TRAVEL
 
-Cập nhật lần cuối: 2026-10-06 · Dọn code chết toàn hệ thống (xem OPTIMIZATION_REPORT.md, rà soát 06/10).
+## Giọng nói và phát âm bản dịch — 07/10/2026
+
+Nhánh `feature/voice-translation-20261007`, từ `93d5ad2` đã push phiên trước.
+Tiến độ mã nguồn/kiểm tra local `[######] 6/6`; native thiết bị còn chờ nghiệm thu.
+Không merge/push/deploy tự động.
+
+| Việc | Trạng thái |
+|---|---|
+| Định vị Docs/kiến trúc/SDK | xong, ngoại lệ voice theo yêu cầu mới |
+| Micro → văn bản, ngôn ngữ nguồn, quyền/hủy phiên | xong code, native introspection quyền hai nền tảng đạt |
+| TTS đúng ngôn ngữ đích, tự phát/stop, câu lưu | xong code; không đọc giọng khác khi thiếu ngôn ngữ |
+| Rà dependency/ba workspace | backend 269/269 gồm golden 26; admin 18/18 + lint/typecheck/build; vá shell-quote 1.12.0, http-cache-semantics 4.3.0 |
+| Mobile test/export cuối | 206/206, 49 suites; lint/typecheck và exports iOS/Android đạt |
+| Nghiệm thu/bàn giao/commit | docs/VOICE_TRANSLATION, ACCEPTANCE, OPTIMIZATION_REPORT, USER_INPUT_FORM; commit local trên nhánh riêng, thiết bị còn mở |
+
+Cần **native rebuild**: Expo Go/binary cũ chỉ nhập tay/TTS, micro báo hướng dẫn.
+Không upload/lưu audio, không nghe nền. OS recognizer có thể dùng mạng; kiểm văn
+bản trước dịch. Xem VOICE_TRANSLATION.md. Advisory còn lại chưa có bản vá tương
+thích được ghi trong OPTIMIZATION_REPORT. Phạm vi repo/config/dependency/tests,
+không chứng nhận toàn macOS hoặc nhận giọng trên mọi thiết bị.
+
+## Thu thập mẫu Google Maps — 06/10/2026
+
+Trạng thái: **đã được yêu cầu khởi tạo cho cả Android và iOS**.
+Đã lưu 14 tệp đính kèm + 3 đoạn HTML thành 8 mẫu độc lập tại
+`docs/references/google-maps/`. Có danh mục và hash ánh xạ các bản trùng nhau.
+Tiến độ code/kiểm tra `[#####] 5/5`; nghiệm thu bản đồ Google trên thiết bị còn mở.
+
+| Hạng mục | Trạng thái / bằng chứng |
+|---|---|
+| Lưu mẫu, xác định native/web/dịch vụ riêng | xong; bản đính kèm giữ nguyên byte, snippets chat bỏ escape; không chạy Places/Aerial/KML mẫu |
+| Khởi tạo hai nền tảng | MapView native + config plugin; mapRuntime chọn đúng Google/Apple/Expo Go, chặn build có key mà thiếu định danh |
+| Điều khiển và phục hồi | trạng thái khởi tạo, timeout 20 giây về list, retry remount ErrorBoundary, camera về tâm, vệ tinh hybrid; giữ GPS/search/filters/cache/verified list |
+| Kiểm tra | mobile lint/typecheck + 193/193 (46 suites); export iOS/Android đạt; native introspection key thử vào Info.plist/Android manifest, không vào extra; không đổi backend/API/DB |
+| Bàn giao | npm run maps:check, MAPS_SETUP và ACCEPTANCE; cấu hình hiện thiếu key/ID cả hai nền tảng, chưa push/deploy/native build |
+
+Không diễn giải onMapReady là tile được Google cấp quyền. Preflight chỉ kiểm
+định dạng env; cần key thật, SDK/billing, package/SHA-1 hoặc bundle restriction,
+rebuild và kiểm tile trên điện thoại. Quy tắc Places ngoài MVP vẫn giữ nguyên.
+
+Cập nhật lần cuối: 2026-10-07 · Nhập giọng nói, TTS theo ngôn ngữ đích và rà soát dependency/hồi quy.
+
+## Sửa cẩm nang, dịch và lịch trình — 06/10/2026
+
+Nhánh `feature/itinerary-guide-translation-20261006`, từ `2a71d9d`.
+Tiến độ mã nguồn/kiểm tra local: `[######] 6/6`; chưa nghiệm thu thiết bị.
+
+| Bước | Trạng thái |
+|---|---|
+| Phân tích cấu trúc, Docs, contract và nguyên nhân | xong |
+| Mở lại cẩm nang (chỉ nội dung published/current) | xong phần code |
+| Tách model dịch, thử lại lỗi 503 có giới hạn | xong; Gemini 3.5 Flash Lite dịch thử thật thành công |
+| Lịch trình nhiều nước/ngày chặng, quyền vị trí, khóa phiên sửa cũ | xong phần code |
+| Hồi quy toàn hệ thống và exports | xong local: backend 269/269 gồm golden 26; mobile 188/188 (45 suites); admin 18/18; lint/typecheck/format/build và exports iOS/Android |
+| Nghiệm thu, bàn giao, commit | xong phần code/tài liệu; commit ghi trong lịch sử Git của nhánh, thiết bị còn mở |
+
+Google Maps native chưa nghiệm thu: chưa có key Android/iOS trong môi trường.
+Đã nối config plugin và provider; iOS thiếu key vẫn dùng Apple Maps, Android thiếu
+key có danh sách và liên kết mở Google Maps. Người quản lý phải tạo key Google Cloud
+và build lại; không sử dụng khóa Gemini cho Maps. Phiên này không sửa dữ liệu Atlas.
+Các mục phong tỏa cẩm nang trong lịch sử bên dưới đã được yêu cầu mới thay thế:
+`LEGAL_LOOKUP_ENABLED` mặc định true; vẫn có thể đặt false để tạm khóa vận hành.
+
+Hướng dẫn tiếp tục: `TRIP_ITINERARY.md`, `MAPS_SETUP.md`, `USER_INPUT_FORM.md`.
+Backend chạy lại cần nạp cấu hình mới; nếu deployment đặt explicit false thì đổi
+LEGAL_LOOKUP_ENABLED=true. Model dịch riêng cấu hình TRANSLATION_MODEL, giữ nguyên
+LLM_MODEL của AI pháp lý. Smoke service thực đạt cả vi->en và en->vi. Retry có
+giới hạn không bảo đảm provider hết 503/429. Chưa push/deploy phiên này.
+Các dependency advisory chưa có bản vá upstream ghi ở phần audit Maps bên dưới
+vẫn chưa đóng. Phạm vi rà soát là repo/cấu hình/kiểm thử, không chứng nhận toàn OS.
+
+## Bản đồ và rà soát hệ thống — 06/10/2026
+
+Nhánh `feature/maps-integration-20261006`, tách tại `e02bbd7` từ nhánh
+`fix/betravel-qa-20261005` đang ahead origin 14 commit. Không tự sửa lịch sử/push.
+Tiến độ mã nguồn/kiểm tra local: `[######] 6/6`. Phát hành bản đồ Android:
+**xong một phần**, còn key, định danh/chứng thư và nghiệm thu thiết bị.
+
+| Bước | Trạng thái | Bằng chứng |
+|---|---|---|
+| Định vị cấu trúc/quy tắc | xong | CLAUDE, AGENTS mobile, Docs audit/master plan/tối ưu/B6, contracts, inventory ba workspace |
+| Cấu hình Maps SDK | xong phần code | app.config.js nạp key vào plugin; iOS Apple Maps; Android thiếu key dùng list; native introspection đạt |
+| Tính năng bổ trợ | xong local | Tìm không dấu/tên bản địa/địa chỉ; loại, bán kính 5/20/50 km; GPS chủ động; camera; list-only; ngày verify; gọi/chỉ đường/copy |
+| Sửa lỗi/bảo vệ dữ liệu | xong local | Camera, GPS timeout/lỗi/cũ; cache list/nearby/hỏng/chưa verify; Favorites không lộ ID biên tập; warning test Explore |
+| Kiểm tra ba workspace | xong local | Backend 266/266 tuần tự + golden 26/26; mobile 183/183 (43 suites); admin 18/18; lint/typecheck/build/exports |
+| Ghi sổ bàn giao | xong | MAPS_SETUP, PROGRESS, OPTIMIZATION_REPORT, ACCEPTANCE, contracts, .env.example |
+
+### Cấu trúc hiện hành để người/AI tiếp theo tiếp tục
+
+| Khu vực | Luồng và giới hạn |
+|---|---|
+| Backend routes -> middleware/validators -> controllers -> services -> models | Express envelope/RBAC/Zod/Mongo; public SOS chỉ verified, $geoNear + index 2dsphere |
+| Backend rag/translation | Retrieval/guard/provider/quota; giữ cờ phong tỏa luật/chat, không seed luật/điểm giả |
+| Mobile app/components/styles | Expo Router/design system; Maps route /sos/map, phần chưa có data vẫn có màn chặn |
+| Mobile lib/data/api/features | Mock/API qua công tắc; adapters giữ contract; cache/query tách quốc gia/mode, foreground GPS chủ động |
+| Admin pages/components/lib | CRUD/CSV/verify, Leaflet picker; cùng model và [lng,lat], không dùng Places |
+| Contracts/Docs/CI | Shape/fixtures, sổ bàn giao, CI lint/test/build ba workspace độc lập; không thêm migration/index/collection |
+
+### Bằng chứng, phạm vi và việc còn mở
+
+- Backend lint/format sạch; **266/266** qua
+  `node --test --test-concurrency=1 --test-timeout=30000 test/*.test.js`; golden **26/26**,
+  SOS/Favorites riêng **24/24**. DB tạm/provider mock, không đọc/sửa Atlas.
+- Hai lần concurrency=2 gặp nhiễu localhost: HTTP parser nhận JDWP/HTTP2, test treo,
+  mongod báo port đã dùng. Chạy riêng/tuần tự xanh; chưa chứng nhận ổn định concurrency=2 trên máy này.
+- Mobile thiếu hai font từ phiên trước: `npm ci` khôi phục theo lockfile; không đổi font/design.
+  Lint/typecheck, **183/183 (43 suites)** đạt. Admin **18/18**, lint/typecheck/build đạt.
+- Vá `source-map-js@1.2.2` ở mobile/admin và `postcss-selector-parser@7.1.6` ở mobile;
+  giữ SDK 57/native libraries. Native config introspection và iOS/Android export đạt.
+  Artifact `/tmp/betravel-map-*-20261006`, không commit. NO_COLOR/FORCE_COLOR là warning môi trường.
+- Dependency chưa khép: npm ci trước vá báo 68 (9 moderate/59 high), gồm lan truyền qua gói cha.
+  Đã vá hai gói; bốn gói khác chưa có bản vá upstream (OPTIMIZATION_REPORT).
+  Audit offline trả 0 nhưng không đủ dữ liệu advisory, **không coi là hết lỗ hổng**.
+- Cần người: key Maps Android + quota/package/SHA-1, iOS bundle ID, SOS verified thật,
+  nghiệm thu điện thoại. Hướng dẫn: [MAPS_SETUP.md](MAPS_SETUP.md).
+- Phạm vi là repository/config/dependency/test ứng dụng. Không chứng nhận toàn macOS
+  hoặc mọi lỗi tiềm ẩn đã hết; chưa triển khai production/native build ký.
 
 ## Màn chặn cho phần chưa hoàn thiện (06/10)
 

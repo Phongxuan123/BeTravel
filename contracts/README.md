@@ -1,5 +1,24 @@
 # BE.TRAVEL — CONTRACT API
 
+## Nhập giọng nói/đọc bản dịch — 07/10/2026
+
+Nhận dạng/TTS qua dịch vụ native mobile; /translate tiếp tục chỉ nhận
+text/from/to/mode theo contract cũ. Không nhận/lưu audio ở backend, không đổi
+quota/auth/envelope. Người dùng kiểm văn bản rồi chủ động bấm dịch.
+Xem docs/VOICE_TRANSLATION.md về quyền, giới hạn và rebuild.
+
+## Lịch trình nhiều chặng — 06/10/2026
+
+Trip có `stops: [{countryCode,destinationCity,destinationDetail,startDate}]` (1–20).
+Chặng đầu bắt đầu đúng startDate chuyến đi, các chặng sau tăng ngày nghiêm ngặt,
+không vượt endDate. Ngày chuyển nước thuộc chặng mới, chặng cuối kéo tới endDate.
+Top-level country/city/detail phản ánh chặng đầu cho client cũ. Client cũ sửa
+chuyến nhiều chặng mà không gửi stops -> 409 CONFLICT, tránh mất dữ liệu.
+Dữ liệu cũ đọc được không migration. Ngày YYYY-MM-DD, quốc gia thêm mới phải active.
+PUT nhận `updatedAt` của bản GET gốc (ISO datetime); phiên cũ trả 409 CONFLICT.
+Mobile giữ phiên bản lúc mở form. Legacy không gửi vẫn có compare-and-swap trong
+request, nhưng không phát hiện form cũ đã mở từ trước.
+
 ## Bản vá hợp đồng API 05/10/2026
 
 - `Country.aliases?: string[]` cho admin và dữ liệu quốc gia; AI nhận diện thêm tên tiếng Anh, thành phố và bí danh có sẵn KR/JP/TH/SG, kể cả khi chưa seed lại. Tên ngắn dễ trùng từ như “Thái” chỉ khớp ngữ cảnh quốc gia/di chuyển.
@@ -521,6 +540,11 @@ GET /admin/analytics/overview?days=7   200
 ```
 
 ## 14. ENDPOINT SOS LOCATIONS CONG KHAI — `/api/support-locations/*` (B6)
+
+Mobile 06/10: giữ nguyên shape API và GeoJSON `[lng,lat]`. Các lựa chọn bán kính
+5/20/50 km dùng query hiện có, limit=50; tìm tên/địa chỉ diễn ra trên danh sách
+đã tải (không phải tìm toàn bộ địa điểm Google). Mọi điểm công khai phải verified.
+Location và incident lồng trong favorites cũng không trả `createdBy`, `updatedBy`, `__v`.
 
 ```
 GET /support-locations/nearby?lat&lng&country=&type=&radiusKm=&limit=   200

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { useCountry } from '@/lib/countryContext';
 import { useAuth } from '@/lib/auth';
-import { fetchAlerts, fetchPreferences, setAlertsContext } from '@/lib/data';
+import { fetchAlerts, fetchPreferences, fetchTrips, setAlertsContext } from '@/lib/data';
 
 const MIN_POLL_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -27,8 +27,11 @@ export function usePollAlerts() {
   const owner = user?.email ?? null;
   const preferencesQuery = useQuery({ queryKey: ['preferences'], queryFn: fetchPreferences, enabled: !isGuest });
   // Chưa tải được lựa chọn của người dùng thì chưa đọc GPS.
-  const locationConsent = preferencesQuery.data?.data.locationConsent === true;
+  const tripsQuery = useQuery({ queryKey: ['trips'], queryFn: fetchTrips, enabled: !isGuest });
+  const currentTrip = tripsQuery.data?.data.find((trip) => trip.isCurrent);
+  const locationConsent = tripsQuery.data !== undefined && preferencesQuery.data?.data.locationConsent === true && currentTrip?.locationAlerts !== false;
   const safetyEnabled = preferencesQuery.data?.data.alerts.safety !== false;
+  const legalEnabled = preferencesQuery.data?.data.alerts.legal !== false && currentTrip?.regulationAlerts !== false;
 
   useEffect(() => {
     let cancelled = false;
@@ -57,7 +60,8 @@ export function usePollAlerts() {
       // Bỏ kết quả GPS của phiên/quốc gia/đồng ý đã thay đổi trong lúc chờ.
       if (cancelled) return;
       const latestPreferences = queryClient.getQueryData<Awaited<ReturnType<typeof fetchPreferences>>>(['preferences']);
-      if (latestPreferences?.data.locationConsent !== true) coords = undefined;
+      const latestTrips = queryClient.getQueryData<Awaited<ReturnType<typeof fetchTrips>>>(['trips']);
+      if (latestPreferences?.data.locationConsent !== true || latestTrips?.data.find((trip) => trip.isCurrent)?.locationAlerts === false) coords = undefined;
       setAlertsContext({ countryCode, owner, lat: coords?.lat, lng: coords?.lng });
       await queryClient.invalidateQueries({ queryKey: ['alerts'] });
     };
@@ -75,5 +79,6 @@ export function usePollAlerts() {
   }, [countryCode, locationConsent, isGuest, owner, queryClient]);
 
   const alertsQuery = useQuery({ queryKey: ['alerts', countryCode, owner], queryFn: fetchAlerts, enabled: Boolean(countryCode) && !isGuest });
-  return { alerts: !isGuest && safetyEnabled ? alertsQuery.data?.data ?? [] : [] };
+  return { alerts: isGuest ? [] : (alertsQuery.data?.data ?? []).filter((alert) =>
+    alert.category === 'safety' ? safetyEnabled : alert.category !== 'legal' || legalEnabled) };
 }
