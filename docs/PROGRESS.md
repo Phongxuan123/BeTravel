@@ -1,5 +1,26 @@
 # TIEN DO BE.TRAVEL
 
+## Giọng nói và phát âm bản dịch — 07/10/2026
+
+Nhánh `feature/voice-translation-20261007`, từ `93d5ad2` đã push phiên trước.
+Tiến độ mã nguồn/kiểm tra local `[######] 6/6`; native thiết bị còn chờ nghiệm thu.
+Không merge/push/deploy tự động.
+
+| Việc | Trạng thái |
+|---|---|
+| Định vị Docs/kiến trúc/SDK | xong, ngoại lệ voice theo yêu cầu mới |
+| Micro → văn bản, ngôn ngữ nguồn, quyền/hủy phiên | xong code, native introspection quyền hai nền tảng đạt |
+| TTS đúng ngôn ngữ đích, tự phát/stop, câu lưu | xong code; không đọc giọng khác khi thiếu ngôn ngữ |
+| Rà dependency/ba workspace | backend 269/269 gồm golden 26; admin 18/18 + lint/typecheck/build; vá shell-quote 1.12.0, http-cache-semantics 4.3.0 |
+| Mobile test/export cuối | 206/206, 49 suites; lint/typecheck và exports iOS/Android đạt |
+| Nghiệm thu/bàn giao/commit | docs/VOICE_TRANSLATION, ACCEPTANCE, OPTIMIZATION_REPORT, USER_INPUT_FORM; commit local trên nhánh riêng, thiết bị còn mở |
+
+Cần **native rebuild**: Expo Go/binary cũ chỉ nhập tay/TTS, micro báo hướng dẫn.
+Không upload/lưu audio, không nghe nền. OS recognizer có thể dùng mạng; kiểm văn
+bản trước dịch. Xem VOICE_TRANSLATION.md. Advisory còn lại chưa có bản vá tương
+thích được ghi trong OPTIMIZATION_REPORT. Phạm vi repo/config/dependency/tests,
+không chứng nhận toàn macOS hoặc nhận giọng trên mọi thiết bị.
+
 ## Thu thập mẫu Google Maps — 06/10/2026
 
 Trạng thái: **đã được yêu cầu khởi tạo cho cả Android và iOS**.
@@ -19,7 +40,7 @@ Không diễn giải onMapReady là tile được Google cấp quyền. Prefligh
 định dạng env; cần key thật, SDK/billing, package/SHA-1 hoặc bundle restriction,
 rebuild và kiểm tile trên điện thoại. Quy tắc Places ngoài MVP vẫn giữ nguyên.
 
-Cập nhật lần cuối: 2026-10-06 · Khôi phục cẩm nang/dịch, Google Maps iOS, lịch trình nhiều nước.
+Cập nhật lần cuối: 2026-10-07 · Nhập giọng nói, TTS theo ngôn ngữ đích và rà soát dependency/hồi quy.
 
 ## Sửa cẩm nang, dịch và lịch trình — 06/10/2026
 

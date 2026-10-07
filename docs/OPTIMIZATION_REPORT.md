@@ -1,5 +1,31 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Giọng nói và audit hệ thống — 07/10/2026
+
+- Nhập giọng nói dùng optional native module (expo-speech-recognition 57.1.0);
+  Expo Go/binary cũ không crash. Micro chỉ khi bấm, giải thích trước quyền, không
+  lưu audio; giới hạn 30 giây/500 ký tự, hủy listener/token khi nền/blur/đổi locale.
+- Phát âm bỏ locale fallback tiếng Anh sai ngôn ngữ. Chọn voice đã cài đúng
+  locale hoặc cùng ngôn ngữ; thiếu thì báo lỗi, có stop/auto-play và generation
+  bảo vệ callback cũ. Tắt auto trong khi chờ API không phát kết quả đến sau.
+- Câu lưu thêm targetLanguage, lọc theo chế độ; legacy giữ nguyên, cho dịch lại
+  để xác định ngôn ngữ. Không migration hoặc đổi API/quota/backend storage.
+- Vá dependency shell-quote 1.10.0 -> 1.12.0 (critical) và http-cache-semantics
+  4.2.0 -> 4.3.0 (high), lockfile cập nhật, patch-package hiện có vẫn áp dụng.
+  Không chạy audit fix force vì đề xuất có thể đổi/downgrade Expo và Tailwind.
+- Audit registry snapshot sau vá: mobile 62 advisory nodes (57 high, 5 moderate,
+  0 critical), backend 3 high, admin 0. Root advisory còn lại: braces (mobile/
+  backend), node-forge và sprintf-js (mobile). Số nodes có thể thay đổi theo
+  registry/đường dependency, không phải 62 lỗi riêng trong source. Chưa có bản
+  vá tương thích cho các root này; giữ mở thay vì đổi SDK/kiến trúc để ép audit 0.
+- Kiểm hệ thống: backend lint/format + 269 tests (golden gồm 26), mobile lint/
+  typecheck + 206 tests/49 suites, admin lint/typecheck + 18 tests/build;
+  native introspection và exports iOS/Android đạt. Rà source conflict/TODO,
+  không sửa OS/Atlas/secret. Binary/device/service vẫn cần nghiệm thu thực tế.
+
+Hướng dẫn và giới hạn quyền/mạng/voice nằm trong VOICE_TRANSLATION.md. Yêu cầu
+voice mới đã được ghi ngoại lệ trong CLAUDE, không mở thêm audio backend/streaming.
+
 ## Khởi tạo Maps Android/iOS từ mẫu tham khảo — 06/10/2026
 
 - Tách mapRuntime để Expo Go iOS không chọn Google provider chỉ vì env JS có key:

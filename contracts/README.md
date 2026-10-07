@@ -1,5 +1,12 @@
 # BE.TRAVEL — CONTRACT API
 
+## Nhập giọng nói/đọc bản dịch — 07/10/2026
+
+Nhận dạng/TTS qua dịch vụ native mobile; /translate tiếp tục chỉ nhận
+text/from/to/mode theo contract cũ. Không nhận/lưu audio ở backend, không đổi
+quota/auth/envelope. Người dùng kiểm văn bản rồi chủ động bấm dịch.
+Xem docs/VOICE_TRANSLATION.md về quyền, giới hạn và rebuild.
+
 ## Lịch trình nhiều chặng — 06/10/2026
 
 Trip có `stops: [{countryCode,destinationCity,destinationDetail,startDate}]` (1–20).

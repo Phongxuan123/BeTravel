@@ -242,7 +242,12 @@ Chi tiết đầy đủ ở `docs/05_ToiUuHeThong.md`. Bảng dưới để nh�
 
 ## 4.4. Phạm vi — KHÔNG làm ở MVP
 
-Luật sư/live chat · dịch giọng nói/OCR camera · payment thật · background geofence & push khi app đóng · đối soát affiliate · B2B API/white-label · i18n UI đa ngôn ngữ · **streaming chat** · UI admin sửa system prompt · Google Places API.
+Luật sư/live chat · OCR camera · payment thật · background geofence & push khi app đóng · đối soát affiliate · B2B API/white-label · i18n UI đa ngôn ngữ · **streaming chat** · UI admin sửa system prompt · Google Places API.
+
+Ngoại lệ theo yêu cầu người dùng 07/10/2026: nhập giọng nói bằng dịch vụ native
+Android/iOS và đọc bản dịch theo ngôn ngữ đích đã được triển khai. Không mở rộng
+sang upload/lưu âm thanh ở backend, nghe nền hoặc voice streaming. Xem
+`docs/VOICE_TRANSLATION.md` và PROGRESS để biết giới hạn/nghiệm thu native.
 
 Yêu cầu rơi vào danh sách này --> **hỏi lại trước khi làm**, đừng tự mở rộng.
 

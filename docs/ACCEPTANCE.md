@@ -1,5 +1,23 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Nhập giọng nói và TTS — 07/10/2026
+
+| Tiêu chí | Kết quả |
+|---|---|
+| Plugin/quyền micro Android, speech/micro iOS, service visibility | Đạt native config introspection; chưa build ký/kiểm máy thật |
+| Nhận ngôn ngữ nguồn, text tối đa 500, không lưu audio | Đạt useVoiceInput tests; persist=false |
+| Quyền denied/late, đổi ngôn ngữ, app nền, timeout 30 giây | Đạt kiểm thử hủy phiên và bỏ callback cũ |
+| Đọc đúng locale đích, thiếu giọng thì báo lỗi | Đạt speechLocale/useTranslationSpeech/TranslatorScreen tests |
+| Tự phát API/câu mẫu, stop, tắt trong lúc chờ, bỏ speech cũ | Đạt kiểm tự động |
+| Câu lưu theo targetLanguage, legacy nhập lại để dịch | Đạt code review; giữ dữ liệu cũ, không đoán ngôn ngữ |
+| Hồi quy | Backend 269/269 gồm golden 26; mobile 206/206 (49 suites); admin 18/18 |
+| Checks/build | Backend lint/format; mobile/admin lint/typecheck; admin build; iOS/Android exports đạt |
+
+Nghiệm thu native và chất lượng nhận/phát âm trên điện thoại vẫn mở. Expo Go
+không có module mới; cần rebuild. Quyền/service/lang pack/giọng TTS cần người dùng
+tương tác trên thiết bị. Không chứng nhận mọi lỗi macOS hoặc tất cả dependency
+sạch advisory. Báo cáo dependency còn mở tại OPTIMIZATION_REPORT.
+
 ## Khởi tạo Maps hai nền tảng — 06/10/2026
 
 Mobile 193/193, 46 suites; lint/typecheck và iOS/Android exports đạt.

@@ -1,12 +1,13 @@
 # Dữ liệu và cấu hình cần người bổ sung
 
-Cập nhật 06/10/2026. Chỉ điền dữ liệu đã xác minh; không dán API key, mật khẩu,
+Cập nhật 07/10/2026. Chỉ điền dữ liệu đã xác minh; không dán API key, mật khẩu,
 URI database hoặc chứng thư private vào tài liệu/chat/repository.
 
 | Nhóm | Cần cung cấp hoặc cấu hình | Nơi sử dụng |
 |---|---|---|
 | Maps Android/iOS | Project Google Cloud, Maps SDK bật, key riêng restricted; Android package + SHA-1, iOS bundle ID, quota cap | Env local/EAS; hướng dẫn MAPS_SETUP.md |
 | App iOS | Bundle ID được nhóm chốt và tài khoản/chứng thư build | IOS_BUNDLE_IDENTIFIER, native build |
+| Micro/TTS | Native rebuild Android/iOS, recognizer và giọng TTS đích trên thiết bị; cấp quyền micro/nhận giọng khi sử dụng | VOICE_TRANSLATION.md; không cần API key STT riêng |
 | Điểm hỗ trợ | Quốc gia, loại, tên/tên bản địa, địa chỉ, tọa độ thật [lng,lat], phone/website, giờ mở, ngày verify | Admin Locations, mẫu sos-locations-template.csv; verify sau kiểm nguồn |
 | Cảnh báo khu vực | Quốc gia, nguồn/nội dung kiểm chứng, thời gian hiệu lực; tâm/bán kính nếu area | Admin Geo Alerts |
 | Nội dung pháp luật | Nguồn chính thức, URL, authority, publishedAt, effectiveFrom, nội dung được nhóm duyệt | Admin Articles; không tự bật tra cứu khi chưa được yêu cầu |

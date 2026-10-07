@@ -32,6 +32,13 @@
       ],
       "expo-secure-store",
       [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Be.Travel dùng micro khi bạn bấm nói để chuyển giọng nói thành văn bản. Ứng dụng không lưu file ghi âm.",
+          "speechRecognitionPermission": "Be.Travel dùng dịch vụ nhận giọng nói của thiết bị để nhập câu dịch. Dịch vụ có thể xử lý âm thanh qua mạng."
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "Be.Travel dùng vị trí để tìm hỗ trợ gần bạn, cảnh báo khu vực hoặc chia sẻ vị trí một lần khi bạn chủ động chọn người nhận."
