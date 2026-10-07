@@ -67,8 +67,10 @@ function NavItem({
       onPress={() => router.push(tab.href)}
       className="flex-1 items-center justify-center pt-2"
     >
-      <Icon size={22} color={color} />
-      <Text className="mt-1 text-[11px] font-body-semibold" style={{ color }}>
+      <View className={`h-8 w-14 items-center justify-center rounded-full ${active ? 'bg-primary-soft' : ''}`}>
+        <Icon size={22} color={color} />
+      </View>
+      <Text className={`mt-0.5 text-[11px] ${active ? 'font-body-bold' : 'font-body-semibold'}`} style={{ color }}>
         {tab.label}
       </Text>
     </Pressable>
