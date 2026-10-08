@@ -1,5 +1,18 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Đợt sửa 1 — 08/10/2026 (Chế độ B, chỉ file đã động tới)
+
+| Rule | Xử lý |
+|---|---|
+| 3 (DRY) | Khoảng trên cho thanh trạng thái gom về `screenTopInset.tsx` thay cho `insets.top` rải ở từng màn |
+| 7 (lỗi rõ ràng) | `requestLocationDetailed` trả lý do; SOS Hub, chia sẻ vị trí, micro không còn thất bại im lặng |
+| 10 (dead code) | Xoá `publish-samples.js` + lệnh `seed:samples`; bỏ import `Lock` không dùng ở hồ sơ |
+| 1/8 | Tách `freshCoords` / `recentCoords` thay hàm dùng tham số làm công tắc ngầm |
+| 13 (W5) | Nhãn "Đã mã hoá" sai sự thật với dữ liệu nhạy cảm --> bỏ |
+
+Warning còn lại: không có warning mới từ `tsc`, `expo lint`, `eslint`. Bỏ qua có lý do: B12 khoảng
+trắng màn Cảnh báo (nguyên nhân đã xác định, để đợt 2 theo phạm vi đã chốt).
+
 ## Giọng nói và audit hệ thống — 07/10/2026
 
 - Nhập giọng nói dùng optional native module (expo-speech-recognition 57.1.0);
