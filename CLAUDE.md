@@ -278,6 +278,26 @@ Trước hết là DoD riêng của batch (cuối mỗi prompt trong `docs/02_..
 
 **Có mục đỏ --> batch CHƯA XONG.** Ghi vào sổ là `đang làm` kèm lý do.
 
+## 5.1b. Cơ chế kiểm thử: ưu tiên chạy thực tế theo hành trình người dùng
+
+Quy tắc do người dùng chốt ngày 08/10/2026, áp dụng cho mọi phiên từ nay:
+
+1. **Kiểm chứng bằng chạy thật trước.** Khi xác nhận một thay đổi hoặc tìm lỗi, ưu tiên
+   dựng hệ thống thật (`backend npm run dev`, nối DB thật) và đi đúng luồng của người dùng:
+   đăng nhập, chọn quốc gia, tạo chuyến đi, tra cứu, hỏi AI, SOS, dịch, sự cố. Gọi qua
+   đúng route/validate/dữ liệu như app thật sẽ gọi, không dựng mock thay thế.
+2. **Không viết thêm smoke test và test ngầm để "cho chắc".** Không tạo thêm test chỉ để
+   phủ dòng hay kiểm tra những gì chạy thật đã chứng minh được. Chỉ thêm test tự động khi
+   sửa một lỗi hồi quy cần chốt lại, hoặc cho phần nghiệp vụ lõi (guard RAG, lọc
+   `published/isCurrent`, RBAC). Bộ test và CI đang có giữ nguyên làm lưới an toàn,
+   không xóa nếu người dùng chưa yêu cầu.
+3. **Phần mobile:** tôi không nhìn được màn hình điện thoại. Tôi kiểm tra tầng API mà
+   màn hình gọi bằng luồng thật, rồi chỉ rõ cho người dùng các bước bấm cần tự thử trên
+   máy (kèm kỳ vọng). Không tuyên bố "màn hình đã ổn" khi chưa có người nhìn.
+4. **Báo cáo trung thực:** nêu rõ đã chạy thật những luồng nào, luồng nào chưa chạy được
+   (thiếu key, cần thiết bị) và vì sao. Dữ liệu thật trên Atlas: chỉ tạo bản ghi thử rồi
+   dọn lại, không in secret, không sửa dữ liệu nội dung.
+
 ## 5.2. Quét tối ưu sau batch (Chế độ B — bắt buộc)
 
 Chỉ trên **những file batch này đã động tới**, không quét toàn repo:
