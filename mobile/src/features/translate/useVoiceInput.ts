@@ -22,6 +22,7 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
   const active = useRef(false);
   const mounted = useRef(true);
   const explained = useRef(false);
+  const awaitingPermission = useRef(false);
   const cleanup = useCallback(() => {
     listeners.current.forEach((listener) => listener.remove());
     listeners.current = [];
@@ -47,7 +48,9 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
   useEffect(() => {
     mounted.current = true;
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state !== 'active') cancel();
+      // Hộp thoại xin quyền micro của Android đẩy app ra khỏi 'active' trong giây lát; hủy lúc
+      // đó làm lượt nghe không bao giờ bắt đầu. Rời app khi đang nghe thì vẫn tắt micro.
+      if (state !== 'active' && !awaitingPermission.current) cancel();
     });
     return () => {
       mounted.current = false;
@@ -109,7 +112,10 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
         return;
       }
       explained.current = true;
-      const permission = await module.requestPermissionsAsync();
+      awaitingPermission.current = true;
+      const permission = await module.requestPermissionsAsync().finally(() => {
+        awaitingPermission.current = false;
+      });
       if (!current()) return;
       if (!permission.granted) {
         cancel();

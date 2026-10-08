@@ -4,7 +4,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { House, Compass, MessageCircle, User } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { colors, shadows } from '@/lib/theme';
-import { AlertBanner } from './AlertBanner';
+import { AlertBanner, isInlineBanner, useBannerAlert } from './AlertBanner';
+import { TopInsetProvider } from './screenTopInset';
 
 export type ActiveTab = 'home' | 'explore' | 'sos' | 'chat' | 'profile';
 
@@ -19,10 +20,15 @@ const tabs: { key: Exclude<ActiveTab, 'sos'>; label: string; icon: typeof House;
 
 export function AppShell({ active, children }: { active: ActiveTab; children: ReactNode }) {
   const insets = useSafeAreaInsets();
+  const bannerAlert = useBannerAlert();
+  // Banner nhỏ chiếm vùng thanh trạng thái thay cho header của màn hình bên dưới.
+  const bannerTakesTopInset = isInlineBanner(bannerAlert);
   return (
     <View className="flex-1 bg-bg">
-      <AlertBanner />
-      <View className="flex-1">{children}</View>
+      <AlertBanner alert={bannerAlert} topInset={insets.top} />
+      <TopInsetProvider value={bannerTakesTopInset ? 0 : null}>
+        <View className="flex-1">{children}</View>
+      </TopInsetProvider>
       <View
         className="absolute inset-x-0 bottom-0 flex-row border-t border-line bg-surface"
         style={{ height: NAV_HEIGHT + insets.bottom, paddingBottom: insets.bottom }}

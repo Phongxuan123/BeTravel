@@ -225,7 +225,7 @@ function TranslatorForm() {
           <View className="mt-3 flex-row items-center justify-between">
             <View className="flex-row" style={{ gap: 8 }}>
               <Pressable accessibilityRole="button" accessibilityLabel={voice.busy ? 'Dừng nhận giọng nói' : 'Nhập bằng giọng nói'}
-                onPress={() => { if (voice.busy) voice.stop(); else { invalidateResult(); void voice.start(); } }}
+                onPress={() => { if (voice.busy) voice.stop(); else void voice.start(); }}
                 className={`h-[50px] w-[50px] items-center justify-center rounded-lg border ${voice.busy ? 'border-primary bg-primary-soft' : 'border-line'}`}>
                 <Mic size={20} color={colors.primary} />
               </Pressable>

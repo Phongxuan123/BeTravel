@@ -16,16 +16,24 @@ function pickMostSevere(alerts: Alert[]): Alert | null {
   return [...undismissed].sort((a, b) => (SEVERITY_ORDER[a.severity ?? 'warn'] ?? 1) - (SEVERITY_ORDER[b.severity ?? 'warn'] ?? 1))[0];
 }
 
+/** Cảnh báo sẽ hiện ở đầu AppShell (null nếu không có). AppShell cần biết để xếp khoảng trên. */
+export function useBannerAlert(): Alert | null {
+  const { alerts } = usePollAlerts();
+  return pickMostSevere(alerts);
+}
+
+export function isInlineBanner(alert: Alert | null): boolean {
+  return alert !== null && alert.severity !== 'danger';
+}
+
 /*
  * Canh bao vi tri (B8 muc 6) -- severity 'danger' chan man hinh bang Modal
  * (phai xac nhan da doc moi dong duoc), 'warn'/'info' chi la banner nho o dau
  * noi dung, KHONG chan thao tac. Khong co canh bao nao -> KHONG render gi
  * (muc 9: khong hien placeholder gay nhieu).
  */
-export function AlertBanner() {
-  const { alerts } = usePollAlerts();
+export function AlertBanner({ alert, topInset }: { alert: Alert | null; topInset: number }) {
   const queryClient = useQueryClient();
-  const alert = pickMostSevere(alerts);
 
   if (!alert) return null;
 
@@ -75,7 +83,7 @@ export function AlertBanner() {
   }
 
   return (
-    <Pressable onPress={openDetail} className="flex-row items-center gap-2.5 border-b border-line px-4 py-2.5" style={{ backgroundColor: `${color}1A` }}>
+    <Pressable onPress={openDetail} className="flex-row items-center gap-2.5 border-b border-line px-4 pb-2.5" style={{ backgroundColor: `${color}1A`, paddingTop: topInset + 10 }}>
       <TriangleAlert size={18} color={color} />
       <View className="flex-1">
         <Text className="text-sm font-body-bold text-ink" numberOfLines={1}>

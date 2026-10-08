@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
+import { TopInsetView } from '@/components/common/screenTopInset';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
@@ -68,7 +69,7 @@ export default function ExploreScreen() {
 
   return (
     <AppShell active="explore">
-      <View className="border-b border-line bg-surface px-[18px] pb-4 pt-4">
+      <TopInsetView extra={16} className="border-b border-line bg-surface px-[18px] pb-4">
         <View className="flex-row items-center justify-between">
           <Text className="font-display text-ink" style={{ fontSize: 26 }}>
             Cẩm nang pháp luật
@@ -115,7 +116,7 @@ export default function ExploreScreen() {
             <FilterChip label="Đã lưu" active={savedOnly} iconLeft={<Bookmark size={14} color={savedOnly ? '#fff' : colors.ink} />} onPress={() => setSavedOnly((v) => !v)} />
           </View>
         </ScrollView>
-      </View>
+      </TopInsetView>
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 24 }}>
         {(!countryCode || topicsQuery.isLoading || articlesQuery.isLoading) && (

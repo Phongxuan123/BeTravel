@@ -1,7 +1,7 @@
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TopInsetView } from '@/components/common/screenTopInset';
 import {
   Bell,
   Calendar,
@@ -34,7 +34,6 @@ import { now, daysBetween, parseISODate } from '@/lib/date';
 import { activeStop } from '@/features/trips/itinerary';
 
 export default function HomeScreen() {
-  const insets = useSafeAreaInsets();
   const { country: selectedCountry, countryCode: selectedCountryCode } = useCountry();
   const { user, isGuest, isLoading: authLoading } = useAuth();
 
@@ -92,8 +91,9 @@ export default function HomeScreen() {
   return (
     <AppShell active="home">
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, paddingHorizontal: 18 }}
+        contentContainerStyle={{ paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, paddingHorizontal: 18 }}
       >
+        <TopInsetView extra={16} />
         {(tripsQuery.isError || (articlesQuery.isError && !articlesDisabled)) && (
           <View className="mb-3 rounded-md bg-danger-tint p-3">
             <Text className="text-center text-sm text-danger">Không tải được một số dữ liệu. Kiểm tra kết nối mạng.</Text>
@@ -239,6 +239,8 @@ export default function HomeScreen() {
                 <Skeleton className="h-[66px] rounded-lg" />
                 <Skeleton className="h-[66px] rounded-lg" />
               </>
+            ) : !articlesQuery.isError && (articlesQuery.data?.data.length ?? 0) === 0 ? (
+              <Text className="text-sm text-muted">Chưa có quy định đã được duyệt cho quốc gia này. Trong lúc chờ, bạn vẫn dùng được SOS, dịch nhanh và hướng dẫn xử lý sự cố.</Text>
             ) : (
               articlesQuery.data?.data.slice(0, 3).map((a) => (
                 <ListRow

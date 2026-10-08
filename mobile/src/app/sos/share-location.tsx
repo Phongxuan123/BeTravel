@@ -22,8 +22,10 @@ export default function ShareLocationScreen() {
     mounted.current = true;
     const timer = setInterval(() => setNow(Date.now()), 1000);
     const subscription = AppState.addEventListener('change', (state) => {
-      // Không giữ tọa độ sau khi rời ứng dụng. Dialog cấp quyền có thể là inactive.
-      if (state === 'background') {
+      // Không giữ tọa độ sau khi rời ứng dụng. Riêng lúc đang lấy GPS theo yêu cầu: hộp thoại
+      // xin quyền/bật GPS của Android đẩy app vào background trong giây lát -- hủy ở đây sẽ làm
+      // nút "Lấy vị trí" không bao giờ chạy. Lượt lấy GPS đã có giới hạn 20 giây riêng.
+      if (state === 'background' && !locating.current) {
         generation.current += 1;
         locating.current = false;
         setBusy(false);

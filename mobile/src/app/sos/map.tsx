@@ -178,6 +178,8 @@ export default function SosMapScreen() {
   }, [mapReady, latitude, longitude, delta, country?.code]);
 
   const call = (phone: string) => void openPhone(phone);
+  const policeNumber = country?.emergencyNumbers?.police ?? '';
+  const showEmptyState = !!country && !activeQuery.isLoading && !activeQuery.isError && locations.length === 0;
   const copyAddress = async (address: string) => {
     try {
       await Clipboard.setStringAsync(address);
@@ -334,6 +336,20 @@ export default function SosMapScreen() {
             <Text className="mt-2 px-[18px] text-sm text-danger">Không tải được danh sách. Chạm để thử lại.</Text>
           </Pressable>
         )}
+        {/* Đặt ngoài ScrollView: khi danh sách rỗng, ScrollView trong sheet maxHeight co về 0 và
+            cắt mất thông báo (lỗi B08). Luôn chừa lối gọi số khẩn cấp khi chưa có điểm nào. */}
+        {showEmptyState && (
+          <View className="mt-3 px-[18px]" style={{ gap: 10 }}>
+            <Text className="text-center text-sm text-muted">{search.trim() ? 'Không có địa điểm khớp tìm kiếm trong danh sách đã tải.' : 'Chưa có địa điểm hỗ trợ đã kiểm chứng cho khu vực này.'}</Text>
+            {!!policeNumber && (
+              <Pressable accessibilityLabel={`Gọi cảnh sát ${policeNumber}`} onPress={() => call(policeNumber)}
+                className="h-12 flex-row items-center justify-center rounded-lg bg-danger" style={{ gap: 8 }}>
+                <Phone size={18} color="#fff" />
+                <Text className="font-body-bold text-white">Gọi cảnh sát {policeNumber}</Text>
+              </Pressable>
+            )}
+          </View>
+        )}
         <ScrollView className="mt-3" contentContainerStyle={{ paddingHorizontal: 18, gap: 10 }}>
           {locations.map((loc) => (
             <Pressable
@@ -370,9 +386,6 @@ export default function SosMapScreen() {
               </Pressable>
             </Pressable>
           ))}
-          {!!country && !activeQuery.isLoading && !activeQuery.isError && locations.length === 0 && (
-            <Text className="py-6 text-center text-sm text-muted">{search.trim() ? 'Không có địa điểm khớp tìm kiếm trong danh sách đã tải.' : 'Chưa có địa điểm hỗ trợ đã kiểm chứng cho khu vực này.'}</Text>
-          )}
         </ScrollView>
       </View>
 
