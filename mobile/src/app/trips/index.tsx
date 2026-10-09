@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus, Trash2 } from 'lucide-react-native';
+import { CalendarDays, Pencil, Plus, Trash2 } from 'lucide-react-native';
 import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { IconButton } from '@/components/ui/IconButton';
@@ -53,6 +53,7 @@ export default function TripsScreen() {
   });
   const queryClient = useQueryClient();
   const trips = tripsQuery.data?.data ?? [];
+  const hasTrips = !isGuest && trips.length > 0;
 
   const allOngoing = trips.filter((trip) => tripStatus(trip) === 'ongoing');
   const allUpcoming = trips.filter((trip) => tripStatus(trip) === 'upcoming').sort(sortUpcoming);
@@ -118,17 +119,20 @@ export default function TripsScreen() {
         }
       />
 
-      <View className="px-[18px] pb-3">
-        <SegmentedTabs
-          value={activeTab}
-          onChange={setTab}
-          options={[
-            { value: 'ongoing', label: 'Đang diễn ra' },
-            { value: 'upcoming', label: 'Sắp tới' },
-            { value: 'past', label: 'Đã qua' },
-          ]}
-        />
-      </View>
+      {/* Chưa có chuyến nào thì 3 tab vô nghĩa (và tab "Đã qua" bị chọn sẵn), chỉ hiện trạng thái trống (B18). */}
+      {hasTrips && (
+        <View className="px-[18px] pb-3">
+          <SegmentedTabs
+            value={activeTab}
+            onChange={setTab}
+            options={[
+              { value: 'ongoing', label: 'Đang diễn ra' },
+              { value: 'upcoming', label: 'Sắp tới' },
+              { value: 'past', label: 'Đã qua' },
+            ]}
+          />
+        </View>
+      )}
 
       <ScrollView
         contentContainerStyle={{
@@ -152,7 +156,8 @@ export default function TripsScreen() {
         )}
 
         {!isGuest && trips.length === 0 && !tripsQuery.isLoading && !tripsQuery.isError && (
-          <EmptyState title="Chưa có chuyến đi" description="Tạo chuyến đi đầu tiên để mở khoá cẩm nang pháp luật.">
+          <EmptyState title="Chưa có chuyến đi" description="Tạo chuyến đi đầu tiên để mở khoá cẩm nang pháp luật."
+            icon={<CalendarDays size={44} color={colors.primary} />}>
             <Button label="Tạo chuyến đi" onPress={() => router.push('/trips/new?step=1')} />
           </EmptyState>
         )}

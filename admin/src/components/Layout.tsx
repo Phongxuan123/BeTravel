@@ -50,10 +50,12 @@ export function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-surface">
-      <aside className="w-60 shrink-0 border-r border-line bg-white">
-        <div className="flex h-14 items-center border-b border-line px-4">
+      {/* Dưới breakpoint md sidebar thu thành dải icon để nội dung còn chỗ trên màn hẹp (B21). */}
+      <aside className="w-14 shrink-0 border-r border-line bg-white md:w-60">
+        <div className="flex h-14 items-center justify-center border-b border-line px-2 md:justify-start md:px-4">
           <Link to="/" className="font-semibold text-ink">
-            Be.Travel Admin
+            <span className="md:hidden">BT</span>
+            <span className="hidden md:inline">Be.Travel Admin</span>
           </Link>
         </div>
         <nav className="flex flex-col gap-0.5 p-2">
@@ -62,22 +64,24 @@ export function Layout({ children }: { children: ReactNode }) {
               key={to}
               to={to}
               end={end}
+              title={label}
+              aria-label={label}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium ${
+                `flex items-center justify-center gap-2.5 rounded-md px-2 py-2 text-sm font-medium md:justify-start md:px-3 ${
                   isActive ? 'bg-blue-50 text-brand' : 'text-ink hover:bg-slate-100'
                 }`
               }
             >
-              <Icon size={18} />
-              {label}
+              <Icon size={18} className="shrink-0" />
+              <span className="hidden md:inline">{label}</span>
             </NavLink>
           ))}
         </nav>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-line bg-white px-5">
-          <div className="text-sm text-muted">
+        <header className="flex h-14 items-center justify-between gap-3 border-b border-line bg-white px-3 md:px-5">
+          <div className="min-w-0 truncate text-sm text-muted">
             <Link to="/" className="hover:text-ink">
               Trang chủ
             </Link>
@@ -89,19 +93,20 @@ export function Layout({ children }: { children: ReactNode }) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 text-sm">
-            <span className="text-ink">{user?.fullName}</span>
+          <div className="flex shrink-0 items-center gap-3 text-sm">
+            <span className="hidden text-ink sm:inline">{user?.fullName}</span>
             <button
               onClick={onLogout}
+              aria-label="Đăng xuất"
               className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-muted hover:bg-slate-100 hover:text-ink"
             >
               <LogOut size={16} />
-              Đăng xuất
+              <span className="hidden sm:inline">Đăng xuất</span>
             </button>
           </div>
         </header>
 
-        <main className="flex-1 p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-3 md:p-6">{children}</main>
       </div>
     </div>
   );

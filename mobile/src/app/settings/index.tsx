@@ -132,7 +132,7 @@ export default function SettingsScreen() {
       <PageHeader title="Cài đặt" />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 24 }}>
         <SettingsGroup title="NGÔN NGỮ & KHU VỰC">
-          <SettingsRow icon={<Globe size={18} color={colors.primary} />} label="Ngôn ngữ ứng dụng" value="Tiếng Việt" onPress={() => toast('Hiện chỉ hỗ trợ tiếng Việt')} />
+          <SettingsRow icon={<Globe size={18} color={colors.primary} />} label="Ngôn ngữ ứng dụng" value="Chỉ có tiếng Việt" />
           <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={country?.name} onPress={() => setPickingCountry(true)} />
         </SettingsGroup>
 
@@ -257,9 +257,11 @@ function SettingsGroup({ title, children }: { title: string; children: React.Rea
   );
 }
 
-function SettingsRow({ icon, label, value, onPress }: { icon?: React.ReactNode; label: string; value?: string; onPress: () => void }) {
+// Không truyền onPress --> dòng chỉ để đọc: không có mũi tên, không phản hồi chạm (B17).
+function SettingsRow({ icon, label, value, onPress }: { icon?: React.ReactNode; label: string; value?: string; onPress?: () => void }) {
   return (
-    <Pressable onPress={onPress} className="h-16 flex-row items-center px-4" style={{ gap: 12 }}>
+    <Pressable onPress={onPress} disabled={!onPress} accessibilityRole={onPress ? 'button' : 'text'}
+      className="h-16 flex-row items-center px-4" style={{ gap: 12 }}>
       {icon && (
         <IconTile tone="blue" size={36}>
           {icon}
@@ -267,7 +269,7 @@ function SettingsRow({ icon, label, value, onPress }: { icon?: React.ReactNode; 
       )}
       <Text className="flex-1 text-[17px] font-body-semibold text-ink">{label}</Text>
       {value && <Text className="text-muted">{value}</Text>}
-      <ChevronRight size={18} color={colors.muted} />
+      {onPress && <ChevronRight size={18} color={colors.muted} />}
     </Pressable>
   );
 }

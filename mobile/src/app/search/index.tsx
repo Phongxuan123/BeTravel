@@ -31,6 +31,11 @@ export default function SearchScreen() {
   }, [query]);
 
   const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
+  // Gợi ý lấy theo chủ đề đang có bài, tránh gợi ý một câu mà kho chưa có bài nào trả lời (B16).
+  const topicWithArticles = topicsQuery.data?.data.find((topic) => topic.count > 0);
+  const searchPlaceholder = topicWithArticles
+    ? `Ví dụ: ${topicWithArticles.label.toLowerCase()}`
+    : 'Nhập từ khoá cần tìm';
   const resultsQuery = useQuery({
     queryKey: ['search', debounced, countryCode],
     queryFn: () => searchArticles(debounced, countryCode),
@@ -59,7 +64,7 @@ export default function SearchScreen() {
           <SearchIcon size={20} color={colors.primary} />
           <TextInput
             className="ml-2.5 flex-1 text-base text-ink"
-            placeholder={`Ở ${country?.name ?? 'đây'} có được hút thuốc trên đường không?`}
+            placeholder={searchPlaceholder}
             placeholderTextColor={colors.subtle}
             value={query}
             onChangeText={setQuery}
