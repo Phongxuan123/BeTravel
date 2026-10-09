@@ -11,11 +11,11 @@ test('thêm, điền và xóa chặng giữ nguyên chặng đầu', async () =>
   }
   const screen = await render(<Form />);
   await fireEvent.press(screen.getByLabelText('Thêm chặng hoặc quốc gia'));
-  expect(screen.getByText('Chặng 2: JP')).toBeTruthy();
+  expect(screen.getByText('Chặng 2: Nhật Bản')).toBeTruthy();
   await fireEvent.changeText(screen.getByLabelText('Thành phố chặng 2'), 'Osaka');
   await fireEvent.changeText(screen.getByLabelText('Ngày bắt đầu chặng 2'), '2026-10-05');
   expect(screen.getByDisplayValue('Osaka')).toBeTruthy();
   await fireEvent.press(screen.getByLabelText('Xóa chặng 2'));
   expect(screen.queryByDisplayValue('Osaka')).toBeNull();
-  expect(screen.getByText('Seoul · từ 2026-10-01')).toBeTruthy();
+  expect(screen.getByText('Seoul · từ 01/10/2026')).toBeTruthy();
 });

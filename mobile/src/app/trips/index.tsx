@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Plus, Trash2 } from 'lucide-react-native';
-import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { IconButton } from '@/components/ui/IconButton';
 import { Badge } from '@/components/ui/Badge';
@@ -40,6 +40,7 @@ function sortPast(a: Trip, b: Trip) {
 }
 
 export default function TripsScreen() {
+  const bottomPadding = useAppShellBottomPadding();
   // null = chưa có lựa chọn thủ công. Khi dữ liệu tải xong, màn hình tự chọn:
   // Đang diễn ra -> Sắp tới -> Đã qua. Sau khi người dùng bấm tab thì tôn trọng
   // lựa chọn đó, không tự nhảy tab nữa.
@@ -132,7 +133,7 @@ export default function TripsScreen() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 18,
-          paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING,
+          paddingBottom: bottomPadding,
           gap: 12,
         }}
       >

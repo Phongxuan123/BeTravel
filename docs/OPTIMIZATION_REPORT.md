@@ -1,5 +1,14 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Đợt sửa 2 — 09/10/2026 (Chế độ B, chỉ file đã động tới)
+
+| Rule | Xử lý |
+|---|---|
+| 6 (magic number) | Kích thước nút SOS, phần nhô, nhãn, khoảng cách trong AppShell thành hằng có tên |
+| 3 (DRY) | Đệm dưới gom vào `useAppShellBottomPadding()`; tên nước gom vào `useCountryName()` |
+| 10 (dead code) | Bỏ hằng `APP_SHELL_CONTENT_BOTTOM_PADDING` (110 cố định, sai trên máy có thanh điều hướng cử chỉ) |
+| 13 (W3) | Chip chủ đề viết cứng "Giao thông" ở chi tiết bài --> lấy theo dữ liệu (B24) |
+
 ## Đợt sửa 1 — 08/10/2026 (Chế độ B, chỉ file đã động tới)
 
 | Rule | Xử lý |
@@ -749,6 +758,8 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.10.09-dot2 | 09/10/2026 | Đợt sửa 2 | B09-B14, B24: wizard nhắc trường thiếu + cuộn đầu bước + đệm bàn phím; ngày/tên nước thay dữ liệu thô; Cảnh báo bỏ khoảng trắng, kéo làm mới; đệm dưới AppShell theo vùng an toàn; mobile 213 test |
+| 2026.10.08-dot1 | 08/10/2026 | Đợt sửa 1 | B01-B08, B23: SOS/micro không huỷ khi xin quyền; vùng thanh trạng thái; định vị dự phòng; số khẩn cấp mất mạng; mở SOS cho khách; backend 269, mobile 213 test |
 | 2026.10.06-maps | 06/10/2026 | Maps + rà soát | Config env, search/radius/GPS/camera/list/cache verified, Favorites privacy; vá 2 dependency; backend tuần tự 266, mobile 183, admin 18 |
 | 2026.09.29-quy | 29/09/2026 | Quét test (nhánh Quy) | Test module thuần + hồi quy; guard đối chiếu đủ đơn vị tiền (dùng chung CURRENCY_UNIT); containsPhrase cho tên nước; username Google; script test đa nền tảng; 255(+1 todo)/153/18 test |
 | 2026.09.28-qa5 | 28/09/2026 | QA-5 (07_QA_BugHunt) | M16-M17 + E2E + edge; update schema incident/geo-alert không còn ghi đè mảng rỗng; `parseEnv` + ràng buộc production; smoke test import server; Rule 12 (README/contracts/src/UI); commit format backend riêng (BASE-01); 227(+1 todo)/111/11 test, export iOS/Android đạt |

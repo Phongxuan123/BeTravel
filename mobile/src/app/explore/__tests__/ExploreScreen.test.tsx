@@ -12,7 +12,7 @@ jest.mock('expo-router', () => ({ router: { push: jest.fn() }, useLocalSearchPar
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0, left: 0, right: 0 }) }));
 jest.mock('@/components/common/AppShell', () => ({
   AppShell: ({ children }: { children: React.ReactNode }) => children,
-  APP_SHELL_CONTENT_BOTTOM_PADDING: 0,
+  useAppShellBottomPadding: () => 0,
 }));
 jest.mock('@/features/explore/useSavedArticles', () => ({
   useSavedArticles: () => ({ isSaved: () => false, toggleSaved: jest.fn() }),

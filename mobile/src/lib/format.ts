@@ -10,6 +10,14 @@ export function formatFullDate(iso: string): string {
   return fnsFormat(parseISODate(iso), 'dd/MM/yyyy', { locale: vi });
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/** Ngày dd/MM/yyyy cho chuỗi đã đủ YYYY-MM-DD; chuỗi đang gõ dở thì giữ nguyên để không báo sai ngày. */
+export function formatDateIfComplete(iso: string): string {
+  const complete = ISO_DATE.test(iso) && !Number.isNaN(parseISODate(iso).getTime());
+  return complete ? formatFullDate(iso) : iso;
+}
+
 export function formatWeekday(iso: string): string {
   return fnsFormat(parseISODate(iso), 'EEEE', { locale: vi });
 }

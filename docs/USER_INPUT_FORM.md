@@ -42,7 +42,7 @@ toàn bộ đề xuất ở đó được người dùng xác nhận là **quy�
 | B6 | Liên hệ khẩn cấp lưu trên máy, ghi rõ trong app | **Đã làm 08/10** |
 | B7 | Bỏ nhãn "Đã mã hoá" (phương án 1) | **Đã làm 08/10** |
 | B8 | Giữ transaction hiện có (đã có sẵn, xem đính chính bên dưới) | Không cần làm |
-| B9 | Đợt 1: B01-B03, B05-B07 + số liên hệ SOS; đợt 2: B09-B14; đợt 3: B15-B22 | **Đợt 1 xong 08/10** |
+| B9 | Đợt 1: B01-B03, B05-B07 + số liên hệ SOS; đợt 2: B09-B14; đợt 3: B15-B22 | **Đợt 1 xong 08/10, đợt 2 xong 09/10** |
 | D2 | Số Đại sứ quán đổi sang `+82 2 720 5124` theo trang chính thức | **Đã làm 08/10** (Atlas, seed, bộ số mất mạng) |
 | D4 | Đóng gói sẵn số khẩn cấp KR (112/119/122 + Đại sứ quán) | **Đã làm 08/10** |
 | E2 | Nút xoá tài khoản trong app + trang yêu cầu xoá | **Làm sau** (ghi nhận, chưa làm) |

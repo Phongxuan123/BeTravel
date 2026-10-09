@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/Button';
 import { Accordion } from '@/components/ui/Accordion';
 import { colors } from '@/lib/theme';
 import { isFeatureDisabledError } from '@/lib/api/http';
-import { fetchArticle } from '@/lib/data';
+import { fetchArticle, fetchTopics } from '@/lib/data';
+import { useCountryName } from '@/lib/useCountryName';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
 
 export default function ArticleDetailScreen() {
@@ -22,6 +23,14 @@ export default function ArticleDetailScreen() {
     queryFn: () => fetchArticle(countryCode, slug),
   });
   const article = articleQuery.data?.data;
+  const countryName = useCountryName();
+  // Cùng queryKey với màn Khám phá nên thường đã có sẵn trong cache.
+  const topicsQuery = useQuery({
+    queryKey: ['topics', countryCode],
+    queryFn: () => fetchTopics(countryCode),
+    enabled: !!countryCode,
+  });
+  const topicLabel = topicsQuery.data?.data.find((topic) => topic.key === article?.topicKey)?.label;
   const saved = article ? isSaved(article.id) : false;
 
   const onShare = () => {
@@ -78,8 +87,8 @@ export default function ArticleDetailScreen() {
       />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 110 }}>
         <View className="flex-row" style={{ gap: 8 }}>
-          <Badge label={countryCode} tone="info" dot />
-          <Badge label="Giao thông" tone="neutral" />
+          <Badge label={countryName(countryCode)} tone="info" dot />
+          {!!topicLabel && <Badge label={topicLabel} tone="neutral" />}
         </View>
         <Text className="mt-3 font-display text-ink" style={{ fontSize: 26 }}>
           {article.title}

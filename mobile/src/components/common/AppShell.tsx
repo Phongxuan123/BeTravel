@@ -10,6 +10,11 @@ import { TopInsetProvider } from './screenTopInset';
 export type ActiveTab = 'home' | 'explore' | 'sos' | 'chat' | 'profile';
 
 const NAV_HEIGHT = 72;
+const SOS_BUTTON_SIZE = 60;
+// Nút SOS nhô lên trên thanh điều hướng 22px (xem style bottom bên dưới).
+const SOS_OVERLAP = 22;
+const SOS_LABEL_HEIGHT = 18;
+const CONTENT_GAP = 16;
 
 const tabs: { key: Exclude<ActiveTab, 'sos'>; label: string; icon: typeof House; href: '/' | '/explore' | '/chat' | '/profile' }[] = [
   { key: 'home', label: 'Trang chủ', icon: House, href: '/' },
@@ -41,13 +46,13 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
           <NavItem key={tab.key} tab={tab} active={active === tab.key} />
         ))}
       </View>
-      <View className="absolute inset-x-0 items-center" style={{ bottom: NAV_HEIGHT + insets.bottom - 22 }}>
+      <View className="absolute inset-x-0 items-center" style={{ bottom: NAV_HEIGHT + insets.bottom - SOS_OVERLAP }}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Khẩn cấp — mở SOS Hub"
           onPress={() => router.push('/sos')}
           className="items-center justify-center rounded-full border-4 border-white"
-          style={{ width: 60, height: 60, backgroundColor: colors.danger, ...shadows.sos }}
+          style={{ width: SOS_BUTTON_SIZE, height: SOS_BUTTON_SIZE, backgroundColor: colors.danger, ...shadows.sos }}
         >
           <Text className="font-display text-base text-white">SOS</Text>
         </Pressable>
@@ -83,4 +88,11 @@ function NavItem({
   );
 }
 
-export const APP_SHELL_CONTENT_BOTTOM_PADDING = 110;
+/**
+ * Khoảng đệm dưới cho nội dung cuộn trong AppShell: thanh điều hướng, phần nút SOS nhô lên,
+ * nhãn "Khẩn cấp" và vùng an toàn của máy. Thiếu vùng an toàn thì nút SOS che mục cuối (B14).
+ */
+export function useAppShellBottomPadding(): number {
+  const insets = useSafeAreaInsets();
+  return NAV_HEIGHT + insets.bottom + (SOS_BUTTON_SIZE - SOS_OVERLAP) + SOS_LABEL_HEIGHT + CONTENT_GAP;
+}

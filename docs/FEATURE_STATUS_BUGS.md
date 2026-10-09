@@ -2,6 +2,7 @@
 
 Lần kiểm thử: 07/10/2026 · Code: `main` @ `9173411` · Người chạy: Claude (theo CLAUDE.md mục 5.1b)
 Cập nhật 08/10/2026: đợt sửa 1 (B01-B08, B23) trên nhánh `fix/wave1-sos-safety`, xem cột "Xử lý".
+Cập nhật 09/10/2026: đợt sửa 2 (B09-B14, B24) trên nhánh `fix/wave2-ux`.
 
 Tài liệu này là đầu vào để lên kế hoạch khắc phục. Mỗi lỗi có mã `Bxx` để giao việc và
 theo dõi. Khi sửa xong một lỗi, ghi ngày + PR vào cột "Xử lý" thay vì xoá dòng.
@@ -76,7 +77,7 @@ nên không đối chiếu được từng chi tiết với bản thiết kế g
 | Sự cố | 5 quy trình xử lý, đánh dấu bước, checklist, lưu | Đã hoàn thiện | B19 |
 | Cảnh báo | Nhận cảnh báo từ admin (banner + danh sách) | Đã hoàn thiện | B06, B12; hiện chưa có cảnh báo thật nào trên Atlas |
 | Cảnh báo | Cảnh báo theo khu vực GPS | Đang hoàn thiện | Chưa có dữ liệu cảnh báo khu vực để kiểm |
-| Cá nhân | Liên hệ khẩn cấp (thêm, gọi, xoá) | Đang hoàn thiện | B13 |
+| Cá nhân | Liên hệ khẩn cấp (thêm, gọi, xoá) | Đã hoàn thiện | B13 (chốt lưu trên máy, ghi rõ trong app) |
 | Cá nhân | Giấy tờ của tôi | Đang hoàn thiện | Chỉ đánh dấu đã chuẩn bị, chưa lưu ảnh; B03 |
 | Cài đặt | Bật/tắt cảnh báo, nhắc chuyến đi | Đang hoàn thiện | Chỉ trong app; không có push khi đóng app (ngoài MVP) |
 | Cài đặt | Ngôn ngữ ứng dụng | Chưa hoàn thiện | B17 (đa ngôn ngữ ngoài MVP) |
@@ -133,12 +134,13 @@ Mức: **Nghiêm trọng** (tính năng chính không dùng được / sai sự 
 
 | Mã | Lỗi | Vị trí | Hướng sửa | Xử lý |
 |---|---|---|---|---|
-| B09 | Wizard bước 1: chọn nước xong nút "Tiếp tục" vẫn mờ, không chỉ ra ô bắt buộc "Thành phố" nằm khuất bên dưới | `app/trips/new.tsx` | Tự cuộn tới ô thiếu hoặc ghi rõ lý do dưới nút | |
-| B10 | Wizard bước 2 mở ra giữ vị trí cuộn của bước 1: che "Ngày đi / Ngày về", tiêu đề tháng bị thanh tiến độ đè | `app/trips/new.tsx` | Cuộn về đầu khi đổi bước | |
-| B11 | Hiển thị dữ liệu thô: ngày ISO `2026-10-07` (wizard bước 2, 4), mã nước `KR` (chặng "Chặng 1: KR", chip ở chi tiết bài, mục Đã lưu) | wizard, `explore/[country]/[slug].tsx`, `favorites` | Dùng `formatShortDate` và tên quốc gia | |
-| B12 | Màn Cảnh báo: khoảng trắng lớn giữa bộ lọc và danh sách; mức `warn` hiện nhãn "Cao"; kéo để làm mới không cập nhật | `app/alerts/index.tsx` | Sửa bố cục; rà bảng quy đổi mức độ; thêm refetch khi kéo | Đợt 2. Nguyên nhân khoảng trắng: ScrollView ngang của bộ lọc thiếu `flexGrow: 0` |
-| B13 | Liên hệ khẩn cấp chỉ lưu trên máy (AsyncStorage), mất khi đổi máy/cài lại | `features/profile/useEmergencyContacts.ts` | Quyết định nghiệp vụ: đồng bộ lên server hay ghi rõ "chỉ lưu trên máy này" | |
-| B14 | Nút SOS nổi che thẻ "Cấp cứu" và nội dung cuối danh sách khi cuộn ở Home, Cẩm nang | `components/common/AppShell.tsx` | Thêm khoảng đệm dưới bằng chiều cao thanh điều hướng + nút nổi | |
+| B09 | Wizard bước 1: chọn nước xong nút "Tiếp tục" vẫn mờ, không chỉ ra ô bắt buộc "Thành phố" nằm khuất bên dưới | `app/trips/new.tsx` | Tự cuộn tới ô thiếu hoặc ghi rõ lý do dưới nút | Đã sửa 09/10/2026, nhánh `fix/wave2-ux`: dòng nhắc dưới nút nêu trường còn thiếu; bấm "Đến ô nhập" cuộn tới và mở bàn phím, đệm thêm chiều cao bàn phím để ô không bị che (emulator) |
+| B10 | Wizard bước 2 mở ra giữ vị trí cuộn của bước 1: che "Ngày đi / Ngày về", tiêu đề tháng bị thanh tiến độ đè | `app/trips/new.tsx` | Cuộn về đầu khi đổi bước | Đã sửa 09/10/2026, nhánh `fix/wave2-ux`: cuộn về đầu mỗi lần đổi bước; thêm khoảng đệm dưới thanh tiến độ (emulator) |
+| B11 | Hiển thị dữ liệu thô: ngày ISO `2026-10-07` (wizard bước 2, 4), mã nước `KR` (chặng "Chặng 1: KR", chip ở chi tiết bài, mục Đã lưu) | wizard, `explore/[country]/[slug].tsx`, `favorites` | Dùng `formatShortDate` và tên quốc gia | Đã sửa 09/10/2026, nhánh `fix/wave2-ux`: wizard dùng dd/MM/yyyy và tên nước (emulator); chi tiết bài + mục Đã lưu dùng `useCountryName` (chưa kiểm trên máy vì Atlas 0 bài published) |
+| B12 | Màn Cảnh báo: khoảng trắng lớn giữa bộ lọc và danh sách; mức `warn` hiện nhãn "Cao"; kéo để làm mới không cập nhật | `app/alerts/index.tsx` | Sửa bố cục; rà bảng quy đổi mức độ; thêm refetch khi kéo | Đã sửa 09/10/2026, nhánh `fix/wave2-ux`: `flexGrow: 0`, nhãn mức độ trùng Admin (`warn` = Cảnh báo, `danger` = Nguy hiểm), kéo để làm mới gọi lại API (emulator, cảnh báo thử đã xoá) |
+| B13 | Liên hệ khẩn cấp chỉ lưu trên máy (AsyncStorage), mất khi đổi máy/cài lại | `features/profile/useEmergencyContacts.ts` | Quyết định nghiệp vụ: đồng bộ lên server hay ghi rõ "chỉ lưu trên máy này" | Theo quyết định B6: giữ trên máy, ghi rõ "Chỉ lưu trên điện thoại này" (đã làm 08/10/2026, đợt 1) |
+| B14 | Nút SOS nổi che thẻ "Cấp cứu" và nội dung cuối danh sách khi cuộn ở Home, Cẩm nang | `components/common/AppShell.tsx` | Thêm khoảng đệm dưới bằng chiều cao thanh điều hướng + nút nổi | Đã sửa 09/10/2026, nhánh `fix/wave2-ux`: `useAppShellBottomPadding()` tính theo thanh điều hướng + nút SOS + vùng an toàn, dùng ở 6 màn (emulator: Home, Cá nhân) |
+| B24 | Chi tiết bài luôn hiện chip chủ đề "Giao thông" (viết cứng) dù bài thuộc chủ đề khác | `explore/[country]/[slug].tsx` | Lấy nhãn chủ đề theo `topicKey` | Phát hiện và sửa 09/10/2026 cùng B11, nhánh `fix/wave2-ux` (chưa kiểm trên máy vì Atlas 0 bài published) |
 
 ### 4.4. Thấp
 

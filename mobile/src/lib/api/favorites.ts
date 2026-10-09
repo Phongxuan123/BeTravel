@@ -59,6 +59,7 @@ function adaptFavorite(api: ApiFavorite): FavoriteItem | null {
       targetId: api.targetId,
       title: api.incident.title,
       subtitle: api.incident.countryCode ?? 'Áp dụng mọi quốc gia',
+      countryCode: api.incident.countryCode ?? undefined,
       slug: api.incident.slug,
       createdAt: api.createdAt,
     };

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Bookmark, Check, ShieldCheck, Map as MapIcon, Languages, TriangleAlert, SlidersHorizontal } from 'lucide-react-native';
-import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { IconButton } from '@/components/ui/IconButton';
 import { FilterChip } from '@/components/ui/FilterChip';
 import { Badge } from '@/components/ui/Badge';
@@ -27,6 +27,7 @@ const TOOL_SHORTCUTS = [
 ] as const;
 
 export default function ExploreScreen() {
+  const bottomPadding = useAppShellBottomPadding();
   const params = useLocalSearchParams<{ saved?: string }>();
   const { countryCode, setCountryCode, country } = useCountry();
   const [savedOnly, setSavedOnly] = useState(params.saved === '1');
@@ -118,7 +119,7 @@ export default function ExploreScreen() {
         </ScrollView>
       </TopInsetView>
 
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 24 }}>
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: bottomPadding, gap: 24 }}>
         {(!countryCode || topicsQuery.isLoading || articlesQuery.isLoading) && (
           <Text className="text-center text-sm text-muted">Đang tải…</Text>
         )}

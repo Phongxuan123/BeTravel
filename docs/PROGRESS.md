@@ -1,5 +1,21 @@
 # TIEN DO BE.TRAVEL
 
+## Đợt sửa 2 — trải nghiệm wizard, cảnh báo, nút SOS — 09/10/2026
+
+Nhánh `fix/wave2-ux`. Phạm vi B09-B14 theo quyết định B9; lỗi theo `FEATURE_STATUS_BUGS.md`.
+
+| Việc | Trạng thái |
+|---|---|
+| B09 wizard bước 1: dòng nhắc trường còn thiếu + "Đến ô nhập" (cuộn, mở bàn phím, đệm bàn phím) | xong, emulator |
+| B10 wizard: cuộn về đầu khi đổi bước, đệm dưới thanh tiến độ | xong, emulator |
+| B11 ngày dd/MM/yyyy + tên nước (wizard, chi tiết bài, Đã lưu) qua `formatDateIfComplete`, `useCountryName` | xong; wizard kiểm trên emulator, chi tiết bài/Đã lưu chưa kiểm được (0 bài published) |
+| B12 Cảnh báo: bỏ khoảng trắng, nhãn mức độ trùng Admin, kéo để làm mới | xong, emulator (cảnh báo thử tạo rồi xoá) |
+| B13 liên hệ khẩn cấp | đóng theo quyết định B6 (đã làm ở đợt 1) |
+| B14 đệm dưới AppShell theo vùng an toàn (`useAppShellBottomPadding`) | xong, emulator (Home, Cá nhân) |
+| B24 (mới) chip chủ đề "Giao thông" viết cứng ở chi tiết bài --> nhãn theo `topicKey` | xong, chưa kiểm trên máy |
+
+Kiểm tra: mobile tsc + lint + 213/213; backend không đổi.
+
 ## Đợt sửa 1 — an toàn SOS và dữ liệu khẩn cấp — 08/10/2026
 
 Nhánh `fix/wave1-sos-safety`. Phạm vi theo quyết định nhóm ngày 08/10 (`USER_INPUT_FORM.md`
