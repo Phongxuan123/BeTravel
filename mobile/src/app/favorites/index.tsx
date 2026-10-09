@@ -10,6 +10,7 @@ import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { fetchFavorites, removeFavorite } from '@/lib/data';
 import type { FavoriteItem } from '@/lib/data';
+import { useCountryName } from '@/lib/useCountryName';
 
 const GROUP_META: Record<FavoriteItem['targetType'], { label: string; icon: typeof FileText; tone: 'blue' | 'green' | 'orange' }> = {
   article: { label: 'Quy định pháp luật', icon: FileText, tone: 'blue' },
@@ -20,6 +21,10 @@ const GROUP_META: Record<FavoriteItem['targetType'], { label: string; icon: type
 export default function FavoritesScreen() {
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
+  const countryName = useCountryName();
+  // Điểm hỗ trợ đã có phụ đề là loại địa điểm; bài luật và sự cố chỉ có mã nước nên đổi sang tên.
+  const subtitleOf = (item: FavoriteItem) =>
+    item.targetType !== 'location' && item.countryCode ? countryName(item.countryCode) : item.subtitle;
   const favoritesQuery = useQuery({ queryKey: ['favorites'], queryFn: fetchFavorites, enabled: !isGuest });
 
   const removeMutation = useMutation({
@@ -100,7 +105,7 @@ export default function FavoritesScreen() {
                       </Text>
                       <View className="mt-1 flex-row items-center" style={{ gap: 6 }}>
                         <Text className="text-[13px] text-muted" numberOfLines={1}>
-                          {item.subtitle}
+                          {subtitleOf(item)}
                         </Text>
                         {item.isOutdated && <Badge label="Đã có bản mới" tone="warning" />}
                       </View>

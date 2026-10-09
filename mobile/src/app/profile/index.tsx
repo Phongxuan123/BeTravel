@@ -16,7 +16,7 @@ import {
   Check,
   Trash2,
 } from 'lucide-react-native';
-import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { TopInsetView } from '@/components/common/screenTopInset';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { IconButton } from '@/components/ui/IconButton';
@@ -43,6 +43,7 @@ const DOCUMENTS: { key: DocumentKey; label: string; icon: typeof IdCard }[] = [
 ];
 
 export default function ProfileScreen() {
+  const bottomPadding = useAppShellBottomPadding();
   const { user, isGuest, updateProfile } = useAuth();
   const { contacts, addContact, removeContact } = useEmergencyContacts();
   const { status, setDocument } = useDocumentStatus();
@@ -136,7 +137,7 @@ export default function ProfileScreen() {
   return (
     <AppShell active="profile">
       <TopInsetView className="flex-1">
-        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 20 }}>
+        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: bottomPadding, gap: 20 }}>
           <View className="flex-row items-center" style={{ gap: 14 }}>
             <View className="h-16 w-16 items-center justify-center rounded-lg bg-[#DCE8FB]">
               <Text className="text-2xl font-body-bold text-primary-strong">{initials}</Text>

@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CircleAlert, TriangleAlert, Calendar } from 'lucide-react-native';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { Button } from '@/components/ui/Button';
-import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
@@ -22,11 +22,10 @@ const CATEGORY_META: Record<Alert['category'], { icon: typeof CircleAlert; tone:
   trip: { icon: Calendar, tone: 'green', badge: 'success', label: 'Chuyến đi' },
 };
 
-// Mức độ ưu tiên thị giác theo spec 3.13; dữ liệu hiện có 3 mức severity nên
-// 'Medium' chưa có nguồn và được gộp vào 'Thông tin'.
+// Nhãn trùng với Admin Portal (GeoAlertsPage) để người soạn và người đọc cảnh báo thấy cùng một mức.
 const SEVERITY_META: Record<NonNullable<Alert['severity']>, { label: string; badge: BadgeTone }> = {
-  danger: { label: 'Nguy cấp', badge: 'danger' },
-  warn: { label: 'Cao', badge: 'warning' },
+  danger: { label: 'Nguy hiểm', badge: 'danger' },
+  warn: { label: 'Cảnh báo', badge: 'warning' },
   info: { label: 'Thông tin', badge: 'info' },
 };
 
@@ -38,6 +37,7 @@ const FILTERS: { key: 'all' | Alert['category']; label: string }[] = [
 ];
 
 export default function AlertsScreen() {
+  const bottomPadding = useAppShellBottomPadding();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>('all');
   const [detail, setDetail] = useState<Alert | null>(null);
   const { countryCode } = useCountry();
@@ -98,7 +98,8 @@ export default function AlertsScreen() {
           </Pressable>
         }
       />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="border-b border-line bg-surface px-[18px] py-3">
+      {/* flexGrow 0: ScrollView ngang mặc định giãn hết chiều dọc còn lại, đẩy danh sách xuống (B12). */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} className="border-b border-line bg-surface px-[18px] py-3">
         <View className="flex-row" style={{ gap: 8 }}>
           {FILTERS.map((f) => {
             const active = filter === f.key;
@@ -113,7 +114,13 @@ export default function AlertsScreen() {
         </View>
       </ScrollView>
 
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 20 }}>
+      <ScrollView
+        contentContainerStyle={{ padding: 18, paddingBottom: bottomPadding, gap: 20 }}
+        refreshControl={
+          <RefreshControl refreshing={alertsQuery.isRefetching} onRefresh={() => void alertsQuery.refetch()}
+            enabled={!isGuest} colors={[colors.primary]} tintColor={colors.primary} />
+        }
+      >
         {alertsQuery.isLoading && <Text className="mt-8 text-center text-sm text-muted">Đang tải…</Text>}
         {alertsQuery.isError && <Text className="mt-8 text-center text-sm text-danger">Không tải được cảnh báo. Kiểm tra kết nối mạng.</Text>}
         {!alertsQuery.isLoading && !alertsQuery.isError && alerts.length === 0 && (

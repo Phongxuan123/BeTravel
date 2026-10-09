@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native'
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
-import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { TopInsetView } from '@/components/common/screenTopInset';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function SosHubScreen() {
+  const bottomPadding = useAppShellBottomPadding();
   
   const { country } = useCountry();
   const [currentCity, setCurrentCity] = useState('');
@@ -32,7 +33,7 @@ export default function SosHubScreen() {
     return (
       <AppShell active="sos">
         <TopInsetView extra={12} testID="sos-country-unavailable" className="flex-1 bg-danger-tint px-[18px]">
-          <ScrollView contentContainerStyle={{ paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING }}>
+          <ScrollView contentContainerStyle={{ paddingBottom: bottomPadding }}>
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
             <Text className="mt-6 font-display text-ink" style={{ fontSize: 22 }}>
               Chưa tải được dữ liệu mới nhất
@@ -91,7 +92,7 @@ export default function SosHubScreen() {
 
   return (
     <AppShell active="sos">
-      <ScrollView contentContainerStyle={{ paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: bottomPadding }}>
         <TopInsetView extra={12} className="bg-danger-tint px-[18px] pb-5">
           <View className="flex-row items-center justify-between">
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />

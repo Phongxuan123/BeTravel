@@ -15,7 +15,7 @@ import {
   Search,
   ChevronRight,
 } from 'lucide-react-native';
-import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { ListRow } from '@/components/common/ListRow';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { Badge } from '@/components/ui/Badge';
@@ -34,6 +34,7 @@ import { now, daysBetween, parseISODate } from '@/lib/date';
 import { activeStop } from '@/features/trips/itinerary';
 
 export default function HomeScreen() {
+  const bottomPadding = useAppShellBottomPadding();
   const { country: selectedCountry, countryCode: selectedCountryCode } = useCountry();
   const { user, isGuest, isLoading: authLoading } = useAuth();
 
@@ -91,7 +92,7 @@ export default function HomeScreen() {
   return (
     <AppShell active="home">
       <ScrollView
-        contentContainerStyle={{ paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, paddingHorizontal: 18 }}
+        contentContainerStyle={{ paddingBottom: bottomPadding, paddingHorizontal: 18 }}
       >
         <TopInsetView extra={16} />
         {(tripsQuery.isError || (articlesQuery.isError && !articlesDisabled)) && (

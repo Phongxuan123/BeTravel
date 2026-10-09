@@ -1,5 +1,5 @@
-import { useMemo, useReducer, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Keyboard } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +17,7 @@ import { createTrip, updateTrip, setCurrentTrip, fetchCountries, fetchTrips, upd
 import { ApiError } from '@/lib/api/http';
 import { useAuth } from '@/lib/auth';
 import { now, parseISODate } from '@/lib/date';
-import { formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
+import { formatDateIfComplete, formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 import { ItineraryEditor } from '@/features/trips/ItineraryEditor';
 import { itineraryError, tripStops } from '@/features/trips/itinerary';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
@@ -101,7 +101,33 @@ export default function TripWizardScreen() {
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
 
-  const goStep = (n: number) => setStep(Math.min(Math.max(n, 1), 4));
+  const scrollRef = useRef<ScrollView>(null);
+  const cityInputRef = useRef<TextInput>(null);
+  const cityCardY = useRef(0);
+  const scrollToCityAfterKeyboard = useRef(false);
+  // Android edge-to-edge không tự co màn khi bàn phím mở: thêm chiều cao bàn phím vào đệm dưới
+  // để ô nhập cuối trang vẫn cuộn lên được trên bàn phím.
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  useEffect(() => {
+    const shown = Keyboard.addListener('keyboardDidShow', (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
+      if (!scrollToCityAfterKeyboard.current) return;
+      scrollToCityAfterKeyboard.current = false;
+      requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: cityCardY.current, animated: true }));
+    });
+    const hidden = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
+    return () => { shown.remove(); hidden.remove(); };
+  }, []);
+  // Mỗi bước là một trang mới: giữ vị trí cuộn của bước trước sẽ che mất phần đầu (B10).
+  const goStep = (n: number) => {
+    setStep(Math.min(Math.max(n, 1), 4));
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
+  };
+  const focusCityInput = () => {
+    scrollToCityAfterKeyboard.current = true;
+    scrollRef.current?.scrollTo({ y: cityCardY.current, animated: true });
+    cityInputRef.current?.focus();
+  };
 
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const countries = useMemo(() => countriesQuery.data?.data ?? [], [countriesQuery.data]);
@@ -169,6 +195,13 @@ export default function TripWizardScreen() {
     step === 3 ||
     step === 4
   );
+
+  // Lý do nút "Tiếp tục" đang mờ; ô thành phố nằm dưới danh sách quốc gia nên dễ bị khuất (B09).
+  const missingCity = step === 1 && !!state.countryCode && state.destinationCity.trim().length === 0;
+  const continueHint = step === 1 && !state.countryCode ? 'Chọn quốc gia đầu tiên để tiếp tục.'
+    : missingCity ? 'Nhập Thành phố / khu vực để tiếp tục.'
+      : step === 2 && (!state.range.start || !state.range.end) ? 'Chọn ngày đi và ngày về để tiếp tục.'
+        : null;
 
   const onContinue = async () => {
     if (step < 4) {
@@ -254,7 +287,7 @@ export default function TripWizardScreen() {
         right={<Text className="text-sm font-body-semibold text-muted">Bước {step}/4</Text>}
         onBack={() => (step > 1 ? goStep(step - 1) : router.back())}
       />
-      <View className="px-[18px] pt-4">
+      <View className="px-[18px] pb-3 pt-4">
         <StepProgress total={4} current={step} />
       </View>
 
@@ -274,11 +307,12 @@ export default function TripWizardScreen() {
           (khong bam trung Pressable) -- day dung la loi "click chon khong duoc"
           da bao cao, phai bam lan 2 moi chon duoc. */}
       <ScrollView
+        ref={scrollRef}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 140 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 140 + keyboardHeight }}
       >
         {step === 1 && (
-          <View className="px-[18px] pt-5">
+          <View className="px-[18px] pt-2">
             <Text className="font-display text-ink" style={{ fontSize: 26 }}>
               Bạn sẽ đến đâu?
             </Text>
@@ -378,7 +412,8 @@ export default function TripWizardScreen() {
             )}
 
             {country && (
-              <View className="mt-6 rounded-lg border border-line bg-surface p-4">
+              <View className="mt-6 rounded-lg border border-line bg-surface p-4"
+                onLayout={(event) => { cityCardY.current = event.nativeEvent.layout.y; }}>
                 <View className="flex-row items-center" style={{ gap: 8 }}>
                   <MapPin size={18} color={colors.primary} />
                   <Text className="text-base font-body-bold text-ink">Điểm đến chính</Text>
@@ -390,6 +425,8 @@ export default function TripWizardScreen() {
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Thành phố / khu vực *</Text>
                 <View className="relative">
                   <TextInput
+                    ref={cityInputRef}
+                    accessibilityLabel="Thành phố / khu vực"
                     className={`h-14 rounded-md border border-line bg-[#F5F9FF] pl-4 text-base text-ink ${hasCitySuggestions ? 'pr-11' : 'pr-4'}`}
                     placeholder="Ví dụ: Seoul, Busan, Jeju..."
                     placeholderTextColor={colors.subtle}
@@ -447,7 +484,7 @@ export default function TripWizardScreen() {
         )}
 
         {step === 2 && (
-          <View className="pt-5">
+          <View className="pt-2">
             <View className="px-[18px]">
               <Text className="font-display text-ink" style={{ fontSize: 26 }}>
                 Bạn đi khi nào?
@@ -482,7 +519,7 @@ export default function TripWizardScreen() {
         )}
 
         {step === 3 && (
-          <View className="px-[18px] pt-5">
+          <View className="px-[18px] pt-2">
             <Text className="font-display text-ink" style={{ fontSize: 26 }}>
               Bật hỗ trợ theo vị trí
             </Text>
@@ -514,11 +551,11 @@ export default function TripWizardScreen() {
         )}
 
         {step === 4 && country && state.range.start && state.range.end && (
-          <View className="px-[18px] pt-5">
+          <View className="px-[18px] pt-2">
             <Text className="font-display text-ink" style={{ fontSize: 26 }}>
               {editingTripId ? 'Xác nhận thay đổi' : 'Xác nhận chuyến đi'}
             </Text>
-            {stops.map((stop, index) => <Text key={index} className="mt-2 text-ink">{index + 1}. {countries.find((c) => c.code === stop.countryCode)?.name ?? stop.countryCode}: {stop.destinationCity}, từ {stop.startDate}</Text>)}
+            {stops.map((stop, index) => <Text key={index} className="mt-2 text-ink">{index + 1}. {countries.find((c) => c.code === stop.countryCode)?.name ?? stop.countryCode}: {stop.destinationCity}, từ {formatDateIfComplete(stop.startDate)}</Text>)}
 
             <View className="mt-5 rounded-lg border border-line bg-surface p-[18px]">
               <View className="flex-row items-center">
@@ -600,6 +637,15 @@ export default function TripWizardScreen() {
             <View className="mb-2 rounded-md bg-danger-tint p-3">
               <Text className="text-sm text-danger">{error}</Text>
             </View>
+          )}
+          {!!continueHint && editReady && (
+            <Pressable accessibilityRole={missingCity ? 'button' : 'text'} disabled={!missingCity}
+              onPress={focusCityInput} className="mb-2">
+              <Text className="text-center text-sm text-muted">
+                {continueHint}
+                {missingCity && <Text className="font-body-bold text-primary"> Đến ô nhập</Text>}
+              </Text>
+            </Pressable>
           )}
           <Button label={step === 4 ? (editingTripId ? 'Lưu thay đổi' : 'Xác nhận chuyến đi') : 'Tiếp tục →'} onPress={onContinue} disabled={!canContinue} loading={submitting} />
           {step === 4 && (
