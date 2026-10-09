@@ -280,7 +280,8 @@ function MenuRow({ icon, label, count, onPress }: { icon: React.ReactNode; label
         {icon}
       </IconTile>
       <Text className="flex-1 text-[17px] font-body-bold text-ink">{label}</Text>
-      {count && <Badge label={count} tone="neutral" />}
+      {/* Bọc View: Badge tự đặt self-start nên trong hàng ngang sẽ dính lên mép trên. */}
+      {count && <View className="justify-center"><Badge label={count} tone="neutral" /></View>}
       <ChevronRight size={20} color={colors.muted} />
     </Pressable>
   );

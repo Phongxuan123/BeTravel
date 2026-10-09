@@ -1,5 +1,14 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Đợt sửa 3 — 09/10/2026 (Chế độ B, chỉ file đã động tới)
+
+| Rule | Xử lý |
+|---|---|
+| 6 (magic number) | Góc đường chéo cờ KR, toạ độ vạch quẻ thành hằng có tên; sao cờ SG sinh bằng hàm thay vì toạ độ gõ tay |
+| 1/8 | `SettingsRow` không có `onPress` --> dòng chỉ đọc, thay cho toast "giả bấm được" |
+| 3 (DRY) | Chip phạm vi sự cố dùng lại `useCountryName()` của đợt 2 |
+| 13 (W3) | Gợi ý tìm kiếm viết cứng một câu không có bài trả lời --> lấy theo dữ liệu chủ đề |
+
 ## Đợt sửa 2 — 09/10/2026 (Chế độ B, chỉ file đã động tới)
 
 | Rule | Xử lý |
@@ -758,6 +767,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 ## 7. LICH SU CAP NHAT
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
+| 2026.10.09-dot3 | 09/10/2026 | Đợt sửa 3 | B15-B21: cờ KR/SG chuẩn, gợi ý tìm kiếm theo dữ liệu, dòng ngôn ngữ chỉ đọc, ẩn tab chuyến đi trống, phạm vi sự cố, Admin co giãn màn hẹp; mobile 213, admin 18 test |
 | 2026.10.09-dot2 | 09/10/2026 | Đợt sửa 2 | B09-B14, B24: wizard nhắc trường thiếu + cuộn đầu bước + đệm bàn phím; ngày/tên nước thay dữ liệu thô; Cảnh báo bỏ khoảng trắng, kéo làm mới; đệm dưới AppShell theo vùng an toàn; mobile 213 test |
 | 2026.10.08-dot1 | 08/10/2026 | Đợt sửa 1 | B01-B08, B23: SOS/micro không huỷ khi xin quyền; vùng thanh trạng thái; định vị dự phòng; số khẩn cấp mất mạng; mở SOS cho khách; backend 269, mobile 213 test |
 | 2026.10.06-maps | 06/10/2026 | Maps + rà soát | Config env, search/radius/GPS/camera/list/cache verified, Favorites privacy; vá 2 dependency; backend tuần tự 266, mobile 183, admin 18 |

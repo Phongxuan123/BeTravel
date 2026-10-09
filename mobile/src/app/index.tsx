@@ -192,7 +192,7 @@ export default function HomeScreen() {
           <ListRow
             icon={<IconTile tone="orange"><TriangleAlert size={20} color={colors.warning} /></IconTile>}
             title="Gặp sự cố khẩn cấp"
-            subtitle="Quy trình xử lý 5 bước"
+            subtitle="Hướng dẫn xử lý từng bước"
             onPress={() => router.push('/incidents')}
           />
           <ListRow

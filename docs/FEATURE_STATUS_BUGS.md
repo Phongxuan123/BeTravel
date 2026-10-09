@@ -3,6 +3,7 @@
 Lần kiểm thử: 07/10/2026 · Code: `main` @ `9173411` · Người chạy: Claude (theo CLAUDE.md mục 5.1b)
 Cập nhật 08/10/2026: đợt sửa 1 (B01-B08, B23) trên nhánh `fix/wave1-sos-safety`, xem cột "Xử lý".
 Cập nhật 09/10/2026: đợt sửa 2 (B09-B14, B24) trên nhánh `fix/wave2-ux`.
+Cập nhật 09/10/2026: đợt sửa 3 (B15-B21, B25) trên nhánh `fix/wave3-polish`; B22 chờ tài liệu.
 
 Tài liệu này là đầu vào để lên kế hoạch khắc phục. Mỗi lỗi có mã `Bxx` để giao việc và
 theo dõi. Khi sửa xong một lỗi, ghi ngày + PR vào cột "Xử lý" thay vì xoá dòng.
@@ -80,7 +81,7 @@ nên không đối chiếu được từng chi tiết với bản thiết kế g
 | Cá nhân | Liên hệ khẩn cấp (thêm, gọi, xoá) | Đã hoàn thiện | B13 (chốt lưu trên máy, ghi rõ trong app) |
 | Cá nhân | Giấy tờ của tôi | Đang hoàn thiện | Chỉ đánh dấu đã chuẩn bị, chưa lưu ảnh; B03 |
 | Cài đặt | Bật/tắt cảnh báo, nhắc chuyến đi | Đang hoàn thiện | Chỉ trong app; không có push khi đóng app (ngoài MVP) |
-| Cài đặt | Ngôn ngữ ứng dụng | Chưa hoàn thiện | B17 (đa ngôn ngữ ngoài MVP) |
+| Cài đặt | Ngôn ngữ ứng dụng | Đã hoàn thiện | B17 (chỉ tiếng Việt; đa ngôn ngữ ngoài MVP) |
 
 ### 3.2. Admin Portal
 
@@ -93,7 +94,7 @@ nên không đối chiếu được từng chi tiết với bản thiết kế g
 | Tạo / xoá cảnh báo vị trí | Đã hoàn thiện | Hiện ngay trên app user |
 | Xuất bản bài + index RAG | Chưa kiểm | Không bấm để tránh đổi dữ liệu nội dung thật |
 | Nhập điểm hỗ trợ hàng loạt | Chưa kiểm | |
-| Giao diện trên màn hẹp | Đang hoàn thiện | B21 |
+| Giao diện trên màn hẹp | Đã hoàn thiện | B21 |
 
 ### 3.3. Backend / quy tắc lõi
 
@@ -146,14 +147,15 @@ Mức: **Nghiêm trọng** (tính năng chính không dùng được / sai sự 
 
 | Mã | Lỗi | Hướng sửa | Xử lý |
 |---|---|---|---|
-| B15 | Cờ quốc gia vẽ giản lược sai (Hàn Quốc là chấm tím) | Dùng ảnh cờ hoặc icon cờ chuẩn | |
-| B16 | Gợi ý mẫu trong ô tìm kiếm "Ở Hàn Quốc có được hút thuốc trên đường không?" nhưng không có bài nào khớp | Đổi gợi ý theo bài đang có | |
-| B17 | Dòng "Ngôn ngữ ứng dụng" trông bấm được nhưng không phản hồi | Bỏ mũi tên / hiện "Chỉ có tiếng Việt" | |
-| B18 | "Chuyến đi của tôi" khi trống chỉ còn 3 tab, không có câu báo + nút tạo | Thêm trạng thái trống | |
-| B19 | Sự cố "Mất hộ chiếu": chi tiết ghi "Hàn Quốc", mục Đã lưu ghi "Áp dụng mọi quốc gia" | Thống nhất nguồn trường quốc gia | |
-| B20 | Home ghi "Quy trình xử lý 5 bước" trong khi các sự cố có 3-5 bước | Đổi thành "Hướng dẫn từng bước" | |
-| B21 | Admin Portal không co giãn trên màn hẹp (sidebar chiếm nửa màn) | Thu gọn sidebar dưới breakpoint `md` | |
+| B15 | Cờ quốc gia vẽ giản lược sai (Hàn Quốc là chấm tím) | Dùng ảnh cờ hoặc icon cờ chuẩn | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: vẽ lại cờ KR (Thái cực + 4 quẻ) và SG (trăng lưỡi liềm + 5 sao) theo tỉ lệ chính thức (emulator) |
+| B16 | Gợi ý mẫu trong ô tìm kiếm "Ở Hàn Quốc có được hút thuốc trên đường không?" nhưng không có bài nào khớp | Đổi gợi ý theo bài đang có | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: gợi ý lấy theo chủ đề có bài (`articleCount > 0`), chưa có bài thì "Nhập từ khoá cần tìm" (emulator) |
+| B17 | Dòng "Ngôn ngữ ứng dụng" trông bấm được nhưng không phản hồi | Bỏ mũi tên / hiện "Chỉ có tiếng Việt" | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: dòng chỉ đọc "Chỉ có tiếng Việt", không mũi tên, không phản hồi chạm (emulator) |
+| B18 | "Chuyến đi của tôi" khi trống chỉ còn 3 tab, không có câu báo + nút tạo | Thêm trạng thái trống | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: câu báo + nút tạo đã có sẵn khi kiểm lại; sửa thêm phần còn dở: ẩn 3 tab khi chưa có chuyến (trước đó tab "Đã qua" bị chọn sẵn), icon lịch (emulator) |
+| B19 | Sự cố "Mất hộ chiếu": chi tiết ghi "Hàn Quốc", mục Đã lưu ghi "Áp dụng mọi quốc gia" | Thống nhất nguồn trường quốc gia | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: chip ở chi tiết sự cố theo `countryCode` của sự cố ("Áp dụng mọi quốc gia" khi dùng chung), trùng mục Đã lưu (emulator) |
+| B20 | Home ghi "Quy trình xử lý 5 bước" trong khi các sự cố có 3-5 bước | Đổi thành "Hướng dẫn từng bước" | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: "Hướng dẫn xử lý từng bước" (emulator) |
+| B21 | Admin Portal không co giãn trên màn hẹp (sidebar chiếm nửa màn) | Thu gọn sidebar dưới breakpoint `md` | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: dưới `md` sidebar thu thành dải icon (có `title`/`aria-label`), tên người dùng và chữ "Đăng xuất" ẩn dưới `sm` (Chrome trong emulator) |
 | B22 | `FRONTEND_UI_SPECIFICATION.md` không có trong repo | Phú Long đưa file lên `docs/` | |
+| B25 | Dashboard Admin "Top câu hỏi bị fallback" hiện một câu hỏng dấu (`T?i d?ng b?ng l?i...`). Đây là bản ghi `ai_events` do lần thử bằng `curl` trong Git Bash ngày 07/10 tạo ra, không phải lỗi code | Xoá bản ghi thử đó khi người dùng đồng ý (cần thao tác thẳng trên DB, không có API xoá) | Ghi nhận 09/10/2026, chờ người dùng quyết |
 
 ---
 

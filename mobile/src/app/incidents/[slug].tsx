@@ -12,6 +12,7 @@ import { StepProgress } from '@/components/ui/StepProgress';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
+import { useCountryName } from '@/lib/useCountryName';
 import { openPhone, openUrl } from '@/lib/openExternal';
 import { fetchIncident, getIncidentProgress, setIncidentProgress, fetchFavorites, addFavorite, removeFavorite } from '@/lib/data';
 import type { Incident } from '@/lib/data';
@@ -42,6 +43,7 @@ const CTA_ICON: Record<IncidentCta['type'], typeof MapPin> = { map: MapPin, call
 export default function IncidentDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const { country } = useCountry();
+  const countryName = useCountryName();
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
   const [checklist, setChecklist] = useState<Record<string, boolean>>({});
@@ -119,7 +121,8 @@ export default function IncidentDetailScreen() {
         <View className="flex-row" style={{ gap: 8 }}>
           {incident.urgent && <Badge label="Khẩn cấp" tone="danger" />}
           <Badge label={`${incident.steps.length} bước`} tone="neutral" />
-          <Badge label={country?.name ?? ''} tone="neutral" />
+          {/* Phạm vi theo dữ liệu của chính sự cố, trùng với mục Đã lưu (B19); số gọi vẫn theo nước đang chọn. */}
+          <Badge label={incident.countryCode ? countryName(incident.countryCode) : 'Áp dụng mọi quốc gia'} tone="neutral" />
         </View>
         <Text className="mt-3 font-display text-ink" style={{ fontSize: 26 }}>
           {incident.title}

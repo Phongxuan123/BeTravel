@@ -6,10 +6,13 @@ import { colors } from '@/lib/theme';
 export function EmptyState({
   title,
   description,
+  icon,
   children,
 }: {
   title: string;
   description?: string;
+  /** Mặc định là kính lúp (kết quả tìm kiếm trống). */
+  icon?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -18,7 +21,7 @@ export function EmptyState({
         className="mb-5 items-center justify-center rounded-full"
         style={{ width: 136, height: 136, backgroundColor: colors.primarySoft }}
       >
-        <Search size={44} color={colors.primary} />
+        {icon ?? <Search size={44} color={colors.primary} />}
       </View>
       <Text className="text-center text-xl font-body-bold text-ink">{title}</Text>
       {description && (
