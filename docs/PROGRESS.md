@@ -1,5 +1,22 @@
 # TIEN DO BE.TRAVEL
 
+## Đợt sửa 3 — hoàn thiện giao diện — 09/10/2026
+
+Nhánh `fix/wave3-polish`. Phạm vi B15-B21 theo quyết định B9; B22 chờ Phú Long đưa tài liệu spec.
+
+| Việc | Trạng thái |
+|---|---|
+| B15 cờ KR, SG vẽ lại theo tỉ lệ chính thức | xong, emulator |
+| B16 gợi ý tìm kiếm theo chủ đề có bài | xong, emulator (KR 0 bài --> câu chung) |
+| B17 dòng ngôn ngữ chỉ đọc "Chỉ có tiếng Việt" | xong, emulator |
+| B18 ẩn tab khi chưa có chuyến, icon lịch | xong, emulator |
+| B19 chip phạm vi sự cố theo dữ liệu sự cố | xong, emulator |
+| B20 "Hướng dẫn xử lý từng bước" | xong, emulator |
+| B21 Admin: sidebar thu thành dải icon dưới `md` | xong, Chrome trong emulator |
+| B25 (mới) câu hỏi hỏng dấu trong `ai_events` do lần thử curl 07/10 | chờ người dùng đồng ý xoá |
+
+Kiểm tra: mobile tsc + lint + 213/213; admin typecheck + build + 18/18; backend không đổi.
+
 ## Đợt sửa 2 — trải nghiệm wizard, cảnh báo, nút SOS — 09/10/2026
 
 Nhánh `fix/wave2-ux`. Phạm vi B09-B14 theo quyết định B9; lỗi theo `FEATURE_STATUS_BUGS.md`.
