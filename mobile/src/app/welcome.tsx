@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowRight } from 'lucide-react-native';
 import { Logo } from '@/components/brand/Logo';
 import { OnboardingIllustration } from '@/components/brand/OnboardingIllustration';
+import { EmergencyEntryButton } from '@/components/common/EmergencyEntryButton';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/lib/theme';
 import { setJSON, StorageKeys } from '@/lib/storage';
@@ -82,9 +83,12 @@ export default function WelcomeScreen() {
 
       <View className="flex-row items-center justify-between px-[18px]" style={{ paddingTop: insets.top + 16 }}>
         <Logo size={30} textSize={20} />
-        <Pressable accessibilityRole="button" onPress={skip} hitSlop={8}>
-          <Text className="text-[15px] font-body-semibold text-muted">Bỏ qua</Text>
-        </Pressable>
+        <View className="flex-row items-center" style={{ gap: 14 }}>
+          <EmergencyEntryButton variant="pill" />
+          <Pressable accessibilityRole="button" onPress={skip} hitSlop={8}>
+            <Text className="text-[15px] font-body-semibold text-muted">Bỏ qua</Text>
+          </Pressable>
+        </View>
       </View>
 
       <FlatList

@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { TopInsetView } from '@/components/common/screenTopInset';
 import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconTile } from '@/components/ui/IconTile';
@@ -11,14 +11,15 @@ import { Badge } from '@/components/ui/Badge';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { requestLocationWithExplanation } from '@/lib/locationPermission';
+import { LOCATION_FAILURE_MESSAGES, requestLocationDetailed } from '@/lib/locationPermission';
 import { haversineKm } from '@/lib/geo';
 import { openPhone } from '@/lib/openExternal';
+import { OfflineEmergencyList } from '@/features/sos/OfflineEmergencyList';
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function SosHubScreen() {
-  const insets = useSafeAreaInsets();
+  
   const { country } = useCountry();
   const [currentCity, setCurrentCity] = useState('');
   const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
@@ -30,24 +31,29 @@ export default function SosHubScreen() {
   if (!country) {
     return (
       <AppShell active="sos">
-        <View testID="sos-country-unavailable" className="flex-1 bg-danger-tint px-[18px]" style={{ paddingTop: insets.top + 12 }}>
-          <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
-          <Text className="mt-6 font-display text-ink" style={{ fontSize: 22 }}>
-            Chưa tải được số khẩn cấp
-          </Text>
-          <Text className="mt-2 text-base leading-6 text-ink">
-            Hãy kết nối mạng rồi thử lại. Nếu đang gặp nguy hiểm, hãy gọi số khẩn cấp của nước sở tại hoặc nhờ người xung quanh hỗ trợ.
-          </Text>
-          <Pressable
-            className="mt-5 h-[52px] items-center justify-center rounded-md bg-danger"
-            onPress={() => queryClient.invalidateQueries({ queryKey: ['countries'] })}
-          >
-            <Text className="font-body-bold text-white">Thử lại</Text>
-          </Pressable>
-          <View className="mt-3">
-            <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
-          </View>
-        </View>
+        <TopInsetView extra={12} testID="sos-country-unavailable" className="flex-1 bg-danger-tint px-[18px]">
+          <ScrollView contentContainerStyle={{ paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING }}>
+            <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
+            <Text className="mt-6 font-display text-ink" style={{ fontSize: 22 }}>
+              Chưa tải được dữ liệu mới nhất
+            </Text>
+            <Text className="mt-2 text-base leading-6 text-ink">
+              Hãy kết nối mạng rồi thử lại. Nếu đang gặp nguy hiểm, gọi ngay các số dưới đây hoặc nhờ người xung quanh hỗ trợ.
+            </Text>
+            <View className="mt-5">
+              <OfflineEmergencyList />
+            </View>
+            <Pressable
+              className="mt-5 h-[52px] items-center justify-center rounded-md bg-danger"
+              onPress={() => queryClient.invalidateQueries({ queryKey: ['countries'] })}
+            >
+              <Text className="font-body-bold text-white">Thử lại</Text>
+            </Pressable>
+            <View className="mt-3">
+              <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
+            </View>
+          </ScrollView>
+        </TopInsetView>
       </AppShell>
     );
   }
@@ -62,8 +68,12 @@ export default function SosHubScreen() {
   const updateLocation = async () => {
     setLocatingGps(true);
     try {
-      const coords = await requestLocationWithExplanation();
-      if (!coords) return;
+      const { coords, failure } = await requestLocationDetailed();
+      if (!coords) {
+        // Người dùng tự chọn "Để sau" thì không làm phiền thêm; các lỗi khác phải nói rõ lý do.
+        if (failure !== 'declined') Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure]);
+        return;
+      }
 
       if (hasEmbassyCoordinates) {
         setEmbassyDistanceKm(haversineKm(coords.latitude, coords.longitude, country.embassy.lat, country.embassy.lng));
@@ -82,7 +92,7 @@ export default function SosHubScreen() {
   return (
     <AppShell active="sos">
       <ScrollView contentContainerStyle={{ paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING }}>
-        <View className="bg-danger-tint px-[18px] pb-5" style={{ paddingTop: insets.top + 12 }}>
+        <TopInsetView extra={12} className="bg-danger-tint px-[18px] pb-5">
           <View className="flex-row items-center justify-between">
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
             <Text className="font-display text-ink" style={{ fontSize: 22 }}>
@@ -105,7 +115,7 @@ export default function SosHubScreen() {
               <Text className="font-body-bold text-primary">{locatingGps ? 'Đang tìm...' : 'Cập nhật'}</Text>
             </Pressable>
           </View>
-        </View>
+        </TopInsetView>
 
         <View className="px-[18px]">
           <View className="mt-5 rounded-xl bg-danger p-[18px]" style={{ shadowColor: 'rgba(239,68,68,1)', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>

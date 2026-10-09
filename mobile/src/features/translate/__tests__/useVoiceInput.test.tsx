@@ -50,6 +50,27 @@ test('app rời foreground hủy micro và bỏ kết quả đến sau', async (
   await hook.unmount();
 });
 
+// B02: hộp thoại xin quyền micro của Android làm app rời 'active' giây lát; không được hủy lượt nghe.
+test('app tạm rời foreground trong lúc xin quyền vẫn bắt đầu nghe', async () => {
+  let change!: (state: AppStateStatus) => void;
+  jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => {
+    change = callback;
+    return { remove: jest.fn() };
+  });
+  native.requestPermissionsAsync.mockImplementation(async () => {
+    change('background');
+    change('active');
+    return { granted: true };
+  });
+  const hook = await renderHook(() => useVoiceInput('vi-VN', jest.fn()));
+  await act(async () => {
+    await hook.result.current.start();
+  });
+  expect(native.start).toHaveBeenCalled();
+  expect(hook.result.current.busy).toBe(true);
+  await hook.unmount();
+});
+
 test('chỉ xin quyền khi bấm; nhận văn bản theo locale và không lưu âm thanh', async () => {
   const transcript = jest.fn();
   const hook = await renderHook(() => useVoiceInput('ko-KR', transcript));

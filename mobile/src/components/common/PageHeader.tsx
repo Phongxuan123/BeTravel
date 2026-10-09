@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native';
 import { router } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useScreenTopInset } from './screenTopInset';
 import type { ReactNode } from 'react';
 import { IconButton } from '../ui/IconButton';
 import { colors } from '@/lib/theme';
@@ -20,11 +20,11 @@ export function PageHeader({
   tone?: 'light' | 'danger';
   onBack?: () => void;
 }) {
-  const insets = useSafeAreaInsets();
+  const topInset = useScreenTopInset();
   return (
     <View
       className={`border-b border-line px-[18px] pb-3 ${tone === 'danger' ? 'bg-danger-tint' : 'bg-surface'}`}
-      style={{ paddingTop: insets.top + 12 }}
+      style={{ paddingTop: topInset + 12 }}
     >
       <View className="flex-row items-center" style={{ gap: 12 }}>
         <IconButton
@@ -51,11 +51,11 @@ export function PageHeader({
 
 // Biến thể B — chỉ nút hai góc, tiêu đề nằm trong nội dung.
 export function PageHeaderBare({ left, right }: { left?: ReactNode; right?: ReactNode }) {
-  const insets = useSafeAreaInsets();
+  const topInset = useScreenTopInset();
   return (
     <View
       className="flex-row items-center justify-between bg-surface px-[18px] pb-3"
-      style={{ paddingTop: insets.top + 12 }}
+      style={{ paddingTop: topInset + 12 }}
     >
       <View className="flex-row" style={{ gap: 8 }}>{left}</View>
       <View className="flex-row" style={{ gap: 8 }}>{right}</View>

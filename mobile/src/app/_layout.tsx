@@ -1,6 +1,7 @@
 import '../styles/global.css';
 
 import { useCallback, useEffect } from 'react';
+import { StatusBar } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -71,6 +72,9 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
+        {/* App chỉ có giao diện sáng: nếu để mặc định, máy ở chế độ tối vẽ giờ/pin màu trắng
+            gần như vô hình trên nền sáng (lỗi B06). */}
+        <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <CountryProvider>

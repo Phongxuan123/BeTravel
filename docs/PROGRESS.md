@@ -1,5 +1,34 @@
 # TIEN DO BE.TRAVEL
 
+## Đợt sửa 1 — an toàn SOS và dữ liệu khẩn cấp — 08/10/2026
+
+Nhánh `fix/wave1-sos-safety`. Phạm vi theo quyết định nhóm ngày 08/10 (`USER_INPUT_FORM.md`
+mục "Quyết định đã chốt"); lỗi theo `FEATURE_STATUS_BUGS.md`.
+
+| Việc | Trạng thái |
+|---|---|
+| B01 chia sẻ vị trí, B02 micro: không huỷ khi hộp thoại xin quyền đẩy app vào background | xong, emulator + test hồi quy |
+| B03 bỏ nhãn "Đã mã hoá"; B6 ghi rõ dữ liệu chỉ lưu trên máy | xong |
+| B05/B06 vùng thanh trạng thái (`TopInsetView`, `useScreenTopInset`), `StatusBar` chữ tối, banner không đè | xong, emulator |
+| B07 định vị: dự phòng vị trí đã biết trong 5 phút, báo lý do thất bại | xong, emulator + test |
+| B08 (UI) bản đồ: câu báo trống hiện rõ + nút gọi cảnh sát | xong, emulator |
+| B23 (mới) mở `/sos`, `/sos/share-location` cho khách; nút SOS ở màn chào và đăng nhập | xong, emulator + test `AppGate` |
+| D4 số khẩn cấp đóng gói sẵn (`features/sos/offlineEmergency.ts`) | xong, emulator (khách, không tới được backend) |
+| D2 số Đại sứ quán `+82-2-720-5124` (Atlas KR, bài nháp mất hộ chiếu, seed) | xong |
+| B2 gỡ `bang-lai-nuoc-ngoai`, `qua-han-luu-tru` về nháp qua Admin API | xong; Home/Cẩm nang có câu báo trống |
+| Xoá `scripts/publish-samples.js` + lệnh `seed:samples` | xong |
+
+Kiểm tra: backend lint + 269/269; mobile tsc + lint + 213/213 (thêm 7 test hồi quy).
+
+## Quyết định phát sinh (08/10)
+- Mở SOS cho người chưa đăng nhập (người dùng chốt): bản đồ/điểm hỗ trợ vẫn cần đăng nhập.
+- Bộ số mất mạng là dữ liệu theo mã quốc gia, chỉ chứa số đã đối chiếu nguồn chính thức.
+
+## Đang vướng (08/10)
+- B04/AI: chưa có bài nào được duyệt để index. B08 dữ liệu: 0 điểm hỗ trợ.
+- E2 (xoá tài khoản trong app): ghi nhận, làm sau.
+- Nghiệm thu máy thật: nói vào micro, TTS, GPS ngoài trời, bản đồ (cần key).
+
 ## Giọng nói và phát âm bản dịch — 07/10/2026
 
 Nhánh `feature/voice-translation-20261007`, từ `93d5ad2` đã push phiên trước.

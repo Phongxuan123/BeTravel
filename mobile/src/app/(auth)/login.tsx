@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Mail, Lock, Eye, EyeOff, Phone } from 'lucide-react-native';
 import { Logo } from '@/components/brand/Logo';
+import { EmergencyEntryButton } from '@/components/common/EmergencyEntryButton';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -128,6 +129,10 @@ export default function LoginScreen() {
         <Pressable accessibilityRole="button" onPress={() => router.push('/register')}>
           <Text className="font-body-bold text-primary">Đăng ký</Text>
         </Pressable>
+      </View>
+
+      <View className="mt-6">
+        <EmergencyEntryButton variant="block" />
       </View>
     </ScrollView>
   );

@@ -13,11 +13,11 @@ import {
   MessageCircle,
   Settings,
   ChevronRight,
-  Lock,
   Check,
   Trash2,
 } from 'lucide-react-native';
 import { AppShell, APP_SHELL_CONTENT_BOTTOM_PADDING } from '@/components/common/AppShell';
+import { TopInsetView } from '@/components/common/screenTopInset';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconTile } from '@/components/ui/IconTile';
@@ -31,6 +31,10 @@ import { ApiError } from '@/lib/api/http';
 import { fetchTrips, fetchFavorites } from '@/lib/data';
 import { useEmergencyContacts } from '@/features/profile/useEmergencyContacts';
 import { useDocumentStatus, type DocumentKey } from '@/features/profile/useDocumentStatus';
+
+// Liên hệ khẩn cấp và ghi chú giấy tờ chỉ nằm trong AsyncStorage của máy (quyết định B6, B7 ngày
+// 08/10/2026): không đồng bộ server, nên phải nói rõ để người dùng không tưởng đã sao lưu.
+const LOCAL_ONLY_NOTE = 'Chỉ lưu trên điện thoại này; có thể mất khi xoá dữ liệu hoặc cài lại ứng dụng.';
 
 const DOCUMENTS: { key: DocumentKey; label: string; icon: typeof IdCard }[] = [
   { key: 'passport', label: 'Hộ chiếu', icon: IdCard },
@@ -131,95 +135,94 @@ export default function ProfileScreen() {
 
   return (
     <AppShell active="profile">
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 20 }}>
-        <View className="flex-row items-center" style={{ gap: 14 }}>
-          <View className="h-16 w-16 items-center justify-center rounded-lg bg-[#DCE8FB]">
-            <Text className="text-2xl font-body-bold text-primary-strong">{initials}</Text>
+      <TopInsetView className="flex-1">
+        <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: APP_SHELL_CONTENT_BOTTOM_PADDING, gap: 20 }}>
+          <View className="flex-row items-center" style={{ gap: 14 }}>
+            <View className="h-16 w-16 items-center justify-center rounded-lg bg-[#DCE8FB]">
+              <Text className="text-2xl font-body-bold text-primary-strong">{initials}</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="font-display text-ink" style={{ fontSize: 24 }}>
+                {user!.name}
+              </Text>
+              <Text className="text-[15px] text-muted">{user!.email}</Text>
+              {user!.phone ? <Text className="text-[14px] text-muted">{user!.phone}</Text> : null}
+            </View>
+            <IconButton accessibilityLabel="Sửa hồ sơ" variant="outline" size={50} icon={<Pencil size={18} color={colors.ink} />} onPress={openEditName} />
           </View>
-          <View className="flex-1">
-            <Text className="font-display text-ink" style={{ fontSize: 24 }}>
-              {user!.name}
-            </Text>
-            <Text className="text-[15px] text-muted">{user!.email}</Text>
-            {user!.phone ? <Text className="text-[14px] text-muted">{user!.phone}</Text> : null}
-          </View>
-          <IconButton accessibilityLabel="Sửa hồ sơ" variant="outline" size={50} icon={<Pencil size={18} color={colors.ink} />} onPress={openEditName} />
-        </View>
 
-        <View className="rounded-lg border border-line bg-surface p-4">
-          <View className="flex-row items-center justify-between">
+          <View className="rounded-lg border border-line bg-surface p-4">
             <Text className="text-lg font-body-bold text-ink">Giấy tờ của tôi</Text>
-            <View className="flex-row items-center gap-1 rounded-full bg-success-soft px-2.5 py-1">
-              <Lock size={12} color={colors.success} />
-              <Text className="text-xs font-body-bold text-success">Đã mã hoá</Text>
+            {/* Ghi chú nằm ở AsyncStorage (không mã hoá) -- không được gắn nhãn "Đã mã hoá". */}
+            <Text className="mt-1 text-sm text-muted">{LOCAL_ONLY_NOTE} Ghi chú chưa được mã hoá.</Text>
+            <View className="mt-3 flex-row" style={{ gap: 10 }}>
+              {DOCUMENTS.map((d) => {
+                const added = status[d.key].added;
+                return (
+                  <Pressable key={d.key} onPress={() => openDocument(d.key)} className="h-[92px] flex-1 items-center justify-center gap-2 rounded-lg bg-bg">
+                    <View>
+                      <IconTile tone={added ? 'green' : 'blue'} size={40}>
+                        <d.icon size={18} color={added ? colors.success : colors.primary} />
+                      </IconTile>
+                      {added && (
+                        <View className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-success">
+                          <Check size={10} color="#fff" strokeWidth={3} />
+                        </View>
+                      )}
+                    </View>
+                    <Text className="text-[15px] font-body-bold text-ink">{d.label}</Text>
+                  </Pressable>
+                );
+              })}
             </View>
           </View>
-          <View className="mt-3 flex-row" style={{ gap: 10 }}>
-            {DOCUMENTS.map((d) => {
-              const added = status[d.key].added;
-              return (
-                <Pressable key={d.key} onPress={() => openDocument(d.key)} className="h-[92px] flex-1 items-center justify-center gap-2 rounded-lg bg-bg">
-                  <View>
-                    <IconTile tone={added ? 'green' : 'blue'} size={40}>
-                      <d.icon size={18} color={added ? colors.success : colors.primary} />
-                    </IconTile>
-                    {added && (
-                      <View className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-success">
-                        <Check size={10} color="#fff" strokeWidth={3} />
-                      </View>
-                    )}
+
+          <View className="rounded-lg border border-line bg-surface p-4">
+            <Text className="text-lg font-body-bold text-ink">Liên hệ khẩn cấp</Text>
+            <Text className="mt-1 text-sm text-muted">{LOCAL_ONLY_NOTE}</Text>
+            <View className="mt-3" style={{ gap: 10 }}>
+              {contacts.map((contact) => (
+                <View key={contact.id} className="flex-row items-center" style={{ gap: 12 }}>
+                  <View className="h-[50px] w-[50px] items-center justify-center rounded-md bg-danger-soft">
+                    <Text className="font-body-bold text-danger">{contact.name.slice(0, 2).toUpperCase()}</Text>
                   </View>
-                  <Text className="text-[15px] font-body-bold text-ink">{d.label}</Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        <View className="rounded-lg border border-line bg-surface p-4">
-          <Text className="text-lg font-body-bold text-ink">Liên hệ khẩn cấp</Text>
-          <View className="mt-3" style={{ gap: 10 }}>
-            {contacts.map((contact) => (
-              <View key={contact.id} className="flex-row items-center" style={{ gap: 12 }}>
-                <View className="h-[50px] w-[50px] items-center justify-center rounded-md bg-danger-soft">
-                  <Text className="font-body-bold text-danger">{contact.name.slice(0, 2).toUpperCase()}</Text>
+                  <View className="flex-1">
+                    <Text className="text-[17px] font-body-bold text-ink">{contact.name}</Text>
+                    <Text className="text-sm text-muted">
+                      {contact.relationship} · {contact.phone}
+                    </Text>
+                  </View>
+                  <IconButton accessibilityLabel={`Gọi ${contact.name}`} variant="soft" icon={<Phone size={18} color={colors.primary} />} onPress={() => void openPhone(contact.phone)} />
+                  <IconButton accessibilityLabel={`Xoá ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
                 </View>
-                <View className="flex-1">
-                  <Text className="text-[17px] font-body-bold text-ink">{contact.name}</Text>
-                  <Text className="text-sm text-muted">
-                    {contact.relationship} · {contact.phone}
-                  </Text>
-                </View>
-                <IconButton accessibilityLabel={`Gọi ${contact.name}`} variant="soft" icon={<Phone size={18} color={colors.primary} />} onPress={() => void openPhone(contact.phone)} />
-                <IconButton accessibilityLabel={`Xoá ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
-              </View>
-            ))}
+              ))}
+            </View>
+            <Pressable onPress={openAddContact} className="mt-3 h-14 items-center justify-center rounded-lg border border-dashed border-[#C9D6EE]">
+              <Text className="font-body-bold text-primary">+ Thêm liên hệ</Text>
+            </Pressable>
           </View>
-          <Pressable onPress={openAddContact} className="mt-3 h-14 items-center justify-center rounded-lg border border-dashed border-[#C9D6EE]">
-            <Text className="font-body-bold text-primary">+ Thêm liên hệ</Text>
-          </Pressable>
-        </View>
 
-        <View className="overflow-hidden rounded-lg border border-line bg-surface">
-          <MenuRow
-            icon={<Calendar size={20} color={colors.primary} />}
-            label="Chuyến đi của tôi"
-            count={tripsQuery.isLoading ? '…' : String(tripsQuery.data?.data.length ?? 0)}
-            onPress={() => router.push('/trips')}
-          />
-          <View className="h-px bg-line" />
-          <MenuRow
-            icon={<Bookmark size={20} color={colors.warning} />}
-            label="Đã lưu"
-            count={favoritesQuery.isLoading ? '…' : String(favoritesQuery.data?.data.length ?? 0)}
-            onPress={() => router.push('/favorites' as never)}
-          />
-          <View className="h-px bg-line" />
-          <MenuRow icon={<MessageCircle size={20} color={colors.primary} />} label="Lịch sử hỏi AI" onPress={() => router.push('/chat')} />
-          <View className="h-px bg-line" />
-          <MenuRow icon={<Settings size={20} color={colors.muted} />} label="Cài đặt" onPress={() => router.push('/settings')} />
-        </View>
-      </ScrollView>
+          <View className="overflow-hidden rounded-lg border border-line bg-surface">
+            <MenuRow
+              icon={<Calendar size={20} color={colors.primary} />}
+              label="Chuyến đi của tôi"
+              count={tripsQuery.isLoading ? '…' : String(tripsQuery.data?.data.length ?? 0)}
+              onPress={() => router.push('/trips')}
+            />
+            <View className="h-px bg-line" />
+            <MenuRow
+              icon={<Bookmark size={20} color={colors.warning} />}
+              label="Đã lưu"
+              count={favoritesQuery.isLoading ? '…' : String(favoritesQuery.data?.data.length ?? 0)}
+              onPress={() => router.push('/favorites' as never)}
+            />
+            <View className="h-px bg-line" />
+            <MenuRow icon={<MessageCircle size={20} color={colors.primary} />} label="Lịch sử hỏi AI" onPress={() => router.push('/chat')} />
+            <View className="h-px bg-line" />
+            <MenuRow icon={<Settings size={20} color={colors.muted} />} label="Cài đặt" onPress={() => router.push('/settings')} />
+          </View>
+        </ScrollView>
+      </TopInsetView>
 
       <SimpleSheet visible={editingName} onClose={() => setEditingName(false)} title="Sửa hồ sơ">
         <View style={{ gap: 14 }}>

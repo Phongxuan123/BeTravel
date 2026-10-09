@@ -48,13 +48,13 @@ export const COUNTRIES = [
     language: "Tiếng Hàn",
     status: CountryStatus.ACTIVE,
     emergencyNumbers: { police: "112", ambulance: "119", fire: "119", marine: "122" },
-    // Nguon: docs/06_Legal_Content_Seed_KR.md bai 8 (Dai su quan VN tai Seoul,
-    // trang lien he chinh thuc). KHONG co toa do da kiem chung -- de trong
-    // thay vi doan, nhom noi dung bo sung lat/lng that khi ranh.
+    // Nguon: trang lien he chinh thuc https://vnembassy-seoul.mofa.gov.vn/lien-he (doi chieu
+    // 08/10/2026: dien thoai +82 2 720 5124, fax 7204684 -- khong dung so fax de goi ho tro).
+    // KHONG co toa do da kiem chung -- de trong thay vi doan.
     embassy: {
       name: "Đại sứ quán Việt Nam tại Hàn Quốc",
       address: "123 Bukchon-ro, Jongno-gu, Seoul (03052), Hàn Quốc",
-      phone: "+82-2-720-5510",
+      phone: "+82-2-720-5124",
     },
     // Thanh pho pho bien (kien thuc dia ly pho thong) de goi y wizard tao
     // chuyen di -- khong phai noi dung phap ly nen khong can nguon rieng.
@@ -509,7 +509,7 @@ export const KR_ARTICLES = [
     foreignerNotes: [
       "Địa chỉ và số điện thoại dưới đây lấy trực tiếp từ trang liên hệ chính thức của Đại sứ quán — nhóm nội dung nên gọi xác nhận lại trước khi publish vì thông tin liên hệ đại sứ quán có thể thay đổi theo thời gian.",
       "Địa chỉ: 123 Bukchon-ro, Jongno-gu, Seoul (03052), Hàn Quốc.",
-      "Điện thoại lễ tân/hành chính: +82-2-720-5510. Đường dây khẩn cấp sân bay (visa/giấy tờ, hoạt động ngoài giờ): +82-2-738-2318.",
+      "Điện thoại lễ tân/hành chính: +82-2-720-5124. Đường dây khẩn cấp sân bay (visa/giấy tờ, hoạt động ngoài giờ): +82-2-738-2318.",
       "Email hỗ trợ: support@vietnamembassy-seoul.org",
     ],
     sources: [

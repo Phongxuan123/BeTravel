@@ -1,5 +1,5 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
-import { Share } from 'react-native';
+import { AppState, Share } from 'react-native';
 import * as Location from 'expo-location';
 import ShareLocationScreen from '@/app/sos/share-location';
 
@@ -55,6 +55,23 @@ test('hủy GPS bỏ kết quả đến muộn', async () => {
   await act(async () => finish({ coords: { latitude: 21, longitude: 105, accuracy: 12 }, timestamp: Date.now() }));
   expect(screen.queryByText('21.000000, 105.000000')).toBeNull();
   expect(Share.share).not.toHaveBeenCalled();
+});
+
+// B01: hộp thoại xin quyền của Android đẩy app vào background giây lát; không được hủy lượt lấy GPS.
+test('app vào background trong lúc xin quyền vẫn trả tọa độ', async () => {
+  const listeners: ((state: string) => void)[] = [];
+  jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, handler) => {
+    listeners.push(handler as (state: string) => void);
+    return { remove: jest.fn() } as unknown as ReturnType<typeof AppState.addEventListener>;
+  });
+  (Location.requestForegroundPermissionsAsync as jest.Mock).mockImplementation(async () => {
+    listeners.forEach((notify) => notify('background'));
+    listeners.forEach((notify) => notify('active'));
+    return { status: 'granted', canAskAgain: true };
+  });
+  const screen = await render(<ShareLocationScreen />);
+  await fireEvent.press(screen.getByLabelText('Lấy vị trí của tôi'));
+  await waitFor(() => expect(screen.getByText('21.000000, 105.000000')).toBeTruthy());
 });
 
 test('hủy bảng chia sẻ không báo đã gửi', async () => {
