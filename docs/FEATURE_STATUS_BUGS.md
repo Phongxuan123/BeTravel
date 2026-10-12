@@ -29,8 +29,8 @@ Home có hero "BẠN ĐANG Ở" + "LƯU Ý PHÁP LÝ QUAN TRỌNG", dải "Gọi
 (Cảnh sát / Cấp cứu / Đại sứ quán), nút SOS nổi giữa thanh điều hướng, màu Brand Blue
 `#1677FF`, font Plus Jakarta Sans và JetBrains Mono.
 
-Lưu ý: file đặc tả `FRONTEND_UI_SPECIFICATION.md` mà commit nhắc tới **không có trong repo**,
-nên không đối chiếu được từng chi tiết với bản thiết kế gốc (xem B22).
+Lưu ý: file đặc tả [`FRONTEND_UI_SPECIFICATION.md`](FRONTEND_UI_SPECIFICATION.md) đã có trong repo từ 12/10/2026 (B22).
+Màu, font, bo góc đã khớp; đối chiếu chi tiết từng màn hình còn chờ mã nguồn xuất từ ai.studio.
 
 ---
 
@@ -154,7 +154,7 @@ Mức: **Nghiêm trọng** (tính năng chính không dùng được / sai sự 
 | B19 | Sự cố "Mất hộ chiếu": chi tiết ghi "Hàn Quốc", mục Đã lưu ghi "Áp dụng mọi quốc gia" | Thống nhất nguồn trường quốc gia | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: chip ở chi tiết sự cố theo `countryCode` của sự cố ("Áp dụng mọi quốc gia" khi dùng chung), trùng mục Đã lưu (emulator) |
 | B20 | Home ghi "Quy trình xử lý 5 bước" trong khi các sự cố có 3-5 bước | Đổi thành "Hướng dẫn từng bước" | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: "Hướng dẫn xử lý từng bước" (emulator) |
 | B21 | Admin Portal không co giãn trên màn hẹp (sidebar chiếm nửa màn) | Thu gọn sidebar dưới breakpoint `md` | Đã sửa 09/10/2026, nhánh `fix/wave3-polish`: dưới `md` sidebar thu thành dải icon (có `title`/`aria-label`), tên người dùng và chữ "Đăng xuất" ẩn dưới `sm` (Chrome trong emulator) |
-| B22 | `FRONTEND_UI_SPECIFICATION.md` không có trong repo | Phú Long đưa file lên `docs/` | |
+| B22 | `FRONTEND_UI_SPECIFICATION.md` không có trong repo | Phú Long đưa file lên `docs/` | Đã có 12/10/2026: Phú Long cung cấp, đưa vào `docs/FRONTEND_UI_SPECIFICATION.md` nguyên văn (spec của bản prototype web trên ai.studio). Việc đối chiếu chi tiết từng màn hình chờ mã nguồn xuất từ ai.studio |
 | B25 | Dashboard Admin "Top câu hỏi bị fallback" hiện một câu hỏng dấu (`T?i d?ng b?ng l?i...`). Đây là bản ghi `ai_events` do lần thử bằng `curl` trong Git Bash ngày 07/10 tạo ra, không phải lỗi code | Xoá bản ghi thử đó khi người dùng đồng ý (cần thao tác thẳng trên DB, không có API xoá) | Ghi nhận 09/10/2026, chờ người dùng quyết |
 
 ---
