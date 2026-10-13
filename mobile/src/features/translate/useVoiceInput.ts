@@ -11,7 +11,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   'audio-capture': 'Không truy cập được micro. Kiểm tra ứng dụng khác đang dùng micro.',
 };
 
-export function useVoiceInput(locale: string | null, onTranscript: (text: string) => void) {
+export function useVoiceInput(
+  locale: string | null,
+  onTranscript: (text: string) => void,
+  offlineOnly = false,
+  maxLength = 500,
+) {
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +63,10 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
       subscription.remove();
     };
   }, [cancel]);
-  useEffect(() => () => cancel(), [locale, cancel]);
+  useEffect(() => () => cancel(), [locale, offlineOnly, cancel]);
+  useEffect(() => {
+    explained.current = false;
+  }, [offlineOnly]);
 
   const stop = () => {
     if (!listeners.current.length) {
@@ -93,12 +101,21 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
     const current = () => mounted.current && session.current === id;
     try {
       if (!module.isRecognitionAvailable()) throw new Error('unavailable');
+      if (offlineOnly && !module.supportsOnDeviceRecognition()) {
+        cancel();
+        setError(
+          'Thiết bị chưa có dịch vụ micro offline. Chuẩn bị gói micro bên dưới hoặc nhập tay.',
+        );
+        return;
+      }
       const approved =
         explained.current ||
         (await new Promise<boolean>((resolve) =>
           Alert.alert(
             'Nhập bằng giọng nói',
-            'Micro chỉ bật khi bạn chọn nói. Dịch vụ nhận giọng nói của thiết bị có thể gửi âm thanh qua mạng. Be.Travel không lưu file ghi âm. Bạn sẽ kiểm tra văn bản trước khi bấm dịch.',
+            offlineOnly
+              ? 'Micro chỉ bật khi bạn chọn nói và chỉ nhận giọng trên máy. Cần gói nhận giọng offline. Be.Travel không lưu file ghi âm. Kiểm tra văn bản trước khi dịch.'
+              : 'Micro chỉ bật khi bạn chọn nói. Dịch vụ nhận giọng nói của thiết bị có thể gửi âm thanh qua mạng. Be.Travel không lưu file ghi âm. Kiểm tra văn bản trước khi dịch.',
             [
               { text: 'Để sau', style: 'cancel', onPress: () => resolve(false) },
               { text: 'Tiếp tục', onPress: () => resolve(true) },
@@ -126,9 +143,9 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
         module.addListener('result', (event) => {
           if (!current()) return;
           const text = event.results[0]?.transcript?.trim();
-          if (text) onTranscript(text.slice(0, 500));
-          if (text && text.length > 500)
-            setError('Đã nhận tối đa 500 ký tự. Hãy chia câu thành đoạn ngắn hơn.');
+          if (text) onTranscript(text.slice(0, maxLength));
+          if (text && text.length > maxLength)
+            setError(`Đã nhận tối đa ${maxLength} ký tự. Hãy chia câu thành đoạn ngắn hơn.`);
         }),
         module.addListener('error', (event) => {
           if (!current()) return;
@@ -159,6 +176,7 @@ export function useVoiceInput(locale: string | null, onTranscript: (text: string
         lang: locale,
         interimResults: true,
         continuous: false,
+        requiresOnDeviceRecognition: offlineOnly,
         maxAlternatives: 1,
         recordingOptions: { persist: false },
       });

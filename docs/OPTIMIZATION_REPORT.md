@@ -1,5 +1,19 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Dịch offline — 13/10/2026 (file thay đổi)
+
+- Tách engine, quản lý model và công cụ voice khỏi màn hình dịch; tái sử dụng
+  ánh xạ locale và hàm chia đoạn; giới hạn 500/5.000/450 có hằng riêng.
+- Không sửa hợp đồng dịch online hoặc schema câu lưu cũ. Metadata engine bổ sung
+  tùy chọn; lời dịch ML Kit có ghi công Google cạnh kết quả.
+- Dùng generation token chặn callback cũ, đóng translator Android sau tác vụ,
+  giải phóng TTS engine kiểm tra giọng và phiên audio iOS sau khi dừng.
+- Không tải model trong đường dịch; chỉ tải khi người dùng chọn Wi-Fi/cellular.
+  Gói dịch, gói micro và giọng đọc được giải thích riêng trong giao diện.
+- Kiểm tra phụ thuộc còn cảnh báo gián tiếp; không ép đổi major Expo/Tailwind/Jest
+  để che cảnh báo audit. Chi tiết nghiệm thu còn thiếu nằm trong ACCEPTANCE.
+
+
 ## Đợt sửa 3 — 09/10/2026 (Chế độ B, chỉ file đã động tới)
 
 | Rule | Xử lý |

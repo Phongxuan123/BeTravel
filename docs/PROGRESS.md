@@ -1,5 +1,27 @@
 # TIEN DO BE.TRAVEL
 
+## Dịch offline, micro và phát âm — cập nhật 13/10/2026
+
+Nhánh local `feature/offline-translation-20261012`, từ `a3bc320`; không push/merge.
+Tiến độ `[#####-] 5/6` — code/kiểm tự động/tài liệu xong; nghiệm thu thiết bị còn mở.
+
+| Việc | Trạng thái |
+|---|---|
+| Docs/kiến trúc và hợp đồng | xong; giữ API online và dữ liệu lưu cũ |
+| Engine offline Android/iOS | xong code ML Kit, tải/xóa gói chủ động, không fallback cloud |
+| Từ/câu dài và giao diện | tối đa 5.000 ký tự, chọn ngôn ngữ không phụ thuộc server, khách mở từ SOS |
+| Micro/TTS | on-device, chuẩn bị gói, TTS chia đoạn/lọc giọng cloud; chưa nghe/nói thật |
+| Kiểm tra/build | backend 269/269; admin 18/18 + build; mobile 219/219 (51 suites), lint/typecheck đạt |
+| Android thực tế | release APK build/cài/mở đạt; SOS > dịch khách, tải model và dịch Việt–Anh và đoạn Anh–Việt 642 ký tự khi tắt Wi-Fi/data đạt |
+| Nghiệm thu còn thiếu | micro/loa trên điện thoại thật, native iOS |
+| Tài liệu bàn giao | OFFLINE_TRANSLATION, ACCEPTANCE, OPTIMIZATION_REPORT, VOICE_TRANSLATION đã cập nhật |
+
+Android release cần ép Node arm64 trong môi trường Rosetta này; đã build thành công.
+iOS local chỉ có CommandLineTools, chưa đủ Xcode để compile. Expo Doctor 20/21 do
+bản vá mới; audit mobile 61, backend 3, admin 0 còn ghi rõ trong tài liệu. Không
+chứng nhận toàn macOS hoặc tuyên bố hết mọi lỗi. Không sửa Atlas/secret.
+Xem [OFFLINE_TRANSLATION.md](OFFLINE_TRANSLATION.md) để tiếp tục nghiệm thu.
+
 ## Đợt sửa 3 — hoàn thiện giao diện — 09/10/2026
 
 Nhánh `fix/wave3-polish`. Phạm vi B15-B21 theo quyết định B9; B22 chờ Phú Long đưa tài liệu spec.

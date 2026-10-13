@@ -10,6 +10,7 @@ const native = {
   stop: jest.fn(),
   start: jest.fn(),
   isRecognitionAvailable: jest.fn(() => true),
+  supportsOnDeviceRecognition: jest.fn(() => true),
   requestPermissionsAsync: jest.fn(async () => ({ granted: true })),
   addListener: jest.fn((event: string, callback: (event: any) => void) => {
     callbacks.set(event, callback);
@@ -22,11 +23,25 @@ beforeEach(() => {
   Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });
   (getRecognitionModule as jest.Mock).mockReturnValue(native);
   native.requestPermissionsAsync.mockResolvedValue({ granted: true });
+  native.supportsOnDeviceRecognition.mockReturnValue(true);
   jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
     buttons?.[1]?.onPress?.();
   });
 });
 afterEach(() => jest.restoreAllMocks());
+
+test('offline bắt buộc on-device; thiếu dịch vụ không hạ sang nhận giọng cloud', async () => {
+  const hook = await renderHook(() => useVoiceInput('vi-VN', jest.fn(), true));
+  await act(async () => { await hook.result.current.start(); });
+  expect(native.start).toHaveBeenCalledWith(expect.objectContaining({ requiresOnDeviceRecognition: true }));
+  await act(async () => { hook.result.current.cancel(); });
+  native.start.mockClear();
+  native.supportsOnDeviceRecognition.mockReturnValue(false);
+  await act(async () => { await hook.result.current.start(); });
+  expect(native.start).not.toHaveBeenCalled();
+  expect(hook.result.current.error).toMatch(/micro offline/);
+  await hook.unmount();
+});
 
 test('app rời foreground hủy micro và bỏ kết quả đến sau', async () => {
   let change!: (state: AppStateStatus) => void;

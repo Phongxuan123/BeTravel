@@ -51,6 +51,7 @@ export default function SosHubScreen() {
               <Text className="font-body-bold text-white">Thử lại</Text>
             </Pressable>
             <View className="mt-3">
+              <Button label="Dịch không cần mạng" onPress={() => router.push('/translate')} />
               <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
             </View>
           </ScrollView>
@@ -119,6 +120,9 @@ export default function SosHubScreen() {
         </TopInsetView>
 
         <View className="px-[18px]">
+          <View className="mt-4">
+            <Button label="Dịch không cần mạng" onPress={() => router.push('/translate')} />
+          </View>
           <View className="mt-5 rounded-xl bg-danger p-[18px]" style={{ shadowColor: 'rgba(239,68,68,1)', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
             <Text className="text-xs font-body-bold text-white/80">SỐ KHẨN CẤP TẠI {country.name.toUpperCase()}</Text>
             <Text className="mt-1 font-display text-white" style={{ fontSize: 26 }}>

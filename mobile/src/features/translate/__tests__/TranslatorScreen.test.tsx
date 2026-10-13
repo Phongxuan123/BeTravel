@@ -21,7 +21,9 @@ jest.mock('@/lib/data', () => ({ fetchQuickPhrases: jest.fn(), translateText: je
 
 async function setup() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  return render(<QueryClientProvider client={client}><TranslatorScreen /></QueryClientProvider>);
+  const screen = await render(<QueryClientProvider client={client}><TranslatorScreen /></QueryClientProvider>);
+  await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', false);
+  return screen;
 }
 
 beforeEach(() => {

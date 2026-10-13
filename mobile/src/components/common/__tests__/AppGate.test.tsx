@@ -19,7 +19,7 @@ function renderGate(pathname: string, { onboarded }: { onboarded: boolean }) {
 beforeEach(() => jest.clearAllMocks());
 
 // Quyết định 08/10/2026: người chưa có tài khoản / đang mất mạng vẫn phải gọi được số khẩn cấp.
-test.each(['/sos', '/sos/share-location'])('khách vào %s không bị chuyển hướng, kể cả chưa xem onboarding', async (pathname) => {
+test.each(['/sos', '/sos/share-location', '/translate'])('khách vào %s không bị chuyển hướng, kể cả chưa xem onboarding', async (pathname) => {
   const screen = await renderGate(pathname, { onboarded: false });
   await waitFor(() => expect(screen.getByText('noi dung')).toBeTruthy());
   expect(router.replace).not.toHaveBeenCalled();

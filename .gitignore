@@ -20,3 +20,13 @@ web-build/
 # Native builds
 android/
 ios/
+
+# Local Expo module sources are maintained code, not generated native projects.
+!mobile/modules/*/android/
+!mobile/modules/*/android/**
+!mobile/modules/*/ios/
+!mobile/modules/*/ios/**
+mobile/modules/*/android/build/
+mobile/modules/*/android/.gradle/
+mobile/modules/*/android/.cxx/
+mobile/modules/*/ios/build/

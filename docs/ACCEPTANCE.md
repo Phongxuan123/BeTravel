@@ -1,5 +1,21 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Dịch offline — 13/10/2026 (nghiệm thu một phần)
+
+| Tiêu chí | Bằng chứng / trạng thái |
+|---|---|
+| Dịch văn bản offline, tải/xóa gói có chủ động | Android release: tải gói rồi tắt Wi-Fi/data, dịch “Tôi cần giúp đỡ” thành “I need help” đạt; iOS chưa E2E |
+| Từ/câu dài 5.000 ký tự, không tự fallback cloud | Kiểm thử Unicode/thiếu model/hủy đạt; Android offline đoạn Anh–Việt 642 ký tự đạt |
+| Micro on-device, từ chối nếu không hỗ trợ | Hook tests đạt; Android quyền và timeout 30 giây đạt; cần thu tiếng thật trên Android/iOS |
+| TTS chia đoạn, đúng locale, bỏ callback cũ | Hook tests đạt; cần nghe loa thật, đặc biệt sau micro trên iOS |
+| Hồi quy ba workspace | Backend 269/269; admin 18/18 và build; mobile 219/219 (51 suites) |
+| Native | Android debug và release build/cài emulator đạt, SOS > dịch khách đạt; tải model đạt sau sửa DNS và dịch Việt–Anh offline đạt. iOS mới parse Swift/autolink, chưa compile |
+| Dữ liệu và Git | Không migration/API backend mới; chưa push hoặc merge |
+
+Kế hoạch và kết quả tiếp tục: [OFFLINE_TRANSLATION.md](OFFLINE_TRANSLATION.md).
+Không coi các tiêu chí cần thiết bị thật là đã nghiệm thu.
+
+
 ## Nhập giọng nói và TTS — 07/10/2026
 
 | Tiêu chí | Kết quả |

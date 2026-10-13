@@ -8,8 +8,9 @@ const PUBLIC_ROUTES = ['/welcome', '/login', '/register', '/login-phone', '/forg
 
 // Khẩn cấp không được chờ đăng nhập hay xem hết onboarding (quyết định 08/10/2026): người vừa cài
 // app, chưa có tài khoản hoặc đang mất mạng vẫn phải gọi được số khẩn cấp và chia sẻ vị trí.
+// Dịch offline (12/10) không phụ thuộc phiên mạng; API dịch online vẫn yêu cầu auth.
 // Bản đồ/điểm hỗ trợ vẫn cần đăng nhập.
-export const EMERGENCY_ROUTES = ['/sos', '/sos/share-location'];
+export const EMERGENCY_ROUTES = ['/sos', '/sos/share-location', '/translate'];
 
 // Cổng chặn 2 lớp, chạy lại mỗi khi đổi route hoặc trạng thái đăng nhập thay đổi:
 // 1) Chưa xem onboarding → /welcome (spec Q20).
