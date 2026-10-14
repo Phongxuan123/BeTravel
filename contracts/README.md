@@ -566,6 +566,39 @@ GET /support-locations?country=&type=   200 -- fallback khi tu choi GPS,
 }
 ```
 
+## 14b. DIA DIEM BO SUNG TU BEN THU BA — `/api/support-locations/external` (OpenStreetMap | SerpApi)
+
+[!] Lop BO SUNG, CHUA xac minh. Khac `/support-locations` va `/nearby` (chi tra diem `verified:true`
+do admin xac minh), endpoint nay luon tra `verified:false` va `source` la ten nguon:
+`"openstreetmap"` (PLACES_PROVIDER=osm, mien phi) hoac `"google_maps"` (serpapi). Client BAT BUOC
+hien nhan "chua xac minh" va khong tron voi diem da xac minh. Khong ghi gi vao DB.
+
+```
+GET /support-locations/external?lat&lng&type=embassy|hospital|police|pharmacy   200
+GET /support-locations/external?country=KR&type=embassy                          200
+     -- type BAT BUOC, la enum co dinh, KHONG nhan chuoi tim kiem tu do. Hai cach goi:
+        (1) lat + lng (cung nhau): tim quanh diem, sap xep gan -> xa, kem distanceMeters (so).
+        (2) country (ISO-2, chi chu cai) + type=embassy, KHONG can toa do: dai su quan/lanh su Viet Nam
+            cua nuoc do (the OSM country=VN, target=<ISO2>), sap xep theo ten, distanceMeters = null.
+            Dung khi chua co GPS va du lieu quoc gia chua dien toa do dai su quan. Chi nguon osm/mock;
+            serpapi tra 400 vi can toa do.
+     -- Toi da 20 diem. Toa do GeoJSON [lng, lat].
+     -- 400 VALIDATION_ERROR  thieu/sai tham so
+     -- 429 RATE_LIMITED      qua 30 yeu cau / 15 phut / IP
+     -- 429 QUOTA_EXCEEDED    het tran luot goi nha cung cap trong ngay (PLACES_DAILY_LIMIT)
+     -- 502 UPSTREAM_ERROR    nha cung cap loi/qua han (PLACES_TIMEOUT_MS); khong lo key hay chi tiet
+```
+
+Item (xem `fixtures/public.externalPlace.json`): `placeId`, `name`, `type`, `category`, `address`,
+`phone`, `website`, `openState`, `rating|null`, `reviews|null`, `location` (GeoJSON Point),
+`verified:false`, `source`, `distanceMeters` (so hoac null, xem tren). Voi OSM, `openState` la chuoi `opening_hours` cua OSM
+(vd "Mo-Fr 09:00-17:00") va `rating`/`reviews` luon null; `embassy` chi gom co quan ngoai giao Viet Nam
+(the OSM `country=VN`) trong ban kinh 500 km.
+
+Cache theo (type, o ~1 km) trong `PLACES_CACHE_TTL_MINUTES`. `PLACES_PROVIDER=mock` (mac dinh) tra
+du lieu mau, khong goi mang. Overpass cong cong co luc cham 10-20 giay hoac 504: backend thu lai 1 lan
+voi loi tam thoi; lan dau co the cham, cac lan sau trong 24 gio lay tu cache.
+
 ## 15. ENDPOINT ADMIN LOCATIONS BULK — `/api/admin/locations/bulk-*` (B6, role admin)
 
 ```

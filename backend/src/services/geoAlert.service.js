@@ -3,6 +3,7 @@ import { AppError, ErrorCode } from "../core/errors.js";
 import GeoAlert from "../models/GeoAlert.js";
 import { RiskLevel } from "../core/constants.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
+import { haversineMeters } from "../utils/geo.js";
 
 // ── Admin CRUD (dung voi core/adminCrudController.js) ───────────────────
 export const listGeoAlertsAdmin = async (query) => {
@@ -46,17 +47,6 @@ const SEVERITY_ORDER = { [RiskLevel.DANGER]: 0, [RiskLevel.WARN]: 1, [RiskLevel.
 // chuc ban ghi) -- tinh khoang cach bang Haversine ngay trong ung dung don
 // gian hon han dung $geoWithin/$centerSphere (moi alert co BAN KINH RIENG,
 // khong phai mot ban kinh co dinh cho ca truy van) (Rule 9 KISS).
-function haversineMeters(lat1, lng1, lat2, lng2) {
-  const EARTH_RADIUS_M = 6_371_000;
-  const toRad = (deg) => (deg * Math.PI) / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
-  return EARTH_RADIUS_M * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
 /*
  * Co toa do -> alert 'area' trong ban kinh + alert 'country'. Khong co toa
  * do (tu choi GPS) -> CHI alert 'country', khong bao gio tra rong tuyet doi

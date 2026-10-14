@@ -359,6 +359,17 @@ test("response cua GET /api/support-locations khop fixture public.supportLocatio
   assertSameKeys(res.body.data[0], fixture.data[0], "public.supportLocation");
 });
 
+test("response cua GET /api/support-locations/external khop fixture public.externalPlace.json", async () => {
+  const fixture = readFixture("public.externalPlace.json");
+
+  const res = await request(app)
+    .get("/api/support-locations/external")
+    .query({ lat: 37.5385, lng: 126.9715, type: "embassy" });
+
+  assert.equal(res.body.ok, true);
+  assertSameKeys(res.body.data[0], fixture.data[0], "public.externalPlace");
+});
+
 // ── B7: Incidents ────────────────────────────────────────────────────────
 test("response cua GET /api/incidents khop fixture public.incident.json", async () => {
   const fixture = readFixture("public.incident.json");
