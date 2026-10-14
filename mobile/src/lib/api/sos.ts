@@ -3,7 +3,7 @@
  * (mở rộng thêm object tham số optional), bổ sung fetchNearbyLocations.
  */
 import { apiRequest } from './http';
-import { adaptSupportLocation, type ApiSupportLocation } from './adapters';
+import { adaptSupportLocation, adaptExternalPlace, type ApiExternalPlace, type ApiSupportLocation } from './adapters';
 import { StorageKeys, getJSON, setJSON } from '@/lib/storage';
 import { haversineKm } from '@/lib/geo';
 import type { SupportLocation } from '@/mocks/schemas';
@@ -78,4 +78,25 @@ export async function fetchNearbyLocations(lat: number, lng: number, opts?: Near
     if (opts?.limit) params.set('limit', String(opts.limit));
     return apiRequest<ApiSupportLocation[]>(`/support-locations/nearby?${params.toString()}`);
   }, opts?.type, { lat, lng }, opts);
+}
+
+export type ExternalType = Exclude<SupportLocation['type'], 'other'>;
+// Hoặc (lat, lng) để tìm quanh một điểm, hoặc country (chỉ với type=embassy) khi chưa có toạ độ nào.
+export type ExternalQuery = { type: ExternalType; lat?: number; lng?: number; country?: string };
+
+/**
+ * Diem bo sung tu ben thu ba (OpenStreetMap/Google Maps) -- CHUA xac minh, chi la lop goi y them tren ban do.
+ * Khong cache offline va khong di qua withOfflineFallback (vi no loc verified === true).
+ */
+export async function fetchExternalPlaces(query: ExternalQuery): Promise<Envelope<SupportLocation[]>> {
+  const params = new URLSearchParams({ type: query.type });
+  if (query.lat !== undefined && query.lng !== undefined) {
+    params.set('lat', String(query.lat));
+    params.set('lng', String(query.lng));
+  } else if (query.country) {
+    params.set('country', query.country);
+  }
+  const raw = await apiRequest<ApiExternalPlace[]>(`/support-locations/external?${params.toString()}`);
+  const data = raw.map(adaptExternalPlace).filter((place) => validCoordinates(place.lat, place.lng));
+  return { ok: true, data };
 }

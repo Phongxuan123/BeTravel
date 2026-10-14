@@ -273,6 +273,46 @@ export function adaptSupportLocation(api: ApiSupportLocation): SupportLocation {
   };
 }
 
+// Diem bo sung tu Google Maps (GET /support-locations/external). KHAC support_locations: luon
+// verified:false, nen id co tien to "ext:" de khong bao gio trung/lan voi diem da xac minh, va
+// `source` duoc giu lai de man hinh gan nhan "chua xac minh".
+export type ApiExternalPlace = {
+  placeId: string;
+  name: string;
+  type: SupportLocation['type'];
+  category: string;
+  address: string;
+  phone: string;
+  website: string;
+  openState: string;
+  location: { type: 'Point'; coordinates: [number, number] };
+  verified: false;
+  source: string;
+  // null khi tim theo quoc gia (khong co diem goc de do khoang cach).
+  distanceMeters: number | null;
+};
+
+export function adaptExternalPlace(api: ApiExternalPlace): SupportLocation {
+  // GeoJSON la [lng, lat]; SupportLocation dung lat/lng rieng.
+  const [lng, lat] = api.location.coordinates;
+  return {
+    id: `ext:${api.placeId || `${lat},${lng}`}`,
+    type: api.type,
+    name: api.name,
+    meta: [api.category, api.address].filter(Boolean).join(' · '),
+    address: api.address,
+    openHours: api.openState,
+    website: api.website,
+    verified: false,
+    distanceKm: api.distanceMeters === null ? undefined : api.distanceMeters / 1000,
+    phone: api.phone,
+    lat,
+    lng,
+    featured: false,
+    source: api.source,
+  };
+}
+
 // quick-phrases van 100% mock toi B7 (dich khan cap) -- khong co adapter that
 // o batch nay. Khai bao lai type de content.ts import duoc mot noi thong nhat.
 export type { QuickPhrase };

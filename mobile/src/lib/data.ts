@@ -19,6 +19,7 @@ import * as content from '@/lib/api/content';
 import * as chatApi from '@/lib/api/chat';
 import * as feedbackApi from '@/lib/api/feedback';
 import * as sosApi from '@/lib/api/sos';
+import type { SupportLocation } from '@/mocks/schemas';
 import * as incidentsApi from '@/lib/api/incidents';
 import * as translateApi from '@/lib/api/translate';
 import * as alertsApi from '@/lib/api/alerts';
@@ -56,6 +57,10 @@ export const getLastChatMessageId = USE_MOCKS ? mock.getLastMessageId : chatApi.
 
 export const fetchSupportLocations = USE_MOCKS ? mock.fetchSupportLocations : sosApi.fetchSupportLocations;
 export const fetchNearbyLocations = USE_MOCKS ? mock.fetchNearbyLocations : sosApi.fetchNearbyLocations;
+// Mock khong co lop Google Maps: tra rong de man hinh van chay khi EXPO_PUBLIC_USE_MOCKS=true.
+export const fetchExternalPlaces = USE_MOCKS
+  ? async (): Promise<{ ok: true; data: SupportLocation[] }> => ({ ok: true, data: [] })
+  : sosApi.fetchExternalPlaces;
 
 export const fetchIncidents = USE_MOCKS ? mock.fetchIncidents : incidentsApi.fetchIncidents;
 export const fetchIncident = USE_MOCKS ? mock.fetchIncident : incidentsApi.fetchIncident;
