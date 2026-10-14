@@ -1,17 +1,13 @@
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren, Search } from 'lucide-react-native';
+import { ChevronRight, Search } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { IconButton } from '@/components/ui/IconButton';
-import { IconTile, type Tone } from '@/components/ui/IconTile';
-import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchIncidents } from '@/lib/data';
 import type { Incident } from '@/lib/data';
-
-const ICONS: Record<string, typeof IdCard> = { IdCard, ShieldAlert, Car, ShoppingBag, Plus, Siren };
 
 export default function IncidentsScreen() {
   const { countryCode } = useCountry();
@@ -20,7 +16,8 @@ export default function IncidentsScreen() {
   return (
     <View className="flex-1 bg-bg">
       <PageHeader
-        title="Xử lý sự cố"
+        title="Bạn đang gặp vấn đề gì?"
+        subtitle="Hướng dẫn xử lý sự cố từng bước"
         right={
           <IconButton
             accessibilityLabel="Tìm sự cố"
@@ -31,7 +28,7 @@ export default function IncidentsScreen() {
         }
       />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 12 }}>
-        <Text className="text-[15px] text-muted">Chọn tình huống bạn đang gặp — mỗi hướng dẫn có các bước làm ngay.</Text>
+        <Text className="text-sm font-body-bold text-ink">Chọn loại sự cố bạn đang gặp phải:</Text>
 
         {incidentsQuery.isLoading && <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>}
         {incidentsQuery.isError && (
@@ -41,9 +38,11 @@ export default function IncidentsScreen() {
           <Text className="py-6 text-center text-sm text-muted">Chưa có hướng dẫn xử lý sự cố cho quốc gia này.</Text>
         )}
 
-        {incidentsQuery.data?.data.map((incident) => (
-          <IncidentRow key={incident.slug} incident={incident} />
-        ))}
+        <View className="flex-row flex-wrap justify-between" style={{ rowGap: 10 }}>
+          {incidentsQuery.data?.data.map((incident) => (
+            <IncidentRow key={incident.slug} incident={incident} />
+          ))}
+        </View>
 
         <Pressable className="mt-2 flex-row items-center rounded-lg bg-danger p-4" onPress={() => router.push('/sos')}>
           <View className="h-14 w-14 items-center justify-center rounded-md bg-white/[0.18]">
@@ -60,28 +59,22 @@ export default function IncidentsScreen() {
   );
 }
 
+// Lưới 2 cột theo mẫu #14: tiêu đề tình huống + số bước, nhãn "Khẩn" chỉ hiện khi dữ liệu đánh dấu urgent.
 function IncidentRow({ incident }: { incident: Incident }) {
-  const Icon = ICONS[incident.iconKey] ?? IdCard;
   return (
     <Pressable
-      className="h-[80px] flex-row items-center rounded-lg border border-line bg-surface px-4"
+      accessibilityRole="button"
+      className="min-h-[76px] justify-center rounded-2xl border border-line bg-surface px-3.5 py-3"
+      style={{ width: '48.5%' }}
       onPress={() => router.push(`/incidents/${incident.slug}` as never)}
     >
-      <IconTile tone={incident.tone as Tone} size={52}>
-        <Icon size={22} color={toneIconColor(incident.tone)} />
-      </IconTile>
-      <View className="ml-3 flex-1">
-        <Text className="text-[19px] font-body-bold text-ink">{incident.title}</Text>
-        <View className="mt-1 flex-row" style={{ gap: 6 }}>
-          <Badge label={`${incident.steps.length} bước`} tone="neutral" />
-          {incident.urgent && <Badge label="Khẩn" tone="danger" />}
-        </View>
-      </View>
-      <ChevronRight size={20} color={colors.muted} />
+      <Text className="text-sm font-body-bold text-ink" numberOfLines={2}>
+        {incident.title}
+      </Text>
+      <Text className="mt-1 text-xs text-muted">
+        {incident.steps.length} bước
+        {incident.urgent ? ' · Khẩn' : ''}
+      </Text>
     </Pressable>
   );
-}
-
-function toneIconColor(tone: Incident['tone']): string {
-  return { blue: colors.primary, red: colors.danger, orange: colors.warning, green: colors.success }[tone];
 }

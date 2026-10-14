@@ -5,23 +5,24 @@ import { TopInsetView } from '@/components/common/screenTopInset';
 import {
   Bell,
   Calendar,
-  MessageCirclePlus,
+  Sparkles,
   FileText,
   TriangleAlert,
   CircleAlert,
   Phone,
   Languages,
-  Map as MapIcon,
-  Search,
+  MapPin,
+  ShieldAlert,
+  Siren,
+  BookOpen,
   ChevronRight,
+  ArrowRight,
 } from 'lucide-react-native';
 import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { ListRow } from '@/components/common/ListRow';
 import { SectionHeader } from '@/components/common/SectionHeader';
-import { Badge } from '@/components/ui/Badge';
 import { IconTile } from '@/components/ui/IconTile';
 import { Button } from '@/components/ui/Button';
-import { CountryFlag } from '@/components/brand/CountryFlag';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { colors } from '@/lib/theme';
 import { openPhone } from '@/lib/openExternal';
@@ -30,6 +31,7 @@ import { useAuth } from '@/lib/auth';
 import { fetchTrips, fetchAlerts, fetchArticles, fetchCountries } from '@/lib/data';
 import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
+import type { Alert } from '@/lib/data';
 import { now, daysBetween, parseISODate } from '@/lib/date';
 import { activeStop } from '@/features/trips/itinerary';
 
@@ -88,6 +90,9 @@ export default function HomeScreen() {
   const unreadAlerts = alertsQuery.data?.data.filter((a) => !a.read).length ?? 0;
 
   const initials = user ? user.name.slice(0, 2).toUpperCase() : '';
+  // Tên gọi của người Việt là từ cuối của họ tên ("Nguyễn Quang Minh" --> "Minh").
+  const givenName = user?.name.trim().split(/\s+/).pop() ?? '';
+  const changeCountryHref = currentTrip ? '/trips' : '/trips/new?step=1';
 
   return (
     <AppShell active="home">
@@ -101,25 +106,31 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Header */}
+        {/* Header: avatar, lời chào, điểm đến, chuông có số đếm (mẫu #05) */}
         <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center" style={{ gap: 12 }}>
+          <View className="flex-1 flex-row items-center" style={{ gap: 12 }}>
             {!isGuest && (
-              <View className="h-[46px] w-[46px] items-center justify-center rounded-md bg-[#DCE8FB]">
-                <Text className="text-[18px] font-body-bold text-primary-strong">{initials}</Text>
+              <View className="h-[46px] w-[46px] items-center justify-center rounded-2xl border border-line bg-[#DCE8FB]">
+                <Text className="text-[16px] font-body-bold text-primary-strong">{initials}</Text>
               </View>
             )}
-            <View>
-              {isGuest ? (
-                <Text className="text-sm text-muted">Xin chào</Text>
-              ) : (
-                <Text className="text-sm text-muted">Xin chào, {user?.name}</Text>
-              )}
-              <View className="mt-0.5 flex-row items-center" style={{ gap: 6 }}>
-                <CountryFlag code={countryCode} width={22} height={16} />
-                <Text className="text-[17px] font-body-bold text-ink">{country?.name}</Text>
-                <Badge label={currentTrip ? (currentTrip.isCurrent ? "Chuyến đi chính" : "Theo lịch trình") : "Đang chọn"} tone="success" />
-              </View>
+            <View className="flex-1">
+              <Text className="text-[17px] font-display text-ink" numberOfLines={1}>
+                {isGuest ? 'Xin chào' : `Xin chào, ${givenName}`}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Đổi điểm đến"
+                onPress={() => router.push(changeCountryHref as never)}
+                className="mt-0.5 flex-row items-center"
+                style={{ gap: 4 }}
+              >
+                <Text className="font-mono-bold text-[10px] text-primary">{countryCode}</Text>
+                <Text className="text-[13px] font-body-bold text-primary" numberOfLines={1}>
+                  Điểm đến: {country?.name}
+                </Text>
+                <ChevronRight size={14} color={colors.primary} />
+              </Pressable>
             </View>
           </View>
           {isGuest ? (
@@ -132,31 +143,35 @@ export default function HomeScreen() {
             </Pressable>
           ) : (
             <Pressable
-              accessibilityLabel="Thông báo"
+              accessibilityLabel={unreadAlerts > 0 ? `Thông báo, ${unreadAlerts} chưa đọc` : 'Thông báo'}
               accessibilityRole="button"
               onPress={() => router.push('/alerts')}
-              className="h-[46px] w-[46px] items-center justify-center rounded-md border border-line bg-surface"
+              className="h-[46px] w-[46px] items-center justify-center rounded-2xl border border-line bg-surface"
             >
               <Bell size={20} color={colors.ink} />
               {unreadAlerts > 0 && (
-                <View className="absolute right-2 top-2 h-[9px] w-[9px] rounded-full border-2 border-white bg-danger" />
+                <View className="absolute -right-1 -top-1 h-[18px] min-w-[18px] items-center justify-center rounded-full bg-danger px-1">
+                  <Text className="text-[10px] font-body-bold text-white">{unreadAlerts > 9 ? '9+' : unreadAlerts}</Text>
+                </View>
               )}
             </Pressable>
           )}
         </View>
 
-        {/* Hero: current trip */}
+        {/* Hero: quốc gia / chuyến đi hiện tại */}
         <View className="mt-5">
           {tripsQuery.isLoading ? (
-            <Skeleton className="h-[190px] rounded-xl" />
+            <Skeleton className="h-[220px] rounded-3xl" />
           ) : currentTrip ? (
             <CurrentTripCard
               countryCode={countryCode}
               countryName={country?.name}
               destinationCity={currentStop?.destinationCity ?? currentTrip.destinationCity}
-              destinationDetail={currentTrip.destinationDetail}
               startDate={currentTrip.startDate}
               endDate={currentTrip.endDate}
+              police={country?.emergencyNumbers.police}
+              ambulance={country?.emergencyNumbers.ambulance}
+              changeCountryHref={changeCountryHref}
               keyNote={articlesQuery.data?.data[0]?.title}
               onKeyNotePress={() => {
                 const first = articlesQuery.data?.data[0];
@@ -164,7 +179,7 @@ export default function HomeScreen() {
               }}
             />
           ) : (
-            <View className="items-center rounded-xl border border-dashed border-primary bg-surface px-5 py-8">
+            <View className="items-center rounded-3xl border border-dashed border-primary bg-surface px-5 py-8">
               <Text className="text-center text-[15px] font-body-semibold text-ink">Bạn chưa có chuyến đi nào</Text>
               <View className="mt-4 w-full">
                 <Button label="Tạo chuyến đi" onPress={() => router.push('/trips/new?step=1')} />
@@ -174,31 +189,37 @@ export default function HomeScreen() {
         </View>
 
         {/* 4 thao tác nhanh theo spec 3.4 */}
-        <View className="mt-5 flex-row" style={{ gap: 10 }}>
-          <QuickTile label="AI pháp lý" tone="blue" icon={<MessageCirclePlus size={22} color={colors.primary} />} onPress={() => router.push('/chat')} />
+        <View className="mt-6 flex-row items-center justify-between">
+          <Text className="text-base font-display text-ink">Thao tác nhanh</Text>
+          <Pressable accessibilityRole="button" onPress={() => router.push('/incidents')} className="flex-row items-center" style={{ gap: 4 }}>
+            <Text className="text-[13px] font-body-bold text-primary">Báo cáo sự cố</Text>
+            <ArrowRight size={14} color={colors.primary} />
+          </Pressable>
+        </View>
+        <View className="mt-3 flex-row" style={{ gap: 10 }}>
+          <QuickTile label="AI pháp lý" icon={<Sparkles size={22} color={colors.primary} />} onPress={() => router.push('/chat')} />
           <QuickTile
             label="SOS"
-            tone="red"
-            icon={<Text className="font-display text-[13px] text-danger">SOS</Text>}
+            icon={<ShieldAlert size={22} color="#fff" />}
             onPress={() => router.push('/sos')}
             danger
           />
-          <QuickTile label="Dịch nhanh" tone="blue" icon={<Languages size={22} color={colors.primary} />} onPress={() => router.push('/translate')} />
-          <QuickTile label="Bản đồ" tone="green" icon={<MapIcon size={22} color={colors.successStrong} />} onPress={() => router.push('/sos/map')} />
+          <QuickTile label="Dịch nhanh" icon={<Languages size={22} color={colors.primary} />} onPress={() => router.push('/translate')} />
+          <QuickTile label="Bản đồ hỗ trợ" icon={<MapPin size={22} color={colors.primary} />} onPress={() => router.push('/sos/map')} />
         </View>
 
-        {/* Lối tắt phụ */}
-        <View className="mt-3" style={{ gap: 10 }}>
-          <ListRow
-            icon={<IconTile tone="orange"><TriangleAlert size={20} color={colors.warning} /></IconTile>}
-            title="Gặp sự cố khẩn cấp"
-            subtitle="Hướng dẫn xử lý từng bước"
+        {/* Lối tắt phụ: hai thẻ cạnh nhau */}
+        <View className="mt-3 flex-row" style={{ gap: 10 }}>
+          <ShortcutCard
+            title="Gặp sự cố khẩn cấp?"
+            subtitle="Quy trình 5 bước xử lý"
+            icon={<Siren size={18} color={colors.danger} />}
             onPress={() => router.push('/incidents')}
           />
-          <ListRow
-            icon={<IconTile tone="blue"><Search size={20} color={colors.primary} /></IconTile>}
+          <ShortcutCard
             title="Tra cứu luật nhanh"
-            subtitle="Hỏi hoặc tìm trong cẩm nang đã xác minh"
+            subtitle="Hộ chiếu, hải quan..."
+            icon={<BookOpen size={18} color={colors.primary} />}
             onPress={() => router.push('/search')}
           />
         </View>
@@ -206,24 +227,14 @@ export default function HomeScreen() {
         {/* Cảnh báo quan trọng */}
         {unreadAlertItems.length > 0 && (
           <View className="mt-7">
-            <SectionHeader title="Cảnh báo quan trọng" actionLabel="Xem tất cả" onAction={() => router.push('/alerts')} />
+            <SectionHeader
+              title="Cảnh báo quan trọng"
+              actionLabel={`Xem tất cả (${unreadAlerts})`}
+              onAction={() => router.push('/alerts')}
+            />
             <View className="mt-3" style={{ gap: 10 }}>
               {unreadAlertItems.map((alert) => (
-                <Pressable
-                  key={alert.id}
-                  accessibilityRole="button"
-                  onPress={() => router.push('/alerts')}
-                  className="flex-row items-start gap-3 rounded-lg border border-danger-line bg-danger-tint p-4"
-                >
-                  <CircleAlert size={20} color={colors.danger} />
-                  <View className="flex-1">
-                    <Text className="text-[14px] font-body-bold text-ink">{alert.title}</Text>
-                    <Text className="mt-0.5 text-xs leading-relaxed text-muted" numberOfLines={2}>
-                      {alert.body}
-                    </Text>
-                  </View>
-                  <ChevronRight size={18} color={colors.muted} />
-                </Pressable>
+                <HomeAlertCard key={alert.id} alert={alert} onPress={() => router.push('/alerts')} />
               ))}
             </View>
           </View>
@@ -278,115 +289,131 @@ export default function HomeScreen() {
   );
 }
 
+const ALERT_CATEGORY_LABEL: Record<Alert['category'], string> = {
+  safety: 'An toàn',
+  legal: 'Thay đổi pháp lý',
+  trip: 'Chuyến đi',
+};
+
+function HomeAlertCard({ alert, onPress }: { alert: Alert; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      className="rounded-2xl border border-danger-line bg-danger-tint p-4"
+    >
+      <Text className="text-[11px] font-body-bold text-danger" numberOfLines={2}>
+        ● {ALERT_CATEGORY_LABEL[alert.category]} · {alert.meta}
+      </Text>
+      <Text className="mt-1.5 text-[15px] font-body-bold text-ink">{alert.title}</Text>
+      <Text className="mt-1 text-xs leading-relaxed text-muted" numberOfLines={2}>
+        {alert.body}
+      </Text>
+    </Pressable>
+  );
+}
+
 function CurrentTripCard({
   countryCode,
   countryName,
   destinationCity,
-  destinationDetail,
   startDate,
   endDate,
+  police,
+  ambulance,
+  changeCountryHref,
   keyNote,
   onKeyNotePress,
 }: {
   countryCode: string;
   countryName?: string;
   destinationCity: string;
-  destinationDetail?: string;
   startDate: string;
   endDate: string;
+  police?: string;
+  ambulance?: string;
+  changeCountryHref: string;
   keyNote?: string;
   onKeyNotePress?: () => void;
 }) {
   const today = now();
   const start = parseISODate(startDate);
   const end = parseISODate(endDate);
-  const totalDays = Math.max(1, daysBetween(start, end));
-  const elapsed = Math.min(Math.max(daysBetween(start, today), 0), totalDays);
   const upcoming = today < start;
   const past = today > end;
   const remaining = Math.max(daysBetween(today, end), 0);
   const daysUntilStart = Math.max(daysBetween(today, start), 0);
-  const progress = upcoming ? 0 : past ? 1 : elapsed / totalDays;
+  // Tiêu đề phải khớp trạng thái thật: "Bạn đang ở" chỉ đúng khi chuyến đang diễn ra.
+  const heading = upcoming ? 'Điểm đến sắp tới' : past ? 'Chuyến đi gần nhất' : 'Bạn đang ở';
   const statusLabel = upcoming ? 'Sắp tới' : past ? 'Đã kết thúc' : 'Đang diễn ra';
-  const statusColor = upcoming ? colors.warning : past ? colors.muted : colors.success;
-  const timingLabel = upcoming ? `Khởi hành sau ${daysUntilStart} ngày` : past ? 'Đã kết thúc' : `Còn ${remaining} ngày`;
+  const statusColor = upcoming ? '#FBBF24' : past ? '#CBD5E1' : '#4ADE80';
+  const timingLabel = upcoming ? `Khởi hành sau ${daysUntilStart} ngày` : past ? '' : `Còn ${remaining} ngày`;
 
   return (
-    <View
-      className="overflow-hidden rounded-xl bg-primary p-5"
-      style={{ shadowColor: 'rgba(22,119,255,1)', shadowOpacity: 0.3, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 8 }}
-    >
-      {/* Vòng tròn mờ làm nền trang trí, giữ chữ trắng đủ tương phản */}
-      <View className="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/10" />
-      <View className="absolute -bottom-16 -left-8 h-40 w-40 rounded-full bg-black/10" />
+    <View className="overflow-hidden rounded-3xl bg-ink p-5">
+      {/* Vòng tròn mờ thay cho ảnh điểm đến (chưa có ảnh), vẫn giữ chữ trắng đủ tương phản */}
+      <View className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-primary/25" />
+      <View className="absolute -bottom-20 -left-10 h-44 w-44 rounded-full bg-white/5" />
 
-      <View className="flex-row items-start justify-between">
-        <View className="flex-row items-center" style={{ gap: 8 }}>
-          <View className="overflow-hidden rounded-sm border border-white/60">
-            <CountryFlag code={countryCode} width={30} height={22} />
+      <View className="flex-row items-start" style={{ gap: 12 }}>
+        <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
+          <Text className="font-mono-bold text-lg text-white">{countryCode}</Text>
+        </View>
+        <View className="flex-1">
+          <View className="flex-row items-center" style={{ gap: 6 }}>
+            <Text className="text-[11px] font-body-bold text-primary-soft">Quốc gia hiện tại</Text>
+            <Text className="text-[11px] font-body-bold" style={{ color: statusColor }}>● {statusLabel}</Text>
           </View>
-          <Text className="text-xs font-body-bold tracking-wide text-white/85">BẠN ĐANG Ở</Text>
+          <Text className="mt-1 text-[13px] text-white/80">{heading}</Text>
+          <Text className="font-display text-white" style={{ fontSize: 24, lineHeight: 30 }} numberOfLines={2}>
+            {countryName || destinationCity || countryCode}
+          </Text>
         </View>
-        <View className="flex-row items-center gap-1.5 rounded-full bg-white px-2.5 py-1">
-          <View className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
-          <Text className="text-[13px] font-body-bold" style={{ color: statusColor }}>{statusLabel}</Text>
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push(changeCountryHref as never)}
+          className="min-h-[36px] justify-center rounded-full bg-white/20 px-3"
+        >
+          <Text className="text-xs font-body-bold text-white">Đổi nước</Text>
+        </Pressable>
       </View>
 
-      <Text className="mt-3 font-display text-white" style={{ fontSize: 28, lineHeight: 34 }}>
-        {destinationCity || countryName || countryCode}
+      <View className="mt-3 flex-row flex-wrap items-center" style={{ gap: 6 }}>
+        <Calendar size={14} color="#fff" />
+        <Text className="font-mono text-[12px] text-white">{formatTripRange(startDate, endDate)}</Text>
+        {!!destinationCity && <Text className="text-[12px] text-white/70">· {destinationCity}</Text>}
+        {!!timingLabel && <Text className="text-[12px] text-white/70">· {timingLabel}</Text>}
+      </View>
+      <Text className="mt-2 text-[13px] text-white/90">
+        Cảnh sát: <Text className="font-mono-bold">{police || '--'}</Text> · Cấp cứu: <Text className="font-mono-bold">{ambulance || '--'}</Text>
       </Text>
-      {!!destinationDetail && (
-        <Text className="mt-0.5 text-sm font-body-semibold text-white/80" numberOfLines={1}>
-          {destinationDetail}
-        </Text>
-      )}
-      <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
-        <Calendar size={16} color="#fff" />
-        <Text className="font-mono text-[13px] text-white">{formatTripRange(startDate, endDate)}</Text>
-        <Text className="text-white/60">·</Text>
-        <Text className="text-[13px] text-white/90">{timingLabel}</Text>
-      </View>
-      <View className="mt-3 h-1.5 rounded-full bg-white/30">
-        <View className="h-1.5 rounded-full bg-white" style={{ width: `${Math.round(progress * 100)}%` }} />
-      </View>
 
       {!!keyNote && (
         <Pressable
           accessibilityRole="button"
           onPress={onKeyNotePress}
-          className="mt-4 flex-row items-center rounded-lg bg-white/15 px-3.5 py-3"
+          className="mt-4 flex-row items-center rounded-2xl bg-white/15 px-3.5 py-3"
           style={{ gap: 10 }}
         >
-          <TriangleAlert size={18} color="#fff" />
+          <TriangleAlert size={18} color="#FBBF24" />
           <View className="flex-1">
-            <Text className="text-[11px] font-body-bold tracking-wide text-white/75">LƯU Ý PHÁP LÝ QUAN TRỌNG</Text>
-            <Text className="mt-0.5 text-[13px] font-body-semibold text-white" numberOfLines={2}>{keyNote}</Text>
+            <Text className="text-[13px] font-body-bold text-white" numberOfLines={1}>{keyNote}</Text>
+            <Text className="mt-0.5 text-[11px] text-white/70" numberOfLines={1}>Lưu ý pháp lý quan trọng · nhấn để xem chi tiết</Text>
           </View>
           <ChevronRight size={18} color="#fff" />
         </Pressable>
       )}
-
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.push('/trips')}
-        className="mt-3 h-12 items-center justify-center rounded-md bg-white"
-      >
-        <Text className="text-base font-body-bold text-primary-strong">Xem chuyến đi</Text>
-      </Pressable>
     </View>
   );
 }
 
 function QuickTile({
   label,
-  tone,
   icon,
   onPress,
   danger,
 }: {
   label: string;
-  tone: 'blue' | 'red' | 'orange' | 'green';
   icon: React.ReactNode;
   onPress: () => void;
   danger?: boolean;
@@ -395,14 +422,47 @@ function QuickTile({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className={`flex-1 items-center justify-center gap-2 rounded-lg border bg-surface py-4 ${
-        danger ? 'border-danger-line' : 'border-line'
+      className={`min-h-[104px] flex-1 items-center justify-center rounded-2xl border px-1 py-3 ${
+        danger ? 'border-danger-line bg-danger-tint' : 'border-line bg-surface'
       }`}
+      style={{ gap: 8 }}
     >
-      <IconTile tone={tone}>{icon}</IconTile>
-      <Text className="text-[13px] font-body-semibold text-ink" numberOfLines={1}>
+      <View className={`h-12 w-12 items-center justify-center rounded-2xl ${danger ? 'bg-danger' : 'bg-primary-soft'}`}>
+        {icon}
+      </View>
+      <Text
+        className={`text-center text-[12px] font-body-bold ${danger ? 'text-danger' : 'text-ink'}`}
+        numberOfLines={2}
+      >
         {label}
       </Text>
+    </Pressable>
+  );
+}
+
+function ShortcutCard({
+  title,
+  subtitle,
+  icon,
+  onPress,
+}: {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      className="min-h-[76px] flex-1 flex-row items-center rounded-2xl border border-line bg-surface p-3.5"
+      style={{ gap: 8 }}
+    >
+      <View className="flex-1">
+        <Text className="text-[13px] font-body-bold text-ink" numberOfLines={2}>{title}</Text>
+        <Text className="mt-0.5 text-[11px] text-muted" numberOfLines={1}>{subtitle}</Text>
+      </View>
+      {icon}
     </Pressable>
   );
 }
