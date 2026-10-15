@@ -1,7 +1,7 @@
-import { View, Text, ScrollView, Share } from 'react-native';
+import { View, Text, ScrollView, Share, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Info, MessageCircle, Star, Share as ShareIcon, TriangleAlert, X, ShieldCheck } from 'lucide-react-native';
+import { ChevronLeft, Info, MessageCircle, Bookmark, Share as ShareIcon, TriangleAlert, X, ShieldCheck } from 'lucide-react-native';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
@@ -72,13 +72,18 @@ export default function ArticleDetailScreen() {
   return (
     <View className="flex-1 bg-bg">
       <PageHeaderBare
-        left={<IconButton accessibilityLabel="Quay lại" variant="soft" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />}
+        left={
+          <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" onPress={() => router.back()} hitSlop={8} className="min-h-[44px] flex-row items-center" style={{ gap: 4 }}>
+            <ChevronLeft size={20} color={colors.ink} />
+            <Text className="text-sm font-body-bold text-ink">Quay lại</Text>
+          </Pressable>
+        }
         right={
           <>
             <IconButton
               accessibilityLabel={saved ? 'Bỏ lưu' : 'Lưu quy định'}
-              variant={saved ? 'warning' : 'outline'}
-              icon={<Star size={18} color={saved ? colors.warning : colors.muted} fill={saved ? colors.warning : 'none'} />}
+              variant={saved ? 'soft' : 'outline'}
+              icon={<Bookmark size={18} color={saved ? colors.primary : colors.muted} fill={saved ? colors.primary : 'none'} />}
               onPress={() => toggleSaved(article.id)}
             />
             <IconButton accessibilityLabel="Chia sẻ" variant="outline" icon={<ShareIcon size={18} color={colors.ink} />} onPress={onShare} />
@@ -86,27 +91,29 @@ export default function ArticleDetailScreen() {
         }
       />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 110 }}>
-        <View className="flex-row" style={{ gap: 8 }}>
-          <Badge label={countryName(countryCode)} tone="info" dot />
-          {!!topicLabel && <Badge label={topicLabel} tone="neutral" />}
+        <View className="flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
+          <Text className="text-xs font-body-bold text-primary">{countryName(countryCode)}</Text>
+          {!!topicLabel && <Text className="text-xs text-muted">· {topicLabel}</Text>}
         </View>
         <Text className="mt-3 font-display text-ink" style={{ fontSize: 26 }}>
           {article.title}
         </Text>
         <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
           <Badge label="Đang hiệu lực" tone="success" dot />
-          <Text className="text-sm text-subtle">Cập nhật {article.updatedAt}</Text>
+          <Text className="text-sm text-subtle">Cập nhật: {article.updatedAt}</Text>
         </View>
 
-        <View className="mt-4 flex-row items-center gap-3 rounded-lg border border-line bg-surface p-3.5">
-          <ShieldCheck size={20} color={colors.successStrong} />
+        <View className="mt-4 flex-row items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">
+          <View className="h-8 w-8 items-center justify-center rounded-full bg-success-tint">
+            <ShieldCheck size={18} color={colors.successStrong} />
+          </View>
           <View className="flex-1">
-            <Text className="text-[13px] font-body-bold text-ink">Nguồn chính thống đã xác minh</Text>
+            <Text className="text-[13px] font-body-bold text-ink">Nguồn pháp lý chính thống đã xác minh</Text>
             <Text className="text-xs text-muted" numberOfLines={1}>{article.source.agency}</Text>
           </View>
         </View>
 
-        <View className="mt-4 rounded-lg bg-primary-soft p-4">
+        <View className="mt-4 rounded-2xl bg-primary-soft p-4">
           <View className="flex-row items-center" style={{ gap: 8 }}>
             <Info size={18} color={colors.primaryStrong} />
             <Text className="text-[15px] font-body-bold text-primary-strong">Tóm tắt nhanh</Text>
@@ -116,7 +123,7 @@ export default function ArticleDetailScreen() {
 
         {article.keyPoints.length > 0 && (
           <View className="mt-6">
-            <Text className="mb-3 text-base font-body-bold text-ink">Quy định chính</Text>
+            <Text className="mb-3 text-base font-body-bold text-ink">Thông tin pháp lý chi tiết</Text>
             <View style={{ gap: 10 }}>
               {article.keyPoints.map((point, i) => (
                 <View
@@ -173,7 +180,7 @@ export default function ArticleDetailScreen() {
 
       <BottomActionBar>
         <Button
-          label="Hỏi AI về nội dung này"
+          label="Hỏi AI về chủ đề này"
           iconLeft={<MessageCircle size={18} color="#fff" />}
           onPress={() =>
             router.push(

@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, Linking, Alert } from 'react-native';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
-import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, Sun } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Phone, Plus, Flame, Waves, Navigation, Share2, ListChecks } from 'lucide-react-native';
 import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
 import { TopInsetView } from '@/components/common/screenTopInset';
 import { Button } from '@/components/ui/Button';
@@ -96,15 +96,21 @@ export default function SosHubScreen() {
         <TopInsetView extra={12} className="bg-danger-tint px-[18px] pb-5">
           <View className="flex-row items-center justify-between">
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
-            <Text className="font-display text-ink" style={{ fontSize: 22 }}>
-              Hỗ trợ khẩn cấp
-            </Text>
-            <IconButton
-              accessibilityLabel="Tăng tương phản màn hình"
-              variant="outline"
-              icon={<Sun size={18} color={colors.ink} />}
-              onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Tăng tương phản' } })}
-            />
+            <View className="mx-3 flex-1">
+              <Text className="font-display text-ink" style={{ fontSize: 20 }} numberOfLines={1}>
+                Hỗ trợ khẩn cấp
+              </Text>
+              <Text className="text-xs text-muted" numberOfLines={1}>
+                Trung tâm cứu trợ khẩn cấp · {country.name}
+              </Text>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push('/incidents')}
+              className="min-h-[44px] justify-center rounded-2xl bg-primary-soft px-3"
+            >
+              <Text className="text-[13px] font-body-bold text-primary">Quy trình sự cố</Text>
+            </Pressable>
           </View>
 
           <View className="mt-4 h-[52px] flex-row items-center rounded-lg bg-surface px-3.5" style={{ gap: 8 }}>
@@ -140,6 +146,24 @@ export default function SosHubScreen() {
             <ServiceTile label="Cứu hoả" number={country.emergencyNumbers.fire} tone="orange" icon={<Flame size={18} color={colors.warning} />} />
             <ServiceTile label="Cứu hộ biển" number={country.emergencyNumbers.marine} tone="blue" icon={<Waves size={18} color={colors.primary} />} />
           </View>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/incidents')}
+            className="mt-4 flex-row items-center rounded-2xl bg-ink p-4"
+            style={{ gap: 12 }}
+          >
+            <View className="flex-1">
+              <Text className="text-[11px] font-body-bold text-white/70">HƯỚNG DẪN TỪNG BƯỚC</Text>
+              <Text className="mt-1 text-base font-body-bold text-white">
+                Bạn đang gặp vấn đề với cảnh sát, mất hộ chiếu hay tai nạn?
+              </Text>
+            </View>
+            <View className="min-h-[44px] flex-row items-center justify-center rounded-2xl bg-primary px-3" style={{ gap: 6 }}>
+              <ListChecks size={16} color="#fff" />
+              <Text className="text-[13px] font-body-bold text-white">Xem 5 bước</Text>
+            </View>
+          </Pressable>
 
           <View className="mt-4 rounded-lg border border-line bg-surface p-4">
             <View className="flex-row items-center">
@@ -181,7 +205,7 @@ export default function SosHubScreen() {
           </Pressable>
 
           <View className="mt-6">
-            <Text className="mb-3 text-base font-body-bold text-ink">Địa điểm hỗ trợ gần bạn</Text>
+            <Text className="mb-3 text-base font-body-bold text-ink">Cơ quan hỗ trợ đã xác minh</Text>
             <Pressable onPress={() => router.push('/sos/map')} className="h-[120px] items-center justify-center rounded-lg bg-primary-soft">
               <Navigation size={28} color={colors.primary} />
               <Text className="mt-1 text-sm font-body-semibold text-primary-strong">Mở bản đồ hỗ trợ</Text>

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { User, Mail, Phone, Lock, Eye, EyeOff, Check, ChevronLeft } from 'lucide-react-native';
+import { User, Mail, Phone, Lock, Eye, EyeOff, Check, ArrowRight } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
-import { IconButton } from '@/components/ui/IconButton';
+import { AuthHeader } from '@/components/common/AuthHeader';
 import { TextField } from '@/components/ui/TextField';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -64,20 +64,15 @@ export default function RegisterScreen() {
       contentContainerStyle={{ paddingHorizontal: 24, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
       keyboardShouldPersistTaps="handled"
     >
-      <IconButton
-        accessibilityLabel="Quay lại"
-        icon={<ChevronLeft size={20} color={colors.ink} />}
-        variant="soft"
-        onPress={() => router.back()}
-      />
+      <AuthHeader />
 
-      <Text className="mt-6 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-        Tạo tài khoản
+      <Text className="mt-8 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
+        Tạo tài khoản Be.Travel
       </Text>
-      <Text className="mt-2 text-[15px] text-muted">Chỉ mất một phút — sau đó bạn có thể tạo chuyến đi.</Text>
+      <Text className="mt-2 text-[15px] text-muted">Đồng hành pháp lý và bảo vệ an toàn cho công dân Việt Nam trên mọi hành trình quốc tế.</Text>
 
       <View className="mt-6" style={{ gap: 16 }}>
-        <TextField label="Họ và tên" value={name} onChangeText={setName} iconLeft={<User size={20} color={colors.subtle} />} />
+        <TextField label="Họ và tên (Full name)" value={name} onChangeText={setName} iconLeft={<User size={20} color={colors.subtle} />} />
         <TextField
           label="Email"
           value={email}
@@ -96,7 +91,7 @@ export default function RegisterScreen() {
         />
         <View>
           <TextField
-            label="Mật khẩu"
+            label="Mật khẩu (Password)"
             value={password}
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
@@ -111,7 +106,7 @@ export default function RegisterScreen() {
           <PasswordStrength password={password} />
         </View>
         <TextField
-          label="Xác nhận mật khẩu"
+          label="Xác nhận mật khẩu (Confirm password)"
           value={confirm}
           onChangeText={setConfirm}
           secureTextEntry={!showPassword}
@@ -123,11 +118,11 @@ export default function RegisterScreen() {
           <Checkbox checked={agree} onChange={setAgree} accessibilityLabel="Đồng ý điều khoản" />
           <Text className="flex-1 text-sm leading-5 text-[#334E68]">
             Tôi đồng ý với <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Điều khoản sử dụng')}>
-              Điều khoản
+              Điều khoản sử dụng
             </Text>{' '}
             và{' '}
-            <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Chính sách bảo mật')}>
-              Chính sách bảo mật
+            <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Chính sách bảo vệ dữ liệu')}>
+              Chính sách bảo vệ dữ liệu
             </Text>
             .
           </Text>
@@ -139,11 +134,17 @@ export default function RegisterScreen() {
           </View>
         )}
 
-        <Button label="Tạo tài khoản" onPress={onSubmit} loading={loading} disabled={!canSubmit} />
+        <Button
+          label="Đăng ký tài khoản"
+          onPress={onSubmit}
+          loading={loading}
+          disabled={!canSubmit}
+          iconRight={<ArrowRight size={18} color="#fff" />}
+        />
       </View>
 
       <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
-        <Text className="text-muted">Đã có tài khoản?</Text>
+        <Text className="text-muted">Đã có tài khoản Be.Travel?</Text>
         <Pressable accessibilityRole="button" onPress={() => router.push('/login')}>
           <Text className="font-body-bold text-primary">Đăng nhập</Text>
         </Pressable>

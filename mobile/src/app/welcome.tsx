@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Dimensions, FlatList, Pressable, Text, View, type ViewToken } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowRight } from 'lucide-react-native';
+import { ArrowRight, Check } from 'lucide-react-native';
 import { Logo } from '@/components/brand/Logo';
 import { OnboardingIllustration } from '@/components/brand/OnboardingIllustration';
 import { EmergencyEntryButton } from '@/components/common/EmergencyEntryButton';
@@ -14,39 +14,41 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 type Slide = {
   id: 1 | 2 | 3 | 4;
-  chip?: string;
-  chipTone: 'primary' | 'danger';
+  caption: string;
   title: string;
   description: string;
+  points: [string, string, string];
 };
 
+// 4 bước theo spec mục 3.2. Không hứa độ chính xác tuyệt đối: nói về nguồn và trích dẫn.
 const slides: Slide[] = [
   {
     id: 1,
-    chipTone: 'primary',
-    title: 'Bảo vệ bạn khi du lịch nước ngoài',
-    description: 'Luật pháp, khẩn cấp và hỗ trợ — gói gọn trong một ứng dụng tiếng Việt.',
+    caption: 'Travel with confidence',
+    title: 'Tự tin trên mọi hành trình quốc tế',
+    description: 'Người bạn đồng hành pháp lý và an toàn du lịch thông minh dành riêng cho người Việt khi học tập, làm việc và khám phá thế giới.',
+    points: ['Cập nhật theo quốc gia đến', 'Nguồn đã kiểm chứng & đáng tin cậy', 'Tối ưu sử dụng một tay'],
   },
   {
     id: 2,
-    chip: 'Cẩm nang pháp luật',
-    chipTone: 'primary',
-    title: 'Biết luật trước khi đi',
-    description: 'Quy định nhập cảnh, giao thông, nơi công cộng… tra cứu theo từng quốc gia.',
+    caption: 'Understand local laws',
+    title: 'Hiểu rõ luật pháp sở tại bằng tiếng Việt',
+    description: 'Quy định nhập cảnh, giao thông, nơi công cộng... được tóm lược dễ đọc, tra cứu theo từng quốc gia.',
+    points: ['11 chuyên mục pháp lý thiết yếu', 'Mỗi bài có nguồn chính thức và ngày cập nhật', 'Tìm kiếm bằng câu hỏi tự nhiên'],
   },
   {
     id: 3,
-    chip: 'AI Legal Assistant',
-    chipTone: 'primary',
-    title: 'Hỏi luật bằng tiếng Việt',
-    description: 'Trả lời kèm nguồn pháp lý. Không đủ dữ liệu, AI sẽ nói rõ thay vì đoán.',
+    caption: 'Get help when you need it',
+    title: 'Hỗ trợ khẩn cấp khi bạn cần',
+    description: 'Số khẩn cấp, đại sứ quán và hướng dẫn xử lý sự cố từng bước luôn sẵn sàng chỉ với vài chạm.',
+    points: ['Nút SOS tối đa 2 chạm', 'Bản đồ đại sứ quán, cảnh sát, bệnh viện', 'Quy trình xử lý sự cố 5 bước'],
   },
   {
     id: 4,
-    chip: 'SOS & Khẩn cấp',
-    chipTone: 'danger',
-    title: 'Hỗ trợ khi có sự cố',
-    description: 'Số khẩn cấp, đại sứ quán, dịch câu gấp và hướng dẫn xử lý — chỉ một chạm.',
+    caption: 'Your AI legal travel assistant',
+    title: 'Trợ lý AI pháp lý và dịch nhanh',
+    description: 'Câu trả lời kèm trích dẫn nguồn. Khi dữ liệu chưa đủ, AI nói rõ thay vì suy đoán.',
+    points: ['Trả lời có trích dẫn nguồn', 'Nói rõ khi chưa đủ dữ liệu', 'Dịch nhanh câu khẩn cấp'],
   },
 ];
 
@@ -86,7 +88,7 @@ export default function WelcomeScreen() {
         <View className="flex-row items-center" style={{ gap: 14 }}>
           <EmergencyEntryButton variant="pill" />
           <Pressable accessibilityRole="button" onPress={skip} hitSlop={8}>
-            <Text className="text-[15px] font-body-semibold text-muted">Bỏ qua</Text>
+            <Text className="text-[15px] font-body-semibold text-muted">Bỏ qua (Skip)</Text>
           </Pressable>
         </View>
       </View>
@@ -101,33 +103,37 @@ export default function WelcomeScreen() {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{ itemVisiblePercentThreshold: 60 }}
         renderItem={({ item }) => (
-          <View style={{ width: SCREEN_WIDTH }} className="items-center pt-10">
-            <OnboardingIllustration slide={item.id} />
+          <View style={{ width: SCREEN_WIDTH, paddingHorizontal: 18 }} className="pt-6">
+            <View className="items-center rounded-3xl bg-primary-soft py-4">
+              <OnboardingIllustration slide={item.id} />
+              <Text className="mt-4 text-[13px] font-body-bold text-primary">
+                {`0${item.id} / 04 · ${item.caption}`}
+              </Text>
+            </View>
           </View>
         )}
       />
 
-      <View className="px-[25px]" accessibilityLiveRegion="polite">
-        {slide.chip && (
-          <View
-            className={`mb-3 self-start rounded-full px-3 py-1 ${
-              slide.chipTone === 'danger' ? 'bg-danger-soft' : 'bg-primary-soft'
-            }`}
-          >
-            <Text className={`text-[13px] font-body-bold ${slide.chipTone === 'danger' ? 'text-danger' : 'text-primary-strong'}`}>
-              {slide.chip}
-            </Text>
-          </View>
-        )}
-        <Text className="font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
+      <View className="px-[18px]" accessibilityLiveRegion="polite">
+        <Text className="font-display text-ink" style={{ fontSize: 26, lineHeight: 32 }} numberOfLines={3}>
           {slide.title}
         </Text>
         <Text className="mt-3 text-base leading-6 text-muted">{slide.description}</Text>
+        <View className="mt-4" style={{ gap: 8 }}>
+          {slide.points.map((point) => (
+            <View key={point} className="flex-row items-center rounded-2xl bg-surface px-3 py-2.5" style={{ gap: 10 }}>
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-primary">
+                <Check size={12} color="#fff" strokeWidth={3} />
+              </View>
+              <Text className="flex-1 text-[13px] font-body-bold text-ink">{point}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <View className="flex-1" />
 
-      <View className="px-[18px] flex-row" style={{ gap: 6, marginBottom: 16 }}>
+      <View className="flex-row justify-center" style={{ gap: 6, marginBottom: 16 }}>
         {slides.map((s, i) => (
           <View
             key={s.id}

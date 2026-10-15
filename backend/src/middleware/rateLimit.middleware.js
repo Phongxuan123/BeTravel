@@ -61,3 +61,9 @@ export const translateRateLimit = buildRateLimit({
   limit: 30,
   message: "Bạn đang dịch quá nhanh. Vui lòng chờ một chút rồi thử lại.",
 });
+
+// Endpoint dia diem Google Maps (SerpApi) ton quota that cua tai khoan -- gioi han burst theo IP.
+export const externalPlacesRateLimit = buildRateLimit({
+  limit: 30,
+  message: "Bạn đang tìm địa điểm quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});

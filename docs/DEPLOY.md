@@ -33,6 +33,7 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_URL` trỏ tới backend đ�
    | `JWT_ACCESS_SECRET` | chuỗi ngẫu nhiên dài, KHÁC với secret dùng lúc dev |
    | `GEMINI_API_KEY` | API key thật từ Google AI Studio |
    | `CORS_ORIGINS` | domain admin thật trên Vercel (vd `https://betravel-admin.vercel.app`), phân cách dấu phẩy nếu nhiều origin |
+   | `PLACES_PROVIDER` | tùy chọn. Mặc định `mock` (không gọi mạng). `osm` = địa điểm bổ sung từ OpenStreetMap, miễn phí, không cần key (khuyên dùng). `serpapi` = Google Maps qua SerpApi, cần `SERPAPI_KEY` (thiếu thì backend không khởi động). Địa điểm này luôn gắn chưa xác minh. Trần gọi/ngày: `PLACES_DAILY_LIMIT`; Overpass công cộng có chính sách sử dụng công bằng, lưu lượng lớn nên dùng máy chủ riêng qua `PLACES_OVERPASS_URL` |
    | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | tài khoản admin đầu tiên — **đổi mật khẩu ngay** sau khi đăng nhập lần đầu |
 4. Deploy. Xác nhận `GET https://<service>.onrender.com/api/health` trả `{"ok":true,"data":{"db":"connected",...}}`.
 5. SSH/Shell vào service (Render Dashboard → Shell) hoặc chạy cục bộ với `MONGODB_URI` trỏ tới Atlas thật:

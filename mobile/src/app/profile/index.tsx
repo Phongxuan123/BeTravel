@@ -139,7 +139,7 @@ export default function ProfileScreen() {
       <TopInsetView className="flex-1">
         <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: bottomPadding, gap: 20 }}>
           <View className="flex-row items-center" style={{ gap: 14 }}>
-            <View className="h-16 w-16 items-center justify-center rounded-lg bg-[#DCE8FB]">
+            <View className="h-16 w-16 items-center justify-center rounded-2xl bg-[#DCE8FB]">
               <Text className="text-2xl font-body-bold text-primary-strong">{initials}</Text>
             </View>
             <View className="flex-1">
@@ -149,10 +149,19 @@ export default function ProfileScreen() {
               <Text className="text-[15px] text-muted">{user!.email}</Text>
               {user!.phone ? <Text className="text-[14px] text-muted">{user!.phone}</Text> : null}
             </View>
-            <IconButton accessibilityLabel="Sửa hồ sơ" variant="outline" size={50} icon={<Pencil size={18} color={colors.ink} />} onPress={openEditName} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Sửa hồ sơ"
+              onPress={openEditName}
+              className="min-h-[44px] flex-row items-center justify-center rounded-2xl bg-primary-soft px-3"
+              style={{ gap: 6 }}
+            >
+              <Pencil size={14} color={colors.primary} />
+              <Text className="text-[13px] font-body-bold text-primary">Sửa hồ sơ</Text>
+            </Pressable>
           </View>
 
-          <View className="rounded-lg border border-line bg-surface p-4">
+          <View className="rounded-2xl border border-line bg-surface p-4">
             <Text className="text-lg font-body-bold text-ink">Giấy tờ của tôi</Text>
             {/* Ghi chú nằm ở AsyncStorage (không mã hoá) -- không được gắn nhãn "Đã mã hoá". */}
             <Text className="mt-1 text-sm text-muted">{LOCAL_ONLY_NOTE} Ghi chú chưa được mã hoá.</Text>
@@ -178,7 +187,7 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <View className="rounded-lg border border-line bg-surface p-4">
+          <View className="rounded-2xl border border-line bg-surface p-4">
             <Text className="text-lg font-body-bold text-ink">Liên hệ khẩn cấp</Text>
             <Text className="mt-1 text-sm text-muted">{LOCAL_ONLY_NOTE}</Text>
             <View className="mt-3" style={{ gap: 10 }}>
@@ -203,7 +212,7 @@ export default function ProfileScreen() {
             </Pressable>
           </View>
 
-          <View className="overflow-hidden rounded-lg border border-line bg-surface">
+          <View className="overflow-hidden rounded-2xl border border-line bg-surface">
             <MenuRow
               icon={<Calendar size={20} color={colors.primary} />}
               label="Chuyến đi của tôi"

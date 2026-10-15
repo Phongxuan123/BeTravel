@@ -2,6 +2,7 @@ import express from "express";
 
 import { validateQuery } from "../middleware/validate.middleware.js";
 import { requireLegalLookupEnabled } from "../middleware/legalLookup.middleware.js";
+import { externalPlacesRateLimit } from "../middleware/rateLimit.middleware.js";
 import * as contentController from "../controllers/publicContent.controller.js";
 import * as locationController from "../controllers/publicSupportLocation.controller.js";
 import * as incidentController from "../controllers/publicIncident.controller.js";
@@ -12,6 +13,7 @@ import {
   articleListQuerySchema,
   articleSearchQuerySchema,
   supportLocationNearbyQuerySchema,
+  externalPlacesQuerySchema,
   supportLocationListQuerySchema,
   incidentListQuerySchema,
   quickPhraseListQuerySchema,
@@ -48,6 +50,12 @@ router.get(
   "/support-locations/nearby",
   validateQuery(supportLocationNearbyQuerySchema),
   locationController.nearby,
+);
+router.get(
+  "/support-locations/external",
+  externalPlacesRateLimit,
+  validateQuery(externalPlacesQuerySchema),
+  locationController.external,
 );
 router.get(
   "/support-locations",

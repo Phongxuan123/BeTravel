@@ -104,6 +104,21 @@ const envSchema = z.object({
   AI_DAILY_QUOTA_USER: numeric(40),
   AI_DAILY_QUOTA_GLOBAL: numeric(800),
 
+  // Lớp địa điểm bổ sung (CHƯA xác minh, tách khỏi support_locations).
+  // osm: OpenStreetMap qua Overpass, miễn phí, không cần key. serpapi: Google Maps qua SerpApi, tốn quota.
+  // mock: dữ liệu mẫu cố định, không gọi mạng -- dùng cho test/CI.
+  PLACES_PROVIDER: z.enum(["osm", "serpapi", "mock"]).default("mock"),
+  SERPAPI_KEY: z.string().optional().default(""),
+  PLACES_OVERPASS_URL: z.string().default("https://overpass-api.de/api/interpreter"),
+  // Overpass yêu cầu User-Agent nhận diện được ứng dụng (chính sách sử dụng công bằng).
+  PLACES_USER_AGENT: z.string().default("BeTravel/1.0"),
+  // Cùng truy vấn (cùng loại, cùng ô ~1 km) trong TTL này dùng lại kết quả, không gọi nhà cung cấp.
+  PLACES_CACHE_TTL_MINUTES: numeric(1440),
+  // Trần số lần gọi nhà cung cấp thật mỗi ngày (RAM, reset khi khởi động lại; hạn mức bên thứ ba là chốt cuối).
+  PLACES_DAILY_LIMIT: numeric(100),
+  // Overpass công cộng có lúc mất 10-15 giây; 8 giây cũ làm hỏng truy vấn hợp lệ.
+  PLACES_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
+
   APP_VERSION: z.string().default("1.0.0"),
 
   // Chi dung boi scripts/seed-content.js (npm run seed) -- tao/nang quyen
@@ -126,6 +141,14 @@ const PROVIDER_API_KEY = { gemini: "GEMINI_API_KEY", openai: "OPENAI_API_KEY" };
  * moi cau ma khong ai biet vi sao. Fail fast ngay luc khoi dong (QA-5, M16).
  */
 const productionEnvSchema = envSchema.superRefine((data, ctx) => {
+  // Mọi môi trường: chọn serpapi mà thiếu key thì mỗi lần gọi đều lỗi, nên fail fast ngay lúc khởi động.
+  if (data.PLACES_PROVIDER === "serpapi" && !data.SERPAPI_KEY) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["SERPAPI_KEY"],
+      message: "Thiếu SERPAPI_KEY cho PLACES_PROVIDER=serpapi",
+    });
+  }
   if (data.NODE_ENV !== "production") return;
   if (data.JWT_ACCESS_SECRET.length < PRODUCTION_JWT_SECRET_MIN_LENGTH) {
     ctx.addIssue({

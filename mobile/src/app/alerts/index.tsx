@@ -2,12 +2,11 @@ import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleAlert, TriangleAlert, Calendar } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { Button } from '@/components/ui/Button';
 import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
-import { PageHeaderBare } from '@/components/common/PageHeader';
-import { IconTile, type Tone } from '@/components/ui/IconTile';
+import { PageHeader } from '@/components/common/PageHeader';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { fetchAlerts, markAlertRead, markAllAlertsRead } from '@/lib/data';
@@ -16,17 +15,20 @@ import { now } from '@/lib/date';
 import { useCountry } from '@/lib/countryContext';
 import { useAuth } from '@/lib/auth';
 
-const CATEGORY_META: Record<Alert['category'], { icon: typeof CircleAlert; tone: Tone; badge: BadgeTone; label: string }> = {
-  safety: { icon: CircleAlert, tone: 'red', badge: 'danger', label: 'An toàn' },
-  legal: { icon: TriangleAlert, tone: 'orange', badge: 'warning', label: 'Pháp lý' },
-  trip: { icon: Calendar, tone: 'green', badge: 'success', label: 'Chuyến đi' },
+const CATEGORY_META: Record<Alert['category'], { badge: BadgeTone; label: string }> = {
+  safety: { badge: 'danger', label: 'An toàn' },
+  legal: { badge: 'warning', label: 'Pháp lý' },
+  trip: { badge: 'success', label: 'Chuyến đi' },
 };
 
 // Nhãn trùng với Admin Portal (GeoAlertsPage) để người soạn và người đọc cảnh báo thấy cùng một mức.
-const SEVERITY_META: Record<NonNullable<Alert['severity']>, { label: string; badge: BadgeTone }> = {
-  danger: { label: 'Nguy hiểm', badge: 'danger' },
-  warn: { label: 'Cảnh báo', badge: 'warning' },
-  info: { label: 'Thông tin', badge: 'info' },
+const SEVERITY_META: Record<
+  NonNullable<Alert['severity']>,
+  { label: string; badge: BadgeTone; cardClass: string; textClass: string }
+> = {
+  danger: { label: 'Nguy hiểm', badge: 'danger', cardClass: 'border-danger-line bg-danger-tint', textClass: 'text-danger' },
+  warn: { label: 'Cảnh báo', badge: 'warning', cardClass: 'border-cream-line bg-warning-tint', textClass: 'text-warning-strong' },
+  info: { label: 'Thông tin', badge: 'info', cardClass: 'border-line bg-surface', textClass: 'text-primary' },
 };
 
 const FILTERS: { key: 'all' | Alert['category']; label: string }[] = [
@@ -76,6 +78,16 @@ export default function AlertsScreen() {
     router.push(alert.category === 'trip' ? '/trips' : '/explore');
   };
 
+  // Đánh dấu đã đọc ngay trên thẻ, không cần mở chi tiết.
+  const onMarkRead = async (alert: Alert) => {
+    try {
+      await markAlertRead(alert.id);
+      queryClient.invalidateQueries({ queryKey: ['alerts'] });
+    } catch {
+      // Thao tác phụ: lỗi mạng chỉ khiến thẻ còn hiện "chưa đọc", không chặn người dùng.
+    }
+  };
+
   const onReadAll = async () => {
     try {
       await markAllAlertsRead();
@@ -88,11 +100,12 @@ export default function AlertsScreen() {
 
   return (
     <AppShell active="home">
-      <PageHeaderBare
-        left={<Text className="text-[24px] font-display text-ink">Cảnh báo</Text>}
+      <PageHeader
+        title="Trung tâm cảnh báo"
+        subtitle="Cảnh báo pháp lý và an toàn theo thời gian thực"
         right={
-          <Pressable onPress={onReadAll}>
-            <Text className="text-[15px] font-body-bold text-primary" numberOfLines={1}>
+          <Pressable accessibilityRole="button" onPress={onReadAll} className="min-h-[44px] justify-center rounded-2xl bg-primary-soft px-3">
+            <Text className="text-[13px] font-body-bold text-primary" numberOfLines={1}>
               Đọc tất cả
             </Text>
           </Pressable>
@@ -135,7 +148,7 @@ export default function AlertsScreen() {
               <Text className="mb-2 text-[11px] font-body-bold uppercase tracking-wider text-muted">{label}</Text>
               <View style={{ gap: 10 }}>
                 {list.map((alert) => (
-                  <AlertCard key={alert.id} alert={alert} onPress={() => onOpen(alert)} />
+                  <AlertCard key={alert.id} alert={alert} onOpen={() => onOpen(alert)} onMarkRead={() => onMarkRead(alert)} />
                 ))}
               </View>
             </View>
@@ -168,39 +181,41 @@ export default function AlertsScreen() {
   );
 }
 
-function AlertCard({ alert, onPress }: { alert: Alert; onPress: () => void }) {
+function AlertCard({ alert, onOpen, onMarkRead }: { alert: Alert; onOpen: () => void; onMarkRead: () => void }) {
   const meta = CATEGORY_META[alert.category];
-  const Icon = meta.icon;
+  const severity = SEVERITY_META[alert.severity ?? 'info'];
   return (
-    <Pressable
-      onPress={onPress}
-      className={`rounded-lg border bg-surface p-4 ${!alert.read && alert.category === 'safety' ? 'border-danger-line' : 'border-line'}`}
-    >
-      <View className="flex-row" style={{ gap: 12 }}>
-        <View>
-          <IconTile tone={meta.tone} size={52}>
-            <Icon size={22} color={toneColor(meta.tone)} />
-          </IconTile>
-          {!alert.read && <View className="absolute right-0 top-0 h-[9px] w-[9px] rounded-full border-2 border-white bg-danger" />}
-        </View>
-        <View className="flex-1">
-          <Text className="text-[18px] font-body-bold text-ink">{alert.title}</Text>
-          <Text className="mt-1 text-[15px] text-muted" numberOfLines={2}>
-            {alert.body}
-          </Text>
-          <View className="mt-2 flex-row items-center" style={{ gap: 8 }}>
-            <Badge label={meta.label} tone={meta.badge} />
-            {alert.severity && <Badge label={SEVERITY_META[alert.severity].label} tone={SEVERITY_META[alert.severity].badge} />}
-            <Text className="text-[13px] text-subtle" numberOfLines={1}>
-              {alert.meta}
-            </Text>
-          </View>
-        </View>
+    <View className={`rounded-2xl border p-4 ${severity.cardClass}`}>
+      <View className="flex-row items-center justify-between" style={{ gap: 8 }}>
+        <Text className={`text-[11px] font-body-bold uppercase ${severity.textClass}`}>● {severity.label}</Text>
+        <Text className="text-[11px] text-muted" numberOfLines={1}>
+          {meta.label}
+          {!alert.read ? ' · Chưa đọc' : ''}
+        </Text>
       </View>
-    </Pressable>
+      <Text className="mt-2 text-base font-body-bold text-ink">{alert.title}</Text>
+      <Text className="mt-1 text-sm leading-relaxed text-muted" numberOfLines={3}>
+        {alert.body}
+      </Text>
+      <View className="mt-3 h-px bg-line" />
+      <View className="mt-3 flex-row items-center" style={{ gap: 8 }}>
+        <MapPin size={14} color={colors.muted} />
+        <Text className="flex-1 text-xs font-body-bold text-ink" numberOfLines={2}>
+          {alert.meta}
+        </Text>
+        {!alert.read && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onMarkRead}
+            className="min-h-[44px] justify-center rounded-xl border border-line bg-surface px-3"
+          >
+            <Text className="text-xs font-body-bold text-ink">Đánh dấu đã đọc</Text>
+          </Pressable>
+        )}
+        <Pressable accessibilityRole="button" onPress={onOpen} className="min-h-[44px] justify-center rounded-xl bg-primary px-3">
+          <Text className="text-xs font-body-bold text-white">Xem chi tiết</Text>
+        </Pressable>
+      </View>
+    </View>
   );
-}
-
-function toneColor(tone: Tone): string {
-  return { blue: colors.primary, red: colors.danger, orange: colors.warning, green: colors.successStrong }[tone];
 }

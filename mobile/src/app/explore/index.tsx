@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Bookmark, Check, ShieldCheck, Map as MapIcon, Languages, TriangleAlert, SlidersHorizontal } from 'lucide-react-native';
+import { Search, Bookmark, Check, CircleCheck, Map as MapIcon, Languages, TriangleAlert } from 'lucide-react-native';
 import { AppShell, useAppShellBottomPadding } from '@/components/common/AppShell';
-import { IconButton } from '@/components/ui/IconButton';
 import { FilterChip } from '@/components/ui/FilterChip';
-import { Badge } from '@/components/ui/Badge';
 import { SectionHeader } from '@/components/common/SectionHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
@@ -21,9 +19,9 @@ import type { Article } from '@/lib/data';
 
 // Lối tắt công cụ dưới thanh tìm kiếm (spec 3.5).
 const TOOL_SHORTCUTS = [
-  { label: 'Bản đồ hỗ trợ', href: '/sos/map', icon: MapIcon },
-  { label: 'Dịch khẩn cấp', href: '/translate', icon: Languages },
-  { label: 'Xử lý sự cố', href: '/incidents', icon: TriangleAlert },
+  { label: 'Bản đồ hỗ trợ', hint: 'ĐSQ & Cảnh sát', href: '/sos/map', icon: MapIcon },
+  { label: 'Dịch khẩn cấp', hint: 'Mẫu câu phát âm', href: '/translate', icon: Languages },
+  { label: 'Xử lý sự cố', hint: 'Hướng dẫn 5 bước', href: '/incidents', icon: TriangleAlert },
 ] as const;
 
 export default function ExploreScreen() {
@@ -72,31 +70,52 @@ export default function ExploreScreen() {
     <AppShell active="explore">
       <TopInsetView extra={16} className="border-b border-line bg-surface px-[18px] pb-4">
         <View className="flex-row items-center justify-between">
-          <Text className="font-display text-ink" style={{ fontSize: 26 }}>
-            Cẩm nang pháp luật
-          </Text>
-          <IconButton accessibilityLabel="Đã lưu" variant="soft" icon={<Bookmark size={20} color={colors.primary} />} onPress={() => setSavedOnly((v) => !v)} />
+          <View className="flex-1">
+            <Text className="font-display text-ink" style={{ fontSize: 26 }}>
+              Cẩm nang pháp luật
+            </Text>
+            <Text className="text-xs text-muted" numberOfLines={2}>
+              Quy định pháp luật du lịch đã xác minh, có nguồn trích dẫn
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/search')}
+            className="ml-3 min-h-[44px] flex-row items-center justify-center rounded-2xl bg-primary-soft px-3"
+            style={{ gap: 6 }}
+          >
+            <Search size={16} color={colors.primary} />
+            <Text className="text-[13px] font-body-bold text-primary">Tìm nâng cao</Text>
+          </Pressable>
         </View>
         <Pressable onPress={() => router.push('/search')} className="mt-3 h-12 flex-row items-center rounded-lg border border-line bg-bg px-4">
           <Search size={20} color={colors.subtle} />
-          <Text className="ml-2.5 flex-1 text-sm text-subtle">Tìm quy định...</Text>
-          <SlidersHorizontal size={18} color={colors.primary} />
+          <Text className="ml-2.5 flex-1 text-sm text-subtle" numberOfLines={1}>
+            Tìm luật giao thông, hộ chiếu, hải quan...
+          </Text>
+          <View className="rounded-xl bg-primary-soft px-3 py-1.5">
+            <Text className="text-xs font-body-bold text-primary">Bộ lọc</Text>
+          </View>
         </Pressable>
         <View className="mt-3 flex-row" style={{ gap: 8 }}>
-          {TOOL_SHORTCUTS.map(({ label, href, icon: Icon }) => (
+          {TOOL_SHORTCUTS.map(({ label, hint, href, icon: Icon }) => (
             <Pressable
               key={label}
               accessibilityRole="button"
               onPress={() => router.push(href)}
-              className="min-h-[44px] flex-1 items-center justify-center rounded-lg bg-primary-soft px-1"
-              style={{ gap: 2 }}
+              className="min-h-[56px] flex-1 justify-center rounded-2xl border border-line bg-surface px-2.5 py-2"
             >
-              <Icon size={18} color={colors.primaryStrong} />
-              <Text className="text-[11px] font-body-bold text-primary-strong" numberOfLines={1}>{label}</Text>
+              <Icon size={16} color={colors.primary} />
+              <Text className="mt-1 text-xs font-body-bold text-ink" numberOfLines={1}>{label}</Text>
+              <Text className="text-[10px] text-muted" numberOfLines={1}>{hint}</Text>
             </Pressable>
           ))}
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3">
+        <View className="mt-4 flex-row items-center justify-between">
+          <Text className="text-xs font-body-bold text-ink">Lọc theo quốc gia và danh mục</Text>
+          <Text className="text-[11px] text-muted">Chỉ hiển thị nội dung đã xác minh</Text>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
           <View className="flex-row" style={{ gap: 8 }}>
             <FilterChip
               label={country?.name ?? ''}
@@ -131,9 +150,16 @@ export default function ExploreScreen() {
 
         <View>
           <SectionHeader
-            title={savedOnly ? 'Quy định đã lưu' : 'Quy định đã xác minh'}
-            actionLabel={!savedOnly && topicFilter ? 'Xem tất cả' : undefined}
-            onAction={() => setTopicFilter(null)}
+            title={
+              articlesQuery.isLoading
+                ? 'Bài viết pháp lý'
+                : `Hiển thị ${visibleArticles.length} bài viết ${savedOnly ? 'đã lưu' : 'pháp lý đã xác minh'}`
+            }
+            actionLabel={topicFilter || savedOnly ? 'Đặt lại bộ lọc' : undefined}
+            onAction={() => {
+              setTopicFilter(null);
+              setSavedOnly(false);
+            }}
           />
           <View className="mt-3" style={{ gap: 12 }}>
             {!articlesQuery.isLoading && !articlesQuery.isError && visibleArticles.length === 0 && (
@@ -207,9 +233,13 @@ function ArticleCard({
       onPress={() => router.push(`/explore/${countryCode}/${article.slug}` as never)}
     >
       <View className="flex-row items-center justify-between">
-        <View className="flex-row" style={{ gap: 8 }}>
-          <Badge label={country?.name ?? ''} tone="info" />
-          {topicLabel && <Badge label={topicLabel} tone="neutral" />}
+        <View className="flex-1 flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
+          <Text className="text-xs font-body-bold text-primary">{country?.name ?? ''}</Text>
+          {topicLabel && <Text className="text-xs text-muted">· {topicLabel}</Text>}
+          <View className="flex-row items-center" style={{ gap: 3 }}>
+            <CircleCheck size={13} color={colors.successStrong} />
+            <Text className="text-xs font-body-bold text-success-strong">Đã xác minh</Text>
+          </View>
         </View>
         <Pressable
           accessibilityLabel={saved ? 'Bỏ lưu quy định' : 'Lưu quy định'}
@@ -225,15 +255,9 @@ function ArticleCard({
         {article.summary}
       </Text>
       <View className="mt-3 h-px bg-line" />
-      <View className="mt-3 flex-row items-center" style={{ gap: 8 }}>
-        <View className="flex-row items-center" style={{ gap: 4 }}>
-          <ShieldCheck size={14} color={colors.successStrong} />
-          <Text className="text-xs font-body-bold text-success-strong">Đã xác minh</Text>
-        </View>
-        <Text className="flex-1 text-[13px] text-subtle" numberOfLines={1}>
-          {article.source.agency} · {article.updatedAt}
-        </Text>
-      </View>
+      <Text className="mt-3 text-[13px] text-subtle" numberOfLines={1}>
+        {article.source.agency} · Cập nhật {article.updatedAt}
+      </Text>
     </Pressable>
   );
 }

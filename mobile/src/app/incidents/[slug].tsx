@@ -2,13 +2,12 @@ import { useMemo, useState } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, Bookmark, Info, Phone, Languages, MapPin, MessageCircleQuestion, ExternalLink, LogIn } from 'lucide-react-native';
+import { ChevronLeft, Bookmark, Info, Phone, Languages, MapPin, MessageCircleQuestion, ExternalLink, LogIn, Check } from 'lucide-react-native';
 import { IconButton } from '@/components/ui/IconButton';
 import { PageHeaderBare } from '@/components/common/PageHeader';
 import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { Badge } from '@/components/ui/Badge';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { StepProgress } from '@/components/ui/StepProgress';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
@@ -100,6 +99,9 @@ export default function IncidentDetailScreen() {
     );
   }
 
+  const stepIdOf = (step: Incident['steps'][number], i: number) =>
+    step.stepId ?? `mock-${incident._id ?? incident.slug}-${step.order ?? i}`;
+
   const checked = (stepIdx: number, label: string) => checklist[`${stepIdx}-${label}`] ?? false;
   const toggleChecklistItem = (stepIdx: number, label: string) =>
     setChecklist((prev) => ({ ...prev, [`${stepIdx}-${label}`]: !checked(stepIdx, label) }));
@@ -133,12 +135,34 @@ export default function IncidentDetailScreen() {
           <Text className="flex-1 text-base leading-6 text-ink">{incident.reassurance}</Text>
         </View>
 
-        {!isGuest ? (
-          <View className="mt-4">
-            <StepProgress total={incident.steps.length} current={completedSteps.length} />
-            <Text className="mt-1.5 text-[13px] text-muted">Đã hoàn thành {completedSteps.length}/{incident.steps.length} bước</Text>
+        <View className="mt-4 rounded-2xl border border-line bg-surface p-4">
+          <Text className="text-[11px] font-body-bold uppercase text-primary">Quy trình {incident.steps.length} bước chuẩn</Text>
+          <View className="mt-1 flex-row items-center justify-between" style={{ gap: 8 }}>
+            <Text className="flex-1 text-base font-body-bold text-ink">{incident.title}</Text>
+            <Text className="text-xs font-body-bold text-success-strong">
+              {completedSteps.length}/{incident.steps.length} hoàn thành
+            </Text>
           </View>
-        ) : (
+          <View className="mt-3 flex-row items-center">
+            {incident.steps.map((step, i) => {
+              const done = completedSteps.includes(stepIdOf(step, i));
+              return (
+                <View key={stepIdOf(step, i)} className={`flex-row items-center ${i < incident.steps.length - 1 ? 'flex-1' : ''}`}>
+                  <View className={`h-8 w-8 items-center justify-center rounded-full ${done ? 'bg-success' : 'bg-primary-soft'}`}>
+                    {done ? (
+                      <Check size={16} color="#fff" strokeWidth={3} />
+                    ) : (
+                      <Text className="text-xs font-body-bold text-primary">{i + 1}</Text>
+                    )}
+                  </View>
+                  {i < incident.steps.length - 1 && <View className={`mx-1 h-0.5 flex-1 ${done ? 'bg-success' : 'bg-line'}`} />}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {isGuest && (
           <View className="mt-4 flex-row items-center gap-2 rounded-lg border border-line bg-surface p-3">
             <LogIn size={16} color={colors.muted} />
             <Text className="flex-1 text-[13px] text-muted">Đăng nhập để lưu tiến độ các bước đã làm.</Text>
@@ -150,7 +174,7 @@ export default function IncidentDetailScreen() {
 
         <View className="mt-6">
           {incident.steps.map((step, i) => {
-            const stepId = step.stepId ?? `mock-${incident._id ?? incident.slug}-${step.order ?? i}`;
+            const stepId = stepIdOf(step, i);
             const done = completedSteps.includes(stepId);
             return (
               <View key={stepId} className="flex-row" style={{ gap: 14 }}>

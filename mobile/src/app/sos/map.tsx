@@ -13,11 +13,12 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { openPhone, openUrl } from '@/lib/openExternal';
-import { fetchNearbyLocations, fetchSupportLocations } from '@/lib/data';
+import { fetchExternalPlaces, fetchNearbyLocations, fetchSupportLocations } from '@/lib/data';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 import type { SupportLocation } from '@/lib/data';
 import { MAP_RADIUS_OPTIONS, MAP_LOCATION_LIMIT, searchLocations, validCoordinates, directionsUrl } from '@/features/sos/mapHelpers';
-import { mapRuntime, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
+import { mapRuntime, mapTiles, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
+import { OsmWebMap, type MapHandle, type OsmMarker } from '@/features/sos/OsmWebMap';
 
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#EAF4FF' }] },
@@ -42,6 +43,9 @@ const TYPE_TONE: Record<SupportLocation['type'], Tone> = {
   pharmacy: 'green',
   other: 'orange',
 };
+
+// Nhãn nguồn của lớp địa điểm bổ sung (khớp `source` backend trả về).
+const EXTERNAL_SOURCE_LABEL: Record<string, string> = { google_maps: 'Google Maps', openstreetmap: 'OpenStreetMap' };
 
 const FILTERS: { key: 'all' | SupportLocation['type']; label: string }[] = [
   { key: 'all', label: 'Tất cả' },
@@ -87,12 +91,16 @@ export default function SosMapScreen() {
   const [mapAttempt, setMapAttempt] = useState(0);
   const [mapType, setMapType] = useState<'standard' | 'hybrid'>('standard');
   const [listOnly, setListOnly] = useState(false);
+  const [showExternal, setShowExternal] = useState(false);
   const [previousCountry, setPreviousCountry] = useState(country?.code);
-  const mapRef = useRef<MapView>(null);
+  // Một ref cho cả hai chế độ: MapView native và OsmWebMap (Leaflet) cùng có animateToRegion/fitToCoordinates.
+  const mapRef = useRef<MapHandle>(null);
   const mounted = useRef(true);
   const locatingRef = useRef(false);
   const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
-  const canRenderMap = runtime.available;
+  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
+  // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
+  const canRenderMap = osmTiles || runtime.available;
 
   useEffect(() => {
     if (!canRenderMap || listOnly || mapReady || mapTimedOut) return;
@@ -171,11 +179,46 @@ export default function SosMapScreen() {
   const delta = center ? 0.1 : 100;
   const region = { latitude, longitude, latitudeDelta: delta, longitudeDelta: delta };
 
+  // Lớp gợi ý thêm (chưa xác minh) chỉ chạy khi người dùng bật và đang lọc 1 loại cụ thể. Có tâm (GPS hoặc
+  // toạ độ đại sứ quán) thì tìm quanh tâm; chưa có tâm thì riêng loại Đại sứ quán vẫn tìm được theo quốc gia.
+  const externalType = filter === 'all' || filter === 'other' ? null : filter;
+  const externalByCountry = !center && externalType === 'embassy' && !!country?.code;
+  const canQueryExternal = Boolean(externalType && (center || externalByCountry));
+  const externalQuery = useQuery({
+    queryKey: ['support-locations', 'external', center?.lat, center?.lng, externalByCountry ? country?.code : null, externalType],
+    queryFn: () => fetchExternalPlaces(center
+      ? { type: externalType!, lat: center.lat, lng: center.lng }
+      : { type: 'embassy', country: country!.code }),
+    enabled: showExternal && canQueryExternal,
+    staleTime: 10 * 60 * 1000,
+    // Mỗi lần gọi tốn quota/tải của nhà cung cấp: không tự thử lại.
+    retry: false,
+  });
+  // Không áp ô tìm kiếm cho lớp gợi ý: tên/địa chỉ OSM thường bằng tiếng Việt hoặc tiếng bản địa nên gõ "seoul"
+  // sẽ lọc mất hết. Ô tìm kiếm chỉ dành cho danh sách đã xác minh.
+  const externalPlaces = showExternal && externalType ? externalQuery.data?.data ?? [] : [];
+  // Ghim cho chế độ OSM (WebView): chỉ gửi dữ liệu tối thiểu, tên/chi tiết vẫn nằm ở app.
+  const osmMarkers: OsmMarker[] = [
+    ...(coords ? [{ id: 'me', lat: coords.lat, lng: coords.lng, color: colors.primary, kind: 'me' as const }] : []),
+    ...locations.map((loc) => ({ id: loc.id, lat: loc.lat, lng: loc.lng, color: markerColor(loc.type), kind: 'place' as const })),
+    ...externalPlaces.map((place) => ({ id: place.id, lat: place.lat, lng: place.lng, color: colors.muted, kind: 'external' as const })),
+  ];
+
   // initialRegion chỉ được native đọc một lần; GPS/API đến sau phải cập nhật camera.
   useEffect(() => {
     if (mapReady) mapRef.current?.animateToRegion({ latitude, longitude,
       latitudeDelta: delta, longitudeDelta: delta }, 400);
   }, [mapReady, latitude, longitude, delta, country?.code]);
+
+  // Chưa có tâm bản đồ (đang hiện cả thế giới) thì canh vào kết quả gợi ý ngay khi có.
+  const externalKey = externalPlaces.map((place) => place.id).join('|');
+  useEffect(() => {
+    if (center || !mapReady || externalPlaces.length === 0) return;
+    mapRef.current?.fitToCoordinates(externalPlaces.map((place) => ({ latitude: place.lat, longitude: place.lng })),
+      { edgePadding: { top: 220, right: 40, bottom: 340, left: 40 }, animated: true });
+    // externalPlaces đổi identity mỗi render; externalKey là chữ ký ổn định của danh sách.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [center, mapReady, externalKey]);
 
   const call = (phone: string) => void openPhone(phone);
   const policeNumber = country?.emergencyNumbers?.police ?? '';
@@ -201,17 +244,27 @@ export default function SosMapScreen() {
           </View>
         }
       >
-        {/* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */}
-        <MapView ref={mapRef} style={{ flex: 1 }} initialRegion={region}
-          mapType={mapType} customMapStyle={mapType === 'standard' ? LIGHT_MAP_STYLE : []}
-          provider={runtime.google ? PROVIDER_GOOGLE : undefined}
-          onMapReady={() => setMapReady(true)} showsMyLocationButton={false}>
-          {coords && <Marker coordinate={{ latitude: coords.lat, longitude: coords.lng }}
-            title="Vị trí của bạn tại lần đo gần nhất" pinColor={colors.primary} />}
-          {locations.map((loc) => (
-            <Marker key={loc.id} coordinate={{ latitude: loc.lat, longitude: loc.lng }} title={loc.name} pinColor={markerColor(loc.type)} onPress={() => setDetail(loc)} />
-          ))}
-        </MapView>
+        {osmTiles ? (
+          <OsmWebMap ref={mapRef} center={{ lat: latitude, lng: longitude }} delta={delta}
+            markers={osmMarkers} onReady={() => setMapReady(true)}
+            onMarkerPress={(id) => setDetail([...locations, ...externalPlaces].find((place) => place.id === id) ?? null)} />
+        ) : (
+          /* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */
+          <MapView ref={mapRef as React.RefObject<MapView>} style={{ flex: 1 }} initialRegion={region}
+            mapType={mapType} customMapStyle={mapType === 'standard' ? LIGHT_MAP_STYLE : []}
+            provider={runtime.google ? PROVIDER_GOOGLE : undefined}
+            onMapReady={() => setMapReady(true)} showsMyLocationButton={false}>
+            {coords && <Marker coordinate={{ latitude: coords.lat, longitude: coords.lng }}
+              title="Vị trí của bạn tại lần đo gần nhất" pinColor={colors.primary} />}
+            {locations.map((loc) => (
+              <Marker key={loc.id} coordinate={{ latitude: loc.lat, longitude: loc.lng }} title={loc.name} pinColor={markerColor(loc.type)} onPress={() => setDetail(loc)} />
+            ))}
+            {externalPlaces.map((place) => (
+              <Marker key={place.id} coordinate={{ latitude: place.lat, longitude: place.lng }}
+                title={`${place.name} (chưa xác minh)`} pinColor={colors.muted} onPress={() => setDetail(place)} />
+            ))}
+          </MapView>
+        )}
       </ErrorBoundary> : <View className="flex-1 items-center justify-center px-8">
         <Globe size={40} color={colors.subtle} />
         <Text className="mt-3 text-center text-base text-ink">
@@ -279,17 +332,22 @@ export default function SosMapScreen() {
               onPress={() => mapRef.current?.animateToRegion(region, 400)} className="rounded-full bg-surface px-3 py-2">
               <Text className="text-sm text-primary">Về tâm bản đồ</Text>
             </Pressable>
-            <Pressable accessibilityLabel="Chế độ vệ tinh" accessibilityState={{ selected: mapType === 'hybrid' }}
+            {!osmTiles && <Pressable accessibilityLabel="Chế độ vệ tinh" accessibilityState={{ selected: mapType === 'hybrid' }}
               onPress={() => setMapType((type) => type === 'standard' ? 'hybrid' : 'standard')}
               className={`rounded-full px-3 py-2 ${mapType === 'hybrid' ? 'bg-primary' : 'bg-surface'}`}>
               <Text className={mapType === 'hybrid' ? 'text-sm text-white' : 'text-sm text-primary'}>Vệ tinh</Text>
-            </Pressable>
+            </Pressable>}
           </>}
           {canRenderMap && !listOnly && locations.length > 0 && <Pressable
             onPress={() => mapRef.current?.fitToCoordinates(locations.map((loc) => ({ latitude: loc.lat, longitude: loc.lng })),
               { edgePadding: { top: 220, right: 40, bottom: 340, left: 40 }, animated: true })}
             className="rounded-full bg-surface px-3 py-2">
             <Text className="text-sm text-primary">Xem các điểm</Text>
+          </Pressable>}
+          {canQueryExternal && <Pressable accessibilityLabel="Hiện gợi ý thêm chưa xác minh"
+            accessibilityState={{ selected: showExternal }} onPress={() => setShowExternal((value) => !value)}
+            className={`rounded-full px-3 py-2 ${showExternal ? 'bg-primary' : 'bg-surface'}`}>
+            <Text className={showExternal ? 'text-sm text-white' : 'text-sm text-primary'}>Gợi ý thêm (chưa xác minh)</Text>
           </Pressable>}
           {coords && MAP_RADIUS_OPTIONS.map((radius) => <Pressable key={radius}
             accessibilityLabel={`Bán kính ${radius} km`} accessibilityState={{ selected: radiusKm === radius }}
@@ -324,10 +382,13 @@ export default function SosMapScreen() {
         </View>
         <View className="flex-row items-center justify-between px-[18px]">
           <Text className="text-xl font-body-bold text-ink">
-            {activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm`}
+            {activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh`}
           </Text>
           <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsDenied ? 'GPS không khả dụng' : country?.name}</Text>
         </View>
+        {showExternal && canQueryExternal && !externalQuery.isLoading && !externalQuery.isError && (
+          <Text className="px-[18px] text-sm text-warning-strong">+ {externalPlaces.length} gợi ý thêm (chưa xác minh)</Text>
+        )}
         {!country && <Text className="mt-2 px-[18px] text-sm text-muted">Chưa tải được quốc gia. Quay lại SOS để thử lại.</Text>}
         {gpsDenied && <Text className="mt-2 px-[18px] text-sm text-muted">Xem theo quốc gia; gõ thành phố/khu vực để lọc. Kiểm tra quyền vị trí và GPS rồi thử lại.</Text>}
         {coords && <Text className="mt-2 px-[18px] text-xs text-muted">Khoảng cách đường chim bay từ lần đo gần nhất. Không có điểm trong {radiusKm} km sẽ mở rộng toàn quốc. Bấm Vị trí của tôi để cập nhật.</Text>}
@@ -386,6 +447,37 @@ export default function SosMapScreen() {
               </Pressable>
             </Pressable>
           ))}
+          {showExternal && canQueryExternal && (
+            <View style={{ gap: 10 }}>
+              <Text className="mt-1 text-xs font-body-bold text-warning-strong">
+                Gợi ý từ nguồn mở bên ngoài, CHƯA được Be.Travel xác minh. Hãy gọi hoặc kiểm tra lại trước khi đến.
+              </Text>
+              {externalQuery.isLoading && <Text className="text-sm text-muted">Đang tìm gợi ý...</Text>}
+              {externalQuery.isError && <Text className="text-sm text-danger">Chưa lấy được gợi ý thêm lúc này. Thử bật lại sau ít phút.</Text>}
+              {!externalQuery.isLoading && !externalQuery.isError && externalPlaces.length === 0 && (
+                <Text className="text-sm text-muted">Không có gợi ý nào gần đây.</Text>
+              )}
+              {externalPlaces.map((place) => (
+                <Pressable key={place.id} accessibilityLabel={`Xem chi tiết ${place.name} (chưa xác minh)`}
+                  onPress={() => {
+                    setDetail(place);
+                    mapRef.current?.animateToRegion({ latitude: place.lat, longitude: place.lng, latitudeDelta: 0.02, longitudeDelta: 0.02 }, 400);
+                  }}
+                  className="min-h-[64px] flex-row items-center rounded-lg border border-dashed border-line bg-surface px-3 py-2">
+                  <View className="flex-1">
+                    <Text className="text-[16px] font-body-bold text-ink" numberOfLines={1}>{place.name}</Text>
+                    <Text className="text-sm text-muted" numberOfLines={1}>{place.meta}</Text>
+                    <Text className="text-xs text-warning-strong">Chưa xác minh</Text>
+                  </View>
+                  <Pressable className="h-11 w-11 items-center justify-center rounded-md bg-primary-soft"
+                    onPress={(event) => { event.stopPropagation(); if (place.phone) call(place.phone); else openDirections(place.lat, place.lng, place.name); }}
+                    accessibilityLabel={place.phone ? `Gọi ${place.name}` : `Chỉ đường tới ${place.name}`}>
+                    {place.phone ? <Phone size={18} color={colors.primary} /> : <Navigation size={18} color={colors.primary} />}
+                  </Pressable>
+                </Pressable>
+              ))}
+            </View>
+          )}
         </ScrollView>
       </View>
 
@@ -408,6 +500,11 @@ export default function SosMapScreen() {
               )}
             </View>
 
+            {!!detail.source && (
+              <Text className="rounded-md bg-amber-soft p-2.5 text-xs text-warning-strong">
+                Nguồn {EXTERNAL_SOURCE_LABEL[detail.source] ?? detail.source}, chưa được Be.Travel xác minh. Hãy gọi hoặc kiểm tra lại trước khi đến.
+              </Text>
+            )}
             {!!detail.address && (
               <Pressable className="flex-row items-start" style={{ gap: 8 }} onPress={() => copyAddress(detail.address!)}>
                 <Copy size={16} color={colors.muted} style={{ marginTop: 2 }} />

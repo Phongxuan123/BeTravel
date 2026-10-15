@@ -1,4 +1,4 @@
-import { mapRuntime } from '../mapRuntime';
+import { mapRuntime, mapTiles } from '../mapRuntime';
 const { checkMapsConfig } = jest.requireActual('../../../../scripts/check-maps-config.cjs');
 
 test('native Android cần key, iOS dùng Apple dự phòng; Expo Go không dùng key iOS của JS', () => {
@@ -19,4 +19,13 @@ test('preflight phát hiện thiếu cấu hình cả hai nền tảng, không i
   expect(results.every((item: { readyForBuild: boolean }) => item.readyForBuild)).toBe(true);
   expect(JSON.stringify(results)).not.toContain(key);
   expect(() => checkMapsConfig({}, 'web')).toThrow('platform');
+});
+
+test('mapTiles: Expo Go Android tự dùng ô OSM, nơi khác dùng ô native, có thể ép bằng biến môi trường', () => {
+  expect(mapTiles('android', 'storeClient')).toBe('osm');
+  expect(mapTiles('android', 'standalone')).toBe('native');
+  expect(mapTiles('ios', 'storeClient')).toBe('native');
+  expect(mapTiles('android', 'standalone', 'osm')).toBe('osm');
+  expect(mapTiles('android', 'storeClient', 'native')).toBe('native');
+  expect(mapTiles('android', 'storeClient', 'auto')).toBe('osm');
 });
