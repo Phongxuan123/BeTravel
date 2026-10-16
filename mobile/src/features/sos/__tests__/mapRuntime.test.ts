@@ -21,11 +21,10 @@ test('preflight phát hiện thiếu cấu hình cả hai nền tảng, không i
   expect(() => checkMapsConfig({}, 'web')).toThrow('platform');
 });
 
-test('mapTiles: Expo Go Android/iOS tự dùng ô OSM, bản native dùng ô native, có thể ép bằng biến môi trường', () => {
+test('mapTiles: Expo Go Android tự dùng ô OSM, nơi khác dùng ô native, có thể ép bằng biến môi trường', () => {
   expect(mapTiles('android', 'storeClient')).toBe('osm');
-  expect(mapTiles('android', 'standalone')).toBe('osm');
-  expect(mapTiles('android', 'standalone', 'auto', { androidMapsConfigured: true })).toBe('native');
-  expect(mapTiles('ios', 'storeClient')).toBe('osm');
+  expect(mapTiles('android', 'standalone')).toBe('native');
+  expect(mapTiles('ios', 'storeClient')).toBe('native');
   expect(mapTiles('android', 'standalone', 'osm')).toBe('osm');
   expect(mapTiles('android', 'storeClient', 'native')).toBe('native');
   expect(mapTiles('android', 'storeClient', 'auto')).toBe('osm');

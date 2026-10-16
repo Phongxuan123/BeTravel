@@ -1,5 +1,27 @@
 # TIEN DO BE.TRAVEL
 
+## Khôi phục bản đồ sau merge — 17/10/2026 (cập nhật mới nhất)
+
+Tiến độ `[###-] 3/4`, xong một phần. Theo yêu cầu người dùng, lấy bản đồ ở
+merge commit `e6361c3` làm nền; hoàn tác phần map của `7c2c6ad` và các thử nghiệm
+map chưa commit. Giữ các sửa micro độc lập. Không reset lịch sử, không push.
+
+- Khôi phục OsmWebMap, HTML/CDN Leaflet, chọn runtime và cấu hình như mốc merge.
+  Xóa vendor/test chỉ phục vụ thay đổi map đã hoàn tác. Các mục đóng gói Leaflet
+  trong báo cáo trước bên dưới không còn mô tả bản hiện hành.
+- Sửa lỗi tìm đại sứ quán: luôn truy vấn theo nước được chọn (KR), kể cả khi GPS
+  ở Việt Nam hoặc danh sách có tâm khác. Cache key theo nước; camera canh kết quả.
+- Khi upstream lỗi, báo rõ chưa có kết quả và cho thử lại; không gọi lỗi mạng là
+  không có đại sứ quán. Nguồn ngoài vẫn gắn chưa xác minh, không chèn dữ liệu giả.
+- Mobile lint/typecheck và 230/230 tests (53 suites); backend lint/format và
+  283/283 tests; admin lint/typecheck/build và 18/18 tests đạt. Tổng 531.
+- Hai lần gọi thật service OSM tìm embassy tại KR đều timeout; chưa nghiệm thu
+  kết quả thực trên BlueStacks/Samsung. Bộ test dùng mock không thay thế bước này.
+- Còn mở: nguồn Overpass phản hồi, thử chọn Hàn Quốc > Đại sứ quán > Gợi ý thêm;
+  không cần GPS ở Hàn Quốc. Không thay API/schema/Atlas; không rà/chỉnh toàn macOS.
+
+Android Hermes export bản khôi phục đạt; chưa coi là nghiệm thu UI trên máy thật.
+
 ## Bản đồ và micro Samsung A22 / Expo Go — 17/10/2026
 
 Tiến độ `[###-] 3/4` — xong một phần: sửa code, kiểm tự động và tài liệu;

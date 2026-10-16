@@ -12,13 +12,11 @@ export function mapRuntime(platform: string, environment: string | undefined, ex
 
 // Nguồn bản đồ: 'osm' vẽ OpenStreetMap bằng Leaflet trong WebView (không cần key Google, không phụ thuộc
 // thư viện bản đồ native), 'native' dùng MapView của Google/Apple. Mặc định 'auto' chọn OSM ở Expo Go
-// Android và iOS: Expo Go không dùng được key Google của dự án và MapView có thể chỉ hiện nền trống (đã gặp trên
-// LDPlayer dù Internet bình thường). Android native chưa có key cũng dùng OSM.
-// Ép bằng EXPO_PUBLIC_MAP_TILES=osm|native.
-export function mapTiles(platform: string, environment: string | undefined, preference?: string, extra?: MapsExtra): 'osm' | 'native' {
+// Android: Expo Go không dùng được key Google của dự án và MapView có thể chỉ hiện nền trống (đã gặp trên
+// LDPlayer dù Internet bình thường). Ép bằng EXPO_PUBLIC_MAP_TILES=osm|native.
+export function mapTiles(platform: string, environment: string | undefined, preference?: string): 'osm' | 'native' {
   if (preference === 'osm' || preference === 'native') return preference;
-  if ((platform === 'android' || platform === 'ios') && environment === 'storeClient') return 'osm';
-  return platform === 'android' && extra?.androidMapsConfigured !== true ? 'osm' : 'native';
+  return platform === 'android' && environment === 'storeClient' ? 'osm' : 'native';
 }
 
 // Máy chủ ô công cộng của OSM có chính sách sử dụng: khi ra sản phẩm thật hãy trỏ sang nhà cung cấp ô riêng.

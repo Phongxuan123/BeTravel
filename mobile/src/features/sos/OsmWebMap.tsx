@@ -15,7 +15,6 @@ type Props = {
   delta: number;
   markers: OsmMarker[];
   onReady: () => void;
-  onError: (message: string) => void;
   onMarkerPress: (id: string) => void;
 };
 
@@ -25,7 +24,7 @@ const FIT_PADDING_PX = 48;
 // Google Maps SDK không vẽ nổi ô (Expo Go Android). Trang chỉ nhận lệnh vẽ ghim/bay tới; mọi dữ liệu ghim
 // do app gửi vào, trang không tự gọi API của Be.Travel.
 export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
-  { center, delta, markers, onReady, onError, onMarkerPress },
+  { center, delta, markers, onReady, onMarkerPress },
   ref,
 ) {
   const webRef = useRef<WebView>(null);
@@ -62,12 +61,9 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
   const onMessage = (event: WebViewMessageEvent) => {
     try {
       const message = JSON.parse(event.nativeEvent.data) as { type?: string; id?: unknown };
-      if (message.type === 'initialized') {
+      if (message.type === 'ready') {
         setReady(true);
-      } else if (message.type === 'ready') {
         onReady();
-      } else if (message.type === 'error') {
-        onError('Không tải được nền bản đồ. Kiểm tra Internet hoặc thử lại.');
       } else if (message.type === 'marker' && typeof message.id === 'string') {
         onMarkerPress(message.id);
       }
@@ -80,21 +76,16 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
     <WebView
       ref={webRef}
       style={{ flex: 1 }}
-      containerStyle={{ flex: 1 }}
-      originWhitelist={['*']}
-      javaScriptEnabled
-      applicationNameForUserAgent="BeTravel/1.0"
-      onError={() => onError('Không mở được bản đồ trên thiết bị. Hãy thử tải lại.')}
-      onContentProcessDidTerminate={() => onError('Bản đồ bị hệ điều hành đóng. Hãy thử tải lại.')}
-      onRenderProcessGone={() => onError('Bản đồ bị hệ điều hành đóng. Hãy thử tải lại.')}
       source={{ html, baseUrl: OSM_REFERER }}
       onMessage={onMessage}
       // Liên kết ghi công OSM mở ở trình duyệt ngoài, không điều hướng WebView ra khỏi bản đồ.
       onShouldStartLoadWithRequest={(request) => {
         const isOwnPage = request.url === OSM_REFERER || request.url.startsWith('about:');
-        if (isOwnPage) return true;
-        if (request.navigationType === 'click' && request.url.startsWith('https://')) void openUrl(request.url);
-        return false;
+        if (!isOwnPage && request.navigationType === 'click') {
+          void openUrl(request.url);
+          return false;
+        }
+        return true;
       }}
       scrollEnabled={false}
       overScrollMode="never"

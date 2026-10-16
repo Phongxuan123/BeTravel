@@ -86,7 +86,6 @@ export default function SosMapScreen() {
   const [search, setSearch] = useState('');
   const [radiusKm, setRadiusKm] = useState<number>(20);
   const [locating, setLocating] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapTimedOut, setMapTimedOut] = useState(false);
   const [mapAttempt, setMapAttempt] = useState(0);
@@ -99,8 +98,8 @@ export default function SosMapScreen() {
   const mounted = useRef(true);
   const locatingRef = useRef(false);
   const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
-  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES, Constants.expoConfig?.extra) === 'osm';
-  // OSM không cần key Google; vẫn có thể lỗi mạng/CDN/ô bản đồ nên phải có trạng thái lỗi.
+  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
+  // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
   const canRenderMap = osmTiles || runtime.available;
 
   useEffect(() => {
@@ -109,15 +108,7 @@ export default function SosMapScreen() {
     return () => clearTimeout(timer);
   }, [canRenderMap, listOnly, mapReady, mapTimedOut, mapAttempt]);
 
-  const failMap = (message: string) => {
-    setMapError(message);
-    setMapReady(false);
-    setMapTimedOut(true);
-    setListOnly(true);
-  };
-
   const restartMap = () => {
-    setMapError(null);
     setMapReady(false);
     setMapTimedOut(false);
     setListOnly(false);
@@ -189,15 +180,15 @@ export default function SosMapScreen() {
   const region = { latitude, longitude, latitudeDelta: delta, longitudeDelta: delta };
 
   // Lớp gợi ý thêm (chưa xác minh) chỉ chạy khi người dùng bật và đang lọc 1 loại cụ thể. Có tâm (GPS hoặc
-  // toạ độ đại sứ quán) thì tìm quanh tâm; chưa có tâm thì riêng loại Đại sứ quán vẫn tìm được theo quốc gia.
+  // toạ độ đại sứ quán) thì tìm quanh tâm; riêng Đại sứ quán luôn tìm theo quốc gia được chọn.
   const externalType = filter === 'all' || filter === 'other' ? null : filter;
-  const externalByCountry = !center && externalType === 'embassy' && !!country?.code;
+  const externalByCountry = externalType === 'embassy' && !!country?.code;
   const canQueryExternal = Boolean(externalType && (center || externalByCountry));
   const externalQuery = useQuery({
-    queryKey: ['support-locations', 'external', center?.lat, center?.lng, externalByCountry ? country?.code : null, externalType],
-    queryFn: () => fetchExternalPlaces(center
-      ? { type: externalType!, lat: center.lat, lng: center.lng }
-      : { type: 'embassy', country: country!.code }),
+    queryKey: ['support-locations', 'external', externalByCountry ? null : center?.lat, externalByCountry ? null : center?.lng, externalByCountry ? country?.code : null, externalType],
+    queryFn: () => fetchExternalPlaces(externalByCountry
+      ? { type: 'embassy', country: country!.code }
+      : { type: externalType!, lat: center!.lat, lng: center!.lng }),
     enabled: showExternal && canQueryExternal,
     staleTime: 10 * 60 * 1000,
     // Mỗi lần gọi tốn quota/tải của nhà cung cấp: không tự thử lại.
@@ -219,15 +210,15 @@ export default function SosMapScreen() {
       latitudeDelta: delta, longitudeDelta: delta }, 400);
   }, [mapReady, latitude, longitude, delta, country?.code]);
 
-  // Chưa có tâm bản đồ (đang hiện cả thế giới) thì canh vào kết quả gợi ý ngay khi có.
+  // Đại sứ quán theo nước được chọn, kể cả GPS đang ở nước khác: đưa các ghim vào vùng nhìn.
   const externalKey = externalPlaces.map((place) => place.id).join('|');
   useEffect(() => {
-    if (center || !mapReady || externalPlaces.length === 0) return;
+    if ((!externalByCountry && center) || !mapReady || externalPlaces.length === 0) return;
     mapRef.current?.fitToCoordinates(externalPlaces.map((place) => ({ latitude: place.lat, longitude: place.lng })),
       { edgePadding: { top: 220, right: 40, bottom: 340, left: 40 }, animated: true });
     // externalPlaces đổi identity mỗi render; externalKey là chữ ký ổn định của danh sách.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center, mapReady, externalKey]);
+  }, [externalByCountry, center?.lat, center?.lng, mapReady, externalKey]);
 
   const call = (phone: string) => void openPhone(phone);
   const policeNumber = country?.emergencyNumbers?.police ?? '';
@@ -255,7 +246,7 @@ export default function SosMapScreen() {
       >
         {osmTiles ? (
           <OsmWebMap ref={mapRef} center={{ lat: latitude, lng: longitude }} delta={delta}
-            markers={osmMarkers} onReady={() => setMapReady(true)} onError={failMap}
+            markers={osmMarkers} onReady={() => setMapReady(true)}
             onMarkerPress={(id) => setDetail([...locations, ...externalPlaces].find((place) => place.id === id) ?? null)} />
         ) : (
           /* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */
@@ -277,7 +268,7 @@ export default function SosMapScreen() {
       </ErrorBoundary> : <View className="flex-1 items-center justify-center px-8">
         <Globe size={40} color={colors.subtle} />
         <Text className="mt-3 text-center text-base text-ink">
-          {mapError ?? (mapTimedOut ? 'Bản đồ chưa khởi tạo được' : listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này')}
+          {mapTimedOut ? 'Bản đồ chưa khởi tạo được' : listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này'}
         </Text>
         <Text className="mt-2 text-center text-sm text-muted">Bạn vẫn có thể tìm địa điểm, gọi và mở chỉ đường từ danh sách.</Text>
         <Pressable className="mt-3 rounded-md bg-primary px-4 py-3" onPress={() => void openUrl(
@@ -462,7 +453,9 @@ export default function SosMapScreen() {
                 Gợi ý từ nguồn mở bên ngoài, CHƯA được Be.Travel xác minh. Hãy gọi hoặc kiểm tra lại trước khi đến.
               </Text>
               {externalQuery.isLoading && <Text className="text-sm text-muted">Đang tìm gợi ý...</Text>}
-              {externalQuery.isError && <Text className="text-sm text-danger">Chưa lấy được gợi ý thêm lúc này. Thử bật lại sau ít phút.</Text>}
+              {externalQuery.isError && <Pressable accessibilityLabel="Thử tải lại gợi ý" onPress={() => void externalQuery.refetch()}>
+                <Text className="text-sm text-danger">Nguồn địa điểm chưa phản hồi. Chạm để thử lại; chưa thể kết luận không có đại sứ quán hoặc địa điểm.</Text>
+              </Pressable>}
               {!externalQuery.isLoading && !externalQuery.isError && externalPlaces.length === 0 && (
                 <Text className="text-sm text-muted">Không có gợi ý nào gần đây.</Text>
               )}

@@ -1,5 +1,18 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Khôi phục map e6361c3 — 17/10/2026 (thay thế nghiệm thu map trước)
+
+- Bản đồ quay lại nền ngay sau merge; giữ micro độc lập. Không còn Leaflet vendor.
+- Hồi quy GPS Việt Nam + quốc gia KR: truy vấn embassy theo KR, có lỗi upstream
+  thì thử lại được, có dữ liệu thì canh ghim và hiển thị nhãn chưa xác minh.
+- Mobile 230/230, backend 283/283, admin 18/18; lint/typecheck tương ứng, backend
+  format và admin build đạt. Không đổi backend/contracts hoặc dữ liệu thật.
+- Service thật OSM gọi embassy/KR hai lần đều timeout; chưa thể nghiệm thu tính
+  năng tìm đại sứ quán thật. Cần thử lại BlueStacks/Samsung khi upstream phản hồi.
+- Không coi yêu cầu “mọi thứ ổn” là đã đạt toàn bộ; còn nghiệm thu nguồn/thiết bị.
+
+Android Hermes export bản khôi phục đạt; chưa coi là nghiệm thu UI trên máy thật.
+
 ## Bản đồ/micro điện thoại — 17/10/2026 (xong một phần)
 
 - Mobile lint/typecheck và 231/231 tests đạt, gồm hồi quy WebView lỗi/ready,

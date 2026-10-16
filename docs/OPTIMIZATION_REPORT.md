@@ -1,5 +1,15 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Khôi phục bản đồ ổn định theo người dùng — 17/10/2026
+
+- Lấy e6361c3 làm nền map, hoàn tác thử nghiệm render/tiles mới và vendor để
+  thu hẹp thay đổi. Giữ sửa micro độc lập; không xóa lịch sử commit.
+- Cache embassy theo quốc gia thay vì GPS; tránh API lặp khi GPS đổi mà vẫn
+  chọn cùng nước. Camera canh kết quả theo nước, giữ API và nhãn chưa xác minh.
+- Xử lý warning lỗi upstream bằng thông báo và retry chủ động, không che lỗi
+  timeout thành danh sách rỗng. Không auto retry gây tăng quota.
+- Lint không warning; 531 tests đạt. OSM thật timeout hai lần, vẫn còn mở.
+
 ## Bản đồ/micro điện thoại — 17/10/2026
 
 - Gỡ phụ thuộc CDN lúc mở bản đồ bằng Leaflet đóng gói, giữ license và hash nguồn.
@@ -801,6 +811,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 17/10/2026 (lần 2): khôi phục map e6361c3 theo yêu cầu, sửa embassy theo nước; 531 tests đạt, upstream OSM còn timeout.
 
 - 17/10/2026: ổn định WebView bản đồ, hướng dẫn micro Expo Go, sửa vòng đời quyền; 532 tests đạt, chờ Samsung thật.
 | Phiên bản | Ngày | Batch | Nội dung chính |

@@ -1,5 +1,10 @@
 # Bản đồ và micro trên điện thoại — 17/10/2026
 
+> Cập nhật mới nhất 17/10: phần bản đồ dưới đây là lịch sử, đã hoàn tác về
+> e6361c3 theo yêu cầu người dùng. Bản hiện hành dùng lại Leaflet CDN; chỉ sửa
+> tìm đại sứ quán theo quốc gia và thử lại khi lỗi nguồn. Xem PROGRESS/ACCEPTANCE.
+> Hướng dẫn micro/Expo Go vẫn áp dụng.
+
 ## Thiết bị và nguyên nhân đã xác định
 
 Người dùng: Samsung A22 4G, Expo Go từ cửa hàng, quét QR của Metro/VS Code.
