@@ -90,7 +90,7 @@ export function useVoiceInput(
     const module = getRecognitionModule();
     if (!module) {
       setError(
-        'Micro cần bản cài đặt mới của Be.Travel; Expo Go chưa hỗ trợ tính năng này. Bạn vẫn có thể nhập tay.',
+        'Micro cần bản cài đặt mới của Be.Travel; Expo Go không chứa bộ nhận giọng nói. Bạn có thể chạm ô nhập rồi dùng micro trên bàn phím của máy. Chế độ mạng của đọc chính tả do bàn phím quản lý.',
       );
       return;
     }
@@ -108,6 +108,8 @@ export function useVoiceInput(
         );
         return;
       }
+      // Alert giải thích cũng có thể đưa iOS sang inactive, giống hộp thoại quyền.
+      awaitingPermission.current = true;
       const approved =
         explained.current ||
         (await new Promise<boolean>((resolve) =>
@@ -123,6 +125,7 @@ export function useVoiceInput(
             { cancelable: true, onDismiss: () => resolve(false) },
           ),
         ));
+      awaitingPermission.current = false;
       if (!current()) return;
       if (!approved) {
         cancel();
@@ -134,6 +137,7 @@ export function useVoiceInput(
         awaitingPermission.current = false;
       });
       if (!current()) return;
+      if (String(AppState.currentState) === 'background') { cancel(); return; }
       if (!permission.granted) {
         cancel();
         setError(ERROR_MESSAGES['not-allowed']);
@@ -181,6 +185,7 @@ export function useVoiceInput(
         recordingOptions: { persist: false },
       });
     } catch {
+      awaitingPermission.current = false;
       if (current()) {
         cancel();
         setError(

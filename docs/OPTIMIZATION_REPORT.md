@@ -1,5 +1,18 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Bản đồ/micro điện thoại — 17/10/2026
+
+- Gỡ phụ thuộc CDN lúc mở bản đồ bằng Leaflet đóng gói, giữ license và hash nguồn.
+  Đổi lại bundle chứa thêm JS/CSS thư viện; ô OSM vẫn tải qua Internet.
+- Tách initialized khỏi ready để không báo thành công khi chưa có ô; chuyển lỗi
+  WebView/process/tiles về màn hình với danh sách và thử lại. Không đổi hợp đồng API.
+- Rà file thay đổi theo Rule 10/13: không còn import chết hoặc lint warning;
+  sửa 2 cảnh báo trong lượt kiểm (thứ tự import và displayName mock test).
+- Không thêm dịch vụ upload âm thanh. Expo Go dùng bàn phím OS, bản native giữ
+  module hiện có; giữ phiên qua dialog nhưng không thu nếu app nằm nền.
+- Kiểm tự động 532/532 đạt; giới hạn thiết bị thật ghi tại PHONE_MAP_VOICE và
+  ACCEPTANCE. Cảnh báo phụ thuộc cũ chưa được coi là đã xử lý trong đợt này.
+
 ## Tích hợp main — 15/10/2026
 
 Giữ luồng xử lý offline tách khỏi màn hình; áp dụng bố cục mới từ main mà không
@@ -788,6 +801,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 17/10/2026: ổn định WebView bản đồ, hướng dẫn micro Expo Go, sửa vòng đời quyền; 532 tests đạt, chờ Samsung thật.
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
 | 2026.10.09-dot3 | 09/10/2026 | Đợt sửa 3 | B15-B21: cờ KR/SG chuẩn, gợi ý tìm kiếm theo dữ liệu, dòng ngôn ngữ chỉ đọc, ẩn tab chuyến đi trống, phạm vi sự cố, Admin co giãn màn hẹp; mobile 213, admin 18 test |

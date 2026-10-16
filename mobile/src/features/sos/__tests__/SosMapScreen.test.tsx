@@ -126,16 +126,18 @@ test('API lỗi có nút thử lại; thiếu quốc gia hiện hướng dẫn',
   expect(screen.getByText(/Chưa tải được quốc gia/)).toBeTruthy();
 });
 
-test('Android thiếu key hiển thị danh sách và giữ thao tác chi tiết', async () => {
+test('Android ép native thiếu key hiển thị danh sách và giữ thao tác chi tiết', async () => {
   // Jest preset chọn iOS; đổi OS trong test này để kiểm tra guard native Android.
   const { Platform } = jest.requireActual('react-native');
   const previous = Platform.OS;
   Platform.OS = 'android';
+  const tiles = process.env.EXPO_PUBLIC_MAP_TILES;
+  process.env.EXPO_PUBLIC_MAP_TILES = 'native';
   try {
     expect(Constants.expoConfig?.extra?.androidMapsConfigured).toBeUndefined();
     const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
     expect(screen.queryByTestId('native-map')).toBeNull();
     expect(screen.getByText(/Bản đồ chưa được cấu hình/)).toBeTruthy();
     await waitFor(() => expect(screen.getByLabelText(`Xem chi tiết ${point.name}`)).toBeTruthy());
-  } finally { Platform.OS = previous; }
+  } finally { Platform.OS = previous; if (tiles === undefined) delete process.env.EXPO_PUBLIC_MAP_TILES; else process.env.EXPO_PUBLIC_MAP_TILES = tiles; }
 });

@@ -2,10 +2,7 @@
 // (Expo Go Android, emulator thiếu Google Play Services). Chỉ phụ thuộc Internet, không cần key.
 // Hàm thuần để kiểm thử được mà không cần WebView.
 
-const LEAFLET_VERSION = '1.9.4';
-// Khóa phiên bản + SRI để CDN không thể đổi mã chạy trong WebView (hash đối chiếu với tệp unpkg đã tải).
-const LEAFLET_CSS_SRI = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-const LEAFLET_JS_SRI = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+import { leafletScript, leafletStyles } from './vendor/leafletAssets';
 
 export type OsmMapOptions = { lat: number; lng: number; zoom: number; tileUrl: string; maxZoom: number };
 
@@ -25,22 +22,30 @@ export function buildOsmMapHtml({ lat, lng, zoom, tileUrl, maxZoom }: OsmMapOpti
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
 <!-- Máy chủ ô OSM yêu cầu Referer nhận diện được ứng dụng; unsafe-url gửi đủ địa chỉ baseUrl. -->
 <meta name="referrer" content="unsafe-url"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.css" integrity="${LEAFLET_CSS_SRI}" crossorigin=""/>
+<style>${leafletStyles}</style>
+<script>window.addEventListener('error', function () { window.ReactNativeWebView.postMessage(JSON.stringify({type: 'error'})); });</script>
 <style>
   html, body, #map { height: 100%; margin: 0; background: #EAF4FF; }
   .leaflet-control-attribution { font-size: 10px; }
 </style>
 </head><body>
 <div id="map"></div>
-<script src="https://unpkg.com/leaflet@${LEAFLET_VERSION}/dist/leaflet.js" integrity="${LEAFLET_JS_SRI}" crossorigin=""></script>
+<script>${leafletScript}</script>
 <script>
 (function () {
   var post = function (message) { window.ReactNativeWebView.postMessage(JSON.stringify(message)); };
+  if (!window.L) { post({ type: 'error' }); return; }
   var map = L.map('map', { zoomControl: false }).setView([${jsValue(lat)}, ${jsValue(lng)}], ${jsValue(zoom)});
-  L.tileLayer(${jsValue(tileUrl)}, {
+  var tiles = L.tileLayer(${jsValue(tileUrl)}, {
     maxZoom: ${jsValue(maxZoom)},
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
+  });
+  var hasTiles = false;
+  tiles.on('tileload', function () {
+    if (!hasTiles) { hasTiles = true; post({ type: 'ready' }); }
+  });
+  tiles.on('load', function () { if (!hasTiles) post({ type: 'error' }); });
+  tiles.addTo(map);
   var layer = L.layerGroup().addTo(map);
 
   // items: [{ id, lat, lng, color, kind }] -- chỉ dữ liệu cần để vẽ ghim, nhấn ghim gửi id về app.
@@ -60,7 +65,8 @@ export function buildOsmMapHtml({ lat, lng, zoom, tileUrl, maxZoom }: OsmMapOpti
     if (points.length) map.fitBounds(points, { padding: [padding, padding], maxZoom: 16 });
   };
 
-  map.whenReady(function () { post({ type: 'ready' }); });
+  map.whenReady(function () { map.invalidateSize(); post({ type: 'initialized' }); });
+  window.addEventListener('resize', function () { map.invalidateSize(); });
 })();
 </script>
 </body></html>`;

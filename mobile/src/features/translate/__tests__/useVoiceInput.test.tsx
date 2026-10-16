@@ -176,3 +176,31 @@ test('30 giây tự dừng; văn bản dài giới hạn 500 ký tự', async ()
     jest.useRealTimers();
   }
 });
+
+test('hộp thoại giải thích đưa app inactive không làm mất phiên micro', async () => {
+  let change!: (state: AppStateStatus) => void;
+  jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => {
+    change = callback;
+    return { remove: jest.fn() };
+  });
+  jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => {
+    change('inactive');
+    buttons?.[1]?.onPress?.();
+    change('active');
+  });
+  const hook = await renderHook(() => useVoiceInput('vi-VN', jest.fn()));
+  await act(async () => { await hook.result.current.start(); });
+  expect(native.start).toHaveBeenCalled();
+  await hook.unmount();
+});
+
+test('quyền được cấp khi đã về màn hình chính không bật micro nền', async () => {
+  native.requestPermissionsAsync.mockImplementation(async () => {
+    Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'background' });
+    return { granted: true };
+  });
+  const hook = await renderHook(() => useVoiceInput('vi-VN', jest.fn()));
+  await act(async () => { await hook.result.current.start(); });
+  expect(native.start).not.toHaveBeenCalled();
+  await hook.unmount();
+});

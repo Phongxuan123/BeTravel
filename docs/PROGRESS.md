@@ -1,5 +1,26 @@
 # TIEN DO BE.TRAVEL
 
+## Bản đồ và micro Samsung A22 / Expo Go — 17/10/2026
+
+Tiến độ `[###-] 3/4` — xong một phần: sửa code, kiểm tự động và tài liệu;
+chờ nghiệm thu trên Samsung thật. Không push, không merge vào main.
+
+- Bản đồ: đóng gói Leaflet thay vì tải CDN, cấu hình WebView static HTML,
+  chỉ báo sẵn sàng sau khi tải ô; lỗi hiển thị rõ và có thử lại/danh sách.
+- Expo Go cả hai nền tảng và Android native thiếu key tự dùng OSM; vẫn tôn trọng
+  cấu hình ép native. Ô bản đồ cần Internet; chưa xác định nguyên nhân duy nhất
+  trên Samsung vì thiết bị chưa kết nối để lấy log.
+- Expo Go không chứa module nhận giọng. Nút micro hướng dẫn đọc chính tả bàn phím
+  và focus ô nhập; nhận giọng trong app cần bản Be.Travel native. Sửa giữ phiên
+  qua hộp thoại giải thích/quyền, chặn bắt đầu thu khi app ở background.
+- Kiểm tra đạt: mobile lint/typecheck, 231/231 tests (54 suites); backend
+  lint/format, 283/283 tests; admin lint/typecheck/build, 18/18 tests. Tổng 532.
+  Android Hermes export đạt; không coi export là kiểm micro/map trên máy thật.
+- Không đổi API/schema/backend hoặc dữ liệu Atlas. Cảnh báo phụ thuộc cũ và
+  nghiệm thu native iOS vẫn mở; không chứng nhận toàn hệ điều hành hết lỗi.
+- Bước tiếp: chạy Metro với --clear, thử bản đồ trên Samsung; kết nối USB và
+  cài bản native để thử micro. Hướng dẫn: [PHONE_MAP_VOICE.md](PHONE_MAP_VOICE.md).
+
 ## Đồng bộ main vào nhánh dịch offline — hoàn tất 16/10/2026
 
 Nhánh làm việc `feature/offline-translation-20261012`; điểm trước merge `2d8e4b9`.

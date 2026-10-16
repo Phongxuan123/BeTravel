@@ -86,6 +86,7 @@ export default function SosMapScreen() {
   const [search, setSearch] = useState('');
   const [radiusKm, setRadiusKm] = useState<number>(20);
   const [locating, setLocating] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapTimedOut, setMapTimedOut] = useState(false);
   const [mapAttempt, setMapAttempt] = useState(0);
@@ -98,8 +99,8 @@ export default function SosMapScreen() {
   const mounted = useRef(true);
   const locatingRef = useRef(false);
   const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
-  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
-  // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
+  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES, Constants.expoConfig?.extra) === 'osm';
+  // OSM không cần key Google; vẫn có thể lỗi mạng/CDN/ô bản đồ nên phải có trạng thái lỗi.
   const canRenderMap = osmTiles || runtime.available;
 
   useEffect(() => {
@@ -108,7 +109,15 @@ export default function SosMapScreen() {
     return () => clearTimeout(timer);
   }, [canRenderMap, listOnly, mapReady, mapTimedOut, mapAttempt]);
 
+  const failMap = (message: string) => {
+    setMapError(message);
+    setMapReady(false);
+    setMapTimedOut(true);
+    setListOnly(true);
+  };
+
   const restartMap = () => {
+    setMapError(null);
     setMapReady(false);
     setMapTimedOut(false);
     setListOnly(false);
@@ -246,7 +255,7 @@ export default function SosMapScreen() {
       >
         {osmTiles ? (
           <OsmWebMap ref={mapRef} center={{ lat: latitude, lng: longitude }} delta={delta}
-            markers={osmMarkers} onReady={() => setMapReady(true)}
+            markers={osmMarkers} onReady={() => setMapReady(true)} onError={failMap}
             onMarkerPress={(id) => setDetail([...locations, ...externalPlaces].find((place) => place.id === id) ?? null)} />
         ) : (
           /* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */
@@ -268,7 +277,7 @@ export default function SosMapScreen() {
       </ErrorBoundary> : <View className="flex-1 items-center justify-center px-8">
         <Globe size={40} color={colors.subtle} />
         <Text className="mt-3 text-center text-base text-ink">
-          {mapTimedOut ? 'Bản đồ chưa khởi tạo được' : listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này'}
+          {mapError ?? (mapTimedOut ? 'Bản đồ chưa khởi tạo được' : listOnly ? 'Đang xem danh sách hỗ trợ' : 'Bản đồ chưa được cấu hình trên thiết bị này')}
         </Text>
         <Text className="mt-2 text-center text-sm text-muted">Bạn vẫn có thể tìm địa điểm, gọi và mở chỉ đường từ danh sách.</Text>
         <Pressable className="mt-3 rounded-md bg-primary px-4 py-3" onPress={() => void openUrl(

@@ -1,5 +1,19 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Bản đồ/micro điện thoại — 17/10/2026 (xong một phần)
+
+- Mobile lint/typecheck và 231/231 tests đạt, gồm hồi quy WebView lỗi/ready,
+  tile chưa tải, chọn runtime và giữ phiên qua hộp thoại micro.
+- Backend lint/format, 283/283 tests và admin lint/typecheck/build, 18/18 đạt.
+  Backend dùng mock providers/dữ liệu tạm, không gọi đây là nghiệm thu Atlas thật.
+- Android Hermes export đạt. Tổng kiểm tự động 532/532; không có thay đổi native.
+- Samsung A22 4G chạy Expo Go: người dùng xác nhận GPS/TTS Anh hoạt động;
+  bản đồ sau sửa chưa thử trên máy thật. ADB hiện chỉ thấy emulator-5554.
+- Micro tích hợp không thể chạy trong Expo Go vì thiếu module native; đã thêm
+  đường nhập qua đọc chính tả bàn phím và thông báo đúng giới hạn. Chưa nghiệm thu
+  nhận giọng/loa sau micro trong bản native Samsung; iOS vẫn chưa nghiệm thu.
+- Quy trình thử và điều kiện còn thiếu: [PHONE_MAP_VOICE.md](PHONE_MAP_VOICE.md).
+
 ## Tích hợp main 4aacd61 vào offline — 15/10/2026
 
 - Backend bản hợp nhất: lint/format và 283/283 tests đạt với mock providers.

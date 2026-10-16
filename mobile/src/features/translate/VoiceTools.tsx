@@ -49,8 +49,10 @@ export function VoiceTools({ locale, disabled }: { locale: string | null; disabl
   const settings = async () => {
     try {
       const module = getOfflineModule();
-      if (Platform.OS === 'android' && module) await module.openVoiceSettings();
-      else {
+      if (Platform.OS === 'android') {
+        if (module) await module.openVoiceSettings();
+        else setMessage('Android: cài giọng đọc trong Cài đặt > Quản lý chung > Văn bản thành giọng nói (tên mục tùy máy). Trong Expo Go, dùng micro trên bàn phím hoặc cài bản Be.Travel native để nhận giọng trong app.');
+      } else {
         setMessage(
           'iPhone: tải giọng ở Cài đặt > Trợ năng > Nội dung được đọc > Giọng nói; kiểm tra quyền Micro/Nhận dạng giọng nói của Be.Travel.',
         );
