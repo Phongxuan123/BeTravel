@@ -11,6 +11,8 @@ process.env.NODE_ENV = "test";
 process.env.LLM_PROVIDER = "mock";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
+// Khong goi SerpApi that (ton quota) du shell co san PLACES_PROVIDER/SERPAPI_KEY.
+process.env.PLACES_PROVIDER = "mock";
 // Test khong gui email that (xem email.service.js).
 process.env.SMTP_DISABLED = "true";
 // Mac dinh production la TAT tra cuu phap luat (env.js); test nghiep vu can BAT.

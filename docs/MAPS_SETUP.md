@@ -67,6 +67,25 @@ Tài liệu chính thức đã đối chiếu:
 [Expo SDK 57 react-native-maps](https://docs.expo.dev/versions/v57.0.0/sdk/map-view/),
 [Expo SDK 57 Location](https://docs.expo.dev/versions/v57.0.0/sdk/location/).
 
+## Bản đồ OpenStreetMap bằng Leaflet trong WebView (chạy Expo Go, không cần key Google)
+
+Expo Go không dùng được key Google Maps của dự án, và `MapView` native có thể chỉ hiện nền trống (đã gặp trên
+LDPlayer dù Internet bình thường, ô OSM mở được trong Chrome của chính emulator). Mặc định
+`EXPO_PUBLIC_MAP_TILES=auto`: Expo Go Android dùng `OsmWebMap` (Leaflet 1.9.4 trong `react-native-webview`,
+khóa SRI), các trường hợp khác vẫn dùng `MapView` Google/Apple như trên. Ép bằng `EXPO_PUBLIC_MAP_TILES=osm|native`.
+Chế độ OSM không có ảnh vệ tinh (nút Vệ tinh ẩn); dòng ghi công "© OpenStreetMap contributors" nằm trong bản đồ.
+Cần Internet để nạp Leaflet từ unpkg và ô từ OSM; không tải được trong 20 giây thì app tự chuyển sang danh sách.
+
+Máy chủ ô công cộng `tile.openstreetmap.org` có chính sách sử dụng (không dùng tải nặng, phải ghi công, phải có
+Referer). WebView gửi Referer là `EXPO_PUBLIC_MAP_REFERER` (mặc định trang repo). Khi ra sản phẩm thật, đặt
+`EXPO_PUBLIC_MAP_TILE_URL=https://<nhà-cung-cấp-ô>/{z}/{x}/{y}.png` và `EXPO_PUBLIC_MAP_REFERER` là trang của
+sản phẩm rồi build lại.
+
+Lớp "Gợi ý thêm (chưa xác minh)" trên bản đồ lấy từ `GET /api/support-locations/external` (xem
+`contracts/README.md` mục 14b). Bật `PLACES_PROVIDER=osm` trong `backend/.env` để dùng dữ liệu OpenStreetMap
+miễn phí. Dữ liệu này do cộng đồng đóng góp, có thể thiếu hoặc lỗi thời (đã gặp cả "đại sứ quán cũ" trong dữ liệu
+OSM), nên luôn hiện nhãn chưa xác minh; điểm hỗ trợ đã xác minh vẫn do admin nhập.
+
 ## Luồng sử dụng
 
 ### Khởi tạo hoàn chỉnh Android và iOS — cập nhật 06/10

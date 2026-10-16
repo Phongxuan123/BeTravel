@@ -30,6 +30,8 @@ jest.mock('react-native-maps', () => {
     Marker: () => null,
   };
 });
+// Module native của WebView không có trong jest. Test này chạy chế độ native (executionEnvironment 'standalone').
+jest.mock('react-native-webview', () => ({ __esModule: true, WebView: () => null }));
 jest.mock('@/components/common/SimpleSheet', () => {
   const { View } = jest.requireActual('react-native');
   return { SimpleSheet: ({ visible, children }: { visible: boolean; children: React.ReactNode }) => visible ? <View>{children}</View> : null };

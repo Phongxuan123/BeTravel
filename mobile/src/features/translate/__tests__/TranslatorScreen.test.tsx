@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TranslatorScreen from '@/app/translate';
 import { translateText } from '@/lib/data';
 import * as Speech from 'expo-speech';
+import * as offlineTranslation from '../offlineTranslation';
 import { AppState } from 'react-native';
 
 jest.mock('expo-router', () => ({ useFocusEffect: (callback: () => void) => {
@@ -41,11 +42,11 @@ test('micro thiếu native module vẫn cho nhập tay và báo cách dùng bả
 test('phát âm theo chiều dịch và ngôn ngữ sở tại', async () => {
   const screen = await setup();
   await fireEvent.press(screen.getByText('Cứu tôi với!'));
-  await fireEvent.press(screen.getByText('Phát âm'));
+  await fireEvent.press(screen.getByText('Phát âm to rõ'));
   await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith('Help me!', expect.objectContaining({ language: 'en-US', voice: 'english' })));
   await fireEvent.press(screen.getByLabelText('Đổi chiều dịch'));
   await fireEvent.press(screen.getByText('Help us.'));
-  await fireEvent.press(screen.getByText('Phát âm'));
+  await fireEvent.press(screen.getByText('Phát âm to rõ'));
   await waitFor(() => expect(Speech.speak).toHaveBeenLastCalledWith('Giúp chúng tôi với.', expect.objectContaining({ language: 'vi-VN' })));
 });
 
@@ -53,12 +54,12 @@ test('tự phát sau API thành công; tắt trong lúc chờ không phát nữa
   (translateText as jest.Mock).mockResolvedValue({ translated: 'Please help.', phonetic: '' });
   const screen = await setup();
   await fireEvent(screen.getByLabelText('Tự phát âm sau khi dịch'), 'valueChange', true);
-  await fireEvent.press(screen.getByText('Dịch ngay →'));
+  await fireEvent.press(screen.getByText('Dịch ngay'));
   await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith('Please help.', expect.objectContaining({ language: 'en-US' })));
   let finish!: (value: unknown) => void;
   (translateText as jest.Mock).mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
   let press!: Promise<unknown>;
-  await act(async () => { press = fireEvent.press(screen.getByText('Dịch ngay →')); });
+  await act(async () => { press = fireEvent.press(screen.getByText('Dịch ngay')); });
   await fireEvent(screen.getByLabelText('Tự phát âm sau khi dịch'), 'valueChange', false);
   (Speech.speak as jest.Mock).mockClear();
   await act(async () => { finish({ translated: 'New result', phonetic: '' }); await press; });
@@ -84,10 +85,30 @@ test('response dịch đến muộn không ghi đè câu đã sửa', async () =
   const screen = await setup();
   // Không await handler chưa hoàn tất: người dùng sửa câu trong lúc request chạy.
   let press!: Promise<unknown>;
-  await act(async () => { press = fireEvent.press(screen.getByText('Dịch ngay →')); });
+  await act(async () => { press = fireEvent.press(screen.getByText('Dịch ngay')); });
   await waitFor(() => expect(translateText).toHaveBeenCalled());
   await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), 'Tôi cần taxi');
   await act(async () => { finish({ translated: 'OLD RESPONSE', phonetic: '' }); await press; });
   expect(screen.queryByText('OLD RESPONSE')).toBeNull();
   expect(screen.getByDisplayValue('Tôi cần taxi')).toBeTruthy();
+});
+
+
+test('giao diện mới giữ dịch offline đoạn dài và ghi công Google, không gọi server', async () => {
+  const spy = jest.spyOn(offlineTranslation, 'translateOffline').mockResolvedValue({ translated: 'Offline translation.', phonetic: '' });
+  try {
+    const screen = await setup();
+    await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', true);
+    const text = 'Tôi cần tìm đường đến bệnh viện. '.repeat(24);
+    await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), text);
+    expect(screen.getByText(`${text.length}/5000`)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Dịch với Google'));
+    await waitFor(() => expect(screen.getByText('Phát âm to rõ')).toBeTruthy());
+    expect(spy).toHaveBeenCalledWith(text.trim(), 'vi', 'en', expect.any(Function), expect.any(Function));
+    expect(translateText).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Sao chép bản dịch')).toBeTruthy();
+    expect(screen.getAllByLabelText('powered by Google Translate').length).toBeGreaterThan(0);
+  } finally {
+    spy.mockRestore();
+  }
 });

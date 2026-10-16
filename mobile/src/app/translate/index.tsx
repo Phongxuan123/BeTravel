@@ -4,7 +4,7 @@ import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, Linking, Im
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import { ArrowUpDown, Mic, X, Languages, Volume2, Copy, Maximize, Shrink, Star } from 'lucide-react-native';
+import { ArrowLeftRight, Mic, X, Languages, Volume2, Copy, Maximize, Shrink, Star } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
@@ -204,21 +204,21 @@ function TranslatorForm() {
         {!englishMode && <View className="flex-row flex-wrap gap-2">{['Tiếng Anh', 'Tiếng Hàn', 'Tiếng Nhật', 'Tiếng Thái', 'Tiếng Trung', 'Tiếng Pháp', 'Tiếng Đức'].map((language) =>
           <Pressable key={language} accessibilityRole="button" accessibilityState={{ selected: otherLanguage === language }} onPress={() => { invalidateResult(); setLocalLanguage(language); }} className={`min-h-12 justify-center rounded-md border px-3 ${otherLanguage === language ? 'border-primary bg-primary-soft' : 'border-line bg-surface'}`}><Text className="text-ink">{language}</Text></Pressable>
         )}</View>}
-        <View className="h-[76px] flex-row items-center rounded-lg border border-line bg-surface px-4">
-          <View className="flex-1">
-            <Text className="text-xs text-muted">Từ</Text>
-            <Text className="text-lg font-body-bold text-ink">{fromLabel}</Text>
+        <View className="flex-row items-center rounded-2xl border border-line bg-surface p-3" style={{ gap: 8 }}>
+          <View className="flex-1 rounded-xl bg-bg px-3 py-2.5">
+            <Text className="text-[11px] text-muted">Từ</Text>
+            <Text className="text-sm font-body-bold text-ink" numberOfLines={1}>{fromLabel}</Text>
           </View>
           <Pressable
             accessibilityLabel="Đổi chiều dịch"
             onPress={onSwapDirection}
-            className="h-12 w-12 items-center justify-center rounded-md bg-primary-soft"
+            className="h-11 w-11 items-center justify-center rounded-xl bg-primary-soft"
           >
-            <ArrowUpDown size={20} color={colors.primary} />
+            <ArrowLeftRight size={18} color={colors.primary} />
           </Pressable>
-          <View className="flex-1 items-end">
-            <Text className="text-xs text-muted">Sang</Text>
-            <Text className="text-lg font-body-bold text-ink">{toLabel}</Text>
+          <View className="flex-1 rounded-xl bg-primary-soft px-3 py-2.5">
+            <Text className="text-[11px] text-muted">Sang</Text>
+            <Text className="text-sm font-body-bold text-primary-strong" numberOfLines={1}>{toLabel}</Text>
           </View>
         </View>
 
@@ -226,7 +226,7 @@ function TranslatorForm() {
         <VoiceTools key={fromLabel} locale={speechLocale(fromLabel)} disabled={loading || voice.busy || audio.speaking} />
         <View className="rounded-lg border border-line bg-surface p-4">
           <View className="flex-row items-center justify-between">
-            <Text className="text-[11px] font-body-bold uppercase tracking-wider text-muted">CÂU CỦA BẠN</Text>
+            <Text className="text-xs font-body-bold text-muted">Nội dung {fromLabel}</Text>
             <Text className={`text-[11px] ${input.length > maxLength ? 'text-danger' : 'text-muted'}`}>
               {input.length}/{maxLength}
             </Text>
@@ -277,7 +277,7 @@ function TranslatorForm() {
               onPress={() => runTranslate(input)}
               className="h-[50px] flex-row items-center rounded-lg bg-primary px-5"
             >
-              <Text className="font-body-bold text-white">{loading ? `Đang dịch ${translationProgress}…` : offlineMode ? 'Dịch với Google' : 'Dịch ngay →'}</Text>
+              <Text className="font-body-bold text-white">{loading ? `Đang dịch ${translationProgress}…` : offlineMode ? 'Dịch với Google' : 'Dịch ngay'}</Text>
             </Pressable>
           </View>
         </View>
@@ -292,10 +292,13 @@ function TranslatorForm() {
         {result && (
           <View className="rounded-xl bg-ink p-[18px]" style={{ shadowColor: 'rgba(16,42,67,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
             <View className="flex-row items-center justify-between">
-              <Text className="text-xs font-body-bold text-white/70">BẢN DỊCH · {toLabel.toUpperCase()}</Text>
+              <Text className="text-xs font-body-bold text-white/70">Kết quả bản dịch ({toLabel})</Text>
               <View className="flex-row" style={{ gap: 8 }}>
                 <Pressable onPress={onToggleSave} accessibilityLabel={isCurrentSaved ? 'Bỏ lưu câu này' : 'Lưu câu này'} className="h-11 w-11 items-center justify-center rounded-md bg-white/15">
                   <Star size={18} color="#fff" fill={isCurrentSaved ? '#fff' : 'none'} />
+                </Pressable>
+                <Pressable onPress={onCopy} accessibilityLabel="Sao chép bản dịch" className="h-11 w-11 items-center justify-center rounded-md bg-white/15">
+                  <Copy size={18} color="#fff" />
                 </Pressable>
                 <Pressable onPress={() => setFullscreen(true)} accessibilityLabel="Phóng to toàn màn hình" className="h-11 w-11 items-center justify-center rounded-md bg-white/15">
                   <Maximize size={18} color="#fff" />
@@ -309,17 +312,11 @@ function TranslatorForm() {
               <Text className="text-xs text-white">Bản dịch tự động trên máy · Google Translate. Có thể sai nghĩa; kiểm tra lại khi dùng cho y tế/pháp luật.</Text>
               <Pressable onPress={() => Linking.openURL('https://translate.google.com').catch(() => Alert.alert('Cần mạng để mở nguồn'))}><Image source={require('../../../assets/translation/white-regular.png')} style={{ width: 176, height: 16 }} resizeMode="contain" accessibilityLabel="powered by Google Translate" /></Pressable>
             </View>}
-            {result.phonetic ? <Text className="mt-2 font-mono text-[16px] text-white/85">{result.phonetic}</Text> : null}
-            <View className="mt-4 flex-row" style={{ gap: 10 }}>
-              <Pressable onPress={onSpeak} className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-white">
-                <Volume2 size={18} color={colors.primaryStrong} />
-                <Text className="font-body-bold text-primary-strong">{audio.speaking ? 'Dừng phát âm' : 'Phát âm'}</Text>
-              </Pressable>
-              <Pressable onPress={onCopy} className="h-[52px] flex-1 flex-row items-center justify-center gap-2 rounded-md bg-white/15">
-                <Copy size={18} color="#fff" />
-                <Text className="font-body-bold text-white">Sao chép</Text>
-              </Pressable>
-            </View>
+            {result.phonetic ? <Text className="mt-2 font-mono text-[15px] text-primary-soft">Phiên âm đọc: {result.phonetic}</Text> : null}
+            <Pressable onPress={onSpeak} className="mt-4 h-[52px] flex-row items-center justify-center gap-2 rounded-xl bg-primary">
+              <Volume2 size={18} color="#fff" />
+              <Text className="font-body-bold text-white">{audio.speaking ? 'Dừng phát âm' : 'Phát âm to rõ'}</Text>
+            </Pressable>
           </View>
         )}
 
@@ -344,7 +341,7 @@ function TranslatorForm() {
 
         <View>
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-body-bold text-ink">{englishMode ? 'Câu mẫu Việt - Anh' : 'Câu khẩn cấp dùng nhiều'}</Text>
+            <Text className="text-base font-body-bold text-ink">{englishMode ? 'Mẫu câu Việt - Anh' : 'Mẫu câu khẩn cấp một chạm'}</Text>
             <Text className="text-[13px] text-muted">Chạm để dịch</Text>
           </View>
           <View className="mt-3" style={{ gap: 10 }}>

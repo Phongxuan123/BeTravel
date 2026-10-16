@@ -1,5 +1,35 @@
 # TIEN DO BE.TRAVEL
 
+## Đồng bộ main vào nhánh dịch offline — hoàn tất 16/10/2026
+
+Nhánh làm việc `feature/offline-translation-20261012`; điểm trước merge `2d8e4b9`.
+Bản dự phòng: `backup/offline-before-main-20261015`. Main lấy từ origin là
+`4aacd61` (PR #38 giao diện/bản đồ/API địa điểm và PR #39 tài liệu Jira).
+Chỉ merge main vào nhánh tính năng local, không merge ngược vào main, không push.
+
+Tiến độ đồng bộ `[####] 4/4`: đã lấy main, xử lý xung đột, kiểm thử và build;
+lưu bằng merge commit local trên nhánh tính năng, không push.
+
+- Xung đột `docs/PROGRESS.md`: giữ cả lịch sử offline và lịch sử cập nhật main.
+- Xung đột màn dịch: giữ giao diện mới, nút sao chép/phát âm/phiên âm của main;
+  giữ giới hạn offline 5.000/online 500, bộ chọn ngôn ngữ, model, micro/TTS,
+  ghi công Google, chia đoạn và hủy phiên cũ của nhánh offline.
+- Lockfile hợp nhất giữ WebView/SerpApi của main và các bản vá Expo của nhánh.
+  Đã cài lại dependencies bằng npm ci cho backend/mobile.
+- Mobile lint/typecheck và 227/227 tests đạt, gồm hồi quy offline sau đổi UI.
+  Admin không đổi so với bản vừa kiểm tra: 18/18, lint/typecheck/build đạt.
+- Trước merge, backend có hai lần lỗi không ổn định (403 thay vì 400 ở trips;
+  ECONNRESET ở qa.edge). Trips chạy riêng 10/10 đạt; chưa xác định nguyên nhân.
+  Bản sau merge đạt backend 283/283 với mock providers; lint/format đạt.
+- Android release QA bản hợp nhất build thành công, xác nhận lại 16/10: 717 tasks,
+  43 giây. Có cả WebView bản đồ và module dịch offline. Không coi build là
+  nghiệm thu lại toàn bộ giao diện, kết nối bản đồ thật hoặc micro/loa trên thiết bị.
+- Fetch lại 16/10 xác nhận origin/main vẫn ở 4aacd61. Tổng kiểm tự động 528/528 đạt.
+  Không còn file xung đột; commit offline 2d8e4b9 được giữ trong lịch sử.
+- Nghiệm thu micro/loa thật và native iOS vẫn còn mở; không thay đổi dữ liệu Atlas,
+  không đưa .env/khóa/artefact build vào commit.
+
+
 ## Dịch offline, micro và phát âm — cập nhật 13/10/2026
 
 Nhánh local `feature/offline-translation-20261012`, từ `a3bc320`; không push/merge.
@@ -21,6 +51,66 @@ iOS local chỉ có CommandLineTools, chưa đủ Xcode để compile. Expo Doct
 bản vá mới; audit mobile 61, backend 3, admin 0 còn ghi rõ trong tài liệu. Không
 chứng nhận toàn macOS hoặc tuyên bố hết mọi lỗi. Không sửa Atlas/secret.
 Xem [OFFLINE_TRANSLATION.md](OFFLINE_TRANSLATION.md) để tiếp tục nghiệm thu.
+
+## Bản đồ miễn phí OpenStreetMap — 13/10/2026
+
+Người dùng đưa hướng dẫn `BeTravel_Free_Map_API_Guide.md` (React + Leaflet + Express CommonJS) và nhờ làm theo. Đã chuyển sang đúng ngăn xếp dự án (app Expo, backend ESM, envelope + Zod + rate limit), không dán nguyên.
+
+| Việc | Trạng thái |
+|---|---|
+| Backend: nhà cung cấp `osm` (Overpass) cho `GET /api/support-locations/external`; `PLACES_PROVIDER=osm` miễn phí, không cần key | xong, chạy thật qua HTTP với Atlas và OSM thật (Seoul: tìm ra đại sứ quán Việt Nam; Busan: tìm ra trong 500 km) |
+| Truy vấn: thẻ trước `around` sau, khớp chính xác, bán kính theo loại; thử lại 1 lần khi 429/502/503/504 | xong. Đo thực tế: truy vấn dạng hướng dẫn (around trước, regex) bị 504; dạng mới ~2 giây |
+| Mobile: bản đồ OSM bằng Leaflet trong WebView (`OsmWebMap`, Expo Go Android tự bật), ẩn nút Vệ tinh; lớp gợi ý chạy cả khi chưa có GPS (quanh tâm bản đồ) | xong. Lần đầu dùng `UrlTile` trên MapView vẫn nền trống trên LDPlayer (Internet bình thường, ô mở được trong Chrome emulator) nên đổi sang WebView. Kiểm bằng Chrome thật: 12 ô tải, 3 ghim, thông điệp ready. CHƯA xem trên LDPlayer |
+| Tìm đại sứ quán Việt Nam theo quốc gia, không cần toạ độ: `?country=KR&type=embassy` (OSM `country=VN` + `target=KR`). Lý do: bản đồ trống tâm vì dữ liệu quốc gia KR chưa có `embassy.lat/lng` và Admin chưa có ô nhập; emulator LDPlayer không có GPS. Màn bản đồ tự canh vào kết quả | xong, chạy thật: KR 3 điểm, JP 1 điểm |
+| Env: `PLACES_OVERPASS_URL`, `PLACES_USER_AGENT`, `PLACES_TIMEOUT_MS` mặc định 20 giây; mobile `EXPO_PUBLIC_MAP_TILES`, `EXPO_PUBLIC_MAP_TILE_URL` | xong, đã vào cả hai `.env.example` |
+| Hoàn nguyên `mobile/.env.example`: hai dòng khóa Google Maps bị dán URL SerpApi (sai định dạng, làm `app.config.js` báo lỗi nếu sao chép) | xong |
+
+Cố ý KHÔNG làm từ hướng dẫn: trang web React/Leaflet riêng và endpoint `/geocode` (Nominatim): sản phẩm là app mobile, chưa có chỗ dùng geocode; thêm sẽ thành mã chết. Nominatim cũng giới hạn 1 yêu cầu/giây.
+
+Kiểm tra: backend lint sạch, 283/283; mobile tsc + lint sạch, 220/220 (backend 283/283). Thêm gói `react-native-webview` 13.16.1 (qua `npx expo install`).
+Cần người làm: khởi động lại backend (đang chạy bản cũ dùng `mock`), `backend/.env` đã thêm `PLACES_PROVIDER=osm`; tự mở màn bản đồ trên Expo Go để xem ô bản đồ. Điểm hỗ trợ ĐÃ XÁC MINH vẫn rỗng cho Hàn Quốc cho tới khi admin nhập.
+Rủi ro: Overpass và ô OSM công cộng có chính sách sử dụng công bằng, không cam kết ổn định; dữ liệu OSM có thể sai (đã gặp "đại sứ quán cũ"). Ra sản phẩm thật cần máy chủ Overpass và ô riêng.
+
+## Địa điểm Google Maps qua SerpApi (lớp bổ sung, chưa xác minh) — 12/10/2026
+
+Người dùng yêu cầu thêm API SerpApi (engine google_maps) cho bản đồ. Mục 4.4 CLAUDE.md loại Google Places khỏi MVP, nên đã hỏi lại; người dùng chọn: endpoint riêng gắn nhãn chưa xác minh, key qua biến môi trường.
+
+| Việc | Trạng thái |
+|---|---|
+| Backend `GET /api/support-locations/external?lat&lng&type` | xong: cache theo loại + ô ~1 km, trần gọi/ngày, rate limit 30/15 phút/IP, timeout; luôn `verified:false`, `source:"google_maps"`; không ghi DB |
+| Contract (README mục 14b + fixture `public.externalPlace.json`) + test contract | xong |
+| Env: `PLACES_PROVIDER` (mặc định `mock`), `SERPAPI_KEY`, `PLACES_*`; thiếu key khi chọn `serpapi` thì fail fast | xong, đã cập nhật `.env.example` và DEPLOY.md |
+| Mobile: nút "Google Maps (chưa xác minh)" trên bản đồ, ghim xám, danh sách riêng, nhãn ở chi tiết | xong, mặc định tắt, chỉ bật được khi có GPS và đang lọc một loại |
+| Tách `haversineMeters` ra `utils/geo.js` dùng chung với geoAlert | xong |
+
+Kiểm tra: backend lint sạch, 277/277 (thêm 8 test); mobile tsc + lint sạch, 216/216.
+
+Cần người làm: điền `SERPAPI_KEY` vào `backend/.env` và đặt `PLACES_PROVIDER=serpapi` để chạy thật. CHƯA gọi SerpApi thật lần nào (chưa có key), chưa xem trên thiết bị.
+Nợ kỹ thuật: bộ đếm trần/ngày và cache nằm trong RAM, reset khi Render khởi động lại; hạn mức tài khoản SerpApi là chốt cuối. Cần quota lưu DB nếu mở rộng.
+
+## Đối chiếu giao diện mobile với PDF 23 màn — 12/10/2026
+
+Nhánh `feature/ui-redesign-spec`, sau khi merge `origin/main`. Phạm vi: 16 màn mobile, chỉ đổi giao diện (không đổi logic, API, dữ liệu).
+
+| Màn (theo PDF) | Trạng thái |
+|---|---|
+| #01 Đăng nhập, #02 Đăng ký | xong: header logo + tagline + "Xem giới thiệu", nút có mũi tên, chữ theo PDF |
+| #03 Onboarding | xong: khung minh họa + chú thích 01/04, 3 dòng điểm nhấn, 4 bước theo spec 3.2 |
+| #06 Cẩm nang, #07 Chi tiết bài | xong: "Tìm nâng cao", "Bộ lọc", lối tắt có mô tả, metadata nối bằng dấu chấm giữa, icon Bookmark |
+| #08 Tìm kiếm, #09 Không có kết quả | xong: thẻ kết quả theo mẫu, khung "Hỏi AI", gợi ý từ khóa |
+| #11 Dịch nhanh | xong: hàng chọn ngôn ngữ ngang, khối kết quả có Phiên âm đọc + "Phát âm to rõ" |
+| #12 SOS | xong: "Quy trình sự cố", khối hướng dẫn 5 bước; GIỮ nút gọi cảnh sát dạng thẻ đỏ |
+| #14 Sự cố | xong: lưới 2 cột, thanh tiến độ 1-2-3-4-5 |
+| #15 Cảnh báo | xong: thẻ tô màu theo mức, "Đánh dấu đã đọc" và "Xem chi tiết" ngay trên thẻ |
+| #16 Hồ sơ | xong một phần: nút "Sửa hồ sơ", bo góc; chưa có thẻ "Chuyến đi của tôi" dạng PDF |
+| #05 Home | xong (làm lại sau khi người dùng chụp màn hình báo lệch): hero tối, "Đổi nước", "Thao tác nhanh", chuông có số đếm |
+| #04, #13 | CHƯA đối chiếu kỹ (chỉ dò chuỗi chữ), cần ảnh chụp thực tế để so với PDF |
+| #10 Chat | giữ nguyên: Be.Travel AI đang tạm khóa bằng màn chờ |
+
+Chưa làm (PDF có, code/backend chưa hỗ trợ): Google OAuth, bộ lọc "Mới cập nhật" và "Chỉ đã xác minh", chip danh mục tình huống ở Dịch, hộp "Việc bạn nên làm" ở chi tiết bài, ngày cập nhật trong kết quả tìm kiếm (cần đổi contract).
+Chưa kiểm bằng mắt trên emulator/thiết bị; chưa làm 7 màn Admin.
+
+Kiểm tra: mobile tsc sạch, lint sạch, 213/213.
 
 ## Đợt sửa 3 — hoàn thiện giao diện — 09/10/2026
 

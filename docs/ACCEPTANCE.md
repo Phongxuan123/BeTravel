@@ -1,5 +1,18 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Tích hợp main 4aacd61 vào offline — 15/10/2026
+
+- Backend bản hợp nhất: lint/format và 283/283 tests đạt với mock providers.
+- Mobile bản hợp nhất: lint/typecheck và 227/227 tests đạt; có hồi quy màn dịch
+  với nội dung dài, engine offline, ghi công Google, nút phát âm/sao chép UI mới.
+- Admin không đổi: 18/18 tests, lint/typecheck/build đạt trong lượt kiểm tra này.
+- Hai xung đột Git đã giải quyết bằng kết hợp chức năng/giao diện và giữ cả lịch sử.
+- Android release QA xác nhận lại 16/10/2026: BUILD SUCCESSFUL (717 tasks).
+  Chưa nghiệm thu lại UI trên thiết bị sau merge; micro/loa thật và iOS vẫn còn mở.
+- Các lượt backend trước merge từng lỗi 403/ECONNRESET không ổn định; chưa có
+  bằng chứng nguyên nhân đã được sửa. Không làm yếu assertion hoặc thêm retry che lỗi.
+
+
 ## Dịch offline — 13/10/2026 (nghiệm thu một phần)
 
 | Tiêu chí | Bằng chứng / trạng thái |

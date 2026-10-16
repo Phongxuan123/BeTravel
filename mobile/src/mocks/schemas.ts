@@ -183,6 +183,8 @@ export const supportLocationSchema = z.object({
   lat: z.number(),
   lng: z.number(),
   featured: z.boolean().optional(),
+  // 'google_maps' | 'openstreetmap' = diem bo sung tu ben thu ba, CHUA xac minh (xem contracts/README.md muc 14b).
+  source: z.string().optional(),
 });
 export type SupportLocation = z.infer<typeof supportLocationSchema>;
 

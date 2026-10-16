@@ -1,0 +1,27 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "placeId": "ChIJexample0000000000000000",
+      "name": "Embassy of Viet Nam",
+      "type": "embassy",
+      "category": "Embassy",
+      "address": "123 Yeongdong-daero, Gangnam-gu, Seoul",
+      "phone": "+82 2-3141-1400",
+      "website": "",
+      "openState": "",
+      "rating": null,
+      "reviews": null,
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          126.9715,
+          37.5385
+        ]
+      },
+      "verified": false,
+      "source": "google_maps",
+      "distanceMeters": 450
+    }
+  ]
+}

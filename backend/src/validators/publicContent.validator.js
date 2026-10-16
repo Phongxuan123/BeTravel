@@ -58,6 +58,28 @@ export const supportLocationNearbyQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(50).optional(),
 });
 
+// Địa điểm bổ sung từ bên thứ ba: BẮT BUỘC chọn loại trong danh sách cố định, không nhận chuỗi tìm
+// kiếm tự do (tránh biến endpoint công khai thành proxy tiêu quota/tải của nhà cung cấp).
+// Hai cách gọi: (lat, lng) để tìm quanh một điểm, hoặc (country, type=embassy) để lấy đại sứ quán Việt Nam
+// của một quốc gia khi chưa có toạ độ nào (chưa có GPS, dữ liệu quốc gia chưa điền toạ độ).
+const EXTERNAL_PLACE_TYPES = ["embassy", "hospital", "police", "pharmacy"];
+
+export const externalPlacesQuerySchema = z
+  .object({
+    lat: z.coerce.number().min(-90).max(90).optional(),
+    lng: z.coerce.number().min(-180).max(180).optional(),
+    // Chỉ chữ cái: giá trị này được nối vào truy vấn Overpass nên không được chứa ký tự khác.
+    country: countryCodeSchema.regex(/^[A-Z]{2}$/, "Ma quoc gia chi gom 2 chu cai").optional(),
+    type: z.enum(EXTERNAL_PLACE_TYPES),
+  })
+  .refine((query) => (query.lat === undefined) === (query.lng === undefined), {
+    message: "lat va lng phai di cung nhau",
+  })
+  .refine(
+    (query) => query.lat !== undefined || (query.country !== undefined && query.type === "embassy"),
+    { message: "Can lat va lng, hoac country voi type=embassy" },
+  );
+
 export const supportLocationListQuerySchema = z.object({
   country: countryCodeSchema.optional(),
   type: locationTypeSchema.optional(),

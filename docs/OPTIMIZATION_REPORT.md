@@ -1,5 +1,14 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Tích hợp main — 15/10/2026
+
+Giữ luồng xử lý offline tách khỏi màn hình; áp dụng bố cục mới từ main mà không
+nhân đôi nút sao chép/phát âm. Bộ đếm dùng giới hạn theo chế độ, không khôi phục
+hằng 500 ký tự cho offline. Giữ metadata engine và nguồn Google khi đổi thẻ kết quả.
+Không thay đổi schema dữ liệu để giải quyết xung đột giao diện. Cài dependency theo
+lockfile đã hợp nhất, không nâng major hoặc ghi lại lịch sử commit cũ.
+
+
 ## Dịch offline — 13/10/2026 (file thay đổi)
 
 - Tách engine, quản lý model và công cụ voice khỏi màn hình dịch; tái sử dụng
