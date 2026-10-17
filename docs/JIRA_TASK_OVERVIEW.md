@@ -1,7 +1,8 @@
 # TONG HOP TASK DE SOAN JIRA — BE.TRAVEL
 
-Cập nhật: 15/10/2026 · Code: `main` @ `285501a` · 17/09/2026 -> 15/10/2026, 38 PR đã merge, 0 PR mở.
+Cập nhật: 17/10/2026 · Code: `main` @ `dfbaf6a` · 17/09/2026 -> 17/10/2026, 40 PR đã merge, 0 PR mở.
 Thay đổi so với bản 13/10: thêm PR #38 của Phú Long (giao diện theo PDF 23 màn, bản đồ OpenStreetMap, địa điểm bổ sung chưa xác minh); cập nhật E4-09, E4-10, E7-07, E7-08 và thêm E4-12.
+Thay đổi so với bản 15/10: thêm PR #40 của Thanh Đạt (dịch offline bằng ML Kit, mở màn Dịch cho khách, sửa micro, tìm Đại sứ quán theo quốc gia); thêm E4-13, E5-07; cập nhật E4-10, E5-03, E5-04; số test mới.
 
 Tài liệu này gom mọi việc đã làm / đang làm / chưa làm của dự án thành một danh sách có cấu trúc
 Epic -> Task, để dán sang Jira. Nó **không thay** các sổ gốc; mỗi dòng có cột "Nguồn" chỉ tới file
@@ -44,12 +45,12 @@ emulator, chưa thử điện thoại thật; việc thử máy thật được 
 | Kiến trúc | 3 dự án npm độc lập: `backend` (Express 5, Mongoose 9), `mobile` (Expo 57, TypeScript), `admin` (Vite, React) |
 | Hạ tầng đang dùng | MongoDB Atlas M0 (DB tên `test`); chạy dev trên máy; **chưa deploy** Render / Vercel / EAS |
 | Thị trường | Chỉ Hàn Quốc (KR) mở; Nhật Bản, Thái Lan, Singapore "Sắp ra mắt" |
-| Kiểm tra tự động | backend 283 test (gồm 26 ca golden RAG), mobile 220 test, admin 18 test; CI GitHub chạy 3 phần, đang xanh |
-| Kiểm thử thực tế | Có chạy thật trên Android emulator (Android 16) với backend thật nối Atlas; **chưa thử trên điện thoại thật** |
+| Kiểm tra tự động | backend 283 test (gồm 26 ca golden RAG), mobile 230 test, admin 18 test; CI GitHub chạy 3 phần, đang xanh |
+| Kiểm thử thực tế | Có chạy thật trên Android emulator (Android 16) với backend thật nối Atlas (gồm dịch offline ở chế độ máy bay, 17/10); **chưa thử trên điện thoại thật** |
 | Dữ liệu hiện có trên Atlas (11/10) | 8 bài luật KR **đều ở nháp, 0 bài xuất bản**; 0 điểm hỗ trợ; 0 cảnh báo vị trí; 5 hướng dẫn sự cố và 25 câu dịch đang hiển thị |
 | Tính năng khoá có chủ đích | Be.Travel AI (chat pháp lý) khoá bằng cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` |
 
-Tổng số dòng task ở mục 3: **81** = 36 Xong · 7 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 7 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
+Tổng số dòng task ở mục 3: **83** = 36 Xong · 9 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 9 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
 
 Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 1. **Nội dung pháp lý chưa được người duyệt** -> không xuất bản được bài -> Cẩm nang trống, AI không có gì để trả lời.
@@ -111,9 +112,10 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 | E4-07 | Nhập điểm hỗ trợ thật cho KR (đại sứ quán, bệnh viện, đồn công an, nhà thuốc) | Task | Chờ người | To Do (Blocked) | P2 | Form D1. **0 điểm trên Atlas** nên "Địa điểm hỗ trợ gần bạn" trống (B08 phần dữ liệu) |
 | E4-08 | Bổ sung toạ độ và đường dây bảo hộ 24/7 của Đại sứ quán | Task | Chờ người | To Do (Blocked) | P2 | Form D2 |
 | E4-09 | Tạo Google Maps key Android (giới hạn package + SHA-1, đặt hạn mức chi phí), build lại native | Task | Chờ người | To Do (Blocked) | P2 | Form F3, `docs/MAPS_SETUP.md`. Thiếu key thì bản đồ SOS không có nền (có màn thay thế + nút mở Google Maps). Cập nhật 15/10 (PR #38): Expo Go Android đã có nền bản đồ OpenStreetMap không cần key; key Google vẫn cần cho bản đồ native và bản build |
-| E4-10 | Bản đồ native + tìm kiếm, bộ lọc, camera, vệ tinh, phục hồi lỗi | Story | Đang làm | In Progress | P2 | Code xong, chưa nghiệm thu tile Google trên thiết bị (cần E4-09). Cập nhật 15/10 (PR #38): thêm bản đồ OSM bằng Leaflet trong WebView; vẫn chưa thử trên thiết bị |
+| E4-10 | Bản đồ native + tìm kiếm, bộ lọc, camera, vệ tinh, phục hồi lỗi | Story | Đang làm | In Progress | P2 | Code xong, chưa nghiệm thu tile Google trên thiết bị (cần E4-09). Cập nhật 17/10 (PR #40): bản build native không có key Google vẫn báo "Bản đồ chưa được cấu hình" trừ khi đặt `EXPO_PUBLIC_MAP_TILES=osm` (chờ nhóm chốt). Cập nhật 15/10 (PR #38): thêm bản đồ OSM bằng Leaflet trong WebView; vẫn chưa thử trên thiết bị |
 | E4-11 | Bottom sheet SOS hiện toạ độ GPS + 3 nút một chạm; trạng thái mở/đóng cửa; vẽ tuyến đường trong app | Story | Chưa làm | To Do | P4 | Spec mục 3.10, 3.11. Mở/đóng cần dữ liệu giờ mở cửa; vẽ tuyến cần Directions API (tốn phí) nên chưa nên làm |
 | E4-12 | Lớp địa điểm bổ sung chưa xác minh `GET /api/support-locations/external` (OSM miễn phí hoặc SerpApi trả phí), luôn `verified:false`, không ghi DB | Story | Đang làm | In Progress | P3 | PR #38 (Long, 15/10). Code + test đã merge, mặc định `PLACES_PROVIDER=mock`; chưa thử trên thiết bị. Cần chốt dùng OSM hay SerpApi (SerpApi lấy dữ liệu Google Maps, CLAUDE.md 4.4 loại Places khỏi MVP); trần gọi/cache nằm trong RAM |
+| E4-13 | Tìm Đại sứ quán / điểm hỗ trợ theo quốc gia đã chọn, không cần GPS; báo lỗi rõ khi nguồn ngoài không phản hồi | Story | Đang làm | In Progress | P3 | PR #40 (Thanh Đạt, 17/10). Code + test đã merge; máy chủ Overpass công cộng đang không phản hồi khi thử nên **chưa thấy kết quả thật**, app xử lý lỗi đúng. Chờ thử lại khi nguồn ổn định hoặc đổi sang SerpApi |
 
 ### E5. Sự cố và Dịch khẩn cấp (batch B7)
 
@@ -121,10 +123,11 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 |---|---|---|---|---|---|---|
 | E5-01 | 5 quy trình xử lý sự cố, đánh dấu bước, checklist, lưu; Admin Workflow Builder | Story | Xong | Done | - | B19 sửa nhãn phạm vi |
 | E5-02 | Dịch Việt - Anh / Hàn, phiên âm, hiểu câu gõ không dấu, 25 câu mẫu, lưu câu, phóng to | Story | Xong | Done | - | Gọi backend thật |
-| E5-03 | Nhập giọng nói (micro -> văn bản) | Story | Đang làm | In Progress | P2 | Ngoại lệ phạm vi 07/10 (form B5). Sửa lỗi quyền B02 xong; **chờ thử nói thật trên điện thoại** |
+| E5-03 | Nhập giọng nói (micro -> văn bản) | Story | Đang làm | In Progress | P2 | Ngoại lệ phạm vi 07/10 (form B5). Sửa lỗi quyền B02 xong; PR #40 giữ phiên qua hộp thoại quyền và chặn thử khi app ở nền; **chờ thử nói thật trên điện thoại (Samsung)** |
 | E5-04 | Phát âm bản dịch (TTS) đúng ngôn ngữ đích | Story | Đang làm | In Progress | P2 | Emulator không nghe được; chờ thử trên điện thoại thật (form G3) |
 | E5-05 | Mở rộng sự cố lên 8 danh mục và khung 5 bước chuẩn bảo hộ lãnh sự | Story | Chưa làm | To Do | P4 | Spec mục 3.12. Dữ liệu thật mỗi sự cố có 3-5 bước; cần nhóm chốt giữ dữ liệu hay sửa spec. Đối chiếu 13/10: `IncidentType` chưa có trường danh mục; hiện 5 sự cố |
 | E5-06 | Lọc 7 nhóm tình huống và lưu mẫu câu yêu thích theo spec | Story | Chưa làm | To Do | P4 | Spec mục 3.9; chưa soát kỹ app đã có đủ chưa. Đối chiếu 13/10: lưu câu đã có; `QuickPhrase` chưa có trường nhóm tình huống nên chưa lọc được |
+| E5-07 | Dịch offline trên máy bằng Google ML Kit (module native Kotlin/Swift), tải gói ngôn ngữ ~30 MB, mở màn Dịch cho khách (chỉ offline), sửa micro giữ phiên qua hộp thoại quyền | Story | Đang làm | In Progress | P2 | PR #40 (Thanh Đạt, 13-17/10). Đã kiểm emulator: bật chế độ máy bay vẫn dịch "Tôi cần giúp đỡ" -> "I need help"; khách bị chặn dịch online. **Chưa nghiệm thu micro / bản đồ trên Samsung thật; iOS chưa build**. Ai đang dùng app cũ phải cài bản build native mới, Expo Go không chạy được. Xem `docs/OFFLINE_TRANSLATION.md`, `docs/PHONE_MAP_VOICE.md` |
 
 ### E6. Cảnh báo, hồ sơ và chuyến đi (batch B8)
 
@@ -186,13 +189,15 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 
 ## 3b. Danh sách rút gọn theo trạng thái Jira (để tạo hàng loạt)
 
-### In Progress (7)
+### In Progress (9)
 
 - `E1-04` Quên mật khẩu bằng OTP email: xác minh thư tới hộp thư thật và bước đặt lại
 - `E4-10` Bản đồ native + tìm kiếm, bộ lọc, camera, vệ tinh, phục hồi lỗi
 - `E4-12` Lớp địa điểm bổ sung chưa xác minh `GET /api/support-locations/external` (OSM miễn phí hoặc SerpApi trả phí), luôn `verified:false`, không ghi DB
+- `E4-13` Tìm Đại sứ quán / điểm hỗ trợ theo quốc gia đã chọn, không cần GPS
 - `E5-03` Nhập giọng nói (micro -> văn bản)
 - `E5-04` Phát âm bản dịch (TTS) đúng ngôn ngữ đích
+- `E5-07` Dịch offline bằng ML Kit, mở màn Dịch cho khách, sửa micro
 - `E7-07` Đối chiếu từng màn hình mobile + Admin với giao diện mới, lập bảng khớp/lệch
 - `E7-08` Cập nhật app theo giao diện mới (theo từng đợt, mỗi đợt một PR)
 
@@ -255,7 +260,8 @@ Xem các dòng có cột Jira = Done ở mục 3. Nên tạo gộp theo Epic và
 | Người phụ trách dữ liệu SOS | Nhập điểm hỗ trợ KR; toạ độ + hotline 24/7 của Đại sứ quán; cảnh báo vị trí thật | E4-07, E4-08, E6-05 |
 | Trưởng nhóm | Deploy Render / Vercel; chốt định danh app; Google Cloud key Maps; ngân sách AI; văn bản Điều khoản / Chính sách; quyết định lịch sử git; đồng ý xoá bản ghi hỏng dấu | E8-05..E8-07, E4-09, E3-03..E3-05, E6-06, E8-10, E3-08 |
 | Phú Long | Xuất mã nguồn / mô tả giao diện từ ai.studio | E7-06 |
-| Thành viên có điện thoại | Thử 11 mục trên máy thật; thử "Quên mật khẩu" bằng email thật | E9-04, E1-04 |
+| Thành viên có điện thoại | Thử 11 mục trên máy thật; thử "Quên mật khẩu" bằng email thật; thử dịch offline, micro, bản đồ trên Samsung | E9-04, E1-04, E5-07 |
+| Thanh Đạt | Nghiệm thu micro + bản đồ trên Samsung thật; build iOS; thử lại tìm Đại sứ quán khi Overpass ổn định | E5-07, E4-13 |
 
 ## 5. Gợi ý cách tạo trên Jira
 
