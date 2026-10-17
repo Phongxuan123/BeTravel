@@ -180,15 +180,15 @@ export default function SosMapScreen() {
   const region = { latitude, longitude, latitudeDelta: delta, longitudeDelta: delta };
 
   // Lớp gợi ý thêm (chưa xác minh) chỉ chạy khi người dùng bật và đang lọc 1 loại cụ thể. Có tâm (GPS hoặc
-  // toạ độ đại sứ quán) thì tìm quanh tâm; chưa có tâm thì riêng loại Đại sứ quán vẫn tìm được theo quốc gia.
+  // toạ độ đại sứ quán) thì tìm quanh tâm; riêng Đại sứ quán luôn tìm theo quốc gia được chọn.
   const externalType = filter === 'all' || filter === 'other' ? null : filter;
-  const externalByCountry = !center && externalType === 'embassy' && !!country?.code;
+  const externalByCountry = externalType === 'embassy' && !!country?.code;
   const canQueryExternal = Boolean(externalType && (center || externalByCountry));
   const externalQuery = useQuery({
-    queryKey: ['support-locations', 'external', center?.lat, center?.lng, externalByCountry ? country?.code : null, externalType],
-    queryFn: () => fetchExternalPlaces(center
-      ? { type: externalType!, lat: center.lat, lng: center.lng }
-      : { type: 'embassy', country: country!.code }),
+    queryKey: ['support-locations', 'external', externalByCountry ? null : center?.lat, externalByCountry ? null : center?.lng, externalByCountry ? country?.code : null, externalType],
+    queryFn: () => fetchExternalPlaces(externalByCountry
+      ? { type: 'embassy', country: country!.code }
+      : { type: externalType!, lat: center!.lat, lng: center!.lng }),
     enabled: showExternal && canQueryExternal,
     staleTime: 10 * 60 * 1000,
     // Mỗi lần gọi tốn quota/tải của nhà cung cấp: không tự thử lại.
@@ -210,15 +210,15 @@ export default function SosMapScreen() {
       latitudeDelta: delta, longitudeDelta: delta }, 400);
   }, [mapReady, latitude, longitude, delta, country?.code]);
 
-  // Chưa có tâm bản đồ (đang hiện cả thế giới) thì canh vào kết quả gợi ý ngay khi có.
+  // Đại sứ quán theo nước được chọn, kể cả GPS đang ở nước khác: đưa các ghim vào vùng nhìn.
   const externalKey = externalPlaces.map((place) => place.id).join('|');
   useEffect(() => {
-    if (center || !mapReady || externalPlaces.length === 0) return;
+    if ((!externalByCountry && center) || !mapReady || externalPlaces.length === 0) return;
     mapRef.current?.fitToCoordinates(externalPlaces.map((place) => ({ latitude: place.lat, longitude: place.lng })),
       { edgePadding: { top: 220, right: 40, bottom: 340, left: 40 }, animated: true });
     // externalPlaces đổi identity mỗi render; externalKey là chữ ký ổn định của danh sách.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [center, mapReady, externalKey]);
+  }, [externalByCountry, center?.lat, center?.lng, mapReady, externalKey]);
 
   const call = (phone: string) => void openPhone(phone);
   const policeNumber = country?.emergencyNumbers?.police ?? '';
@@ -453,7 +453,9 @@ export default function SosMapScreen() {
                 Gợi ý từ nguồn mở bên ngoài, CHƯA được Be.Travel xác minh. Hãy gọi hoặc kiểm tra lại trước khi đến.
               </Text>
               {externalQuery.isLoading && <Text className="text-sm text-muted">Đang tìm gợi ý...</Text>}
-              {externalQuery.isError && <Text className="text-sm text-danger">Chưa lấy được gợi ý thêm lúc này. Thử bật lại sau ít phút.</Text>}
+              {externalQuery.isError && <Pressable accessibilityLabel="Thử tải lại gợi ý" onPress={() => void externalQuery.refetch()}>
+                <Text className="text-sm text-danger">Nguồn địa điểm chưa phản hồi. Chạm để thử lại; chưa thể kết luận không có đại sứ quán hoặc địa điểm.</Text>
+              </Pressable>}
               {!externalQuery.isLoading && !externalQuery.isError && externalPlaces.length === 0 && (
                 <Text className="text-sm text-muted">Không có gợi ý nào gần đây.</Text>
               )}

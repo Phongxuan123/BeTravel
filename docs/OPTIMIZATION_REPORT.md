@@ -1,5 +1,51 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Khôi phục bản đồ ổn định theo người dùng — 17/10/2026
+
+- Lấy e6361c3 làm nền map, hoàn tác thử nghiệm render/tiles mới và vendor để
+  thu hẹp thay đổi. Giữ sửa micro độc lập; không xóa lịch sử commit.
+- Cache embassy theo quốc gia thay vì GPS; tránh API lặp khi GPS đổi mà vẫn
+  chọn cùng nước. Camera canh kết quả theo nước, giữ API và nhãn chưa xác minh.
+- Xử lý warning lỗi upstream bằng thông báo và retry chủ động, không che lỗi
+  timeout thành danh sách rỗng. Không auto retry gây tăng quota.
+- Lint không warning; 531 tests đạt. OSM thật timeout hai lần, vẫn còn mở.
+
+## Bản đồ/micro điện thoại — 17/10/2026
+
+- Gỡ phụ thuộc CDN lúc mở bản đồ bằng Leaflet đóng gói, giữ license và hash nguồn.
+  Đổi lại bundle chứa thêm JS/CSS thư viện; ô OSM vẫn tải qua Internet.
+- Tách initialized khỏi ready để không báo thành công khi chưa có ô; chuyển lỗi
+  WebView/process/tiles về màn hình với danh sách và thử lại. Không đổi hợp đồng API.
+- Rà file thay đổi theo Rule 10/13: không còn import chết hoặc lint warning;
+  sửa 2 cảnh báo trong lượt kiểm (thứ tự import và displayName mock test).
+- Không thêm dịch vụ upload âm thanh. Expo Go dùng bàn phím OS, bản native giữ
+  module hiện có; giữ phiên qua dialog nhưng không thu nếu app nằm nền.
+- Kiểm tự động 532/532 đạt; giới hạn thiết bị thật ghi tại PHONE_MAP_VOICE và
+  ACCEPTANCE. Cảnh báo phụ thuộc cũ chưa được coi là đã xử lý trong đợt này.
+
+## Tích hợp main — 15/10/2026
+
+Giữ luồng xử lý offline tách khỏi màn hình; áp dụng bố cục mới từ main mà không
+nhân đôi nút sao chép/phát âm. Bộ đếm dùng giới hạn theo chế độ, không khôi phục
+hằng 500 ký tự cho offline. Giữ metadata engine và nguồn Google khi đổi thẻ kết quả.
+Không thay đổi schema dữ liệu để giải quyết xung đột giao diện. Cài dependency theo
+lockfile đã hợp nhất, không nâng major hoặc ghi lại lịch sử commit cũ.
+
+
+## Dịch offline — 13/10/2026 (file thay đổi)
+
+- Tách engine, quản lý model và công cụ voice khỏi màn hình dịch; tái sử dụng
+  ánh xạ locale và hàm chia đoạn; giới hạn 500/5.000/450 có hằng riêng.
+- Không sửa hợp đồng dịch online hoặc schema câu lưu cũ. Metadata engine bổ sung
+  tùy chọn; lời dịch ML Kit có ghi công Google cạnh kết quả.
+- Dùng generation token chặn callback cũ, đóng translator Android sau tác vụ,
+  giải phóng TTS engine kiểm tra giọng và phiên audio iOS sau khi dừng.
+- Không tải model trong đường dịch; chỉ tải khi người dùng chọn Wi-Fi/cellular.
+  Gói dịch, gói micro và giọng đọc được giải thích riêng trong giao diện.
+- Kiểm tra phụ thuộc còn cảnh báo gián tiếp; không ép đổi major Expo/Tailwind/Jest
+  để che cảnh báo audit. Chi tiết nghiệm thu còn thiếu nằm trong ACCEPTANCE.
+
+
 ## Đợt sửa 3 — 09/10/2026 (Chế độ B, chỉ file đã động tới)
 
 | Rule | Xử lý |
@@ -765,6 +811,10 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 17/10/2026 (lần 2): khôi phục map e6361c3 theo yêu cầu, sửa embassy theo nước; 531 tests đạt, upstream OSM còn timeout.
+
+- 17/10/2026: ổn định WebView bản đồ, hướng dẫn micro Expo Go, sửa vòng đời quyền; 532 tests đạt, chờ Samsung thật.
 | Phiên bản | Ngày | Batch | Nội dung chính |
 |-----------|------|-------|----------------|
 | 2026.10.09-dot3 | 09/10/2026 | Đợt sửa 3 | B15-B21: cờ KR/SG chuẩn, gợi ý tìm kiếm theo dữ liệu, dòng ngôn ngữ chỉ đọc, ẩn tab chuyến đi trống, phạm vi sự cố, Admin co giãn màn hẹp; mobile 213, admin 18 test |

@@ -2,7 +2,7 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import SosMapScreen from '@/app/sos/map';
-import { fetchSupportLocations, fetchNearbyLocations } from '@/lib/data';
+import { fetchSupportLocations, fetchNearbyLocations, fetchExternalPlaces } from '@/lib/data';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 
 const mockAnimate = jest.fn();
@@ -12,7 +12,7 @@ let mockCountry: { code: string; name: string; embassy: { name: string; lat: num
 jest.mock('expo-router', () => ({ router: { back: jest.fn() }, useLocalSearchParams: () => ({}) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 jest.mock('@/lib/countryContext', () => ({ useCountry: () => ({ country: mockCountry }) }));
-jest.mock('@/lib/data', () => ({ fetchSupportLocations: jest.fn(), fetchNearbyLocations: jest.fn() }));
+jest.mock('@/lib/data', () => ({ fetchSupportLocations: jest.fn(), fetchNearbyLocations: jest.fn(), fetchExternalPlaces: jest.fn() }));
 jest.mock('@/lib/locationPermission', () => ({ requestLocationWithExplanation: jest.fn() }));
 jest.mock('expo-constants', () => ({ __esModule: true, default: { executionEnvironment: 'standalone', expoConfig: { extra: {} } } }));
 jest.mock('react-native-maps', () => {
@@ -138,4 +138,22 @@ test('Android thiếu key hiển thị danh sách và giữ thao tác chi tiết
     expect(screen.getByText(/Bản đồ chưa được cấu hình/)).toBeTruthy();
     await waitFor(() => expect(screen.getByLabelText(`Xem chi tiết ${point.name}`)).toBeTruthy());
   } finally { Platform.OS = previous; }
+});
+
+
+test('đại sứ quán tại KR vẫn tìm theo quốc gia khi GPS đang ở Việt Nam', async () => {
+  (requestLocationWithExplanation as jest.Mock).mockResolvedValue({ latitude: 10.77, longitude: 106.69 });
+  (fetchExternalPlaces as jest.Mock).mockRejectedValueOnce(new Error('upstream timeout')).mockResolvedValue({ ok: true, data: [
+    { ...point, id: 'osm-kr', type: 'embassy', name: 'Đại sứ quán Việt Nam tại Hàn Quốc', verified: false, source: 'openstreetmap' },
+  ] });
+  const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await fireEvent.press(screen.getByLabelText('Lấy vị trí hiện tại'));
+  await waitFor(() => expect(fetchNearbyLocations).toHaveBeenCalled());
+  await fireEvent.press(screen.getByText('Đại sứ quán'));
+  await fireEvent.press(screen.getByLabelText('Hiện gợi ý thêm chưa xác minh'));
+  await waitFor(() => expect(fetchExternalPlaces).toHaveBeenLastCalledWith({ type: 'embassy', country: 'KR' }));
+  await waitFor(() => expect(screen.getByLabelText('Thử tải lại gợi ý')).toBeTruthy());
+  await fireEvent.press(screen.getByLabelText('Thử tải lại gợi ý'));
+  await waitFor(() => expect(mockFit).toHaveBeenCalledWith([{ latitude: 37, longitude: 127 }], expect.anything()));
+  expect(screen.getByLabelText('Xem chi tiết Đại sứ quán Việt Nam tại Hàn Quốc (chưa xác minh)')).toBeTruthy();
 });

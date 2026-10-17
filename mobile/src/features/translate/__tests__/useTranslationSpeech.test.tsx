@@ -4,10 +4,22 @@ import * as Speech from 'expo-speech';
 import { useTranslationSpeech } from '../useTranslationSpeech';
 
 jest.mock('expo-speech', () => ({
+  maxSpeechInputLength: 4000,
   stop: jest.fn(async () => {}),
   speak: jest.fn(),
   getAvailableVoicesAsync: jest.fn(),
 }));
+
+test('đọc đoạn dài tuần tự và hủy không cho callback cũ đọc đoạn tiếp', async () => {
+  (Speech.getAvailableVoicesAsync as jest.Mock).mockResolvedValue([{ language: 'en-US', identifier: 'english' }]);
+  const hook = await renderHook(() => useTranslationSpeech('en-US'));
+  await act(async () => { await hook.result.current.play('Long sentence. '.repeat(400)); });
+  expect((Speech.speak as jest.Mock).mock.calls[0][0].length).toBeLessThanOrEqual(1000);
+  const done = (Speech.speak as jest.Mock).mock.calls[0][1].onDone;
+  await act(async () => { hook.result.current.cancel(); done(); });
+  expect(Speech.speak).toHaveBeenCalledTimes(1);
+  await hook.unmount();
+});
 beforeEach(() => {
   jest.clearAllMocks();
   Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });

@@ -1,5 +1,10 @@
 # Nhập giọng nói và đọc bản dịch — 07/10/2026
 
+> Cập nhật 13/10/2026: chế độ offline, giới hạn 5.000 ký tự và quản lý gói nằm
+> trong [OFFLINE_TRANSLATION.md](OFFLINE_TRANSLATION.md). Các mô tả 500 ký tự
+> dưới đây áp dụng cho chế độ online. TTS hiện chia đoạn và có quản lý audio session
+> iOS sau micro; chưa nghiệm thu nghe/nói trên máy thật.
+
 Nhánh `feature/voice-translation-20261007`. Voice là ngoại lệ MVP đã được người dùng yêu cầu.
 
 ## Luồng sử dụng

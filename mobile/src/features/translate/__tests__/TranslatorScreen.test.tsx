@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TranslatorScreen from '@/app/translate';
 import { translateText } from '@/lib/data';
 import * as Speech from 'expo-speech';
+import * as offlineTranslation from '../offlineTranslation';
 import { AppState } from 'react-native';
 
 jest.mock('expo-router', () => ({ useFocusEffect: (callback: () => void) => {
@@ -21,7 +22,9 @@ jest.mock('@/lib/data', () => ({ fetchQuickPhrases: jest.fn(), translateText: je
 
 async function setup() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
-  return render(<QueryClientProvider client={client}><TranslatorScreen /></QueryClientProvider>);
+  const screen = await render(<QueryClientProvider client={client}><TranslatorScreen /></QueryClientProvider>);
+  await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', false);
+  return screen;
 }
 
 beforeEach(() => {
@@ -88,4 +91,24 @@ test('response dịch đến muộn không ghi đè câu đã sửa', async () =
   await act(async () => { finish({ translated: 'OLD RESPONSE', phonetic: '' }); await press; });
   expect(screen.queryByText('OLD RESPONSE')).toBeNull();
   expect(screen.getByDisplayValue('Tôi cần taxi')).toBeTruthy();
+});
+
+
+test('giao diện mới giữ dịch offline đoạn dài và ghi công Google, không gọi server', async () => {
+  const spy = jest.spyOn(offlineTranslation, 'translateOffline').mockResolvedValue({ translated: 'Offline translation.', phonetic: '' });
+  try {
+    const screen = await setup();
+    await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', true);
+    const text = 'Tôi cần tìm đường đến bệnh viện. '.repeat(24);
+    await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), text);
+    expect(screen.getByText(`${text.length}/5000`)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Dịch với Google'));
+    await waitFor(() => expect(screen.getByText('Phát âm to rõ')).toBeTruthy());
+    expect(spy).toHaveBeenCalledWith(text.trim(), 'vi', 'en', expect.any(Function), expect.any(Function));
+    expect(translateText).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Sao chép bản dịch')).toBeTruthy();
+    expect(screen.getAllByLabelText('powered by Google Translate').length).toBeGreaterThan(0);
+  } finally {
+    spy.mockRestore();
+  }
 });

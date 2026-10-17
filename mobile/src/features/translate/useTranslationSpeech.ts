@@ -1,22 +1,35 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import * as Speech from 'expo-speech';
 import { matchingVoice } from './speechLocale';
+import { getOfflineModule, splitTranslationText } from './offlineTranslation';
 
-export function useTranslationSpeech(locale: string | null) {
+export function useTranslationSpeech(locale: string | null, offlineOnly = false) {
   const [speaking, setSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);
   const mounted = useRef(true);
+  const releaseAudio = () => {
+    if (Platform.OS === 'ios')
+      void getOfflineModule()
+        ?.finishSpeech()
+        .catch(() => {});
+  };
   const cancel = useCallback(() => {
-    generation.current += 1;
+    const id = ++generation.current;
     if (mounted.current) {
       setSpeaking(false);
       setError(null);
     }
-    void Speech.stop().catch(() => {
-      /* Không phát lại khi tác vụ đã bị hủy. */
-    });
+    void Speech.stop()
+      .then(() => {
+        if (id === generation.current && Platform.OS === 'ios') {
+          return getOfflineModule()?.finishSpeech();
+        }
+      })
+      .catch(() => {
+        /* Không phát lại khi tác vụ đã bị hủy. */
+      });
   }, []);
   useEffect(() => {
     mounted.current = true;
@@ -29,7 +42,7 @@ export function useTranslationSpeech(locale: string | null) {
       subscription.remove();
     };
   }, [cancel]);
-  useEffect(() => () => cancel(), [locale, cancel]);
+  useEffect(() => () => cancel(), [locale, offlineOnly, cancel]);
 
   const play = async (text: string) => {
     const id = ++generation.current;
@@ -41,7 +54,13 @@ export function useTranslationSpeech(locale: string | null) {
     }
     try {
       await Speech.stop();
-      const voices = await Speech.getAvailableVoicesAsync();
+      let voices = await Speech.getAvailableVoicesAsync();
+      if (offlineOnly && Platform.OS === 'android') {
+        const native = getOfflineModule();
+        if (!native) throw new Error('Thiếu bản native để kiểm tra giọng offline.');
+        const localIds = await native.offlineVoiceIds();
+        voices = voices.filter((voice) => localIds.includes(voice.identifier));
+      }
       if (!current() || AppState.currentState !== 'active') return;
       const voice = matchingVoice(voices, locale);
       if (!voice) {
@@ -50,26 +69,57 @@ export function useTranslationSpeech(locale: string | null) {
         return;
       }
       setSpeaking(true);
-      Speech.speak(text, {
-        language: locale,
-        voice: voice.identifier,
-        useApplicationAudioSession: false,
-        onDone: () => {
-          if (current()) setSpeaking(false);
-        },
-        onStopped: () => {
-          if (current()) setSpeaking(false);
-        },
-        onError: () => {
+      const sharedAudio = Platform.OS === 'ios' ? getOfflineModule() : null;
+      if (sharedAudio) await sharedAudio.prepareSpeech();
+      if (!current()) return;
+      // Android giới hạn độ dài mỗi utterance. Chỉ xếp đoạn tiếp khi đoạn trước xong;
+      // callback cũ không được đọc tiếp sau khi đổi ngôn ngữ hoặc hủy.
+      const chunks = splitTranslationText(
+        text,
+        Math.min(Speech.maxSpeechInputLength || 1000, 1000),
+      );
+      const speakChunk = (index: number) => {
+        if (!current()) return;
+        if (index >= chunks.length) {
+          setSpeaking(false);
+          releaseAudio();
+          return;
+        }
+        try {
+          Speech.speak(chunks[index], {
+            language: locale,
+            voice: voice.identifier,
+            useApplicationAudioSession: Boolean(sharedAudio),
+            onDone: () => {
+              speakChunk(index + 1);
+            },
+            onStopped: () => {
+              if (current()) {
+                setSpeaking(false);
+                releaseAudio();
+              }
+            },
+            onError: () => {
+              if (current()) {
+                setSpeaking(false);
+                releaseAudio();
+                setError('Không phát âm được. Kiểm tra âm lượng và giọng đọc trên thiết bị.');
+              }
+            },
+          });
+        } catch {
           if (current()) {
             setSpeaking(false);
-            setError('Không phát âm được. Kiểm tra âm lượng và giọng đọc trên thiết bị.');
+            releaseAudio();
+            setError('Không phát âm được đoạn tiếp theo. Hãy thử lại.');
           }
-        },
-      });
+        }
+      };
+      speakChunk(0);
     } catch {
       if (current()) {
         setSpeaking(false);
+        releaseAudio();
         setError('Không phát âm được. Vui lòng thử lại.');
       }
     }

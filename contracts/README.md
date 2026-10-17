@@ -1,5 +1,16 @@
 # BE.TRAVEL — CONTRACT API
 
+## Dịch trên máy — 12/10/2026
+
+Mobile có chế độ offline mặc định: ML Kit native, gói tải chủ động, tối đa 5.000
+ký tự và dịch tuần tự các đoạn <=450 ký tự. Không gọi `/translate`, không tự fallback
+cloud và không thay đổi envelope/quota backend. Chế độ online được chọn riêng vẫn
+giữ giới hạn 500 ký tự và yêu cầu đăng nhập. `/translate` ở **Expo Router** công khai
+để người mất phiên vẫn dùng gói offline; **POST /api/translate** vẫn có auth.
+Micro offline yêu cầu nhận dạng trên máy; Android TTS lọc giọng không cần mạng.
+Model tải một lần khi có mạng, không chứa trong JS/Expo Go. Xem
+`docs/OFFLINE_TRANSLATION.md` cho luồng tải, build và bằng chứng nghiệm thu.
+
 ## Nhập giọng nói/đọc bản dịch — 07/10/2026
 
 Nhận dạng/TTS qua dịch vụ native mobile; /translate tiếp tục chỉ nhận

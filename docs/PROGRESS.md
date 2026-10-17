@@ -1,5 +1,100 @@
 # TIEN DO BE.TRAVEL
 
+## Khôi phục bản đồ sau merge — 17/10/2026 (cập nhật mới nhất)
+
+Tiến độ `[###-] 3/4`, xong một phần. Theo yêu cầu người dùng, lấy bản đồ ở
+merge commit `e6361c3` làm nền; hoàn tác phần map của `7c2c6ad` và các thử nghiệm
+map chưa commit. Giữ các sửa micro độc lập. Không reset lịch sử, không push.
+
+- Khôi phục OsmWebMap, HTML/CDN Leaflet, chọn runtime và cấu hình như mốc merge.
+  Xóa vendor/test chỉ phục vụ thay đổi map đã hoàn tác. Các mục đóng gói Leaflet
+  trong báo cáo trước bên dưới không còn mô tả bản hiện hành.
+- Sửa lỗi tìm đại sứ quán: luôn truy vấn theo nước được chọn (KR), kể cả khi GPS
+  ở Việt Nam hoặc danh sách có tâm khác. Cache key theo nước; camera canh kết quả.
+- Khi upstream lỗi, báo rõ chưa có kết quả và cho thử lại; không gọi lỗi mạng là
+  không có đại sứ quán. Nguồn ngoài vẫn gắn chưa xác minh, không chèn dữ liệu giả.
+- Mobile lint/typecheck và 230/230 tests (53 suites); backend lint/format và
+  283/283 tests; admin lint/typecheck/build và 18/18 tests đạt. Tổng 531.
+- Hai lần gọi thật service OSM tìm embassy tại KR đều timeout; chưa nghiệm thu
+  kết quả thực trên BlueStacks/Samsung. Bộ test dùng mock không thay thế bước này.
+- Còn mở: nguồn Overpass phản hồi, thử chọn Hàn Quốc > Đại sứ quán > Gợi ý thêm;
+  không cần GPS ở Hàn Quốc. Không thay API/schema/Atlas; không rà/chỉnh toàn macOS.
+
+Android Hermes export bản khôi phục đạt; chưa coi là nghiệm thu UI trên máy thật.
+
+## Bản đồ và micro Samsung A22 / Expo Go — 17/10/2026
+
+Tiến độ `[###-] 3/4` — xong một phần: sửa code, kiểm tự động và tài liệu;
+chờ nghiệm thu trên Samsung thật. Không push, không merge vào main.
+
+- Bản đồ: đóng gói Leaflet thay vì tải CDN, cấu hình WebView static HTML,
+  chỉ báo sẵn sàng sau khi tải ô; lỗi hiển thị rõ và có thử lại/danh sách.
+- Expo Go cả hai nền tảng và Android native thiếu key tự dùng OSM; vẫn tôn trọng
+  cấu hình ép native. Ô bản đồ cần Internet; chưa xác định nguyên nhân duy nhất
+  trên Samsung vì thiết bị chưa kết nối để lấy log.
+- Expo Go không chứa module nhận giọng. Nút micro hướng dẫn đọc chính tả bàn phím
+  và focus ô nhập; nhận giọng trong app cần bản Be.Travel native. Sửa giữ phiên
+  qua hộp thoại giải thích/quyền, chặn bắt đầu thu khi app ở background.
+- Kiểm tra đạt: mobile lint/typecheck, 231/231 tests (54 suites); backend
+  lint/format, 283/283 tests; admin lint/typecheck/build, 18/18 tests. Tổng 532.
+  Android Hermes export đạt; không coi export là kiểm micro/map trên máy thật.
+- Không đổi API/schema/backend hoặc dữ liệu Atlas. Cảnh báo phụ thuộc cũ và
+  nghiệm thu native iOS vẫn mở; không chứng nhận toàn hệ điều hành hết lỗi.
+- Bước tiếp: chạy Metro với --clear, thử bản đồ trên Samsung; kết nối USB và
+  cài bản native để thử micro. Hướng dẫn: [PHONE_MAP_VOICE.md](PHONE_MAP_VOICE.md).
+
+## Đồng bộ main vào nhánh dịch offline — hoàn tất 16/10/2026
+
+Nhánh làm việc `feature/offline-translation-20261012`; điểm trước merge `2d8e4b9`.
+Bản dự phòng: `backup/offline-before-main-20261015`. Main lấy từ origin là
+`4aacd61` (PR #38 giao diện/bản đồ/API địa điểm và PR #39 tài liệu Jira).
+Chỉ merge main vào nhánh tính năng local, không merge ngược vào main, không push.
+
+Tiến độ đồng bộ `[####] 4/4`: đã lấy main, xử lý xung đột, kiểm thử và build;
+lưu bằng merge commit local trên nhánh tính năng, không push.
+
+- Xung đột `docs/PROGRESS.md`: giữ cả lịch sử offline và lịch sử cập nhật main.
+- Xung đột màn dịch: giữ giao diện mới, nút sao chép/phát âm/phiên âm của main;
+  giữ giới hạn offline 5.000/online 500, bộ chọn ngôn ngữ, model, micro/TTS,
+  ghi công Google, chia đoạn và hủy phiên cũ của nhánh offline.
+- Lockfile hợp nhất giữ WebView/SerpApi của main và các bản vá Expo của nhánh.
+  Đã cài lại dependencies bằng npm ci cho backend/mobile.
+- Mobile lint/typecheck và 227/227 tests đạt, gồm hồi quy offline sau đổi UI.
+  Admin không đổi so với bản vừa kiểm tra: 18/18, lint/typecheck/build đạt.
+- Trước merge, backend có hai lần lỗi không ổn định (403 thay vì 400 ở trips;
+  ECONNRESET ở qa.edge). Trips chạy riêng 10/10 đạt; chưa xác định nguyên nhân.
+  Bản sau merge đạt backend 283/283 với mock providers; lint/format đạt.
+- Android release QA bản hợp nhất build thành công, xác nhận lại 16/10: 717 tasks,
+  43 giây. Có cả WebView bản đồ và module dịch offline. Không coi build là
+  nghiệm thu lại toàn bộ giao diện, kết nối bản đồ thật hoặc micro/loa trên thiết bị.
+- Fetch lại 16/10 xác nhận origin/main vẫn ở 4aacd61. Tổng kiểm tự động 528/528 đạt.
+  Không còn file xung đột; commit offline 2d8e4b9 được giữ trong lịch sử.
+- Nghiệm thu micro/loa thật và native iOS vẫn còn mở; không thay đổi dữ liệu Atlas,
+  không đưa .env/khóa/artefact build vào commit.
+
+
+## Dịch offline, micro và phát âm — cập nhật 13/10/2026
+
+Nhánh local `feature/offline-translation-20261012`, từ `a3bc320`; không push/merge.
+Tiến độ `[#####-] 5/6` — code/kiểm tự động/tài liệu xong; nghiệm thu thiết bị còn mở.
+
+| Việc | Trạng thái |
+|---|---|
+| Docs/kiến trúc và hợp đồng | xong; giữ API online và dữ liệu lưu cũ |
+| Engine offline Android/iOS | xong code ML Kit, tải/xóa gói chủ động, không fallback cloud |
+| Từ/câu dài và giao diện | tối đa 5.000 ký tự, chọn ngôn ngữ không phụ thuộc server, khách mở từ SOS |
+| Micro/TTS | on-device, chuẩn bị gói, TTS chia đoạn/lọc giọng cloud; chưa nghe/nói thật |
+| Kiểm tra/build | backend 269/269; admin 18/18 + build; mobile 219/219 (51 suites), lint/typecheck đạt |
+| Android thực tế | release APK build/cài/mở đạt; SOS > dịch khách, tải model và dịch Việt–Anh và đoạn Anh–Việt 642 ký tự khi tắt Wi-Fi/data đạt |
+| Nghiệm thu còn thiếu | micro/loa trên điện thoại thật, native iOS |
+| Tài liệu bàn giao | OFFLINE_TRANSLATION, ACCEPTANCE, OPTIMIZATION_REPORT, VOICE_TRANSLATION đã cập nhật |
+
+Android release cần ép Node arm64 trong môi trường Rosetta này; đã build thành công.
+iOS local chỉ có CommandLineTools, chưa đủ Xcode để compile. Expo Doctor 20/21 do
+bản vá mới; audit mobile 61, backend 3, admin 0 còn ghi rõ trong tài liệu. Không
+chứng nhận toàn macOS hoặc tuyên bố hết mọi lỗi. Không sửa Atlas/secret.
+Xem [OFFLINE_TRANSLATION.md](OFFLINE_TRANSLATION.md) để tiếp tục nghiệm thu.
+
 ## Bản đồ miễn phí OpenStreetMap — 13/10/2026
 
 Người dùng đưa hướng dẫn `BeTravel_Free_Map_API_Guide.md` (React + Leaflet + Express CommonJS) và nhờ làm theo. Đã chuyển sang đúng ngăn xếp dự án (app Expo, backend ESM, envelope + Zod + rate limit), không dán nguyên.
