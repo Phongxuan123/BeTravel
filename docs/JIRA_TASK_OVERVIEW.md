@@ -1,8 +1,9 @@
 # TONG HOP TASK DE SOAN JIRA — BE.TRAVEL
 
-Cập nhật: 17/10/2026 · Code: `main` @ `dfbaf6a` · 17/09/2026 -> 17/10/2026, 40 PR đã merge, 0 PR mở.
+Cập nhật: 19/10/2026 · Code: `main` @ `fb15068` · 17/09/2026 -> 19/10/2026, 42 PR đã merge, 0 PR mở.
 Thay đổi so với bản 13/10: thêm PR #38 của Phú Long (giao diện theo PDF 23 màn, bản đồ OpenStreetMap, địa điểm bổ sung chưa xác minh); cập nhật E4-09, E4-10, E7-07, E7-08 và thêm E4-12.
 Thay đổi so với bản 15/10: thêm PR #40 của Thanh Đạt (dịch offline bằng ML Kit, mở màn Dịch cho khách, sửa micro, tìm Đại sứ quán theo quốc gia); thêm E4-13, E5-07; cập nhật E4-10, E5-03, E5-04; số test mới.
+Thay đổi so với bản 17/10: thêm PR #42 (luật liên bang Úc) thành E2-12.
 
 Tài liệu này gom mọi việc đã làm / đang làm / chưa làm của dự án thành một danh sách có cấu trúc
 Epic -> Task, để dán sang Jira. Nó **không thay** các sổ gốc; mỗi dòng có cột "Nguồn" chỉ tới file
@@ -50,7 +51,7 @@ emulator, chưa thử điện thoại thật; việc thử máy thật được 
 | Dữ liệu hiện có trên Atlas (11/10) | 8 bài luật KR **đều ở nháp, 0 bài xuất bản**; 0 điểm hỗ trợ; 0 cảnh báo vị trí; 5 hướng dẫn sự cố và 25 câu dịch đang hiển thị |
 | Tính năng khoá có chủ đích | Be.Travel AI (chat pháp lý) khoá bằng cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` |
 
-Tổng số dòng task ở mục 3: **83** = 36 Xong · 9 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 9 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
+Tổng số dòng task ở mục 3: **84** = 36 Xong · 10 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 10 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
 
 Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 1. **Nội dung pháp lý chưa được người duyệt** -> không xuất bản được bài -> Cẩm nang trống, AI không có gì để trả lời.
@@ -85,6 +86,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 | E2-09 | Thêm trạng thái hiển thị (ẩn / hiện) cho câu dịch khẩn cấp | Task | Chưa làm | To Do | P3 | Chỉ cần nếu E2-08 quyết định gỡ. Đối chiếu 13/10: `QuickPhrase` chưa có trường trạng thái |
 | E2-10 | Mở thêm quốc gia (Nhật Bản, Thái Lan hoặc Singapore): nội dung + nguồn | Epic | Chưa làm | To Do | P4 | Form C4. Cần người cung cấp nội dung. Code đã country-driven, không sửa logic |
 | E2-11 | Kiểm Admin: xuất bản bài + job index, nhập điểm hỗ trợ hàng loạt, xử lý feedback | Task | Chưa làm | To Do | P2 | Chưa kiểm vì tránh đổi dữ liệu nội dung thật; làm sau khi có bài để thử |
+| E2-12 | Tra cứu luật liên bang Úc (Federal Register of Legislation): quốc gia Úc, phân loại 5 mục (31 luật tuyển chọn), tóm lược, dịch tiếng Việt theo yêu cầu, màn Luật trên app | Story | Đang làm | In Progress | P3 | PR #42 (18/10, ngoài lộ trình B1-B9). Chỉ đọc, không ghi `legal_articles`, không vào RAG, `verifiedByBeTravel:false`; contract mục 24. **Còn thiếu:** tóm tắt từng Phần Migration Act mới 5/37 (bị 429), dịch đủ 31 luật cần API trả phí, chưa thử giao diện trên điện thoại, chưa có Đại sứ quán Úc/số hàng hải (chưa có nguồn), chưa có test màn hình mobile/admin |
 
 ### E3. AI pháp lý (RAG) (batch B4, B5)
 
@@ -189,9 +191,10 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 
 ## 3b. Danh sách rút gọn theo trạng thái Jira (để tạo hàng loạt)
 
-### In Progress (9)
+### In Progress (10)
 
 - `E1-04` Quên mật khẩu bằng OTP email: xác minh thư tới hộp thư thật và bước đặt lại
+- `E2-12` Tra cứu luật liên bang Úc (quốc gia Úc, phân loại, tóm lược, dịch)
 - `E4-10` Bản đồ native + tìm kiếm, bộ lọc, camera, vệ tinh, phục hồi lỗi
 - `E4-12` Lớp địa điểm bổ sung chưa xác minh `GET /api/support-locations/external` (OSM miễn phí hoặc SerpApi trả phí), luôn `verified:false`, không ghi DB
 - `E4-13` Tìm Đại sứ quán / điểm hỗ trợ theo quốc gia đã chọn, không cần GPS
