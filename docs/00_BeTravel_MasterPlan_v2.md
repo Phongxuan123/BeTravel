@@ -1,7 +1,7 @@
 # BE.TRAVEL — MASTER PLAN v2 (khớp repo thực tế)
 
 > Thay thế bản v1. v1 giả định frontend là React web — sai; frontend thực tế là **Expo/React Native**.
-> Đọc `04_Repo_Audit.md` trước để biết hiện trạng và 8 điểm xung đột.
+> Báo cáo rà soát repo ban đầu (04_Repo_Audit, 8 điểm xung đột) đã gỡ ngày 19/10/2026 vì đã xử lý hết; còn trong lịch sử git.
 > Baseline: repo `Phongxuan123/BeTravel` @ `79db16f` · 22/09/2026
 
 ---
@@ -197,7 +197,7 @@ Nhờ vậy **không màn hình nào phải sửa**. Khi FE rảnh thì nâng c�
 
 ## PHẦN D — LỘ TRÌNH 9 BATCH
 
-Prompt chi tiết ở `02_ClaudeCode_Batch_Prompts_v2.md`.
+Prompt chi tiết từng batch (đã hoàn tất, đã gỡ 19/10/2026) còn trong lịch sử git.
 
 | Batch | Tên | Kết quả nhìn thấy được |
 |---|---|---|

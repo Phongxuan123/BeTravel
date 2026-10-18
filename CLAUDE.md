@@ -44,11 +44,11 @@ BeTravel/
 ├─ admin/             Vite · React · TS · Tailwind. Tạo ở B2
 └─ docs/
    ├─ 00_BeTravel_MasterPlan_v2.md       kiến trúc, mô hình dữ liệu, rủi ro
-   ├─ 02_ClaudeCode_Batch_Prompts_v2.md  [!] 9 prompt chi tiết — nguồn việc
    ├─ 03_Contracts_v2.md                 code mẫu: envelope, guard, index JSON, prompt AI
-   ├─ 04_Repo_Audit.md                   hiện trạng + 8 xung đột đã chốt cách xử lý
    ├─ 05_ToiUuHeThong.md                 [!] 13 quy tắc Clean Code — chuẩn viết code
-   ├─ PROGRESS.md                        [!] sổ tiến độ — tự tạo & tự cập nhật
+   ├─ JIRA_TASK_OVERVIEW.md              [!] danh sách task đã/đang/chưa làm — nguồn việc hiện hành
+   ├─ TRANSLATION.md · FEATURE_GUIDES.md · MAPS_SETUP.md   vận hành dịch/voice/offline, chia sẻ vị trí, lịch trình, bản đồ
+   ├─ PROGRESS.md                        [!] sổ tiến độ — tự tạo & tự cập nhật (lịch sử cũ: PROGRESS_HISTORY.md)
    └─ OPTIMIZATION_REPORT.md             [!] sổ tối ưu — tự tạo & tự cập nhật
 ```
 
@@ -93,9 +93,8 @@ git log --oneline -15
 ### 2.3. Đọc tài liệu nền — lần đầu hoặc sau khi đã `/clear`
 
 Bắt buộc, theo thứ tự:
-1. `docs/04_Repo_Audit.md` — hiện trạng + 8 xung đột đã chốt cách xử lý
-2. `docs/00_BeTravel_MasterPlan_v2.md` — kiến trúc, mô hình dữ liệu
-3. `docs/05_ToiUuHeThong.md` — 13 quy tắc Clean Code phải tuân theo khi viết code
+1. `docs/00_BeTravel_MasterPlan_v2.md` — kiến trúc, mô hình dữ liệu
+2. `docs/05_ToiUuHeThong.md` — 13 quy tắc Clean Code phải tuân theo khi viết code
 
 ### 2.4. Kiểm tra sức khỏe workspace
 ```bash
@@ -149,11 +148,10 @@ Màn hình đã dựng sẵn chạy trên mock **vẫn demo được**. Cái kh�
 
 # PHAN 4 — BUOC 3: THUC THI
 
-1. Mở `docs/02_ClaudeCode_Batch_Prompts_v2.md`, tìm mục `PROMPT B<n>`.
-2. **Thi hành nguyên văn prompt đó** như thể người dùng vừa dán nó vào. Prompt là đặc tả công việc, không phải gợi ý.
-3. Prompt bảo đọc `docs/03_Contracts_v2.md` mục nào --> đọc đúng mục đó trước khi viết code liên quan.
-4. **Viết code theo 13 quy tắc Clean Code** (Phần 4.3). Tối ưu tại nguồn, không để dồn về cuối.
-5. Xung đột giữa prompt và file này --> **file này thắng**, và nói rõ chỗ xung đột trong báo cáo.
+1. B1–B9 đã xong (19/10/2026); prompt chi tiết gốc `docs/02_ClaudeCode_Batch_Prompts_v2.md` đã gỡ khỏi cây thư mục, còn trong lịch sử git. Việc mới lấy từ `docs/JIRA_TASK_OVERVIEW.md` và yêu cầu của người dùng.
+2. Đọc `docs/03_Contracts_v2.md` mục liên quan trước khi viết code đụng contract/RAG.
+3. **Viết code theo 13 quy tắc Clean Code** (Phần 4.3). Tối ưu tại nguồn, không để dồn về cuối.
+4. Xung đột giữa yêu cầu và file này --> **file này thắng**, và nói rõ chỗ xung đột trong báo cáo.
 
 ## 4.1. Luật bất di bất dịch khi viết code
 
@@ -247,7 +245,7 @@ Luật sư/live chat · OCR camera · payment thật · background geofence & pu
 Ngoại lệ theo yêu cầu người dùng 07/10/2026: nhập giọng nói bằng dịch vụ native
 Android/iOS và đọc bản dịch theo ngôn ngữ đích đã được triển khai. Không mở rộng
 sang upload/lưu âm thanh ở backend, nghe nền hoặc voice streaming. Xem
-`docs/VOICE_TRANSLATION.md` và PROGRESS để biết giới hạn/nghiệm thu native.
+`docs/TRANSLATION.md` và PROGRESS để biết giới hạn/nghiệm thu native.
 
 Yêu cầu rơi vào danh sách này --> **hỏi lại trước khi làm**, đừng tự mở rộng.
 

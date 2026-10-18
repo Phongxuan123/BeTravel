@@ -747,7 +747,7 @@ for f in contracts/fixtures/*.json; do n=$(basename "$f"); \
 **INV**
 - INV-17.1 D01–D04 sạch.
 - INV-17.2 Tài liệu không chứa email/thông tin tài khoản người dùng thật. **Đã biết tại baseline:** `docs/PROGRESS.md` (mục "Đang vướng", B9) liệt kê 3 email tài khoản thật và mật khẩu admin mặc định --> S1 privacy trên repo public. Xử lý: thay bằng mô tả trung tính ("3 tài khoản do người dùng tạo, không liệt kê định danh"), **không** xóa lịch sử git (việc đó cần người quyết định: rewrite history là thao tác phá hủy).
-- INV-17.3 `backend/README.md` không chứa host cluster thật (mục tồn đọng từ `docs/04_Repo_Audit.md`).
+- INV-17.3 `backend/README.md` không chứa host cluster thật (mục tồn đọng từ 04_Repo_Audit (đã gỡ, còn trong lịch sử git)).
 - INV-17.4 Mật khẩu admin mặc định đã seed trên Atlas thật --> đây là việc của **người** (đổi mật khẩu); QA chỉ ghi vào "Việc người phải làm" với mức S0 cho tới khi người xác nhận đã đổi.
 - INV-17.5 `.claude/settings.local.json` không bị track (kiểm `git ls-files .claude`).
 - INV-17.6 `docs/PROGRESS.md` quá dài và chứa lịch sử mâu thuẫn --> S4; đề xuất tách lịch sử sang `docs/PROGRESS_HISTORY.md`, chỉ làm khi người đồng ý.

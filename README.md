@@ -81,6 +81,10 @@ Không hard-code quốc gia vào business logic — mọi thứ đi qua dữ li�
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — triển khai từ zero: Atlas → Render → Vercel → EAS.
 - [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md) — kịch bản demo + checklist trước demo 30 phút.
 - [`docs/atlas-indexes.md`](docs/atlas-indexes.md) — tạo 2 Atlas Search index cho RAG.
+- [`docs/JIRA_TASK_OVERVIEW.md`](docs/JIRA_TASK_OVERVIEW.md) — danh sách task đã/đang/chưa làm, trạng thái Jira.
+- [`docs/TRANSLATION.md`](docs/TRANSLATION.md) — dịch online, giọng nói, dịch offline ML Kit.
+- [`docs/FEATURE_GUIDES.md`](docs/FEATURE_GUIDES.md) — chia sẻ vị trí và lịch trình nhiều nước.
+- [`docs/MAPS_SETUP.md`](docs/MAPS_SETUP.md) — cấu hình và vận hành bản đồ.
 
 ## Tiến độ
 
