@@ -87,6 +87,7 @@ const REGION_BY_CODE: Record<string, string> = {
   JP: 'Đông Á',
   TH: 'Đông Nam Á',
   SG: 'Đông Nam Á',
+  AU: 'Châu Đại Dương',
 };
 
 

@@ -13,6 +13,8 @@ import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { fetchTopics, fetchArticles, fetchCountries } from '@/lib/data';
+import { AuLawsSection } from '@/features/laws/AuLawsSection';
+import { AU_COUNTRY_CODE } from '@/lib/api/auLaws';
 import { useSavedArticles } from '@/features/explore/useSavedArticles';
 import { isFeatureDisabledError } from '@/lib/api/http';
 import type { Article } from '@/lib/data';
@@ -179,6 +181,8 @@ export default function ExploreScreen() {
             ))}
           </View>
         </View>
+
+        {countryCode === AU_COUNTRY_CODE && <AuLawsSection />}
       </ScrollView>
 
       <SimpleSheet visible={pickingCountry} onClose={() => setPickingCountry(false)} title="Chọn quốc gia">

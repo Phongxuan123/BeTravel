@@ -1,5 +1,13 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Luật liên bang Úc — 18/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 10: không còn import/biến thừa trong các file mới (`eslint`, `tsc`, `oxlint` xanh). Không xóa `mobile/src/mocks/`.
+- Rule 6: ngưỡng, TTL, kích thước cụm, số lần thử lại nằm ở hằng số có tên hoặc biến `AU_LEGISLATION_*`, `AU_LAW_DEEP_SUMMARY_AUTOGEN`.
+- Rule 13A: W5 (bảo mật) không phát sinh; id/collection/topic đi vào câu OData đều bị chặn ký tự lạ hoặc escape.
+- Rule 11: có comment tiếng Việt cho các khối mới (guard tóm tắt/dịch, tách Phần, tiện ích thử lại 429).
+- Còn tồn: xem mục "Nợ kỹ thuật (Luật Úc)" trong PROGRESS.md.
+
 ## Khôi phục bản đồ ổn định theo người dùng — 17/10/2026
 
 - Lấy e6361c3 làm nền map, hoàn tác thử nghiệm render/tiles mới và vendor để

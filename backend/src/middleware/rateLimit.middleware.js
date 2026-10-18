@@ -67,3 +67,15 @@ export const externalPlacesRateLimit = buildRateLimit({
   limit: 30,
   message: "Bạn đang tìm địa điểm quá nhanh. Vui lòng chờ một chút rồi thử lại.",
 });
+
+// Tra cứu luật Úc: mỗi lượt có thể thành một lần gọi API của cơ quan Úc (có cache nhưng vẫn giới hạn burst theo IP).
+export const lawsRateLimit = buildRateLimit({
+  limit: 120,
+  message: "Bạn đang tra cứu quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});
+
+// Dịch luật Úc mỗi lượt có thể gọi AI tới 4 lần (cụm 25 đoạn): giới hạn chặt hơn tra cứu thường.
+export const lawsTranslateRateLimit = buildRateLimit({
+  limit: 40,
+  message: "Bạn đang dịch quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});
