@@ -73,7 +73,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 
 | Mã | Task | Loại | Trạng thái | Jira | Ưu tiên | Nguồn / ghi chú |
 |---|---|---|---|---|---|---|
-| E2-01 | Mô hình bài luật, máy trạng thái draft -> published -> archived, version, chống ghi đè | Story | Xong | Done | - | `docs/PATCH_2026_10_05.md`; có transaction khi xuất bản |
+| E2-01 | Mô hình bài luật, máy trạng thái draft -> published -> archived, version, chống ghi đè | Story | Xong | Done | - | bản vá 05/10 (đã gỡ, xem lịch sử git); có transaction khi xuất bản |
 | E2-02 | Admin Portal: Dashboard + 10 trang quản lý (Quốc gia, Chủ đề, Bài luật, Điểm hỗ trợ, Sự cố, Câu dịch, Cảnh báo, RAG Index, Feedback, Nhật ký) | Story | Xong | Done | - | Đều tải được, RBAC kiểm ở backend |
 | E2-03 | API công khai bài luật, tìm kiếm có dấu / không dấu, luôn lọc `published` + `isCurrent` | Story | Xong | Done | - | Đã chứng minh bài nháp không lọt ra |
 | E2-04 | Cẩm nang, chi tiết bài, lưu / bỏ lưu, chia sẻ, Tìm kiếm trên app | Story | Xong | Done | - | B05, B11, B16, B24 |
@@ -90,7 +90,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 | Mã | Task | Loại | Trạng thái | Jira | Ưu tiên | Nguồn / ghi chú |
 |---|---|---|---|---|---|---|
 | E3-01 | Truy hồi vector + `$lookup` kiểm bài còn hiệu lực, ngưỡng điểm, từ chối khi thiếu bằng chứng | Story | Xong | Done | - | `backend/src/rag/`, `INSUFFICIENT_EVIDENCE`, không gọi LLM khi thiếu dữ liệu |
-| E3-02 | Hậu kiểm bằng code (marker nguồn, chặn tuyên bố định lượng thiếu trích dẫn), quota nguyên tử theo ngày và theo người | Story | Xong | Done | - | `docs/PATCH_2026_10_05.md` |
+| E3-02 | Hậu kiểm bằng code (marker nguồn, chặn tuyên bố định lượng thiếu trích dẫn), quota nguyên tử theo ngày và theo người | Story | Xong | Done | - | bản vá 05/10 (đã gỡ, xem lịch sử git) |
 | E3-03 | Chạy Reindex KR (tạo embedding cho bài đã xuất bản) | Task | Chờ người | To Do (Blocked) | P2 | B04. Cần E2-07 xong và người cho phép chi phí (form F5) |
 | E3-04 | Chạy bộ 26 câu golden bằng AI thật và ghi kết quả | Task | Chờ người | To Do (Blocked) | P2 | Cần ngân sách (form F5); hiện chỉ chạy với `LLM_PROVIDER=mock` |
 | E3-05 | Mở khoá Be.Travel AI trên app (đổi cờ, kiểm lại toàn luồng chat, feedback, lịch sử) | Task | Chờ người | To Do (Blocked) | P2 | Quyết định B4: khoá tới khi có nội dung duyệt + reindex + test thật. Màn chat và lịch sử đã có sẵn |
@@ -133,7 +133,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 | E6-01 | Cảnh báo vị trí do Admin tạo, hiện banner + danh sách, đánh dấu đã đọc, kéo để làm mới | Story | Xong | Done | - | B12 |
 | E6-02 | Yêu thích, tuỳ chọn thông báo, liên hệ khẩn cấp lưu trên máy (ghi rõ trong app) | Story | Xong | Done | - | Quyết định form B6 |
 | E6-03 | Bỏ nhãn "Đã mã hoá" sai sự thật ở thẻ Giấy tờ | Bug | Xong | Done | P1 | B03, quyết định form B7 |
-| E6-04 | Tạo / sửa / xoá chuyến đi, nhiều quốc gia, gợi ý thành phố, tab Đang diễn ra / Sắp tới / Đã qua | Story | Xong | Done | - | `docs/TRIP_ITINERARY.md`, B09-B11, B18 |
+| E6-04 | Tạo / sửa / xoá chuyến đi, nhiều quốc gia, gợi ý thành phố, tab Đang diễn ra / Sắp tới / Đã qua | Story | Xong | Done | - | `docs/FEATURE_GUIDES.md`, B09-B11, B18 |
 | E6-05 | Tạo cảnh báo vị trí thật cho KR và kiểm cảnh báo theo khu vực GPS | Task | Chờ người | To Do (Blocked) | P4 | Form D3. **0 cảnh báo trên Atlas** nên chưa kiểm được phần khu vực |
 | E6-06 | Điều khoản sử dụng, Chính sách bảo mật, thông tin liên hệ trong app | Story | Chờ người | To Do (Blocked) | P3 | Form E1. Cần văn bản từ người, không tự soạn |
 | E6-07 | Lưu ảnh giấy tờ (hiện chỉ đánh dấu "đã chuẩn bị") | Story | Chưa làm | To Do | P4 | Cần quyết định bảo mật (form B7 phương án 2/3) |

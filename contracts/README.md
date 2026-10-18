@@ -9,14 +9,14 @@ giữ giới hạn 500 ký tự và yêu cầu đăng nhập. `/translate` ở *
 để người mất phiên vẫn dùng gói offline; **POST /api/translate** vẫn có auth.
 Micro offline yêu cầu nhận dạng trên máy; Android TTS lọc giọng không cần mạng.
 Model tải một lần khi có mạng, không chứa trong JS/Expo Go. Xem
-`docs/OFFLINE_TRANSLATION.md` cho luồng tải, build và bằng chứng nghiệm thu.
+`docs/TRANSLATION.md` (mục 3) cho luồng tải, build và bằng chứng nghiệm thu.
 
 ## Nhập giọng nói/đọc bản dịch — 07/10/2026
 
 Nhận dạng/TTS qua dịch vụ native mobile; /translate tiếp tục chỉ nhận
 text/from/to/mode theo contract cũ. Không nhận/lưu audio ở backend, không đổi
 quota/auth/envelope. Người dùng kiểm văn bản rồi chủ động bấm dịch.
-Xem docs/VOICE_TRANSLATION.md về quyền, giới hạn và rebuild.
+Xem docs/TRANSLATION.md (mục 2) về quyền, giới hạn và rebuild.
 
 ## Lịch trình nhiều chặng — 06/10/2026
 
@@ -691,7 +691,7 @@ Việt–Anh hai chiều độc lập với quốc gia. `from`/`to` nhận mã
 của client cũ. Ngôn ngữ khác trả VALIDATION_ERROR. Cùng ngôn ngữ trả nguyên
 văn, không gọi AI. `text` dịch đầy đủ; `phrase` ưu tiên cách nói tự nhiên,
 lịch sự nhưng không bỏ thông tin. Lượt gọi AI tính quota DB chung với chat.
-Response giữ nguyên. Bộ câu mẫu mở offline: `docs/TRANSLATION_SOURCES.md`.
+Response giữ nguyên. Bộ câu mẫu mở offline: `docs/TRANSLATION.md` (mục 1).
 
 ```
 POST /translate {text, from, to, mode:'text'|'phrase'}   can dang nhap

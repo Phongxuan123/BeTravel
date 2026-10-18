@@ -4,7 +4,7 @@ import { setRefreshTokenCookie, clearRefreshTokenCookie } from "./cookie.js";
 /*
  * ĐỌC refresh token từ cookie HOẶC body -- viết một lần, chạy được cả mobile
  * (body) lẫn admin web (cookie), bất kể AUTH_TRANSPORT server đang cấu hình gì.
- * Đây là lý do X2 trong docs/04_Repo_Audit.md yêu cầu.
+ * Đây là lý do X2 trong 04_Repo_Audit (đã gỡ, còn trong lịch sử git) yêu cầu.
  */
 export const readRefreshToken = (req) =>
   req.cookies?.refreshToken || req.body?.refreshToken || null;

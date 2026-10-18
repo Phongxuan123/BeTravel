@@ -28,7 +28,7 @@ phát hành · **P4** khi có dữ liệu.
 
 ## Quyết định đã chốt (08/10/2026)
 
-Nhóm đã trả lời phiếu trong [`BeTravel_TRA_LOI_USER_INPUT_2026-10-08.md`](BeTravel_TRA_LOI_USER_INPUT_2026-10-08.md);
+Nhóm đã trả lời phiếu ngày 08/10 (bản trả lời chi tiết đã gỡ 19/10/2026, còn trong lịch sử git);
 toàn bộ đề xuất ở đó được người dùng xác nhận là **quyết định của nhóm**. Kèm theo:
 
 | Mục | Quyết định | Trạng thái |

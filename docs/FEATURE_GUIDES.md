@@ -1,8 +1,12 @@
-# Chia sẻ vị trí cho người thân
+# Hướng dẫn vận hành tính năng
+
+Gộp từ LOCATION_SHARING và TRIP_ITINERARY (19/10/2026; bản gốc còn trong lịch sử git).
+
+## 1. Chia sẻ vị trí cho người thân
 
 Cập nhật 29/09/2026. Triển khai: snapshot GPS do người dùng chủ động gửi.
 
-## Cách dùng
+### Cách dùng
 
 1. Vào **SOS > Chia sẻ vị trí với người thân**, hoặc mở mục tương ứng trong **Cài đặt**.
 2. Đọc hướng dẫn rồi bấm **Lấy vị trí của tôi**. Cấp quyền vị trí khi dùng ứng dụng nếu hệ điều hành hỏi.
@@ -10,7 +14,7 @@ Cập nhật 29/09/2026. Triển khai: snapshot GPS do người dùng chủ đ�
 4. Bấm **Chọn ứng dụng và người nhận**. Trong bảng chia sẻ của điện thoại, chọn ứng dụng đã cài, chọn người thân và xác nhận gửi ở ứng dụng đó.
 5. Người nhận mở liên kết Google Maps để xem điểm đã gửi. Không cần cài BeTravel hoặc đăng nhập BeTravel. Muốn gửi vị trí mới thì lấy GPS và gửi lại.
 
-## Dữ liệu và vận hành
+### Dữ liệu và vận hành
 
 `SOS/Cài đặt -> /sos/share-location -> expo-location -> xem trước -> React Native Share -> ứng dụng do người dùng chọn`.
 
@@ -24,7 +28,7 @@ Cập nhật 29/09/2026. Triển khai: snapshot GPS do người dùng chủ đ�
 - Gửi tin/mở bản đồ phụ thuộc ứng dụng, kết nối và có thể tốn cước SMS/dữ liệu. Liên kết đã gửi có thể bị chuyển tiếp, không có token hết hạn hay khả năng thu hồi. Mốc 60 giây chỉ chặn **tạo lần gửi mới**, không làm link đã gửi hết hạn.
 - Khi không có dữ liệu quốc gia, SOS hiện hướng dẫn và nút chia sẻ thay vì màn hình trắng; route chia sẻ cũng hoạt động qua Cài đặt/route trực tiếp. Không phụ thuộc dữ liệu đại sứ quán, tài khoản backend hay liên hệ đã lưu.
 
-## Giới hạn và kiểm chứng
+### Giới hạn và kiểm chứng
 
 Đây là chia sẻ điểm tại một thời điểm. Chia sẻ trực tiếp theo thời gian thực cần một thiết kế khác: phiên có thời hạn, người nhận được cấp quyền, nút dừng/thu hồi, máy chủ cập nhật, chính sách lưu dữ liệu và quyền nền. Chưa triển khai luồng đó trong MVP hiện hành.
 
@@ -33,3 +37,38 @@ Kiểm thử tự động bao phủ tọa độ sai/cũ, quyền bị từ chố
 Nghiệm thu còn cần thiết bị: iOS/Android (gồm approximate location), iPad share sheet, mở Zalo/SMS, chọn đúng người nhận, mất mạng, tắt GPS, chờ timeout và chuyển nền/quay lại. Không gửi tin thật tự động trong test. Chuỗi xin quyền mới trong `app.json` cần native build mới để cập nhật; Expo Go dùng cấu hình host.
 
 Nguồn kỹ thuật: [Expo Location SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/location/), [React Native Share 0.86](https://reactnative.dev/docs/0.86/share), [Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started).
+
+## 2. Lịch trình nhiều nước — vận hành và bàn giao
+
+Cập nhật 06/10/2026. Contract nguồn: `contracts/README.md`, fixture `trip.json`.
+
+1. Chọn quốc gia đầu tiên và thành phố; chọn các nước tiếp theo theo thứ tự.
+2. Chọn ngày đi/về. Mỗi chặng sau có nước, thành phố, địa điểm tùy chọn và ngày tới.
+   Có thể thêm, xóa hoặc quay lại cùng nước ở chặng khác; tối đa 20 chặng.
+3. Chọn cảnh báo. Vị trí mặc định tắt ở wizard mới, giải thích và xin quyền
+   foreground trước khi bật. Từ chối quyền vẫn tạo chuyến được. Chỉ ghi consent
+   toàn cục sau hành động cấp quyền rõ ràng, không tự bật khi sửa chuyến cũ.
+4. Xác nhận toàn bộ các chặng, lưu API, đặt chuyến chính. Nếu đặt chính thất bại,
+   chuyến đã tạo vẫn còn và UI báo rõ, tránh tạo lại gây trùng.
+
+Ngày tới chặng mới là ngày chuyển nước. Không cần nhập ngày kết thúc mỗi chặng:
+chặng trước kết thúc ngày trước đó, chặng cuối kết thúc ngày về. Không tự sort
+hoặc tự sửa ngày. UI và Zod backend chặn ngày không tồn tại, trùng/lùi ngày,
+vượt ngày về, thiếu thành phố và thêm quốc gia chưa mở.
+
+Top-level điểm đến/ngày đi khớp chặng đầu. DB cũ không có stops vẫn đọc được;
+client cũ sửa chuyến nhiều chặng nhận CONFLICT. Mobile lưu updatedAt gốc của
+form; backend compare-and-swap lọc cả userId để chặn phiên cũ/cross-user.
+Không migration, không thêm collection hoặc index, không ghi lại dữ liệu Atlas.
+
+Home dùng chặng theo ngày. CountryContext ưu tiên lựa chọn quốc gia thủ công,
+nếu chưa chọn thì dùng chặng hiện tại của chuyến chính; SOS/cẩm nang/dịch/cảnh báo
+theo context đó. Poll cảnh báo cần consent toàn cục, quyền OS và tùy chọn vị trí
+của chuyến chính; chỉ khi app active. Không triển khai background tracking/push.
+GeoAlert hiện có là safety; regulationAlerts là bộ lọc cảnh báo legal khi hệ
+thống có loại đó, không tự tạo thông báo thay đổi luật. Preferences toàn cục
+vẫn được tôn trọng. Việc đổi nước tự động cần app render/refetch, không chạy nền.
+
+Kiểm thử: backend trips/qa.config/gemini.retry, mobile itinerary/ItineraryEditor,
+wizard/adapters/mapsConfig/usePollAlerts cùng các kiểm thử hồi quy ba workspace.
+Maps và GPS thực tế cần nghiệm thu trên native build; xem MAPS_SETUP.md.

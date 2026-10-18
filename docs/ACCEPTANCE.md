@@ -25,7 +25,7 @@ Android Hermes export bản khôi phục đạt; chưa coi là nghiệm thu UI t
 - Micro tích hợp không thể chạy trong Expo Go vì thiếu module native; đã thêm
   đường nhập qua đọc chính tả bàn phím và thông báo đúng giới hạn. Chưa nghiệm thu
   nhận giọng/loa sau micro trong bản native Samsung; iOS vẫn chưa nghiệm thu.
-- Quy trình thử và điều kiện còn thiếu: [PHONE_MAP_VOICE.md](PHONE_MAP_VOICE.md).
+- Quy trình thử và điều kiện còn thiếu: [TRANSLATION.md](TRANSLATION.md) mục 4.
 
 ## Tích hợp main 4aacd61 vào offline — 15/10/2026
 
@@ -52,100 +52,13 @@ Android Hermes export bản khôi phục đạt; chưa coi là nghiệm thu UI t
 | Native | Android debug và release build/cài emulator đạt, SOS > dịch khách đạt; tải model đạt sau sửa DNS và dịch Việt–Anh offline đạt. iOS mới parse Swift/autolink, chưa compile |
 | Dữ liệu và Git | Không migration/API backend mới; chưa push hoặc merge |
 
-Kế hoạch và kết quả tiếp tục: [OFFLINE_TRANSLATION.md](OFFLINE_TRANSLATION.md).
+Kế hoạch và kết quả tiếp tục: [TRANSLATION.md](TRANSLATION.md) mục 3.
 Không coi các tiêu chí cần thiết bị thật là đã nghiệm thu.
 
 
-## Nhập giọng nói và TTS — 07/10/2026
+## Nghiệm thu cũ (29/09-07/10/2026)
 
-| Tiêu chí | Kết quả |
-|---|---|
-| Plugin/quyền micro Android, speech/micro iOS, service visibility | Đạt native config introspection; chưa build ký/kiểm máy thật |
-| Nhận ngôn ngữ nguồn, text tối đa 500, không lưu audio | Đạt useVoiceInput tests; persist=false |
-| Quyền denied/late, đổi ngôn ngữ, app nền, timeout 30 giây | Đạt kiểm thử hủy phiên và bỏ callback cũ |
-| Đọc đúng locale đích, thiếu giọng thì báo lỗi | Đạt speechLocale/useTranslationSpeech/TranslatorScreen tests |
-| Tự phát API/câu mẫu, stop, tắt trong lúc chờ, bỏ speech cũ | Đạt kiểm tự động |
-| Câu lưu theo targetLanguage, legacy nhập lại để dịch | Đạt code review; giữ dữ liệu cũ, không đoán ngôn ngữ |
-| Hồi quy | Backend 269/269 gồm golden 26; mobile 206/206 (49 suites); admin 18/18 |
-| Checks/build | Backend lint/format; mobile/admin lint/typecheck; admin build; iOS/Android exports đạt |
-
-Nghiệm thu native và chất lượng nhận/phát âm trên điện thoại vẫn mở. Expo Go
-không có module mới; cần rebuild. Quyền/service/lang pack/giọng TTS cần người dùng
-tương tác trên thiết bị. Không chứng nhận mọi lỗi macOS hoặc tất cả dependency
-sạch advisory. Báo cáo dependency còn mở tại OPTIMIZATION_REPORT.
-
-## Khởi tạo Maps hai nền tảng — 06/10/2026
-
-Mobile 193/193, 46 suites; lint/typecheck và iOS/Android exports đạt.
-Runtime Google/Apple/Expo Go, missing key guard, preflight không lộ key,
-startup timeout/retry, về tâm và vệ tinh được kiểm tự động. Bản gốc mẫu Google
-đã lưu, không gắn Places/Aerial/KML vào dữ liệu SOS đã kiểm chứng.
-Chưa đạt nghiệm thu Google tile/native binary: thiếu key và ID cho cả Android/iOS.
-Xem MAPS_SETUP.md cho thao tác cấu hình, rebuild và kiểm thiết bị.
-
-## Cẩm nang/dịch/lịch trình 06/10/2026 — hiện hành
-
-| Tiêu chí | Kết quả |
-|---|---|
-| Cẩm nang mặc định mở, vẫn chỉ published/current; explicit false vẫn khóa | Đạt tự động (qa.config, publicContent, lockdown) |
-| Dịch Việt–Anh hai chiều qua provider thật | Đạt smoke service Google; mẫu offline giữ nguyên; AI mở cần đăng nhập/quota |
-| Google Maps key riêng Android/iOS, không lộ vào extra | Đạt config tests; chưa có key thật/native tile nghiệm thu |
-| Một/nhiều nước, ngày chuyển chặng, sửa lịch trình | Đạt backend trips, mobile itinerary/editor/wizard/adapters |
-| Ngày sai/trùng/ngoài lịch/stops rỗng và quốc gia chưa mở | Đạt validation tests |
-| Cross-user, client cũ, phiên sửa cũ không ghi đè | Đạt trips tests; mobile giữ updatedAt lúc hydrate |
-| Từ chối vị trí vẫn tạo được; chuyến tắt vị trí không đọc GPS | Code foreground + helper tests + usePollAlerts test |
-| Hồi quy workspace | Backend 269/269 gồm golden 26; mobile 188/188 (45 suites); admin 18/18 |
-| Build/check | Backend lint/format; mobile/admin lint/typecheck; admin build; iOS/Android exports đạt |
-
-Nghiệm thu thật còn mở: Maps key/billing/restrictions/rebuild, tile native,
-quyền OS và UI trên điện thoại, Atlas/dữ liệu published/verified. Xem
-TRIP_ITINERARY.md, MAPS_SETUP.md và USER_INPUT_FORM.md. Không triển khai push
-hoặc GPS nền; tùy chọn cảnh báo luật không tạo nguồn thông báo mới.
-
-## Bản đồ 06/10/2026 — hiện hành
-
-Tiến độ local `[######] 6/6`; phát hành/kiểm chứng thiết bị **xong một phần**.
-Backend 266/266 tuần tự, golden 26/26; mobile 183/183; admin 18/18;
-lint/typecheck/format/admin build đạt. Xem PROGRESS cho nhiễu localhost
-concurrency=2 và dependency advisory chưa có bản vá upstream.
-
-| Tiêu chí | Trạng thái | Bằng chứng/cần làm |
-|---|---|---|
-| Plugin native/key env/loại placeholder | Đạt local | mapsConfig tests và native introspection; extra không chứa key |
-| Android thiếu key dùng list | Đạt tự động | SosMapScreen tests; Expo Go có config native riêng |
-| GPS chủ động, từ chối/tắt/lỗi/cũ/timeout | Đạt tự động | locationPermission/SosMapScreen tests; foreground snapshot |
-| Search, bán kính, camera và query khớp API | Đạt tự động | mapHelpers/SosMapScreen tests; country/type/radius/limit đúng |
-| verified gate, đúng [lng,lat] | Đạt tự động | backend supportLocation/supplement/E2E tests |
-| Cache list/nearby riêng, loại dữ liệu hỏng/chưa verify | Đạt tự động | api/sos tests, offline radius/limit và banner stale/partial |
-| Đổi quốc gia đóng sheet cũ | Đạt tự động | SosMapScreen tests |
-| Favorites không lộ actor ID | Đạt tự động | backend favorites.test.js; projection location/incident |
-| iOS/Android bundle sau dependency patch | Đạt local | Expo export --clear; không phải binary ký |
-| Gọi/chỉ đường/copy/tile/GPS/font lớn thực tế | Cần thiết bị | iPhone/Android, approximate, mất mạng, không Google Play Services |
-| Điểm hỗ trợ thật | Cần dữ liệu | Admin nhập/verify; không seed điểm giả |
-| Android Maps native phát hành | Cần cấu hình | Key, SDK, package/SHA-1/quota và rebuild; MAPS_SETUP.md |
-
-Phiên này rà source/config/test ứng dụng; không chứng nhận toàn máy hoặc mọi lỗi
-tiềm ẩn. Không thay thế nghiệm thu Atlas/provider/điện thoại thật.
-
-Cập nhật 29/09/2026: backend 156/156, mobile 124/124, admin 9/9 test đạt;
-lint/typecheck/admin build và export iOS/Android đạt. Phiên này bổ sung dịch
-Việt-Anh hai chiều có câu mẫu nguồn mở, quota AI và chia sẻ snapshot GPS chủ động.
-AC-11/AC-12 vẫn cần nghiệm thu thật; advisory trực tuyến và Expo Doctor chưa
-kiểm được phiên này (xem PROGRESS). Không dùng kết quả mock để chứng nhận
-chất lượng dịch AI hay việc gửi tin trên điện thoại thật.
-
-## Nghiệm thu tính năng mới 29/09
-
-| Nội dung | Trạng thái | Bằng chứng/còn cần |
-|---|---|---|
-| GPS chỉ lấy khi bấm, không tự chia sẻ | Đạt tự động | `features/sos/__tests__/ShareLocationScreen.test.tsx`: không xin quyền lúc mount, preview trước Share |
-| Quyền từ chối, GPS tắt/cũ, hủy, lỗi share | Đạt tự động | Cùng test screen; pure `locationShare.test.ts` kiểm tọa độ biên, timestamp và sai số |
-| Link bản đồ và tin gửi minh bạch | Đạt tự động | URL encode lat/lng, UTC, sai số và nhãn không cập nhật trực tiếp; chưa gửi tin thật |
-| Native share và responsive | Cần người xác nhận | iPhone/Android/iPad, Zalo/SMS, approximate location, font lớn, offline, chuyển nền và timeout 20 giây; xem LOCATION_SHARING |
-| Dịch Việt-Anh offline hai chiều | Đạt tự động | `phrasebook.test.ts`, `api/__tests__/translate.test.ts`: 10 cặp không gọi mạng; nguồn/giấy phép trong TRANSLATION_SOURCES |
-| Đổi chiều, sửa câu trong lúc dịch | Đạt tự động | `TranslatorScreen.test.tsx`: phrase source/target đúng, bỏ response cũ |
-| API dịch validate và quota | Đạt tự động | `backend/test/translate.test.js`: allowlist, output JSON sai, cùng ngôn ngữ không gọi AI, quota dùng chung/hết lượt |
-| Chất lượng dịch tự do và phát âm | Cần người xác nhận | Provider thật với câu thử phi nhạy cảm; giọng vi/en đã cài trên thiết bị. Không gửi văn bản cá nhân trong test |
+Các bảng nghiệm thu giọng nói, Maps, cẩm nang/dịch/lịch trình và tính năng 29/09 đã được thay bằng các mục mới hơn ở trên; bản cũ còn trong lịch sử git.
 
 ## Tiêu chí hệ thống
 

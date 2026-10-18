@@ -80,5 +80,5 @@ export function createHallucinatingMockLlmProvider() {
   };
 }
 
-// Alias theo dung ten trong docs/02_ClaudeCode_Batch_Prompts_v2.md ("MockLlm.hallucinating()").
+// Alias theo dung ten trong prompt B4 gốc (đã gỡ, còn trong lịch sử git) ("MockLlm.hallucinating()").
 createMockLlmProvider.hallucinating = createHallucinatingMockLlmProvider;
