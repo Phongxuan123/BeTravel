@@ -1,6 +1,38 @@
 # TIEN DO BE.TRAVEL
 
-## Khôi phục bản đồ sau merge — 17/10/2026 (cập nhật mới nhất)
+## Luật liên bang Úc — 18/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng (ngoài lộ trình B1-B9). Tra cứu luật Commonwealth của Úc từ Federal Register of
+Legislation (API công khai, không cần key), thêm quốc gia Úc (AU), phân loại 5 mục, tóm lược và dịch tiếng Việt.
+
+- Backend `/api/laws/australia/*` (danh sách, tìm kiếm, chi tiết, phiên bản, nội dung, 5 mục, tóm lược, dịch).
+  Dữ liệu chỉ đọc, KHÔNG ghi vào `legal_articles`, KHÔNG vào RAG, `verifiedByBeTravel:false`. Contract: mục 24.
+- Phân loại 5 mục là danh sách do Be.Travel tuyển chọn thủ công (31 mã đã đối chiếu với nguồn), không phải đầy đủ.
+- Tóm lược có hai tầng: tiêu đề dài + dàn ý Chương/Phần lấy nguyên văn; bản tiếng Việt do AI diễn giải, hậu kiểm bằng code.
+- Dịch theo yêu cầu (cụm 25 đoạn, cache DB), chỉ 31 luật đã tuyển chọn; hậu kiểm số liệu từng đoạn; ghi rõ dịch máy.
+- Quốc gia Úc: trạng thái `active`, số khẩn cấp 000, để trống Đại sứ quán và số hàng hải vì chưa có nguồn.
+
+### Quyết định phát sinh (Luật Úc)
+
+- Quyết định 1: dịch/tóm tắt luật Úc dùng `TRANSLATION_MODEL` (model dịch), không dùng `LLM_MODEL` của chat, vì gói
+  miễn phí Gemini chỉ cho 20 lượt/ngày với model chat và đã từng cạn trong lúc chạy thử.
+- Quyết định 2: tóm tắt từng Phần mặc định KHÔNG tự sinh (`AU_LAW_DEEP_SUMMARY_AUTOGEN=false`); sinh chủ động bằng
+  `npm run summarize-au-laws`. Gặp 429 theo phút thì chờ rồi thử lại, hạn mức ngày thì báo lỗi ngay.
+- Quyết định 3: nguồn không hỗ trợ lọc phủ định nên nhóm luật thuế "A New Tax System" bị loại bằng code sau khi lấy trang.
+
+### Đang vướng (Luật Úc)
+
+- Tóm tắt từng Phần của Migration Act mới có 5/37 phần (bị 429 ngắt). Cần chạy lại khi hạn mức hồi:
+  `npm run summarize-au-laws -- C1958A00062`.
+- Dịch toàn bộ 31 luật (~18,8 triệu ký tự) chưa làm; cần API key trả phí.
+- Chưa kiểm tra giao diện trên điện thoại thật; liên kết `legislation.gov.au/<id>/latest/text` chưa kiểm chứng từ phía máy chủ.
+
+### Nợ kỹ thuật (Luật Úc)
+
+- Cache dịch lưu cả cụm có đoạn `textVi:null`; các đoạn đó chỉ dịch lại khi cache hết hạn hoặc bị xóa.
+- Admin và mobile chưa có test màn hình riêng cho luật Úc (chỉ test client API và logic thuần).
+
+## Khôi phục bản đồ sau merge — 17/10/2026
 
 Tiến độ `[###-] 3/4`, xong một phần. Theo yêu cầu người dùng, lấy bản đồ ở
 merge commit `e6361c3` làm nền; hoàn tác phần map của `7c2c6ad` và các thử nghiệm

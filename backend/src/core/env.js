@@ -119,6 +119,19 @@ const envSchema = z.object({
   // Overpass công cộng có lúc mất 10-15 giây; 8 giây cũ làm hỏng truy vấn hợp lệ.
   PLACES_TIMEOUT_MS: z.coerce.number().int().positive().default(20_000),
 
+  // Federal Register of Legislation (luat lien bang Uc). API cong khai, KHONG can key.
+  // Chi phu luat Commonwealth, khong co luat cua cac bang/vung lanh tho.
+  AU_LEGISLATION_API_URL: z.string().default("https://api.prod.legislation.gov.au/v1"),
+  AU_LEGISLATION_SITE_URL: z.string().default("https://www.legislation.gov.au"),
+  AU_LEGISLATION_USER_AGENT: z.string().default("BeTravel/1.0"),
+  AU_LEGISLATION_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
+  // Van ban Act dai co file HTML 3-4 MB nen can timeout rieng, dai hon truy van metadata.
+  AU_LEGISLATION_CONTENT_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  AU_LEGISLATION_CACHE_TTL_MINUTES: numeric(60),
+  // true = tự sinh tóm tắt từng Phần (nhiều lượt gọi AI) khi có người mở luật lần đầu. Mặc định tắt để
+  // không âm thầm đốt hạn mức AI; sinh chủ động bằng `npm run summarize-au-laws`.
+  AU_LAW_DEEP_SUMMARY_AUTOGEN: booleanish(false),
+
   APP_VERSION: z.string().default("1.0.0"),
 
   // Chi dung boi scripts/seed-content.js (npm run seed) -- tao/nang quyen

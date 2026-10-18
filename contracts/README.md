@@ -773,3 +773,81 @@ PATCH /chat/sessions/:id {title}   200 -- title 1-100 ky tu, khong duoc rong.
      Chi doi ten phien CUA CHINH MINH -- phien cua user khac tra 404
      (khong phai 403, tranh lo phien do co ton tai hay khong).
 ```
+
+---
+
+## 24. LUAT LIEN BANG UC — `/api/laws/australia/*` (cong khai, chi doc)
+
+Nguon: Federal Register of Legislation (`https://api.prod.legislation.gov.au/v1`, OData v4, khong can key).
+[!] Chi phu luat Commonwealth, KHONG gom luat cua cac bang/vung lanh tho. Du lieu la ban sao chi-doc,
+KHONG ghi vao `legal_articles`, KHONG vao RAG, chua qua kiem chung cua Be.Travel (`verifiedByBeTravel:false`).
+Tat/mo cung cong tac `LEGAL_LOOKUP_ENABLED` voi `/api/legal/*`. Rate limit 120 luot/15 phut/IP.
+
+| Endpoint | Query | Tra ve |
+|---|---|---|
+| `GET /laws/australia` | `page` `limit`(<=50, mac dinh 20) `inForce`(mac dinh true) `collection` `q`(>=2 ky tu) | `data: AuLawSummary[]` + `meta` |
+| `GET /laws/australia/search` | nhu tren, `q` BAT BUOC | nhu tren |
+| `GET /laws/australia/:id` | — | `AuLawDetail` (kem `version`, `documents`, `hasReadableText`) |
+| `GET /laws/australia/:id/versions` | `page` `limit` | `AuLawVersion[]` + `meta` |
+| `GET /laws/australia/:id/content` | `offset`(>=0) `limit`(<=300, mac dinh 100) | `AuLawContent` (cac `blocks` co `citationId`) |
+
+- `:id` la ma van ban cua nguon (vd `C1958A00062`), regex `^[A-Za-z0-9]{6,20}$`.
+- `collection` da doi chieu voi nguon: `Act`, `LegislativeInstrument`, `NotifiableInstrument`, `Gazette`.
+- Tim kiem chi theo TEN van ban (tieng Anh), khong tim toan van. Sap xep theo `name` (nguon loi 400 khi
+  `$orderby=makingDate` di cung `$filter isInForce`).
+- Loi: `VALIDATION_ERROR` (tham so), `NOT_FOUND` (ma khong ton tai, hoac van ban khong co ban doc duoc —
+  khi do `error.details.officialUrl` tro ve ban chinh thuc), `UPSTREAM_ERROR` (nguon Uc loi/timeout).
+- `blocks[].citationId` = `<registerId>:<chi so doan>`, on dinh trong mot ban bien soan (registerId bat bien),
+  dung de AI trich dan dung doan. Moi cau tra loi AI ve luat Uc PHAI dua tren `blocks` kem `source.officialUrl`.
+- Ngay tra ve dang `YYYY-MM-DD` (nguon khong co mui gio).
+- Danh sach (muc 24): voi `collection=Act` sap xep MOI NHAT truoc (`year desc,name`), con lai sap theo `name`.
+  Nhom luat thue "A New Tax System" bi loai khoi ket qua (khong lien quan nguoi di du lich; nguon khong ho tro loc
+  phu dinh nen loai sau khi lay trang) => mot trang co the it hon `limit` phan tu, tham chi rong; `meta.total` la
+  tong cua nguon (gom ca phan bi loai). Client dua vao `meta.total` de biet con trang sau.
+
+### 24b. Phan loai theo 5 muc — `GET /laws/australia/topics`, `?topic=<slug>`
+
+Nguon KHONG co truong chu de, nen 5 muc do Be.Travel TUYEN CHON THU CONG (backend/src/core/auLawTopics.js),
+moi ma van ban da doi chieu voi API nguon (17/10/2026). Khong phai danh sach day du, khong phai tu van phap ly.
+Mot dao luat co the nam o nhieu muc (vd Migration Act 1958: `cu-tru` va `xuat-nhap-canh`).
+
+| slug | Muc | So van ban |
+|---|---|---|
+| `giao-thong` | Giao thong | 5 |
+| `cu-tru` | Cu tru | 6 |
+| `xuat-nhap-canh` | Xuat nhap canh | 5 |
+| `hai-quan-hanh-ly` | Hai quan hanh ly | 7 |
+| `quyen-loi-khieu-nai` | Quyen loi va khieu nai | 11 |
+
+- `GET /laws/australia/topics` -> `[{ slug, label, note, lawCount }]` (`note` la ghi chu pham vi hien kem muc).
+- `GET /laws/australia?topic=<slug>` (va `/search`) loc theo muc; khi co `topic` thi BO QUA `collection`
+  (trong mot muc co ca Act lan van ban duoi luat). `topic` ngoai danh sach -> `VALIDATION_ERROR`.
+- Moi item danh sach co them `topics: string[]` (rong neu luat khong thuoc muc nao).
+- [!] Quy tac giao thong duong bo (toc do, bang lai, muc phat) va luat thue nha do tung bang ban hanh nen KHONG
+  co trong nguon lien bang; `note` cua muc tuong ung noi ro dieu nay.
+
+### 24c. Tom luoc noi dung chinh — `GET /laws/australia/:id/summary`
+
+Hai tang, tach bach nguon va AI:
+1. **Co nguon, khong qua AI**: `purpose` (tieu de dai cua luat, nguyen van) va `outline` (cac Chuong/Phan, toi da 60 muc,
+   `level`: `chapter|part|division`), moi muc co `citationId` tro ve dung doan trong `/content`. Tieng Anh, rut thang tu van ban.
+2. **AI dien giai tieng Viet** (`summaryVi: { summary, keyPoints[], aiGenerated:true }`): CHI dua tren `purpose` + `outline`,
+   khong doc toan van. Hau kiem bang code: moi con so AI viet ra phai co trong dau vao, neu khong bo ca ban AI. Thu toi da 2 lan.
+   Chi luat da tuyen chon (auLawTopics.js) moi goi AI; ket qua cache DB 30 ngay theo `registerId` (bat bien theo ban bien soan).
+
+`summaryViStatus`: `ready` | `not_eligible` (luat ngoai danh sach tuyen chon, hoac khong co tieu de/dan y) |
+`unavailable` (AI loi/vi pham hau kiem: van tra tang 1, `summaryVi = null`). `disclaimer` luon co mat va phai duoc hien thi.
+Loi: `NOT_FOUND` neu ma khong ton tai hoac van ban khong co ban doc duoc (kem `details.officialUrl`).
+Tom luoc la cong cu ho tro thong tin, khong thay the tu van phap ly.
+
+### 24d. Dich sang tieng Viet theo yeu cau — `GET /laws/australia/:id/content-vi`
+
+Cung hinh dang voi `/content` nhung moi block them `textVi` (ban dich may, `null` neu doan chua dich/khong qua kiem tra —
+client hien ban goc), va co `translationNotice` (PHAI hien thi). Query: `offset` (boi so cua 25), `limit` (<=100, mac dinh 100).
+- Dich THEO YEU CAU theo cum 25 doan, cache DB 180 ngay theo `registerId` + cum; chi dich phan nguoi dung dang xem.
+- Chi luat da tuyen chon (chi tiet luat co `canTranslate:true`); luat khac -> `FORBIDDEN` kem `details.reason:"NOT_TRANSLATABLE"`.
+- Hau kiem tung doan bang code: khong them/bot con so nao (cho phep ten thang -> so thang, cho phep nhac lai ten luat tieng Anh
+  trong ngoac). Doan khong dat -> `textVi:null`. Ban dich la dich may, KHONG phai ban dich chinh thuc; ban tieng Anh la chuan.
+- Dung model dich rieng (`TRANSLATION_MODEL`), khong dung model chat, de khong tieu han muc cua chat AI.
+- `/summary` them `deepStatus`: `ready|generating|not_generated|not_eligible|unavailable` va `deepSummary` (tom tat tung Phan, xem 24c);
+  mac dinh KHONG tu sinh (`AU_LAW_DEEP_SUMMARY_AUTOGEN=false`), sinh bang `npm run summarize-au-laws`.

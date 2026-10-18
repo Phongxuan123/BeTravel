@@ -5,6 +5,7 @@ const DEFAULT_COUNTRY_ALIASES = Object.freeze({
   JP: ["Nhật", "Japan", "日本", "Tokyo", "Osaka", "Kyoto"],
   TH: ["Thái", "Thailand", "ประเทศไทย", "Bangkok", "Phuket", "Chiang Mai"],
   SG: ["Singapore", "Singapura", "新加坡"],
+  AU: ["Australia", "Úc", "Sydney", "Melbourne", "Canberra"],
 });
 const countryNames = (country) =>
   [

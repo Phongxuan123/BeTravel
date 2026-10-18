@@ -18,6 +18,12 @@ import type {
   IncidentType,
   QuickPhrase,
   GeoAlert,
+  AuLawSummary,
+  AuLawTopic,
+  AuLawOverview,
+  AuLawDetail,
+  AuLawVersion,
+  AuLawContent,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -89,3 +95,25 @@ export const analyticsApi = {
 export const incidentsApi = createAdminResource<IncidentType>('/admin/incidents');
 export const quickPhrasesApi = createAdminResource<QuickPhrase>('/admin/quick-phrases');
 export const geoAlertsApi = createAdminResource<GeoAlert>('/admin/geo-alerts');
+
+/** Luat lien bang Uc: endpoint cong khai, chi doc, khong thuoc /admin. */
+export const australiaLawsApi = {
+  topics: () => apiRequest<AuLawTopic[]>('/laws/australia/topics', { skipAuth: true }),
+
+  list: (query: { q?: string; inForce: boolean; collection?: string; topic?: string; page: number; limit: number }) =>
+    apiRequest<AuLawSummary[]>(query.q ? '/laws/australia/search' : '/laws/australia', { query, skipAuth: true }),
+
+  get: (id: string) => apiRequest<AuLawDetail>(`/laws/australia/${id}`, { skipAuth: true }),
+
+  versions: (id: string, query: { page: number; limit: number }) =>
+    apiRequest<AuLawVersion[]>(`/laws/australia/${id}/versions`, { query, skipAuth: true }),
+
+  // Dịch theo yêu cầu: offset phải là bội số của 25.
+  contentVi: (id: string, query: { offset: number; limit: number }) =>
+    apiRequest<AuLawContent>(`/laws/australia/${id}/content-vi`, { query, skipAuth: true }),
+
+  summary: (id: string) => apiRequest<AuLawOverview>(`/laws/australia/${id}/summary`, { skipAuth: true }),
+
+  content: (id: string, query: { offset: number; limit: number }) =>
+    apiRequest<AuLawContent>(`/laws/australia/${id}/content`, { query, skipAuth: true }),
+};

@@ -130,7 +130,18 @@ type RequestOptions = {
  * unwrap `data`, ném ApiError mang `code` khi thất bại, và tự refresh một lần
  * khi gặp 401 rồi thử lại đúng một lần -- người dùng không thấy gì.
  */
-export async function apiRequest<T>(path: string, options: RequestOptions = {}, isRetry = false): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  return (await apiRequestWithMeta<T>(path, options)).data;
+}
+
+export type PageMeta = { page: number; limit: number; total: number };
+
+/** Như apiRequest nhưng giữ cả `meta` phân trang của envelope (danh sách có total). */
+export async function apiRequestWithMeta<T>(
+  path: string,
+  options: RequestOptions = {},
+  isRetry = false,
+): Promise<{ data: T; meta?: PageMeta }> {
   const { method = 'GET', body, skipAuth = false } = options;
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -158,14 +169,14 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}, 
   }
 
   if (envelope.ok) {
-    return envelope.data;
+    return { data: envelope.data, meta: envelope.meta as PageMeta | undefined };
   }
 
   const isExpiredAccessToken = envelope.error.code === 'UNAUTHORIZED' && !skipAuth;
   if (isExpiredAccessToken && !isRetry) {
     const newAccessToken = await refreshAccessToken();
     if (newAccessToken) {
-      return apiRequest<T>(path, options, true);
+      return apiRequestWithMeta<T>(path, options, true);
     }
     await clearTokens();
   }

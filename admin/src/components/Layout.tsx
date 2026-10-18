@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit, MessageSquareWarning, Siren, Languages, TriangleAlert } from 'lucide-react';
+import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit, MessageSquareWarning, Siren, Languages, TriangleAlert, Scale } from 'lucide-react';
 import { useAuth } from '../lib/useAuth';
 
 const NAV_ITEMS = [
@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/articles', label: 'Bài luật', icon: FileText },
   { to: '/locations', label: 'Điểm hỗ trợ', icon: MapPin },
   { to: '/incidents', label: 'Xử lý sự cố', icon: Siren },
+  { to: '/australia-laws', label: 'Luật Úc', icon: Scale },
   { to: '/quick-phrases', label: 'Câu dịch sẵn', icon: Languages },
   { to: '/geo-alerts', label: 'Cảnh báo vị trí', icon: TriangleAlert },
   { to: '/rag', label: 'RAG Index', icon: BrainCircuit },
@@ -28,6 +29,7 @@ function useBreadcrumb(): string[] {
     articles: 'Bài luật',
     locations: 'Điểm hỗ trợ',
     incidents: 'Xử lý sự cố',
+    'australia-laws': 'Luật Úc',
     'quick-phrases': 'Câu dịch sẵn',
     'geo-alerts': 'Cảnh báo vị trí',
     rag: 'RAG Index',

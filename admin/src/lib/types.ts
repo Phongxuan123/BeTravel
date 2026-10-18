@@ -271,3 +271,103 @@ export type GeoAlert = {
   createdAt: string;
   updatedAt: string;
 };
+
+// -- Luat lien bang Uc (Federal Register of Legislation) -- /api/laws/australia/* ----------
+
+export type AuLawSummary = {
+  id: string;
+  name: string;
+  collection: string | null;
+  subCollection: string | null;
+  status: string | null;
+  isInForce: boolean;
+  isPrincipal: boolean;
+  makingDate: string | null;
+  year: number | null;
+  number: number | null;
+  seriesNumber: string | null;
+  topics: string[];
+  jurisdiction: string;
+  officialUrl: string;
+};
+
+export type AuLawTopic = { slug: string; label: string; note: string; lawCount: number };
+
+export type AuLawVersion = {
+  registerId: string;
+  compilationNumber: string | null;
+  status: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  registeredAt: string | null;
+  isCurrent: boolean;
+  isLatest: boolean;
+  hasUnincorporatedAmendments: boolean;
+};
+
+export type AuLawDocument = {
+  type: string;
+  format: string;
+  volumeNumber: number;
+  extension: string | null;
+  sizeInBytes: number | null;
+  pageCount: number | null;
+  isAuthorised: boolean;
+};
+
+export type AuLawDetail = AuLawSummary & {
+  publishComments: string | null;
+  hasCommencedUnincorporatedAmendments: boolean;
+  nameHistory: { name: string; startDate: string | null }[];
+  version: AuLawVersion | null;
+  documents: AuLawDocument[];
+  hasReadableText: boolean;
+  canTranslate: boolean;
+  scopeNotice: string;
+};
+
+// textVi: bản dịch máy (null nếu chưa dịch/không qua kiểm tra); chỉ có ở endpoint content-vi.
+export type AuLawBlock = { citationId: string; kind: 'heading' | 'note' | 'text'; text: string; textVi?: string | null };
+
+export type AuLawContent = {
+  translationNotice?: string;
+  source: {
+    provider: string;
+    jurisdiction: string;
+    titleId: string;
+    registerId: string;
+    compilationNumber: string | null;
+    effectiveFrom: string | null;
+    officialUrl: string;
+    verifiedByBeTravel: boolean;
+  };
+  version: AuLawVersion;
+  totalBlocks: number;
+  offset: number;
+  limit: number;
+  blocks: AuLawBlock[];
+  scopeNotice: string;
+};
+
+export type AuLawOutlineItem = { level: 'chapter' | 'part' | 'division'; text: string; citationId: string };
+
+export type AuLawDeepPart = {
+  heading: string;
+  citationId: string;
+  summary: string;
+  partial: boolean;
+  keyPoints: { text: string; citationIds: string[] }[];
+};
+
+export type AuLawDeepSummary = { parts: AuLawDeepPart[]; skippedParts: number; truncated: boolean; generatedAt: string };
+
+export type AuLawOverview = {
+  deepStatus: 'ready' | 'generating' | 'not_generated' | 'not_eligible' | 'unavailable';
+  deepSummary: AuLawDeepSummary | null;
+  purpose: { text: string; citationId: string } | null;
+  outline: AuLawOutlineItem[];
+  outlineTruncated: boolean;
+  summaryViStatus: 'ready' | 'not_eligible' | 'unavailable';
+  summaryVi: { summary: string; keyPoints: string[]; aiGenerated: boolean } | null;
+  disclaimer: string;
+};

@@ -46,12 +46,12 @@ function FlagTH() {
   );
 }
 
-// Toạ độ đỉnh của ngôi sao năm cánh tâm (cx, cy), dùng cho cờ Singapore.
-function starPoints(cx: number, cy: number, outer: number): string {
-  const inner = outer * 0.382;
-  return Array.from({ length: 10 }, (_, i) => {
+// Toạ độ đỉnh của ngôi sao tâm (cx, cy), dùng cho cờ Singapore (5 cánh) và Úc (7 cánh).
+function starPoints(cx: number, cy: number, outer: number, spikes = 5, innerRatio = 0.382): string {
+  const inner = outer * innerRatio;
+  return Array.from({ length: spikes * 2 }, (_, i) => {
     const radius = i % 2 === 0 ? outer : inner;
-    const angle = -Math.PI / 2 + (i * Math.PI) / 5;
+    const angle = -Math.PI / 2 + (i * Math.PI) / spikes;
     return `${(cx + radius * Math.cos(angle)).toFixed(2)},${(cy + radius * Math.sin(angle)).toFixed(2)}`;
   }).join(' ');
 }
@@ -70,6 +70,31 @@ function FlagSG() {
       <Circle cx="7.8" cy="5" r="3.2" fill="#EF3340" />
       {SG_STAR_CENTERS.map(([x, y]) => (
         <Polygon key={`${x}-${y}`} points={starPoints(x, y, 0.75)} fill="#FFFFFF" />
+      ))}
+    </Svg>
+  );
+}
+
+// Cờ Úc rút gọn: nền xanh, góc Union Jack, sao Liên bang 7 cánh và chòm Nam Thập Tự.
+const AU_SOUTHERN_CROSS = [
+  [22.5, 3.2, 1.1],
+  [18.6, 8, 1.1],
+  [26.2, 6.6, 1.1],
+  [22.5, 16.2, 1.1],
+  [24.4, 10.6, 0.7],
+] as const;
+
+function FlagAU() {
+  return (
+    <Svg viewBox="0 0 30 20" width="100%" height="100%">
+      <Rect width="30" height="20" fill="#00247D" />
+      <Path d="M0 0L15 10M15 0L0 10" stroke="#FFFFFF" strokeWidth={2} />
+      <Path d="M0 0L15 10M15 0L0 10" stroke="#CF142B" strokeWidth={0.8} />
+      <Path d="M7.5 0V10M0 5H15" stroke="#FFFFFF" strokeWidth={3.4} />
+      <Path d="M7.5 0V10M0 5H15" stroke="#CF142B" strokeWidth={2} />
+      <Polygon points={starPoints(7.5, 15, 2.8, 7, 0.45)} fill="#FFFFFF" />
+      {AU_SOUTHERN_CROSS.map(([x, y, r]) => (
+        <Polygon key={`${x}-${y}`} points={starPoints(x, y, r, 7, 0.45)} fill="#FFFFFF" />
       ))}
     </Svg>
   );
@@ -109,6 +134,7 @@ const FLAGS: Record<string, () => React.JSX.Element> = {
   KR: FlagKR,
   TH: FlagTH,
   SG: FlagSG,
+  AU: FlagAU,
   FR: FlagFR,
   DE: FlagDE,
   VN: FlagVN,

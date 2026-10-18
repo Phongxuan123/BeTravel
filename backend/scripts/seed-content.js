@@ -89,6 +89,20 @@ export const COUNTRIES = [
     embassy: {},
     majorCities: [],
   },
+  {
+    code: "AU",
+    name: "Úc",
+    nameEn: "Australia",
+    language: "Tiếng Anh",
+    // ACTIVE để người dùng chọn được. Chưa có bài luật Úc đã kiểm chứng nên Cẩm nang để trống
+    // thay vì bịa; luật liên bang tra riêng ở /api/laws/australia (nguồn chính thức, chưa kiểm chứng).
+    status: CountryStatus.ACTIVE,
+    // 000 là số khẩn cấp quốc gia của Úc (cảnh sát, cứu thương, cứu hỏa). Không có số hàng hải
+    // riêng đã kiểm chứng nên để trống. Chưa có nguồn cho thông tin Đại sứ quán nên để trống.
+    emergencyNumbers: { police: "000", ambulance: "000", fire: "000", marine: "" },
+    embassy: {},
+    majorCities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
+  },
 ];
 
 export const KR_TOPICS = [
