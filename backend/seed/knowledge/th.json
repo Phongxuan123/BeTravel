@@ -1,0 +1,639 @@
+{
+  "countryCode": "TH",
+  "countryName": "Thái Lan",
+  "provenance": {
+    "origin": "Gói BeAI của Thành Đạt, nhận 19/10/2026 (thư mục Betravel/, không commit)",
+    "retrievedAt": "2026-10-18T08:48:56Z",
+    "reviewedAt": "2026-10-18T09:05:00Z",
+    "reviewedBy": "Claude: Firecrawl official-source snapshot and Vietnamese summary checked; not legal counsel",
+    "method": "Firecrawl search and fresh main-content scrape of official Thai government, Thai MFA mission, TAT and Vietnamese MFA pages; translated factual summaries with source-specific attribution. Not fine-tuning. Raw cache in .firecrawl/; evidenceExcerpt is an abbreviated original quotation ('...' joins separate passages), not the whole page."
+  },
+  "reviewStatus": "ai_checked_needs_human_review",
+  "importRule": "Chỉ nhập ở trạng thái draft. Thiếu publishedAt và effectiveFrom nên chưa xuất bản được.",
+  "topicGroups": {
+    "1": {
+      "label": "Nhập cảnh, visa, thẻ khai báo",
+      "suggestedTopicSlug": "nhap-canh"
+    },
+    "2": {
+      "label": "Hải quan, tiền mặt, thuốc mang theo",
+      "suggestedTopicSlug": "hai-quan"
+    },
+    "3": {
+      "label": "Ứng xử nơi công cộng: rượu, thuốc lá, xả rác",
+      "suggestedTopicSlug": "hinh-su"
+    },
+    "4": {
+      "label": "Tôn giáo, trang phục, phong tục",
+      "suggestedTopicSlug": null
+    },
+    "5": {
+      "label": "Flycam, chụp ảnh",
+      "suggestedTopicSlug": null
+    },
+    "6": {
+      "label": "Giao thông, bằng lái",
+      "suggestedTopicSlug": "giao-thong"
+    },
+    "7": {
+      "label": "Đại sứ quán, bảo hộ công dân",
+      "suggestedTopicSlug": "khan-cap"
+    },
+    "8": {
+      "label": "Sự cố: mất hộ chiếu, bị bắt, lừa đảo",
+      "suggestedTopicSlug": "khan-cap"
+    },
+    "9": {
+      "label": "Khiếu nại, cảnh sát du lịch",
+      "suggestedTopicSlug": "khan-cap"
+    }
+  },
+  "gaps": [
+    {
+      "group": 3,
+      "partial": true,
+      "reason": "No official page found for the beach smoking ban or the lese-majeste statute text; only the Thai MFA etiquette page (royal reverence, sacrilege) and e-cigarette/alcohol rules are covered."
+    },
+    {
+      "group": 5,
+      "partial": true,
+      "reason": "No official source on general photography of military sites or privacy; only Grand Palace no-drone rule/regulation reference and drone registration."
+    },
+    {
+      "group": 6,
+      "partial": true,
+      "reason": "No official source on traffic fines, helmet rules or motorbike rental, nor on whether a Vietnamese-issued IDP is accepted; only the Thai MFA 'Driving in Thailand' page."
+    },
+    {
+      "group": 8,
+      "partial": true,
+      "reason": "No official Thai page on accident procedure or scam typologies; covered via Vietnamese MFA consular guidance (lost passport, arrest) and TAT/Tourist Police complaint channels."
+    }
+  ],
+  "articles": [
+    {
+      "slug": "mien-thi-thuc-cho-ho-chieu-pho-thong-viet-nam",
+      "title": "miễn thị thực cho hộ chiếu phổ thông Việt Nam",
+      "topicGroups": [
+        1
+      ],
+      "suggestedTopicSlug": "nhap-canh",
+      "keywords": "visa exemption, bilateral agreement, ordinary passport, Vietnam, 30 days",
+      "summaryVi": "Thái Lan — miễn thị thực (visa) cho người Việt Nam, theo Department of Consular Affairs, Bộ Ngoại giao Thái Lan. Trong danh sách các nước/vùng lãnh thổ có hiệp định song phương miễn thị thực cho hộ chiếu phổ thông với Thái Lan, Việt Nam nằm ở cột thời hạn lưu trú 30 ngày (cùng cột với China, Hong Kong, Kazakhstan, Laos, Macao, Mongolia, Russia, Timor-Leste). Cột 14 ngày gồm Cambodia, Myanmar (chỉ sân bay quốc tế); cột 90 ngày gồm Argentina, Brazil, Chile, Korea (ROK), Peru. Nghĩa là người Việt mang hộ chiếu phổ thông được miễn visa với thời hạn lưu trú 30 ngày theo hiệp định song phương. Danh sách này không xác nhận quyền nhập cảnh hay số ngày được ở của một cá nhân cụ thể.",
+      "source": {
+        "title": "Thái Lan: miễn thị thực cho hộ chiếu phổ thông Việt Nam",
+        "url": "https://image.mfa.go.th/mfa/0/zE6021nSnu/%E0%B8%9A%E0%B8%A3%E0%B8%B4%E0%B8%81%E0%B8%B2%E0%B8%A3%E0%B8%9B%E0%B8%A3%E0%B8%B0%E0%B8%8A%E0%B8%B2%E0%B8%8A%E0%B8%99/Bilat_Ordinary.pdf",
+        "authority": "Department of Consular Affairs, Ministry of Foreign Affairs of Thailand",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:48:56Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/image.mfa.go.th-Bilat_Ordinary.md",
+        "excerpt": "List of Countries and Territories Which Have Bilateral Agreement ... 30 days ... Vietnam",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "thailand-digital-arrival-card-tdac-luu-tru-qua-90-ngay-lam-v",
+      "title": "Thailand Digital Arrival Card (TDAC), lưu trú quá 90 ngày, làm việc",
+      "topicGroups": [
+        1
+      ],
+      "suggestedTopicSlug": "nhap-canh",
+      "keywords": "TDAC, arrival card, 3 days, 90-day report, work permit",
+      "summaryVi": "Thái Lan — thẻ nhập cảnh điện tử Thailand Digital Arrival Card (TDAC), theo trang chính thức TDAC của Immigration Bureau (tdac.immigration.go.th). Mọi hành khách phải hoàn thành Thailand Digital Arrival Card. Người nước ngoài phải nộp thông tin thẻ nhập cảnh 3 ngày trước ngày đến Thái Lan (nguyên văn: 3 days in advance of their arrival date). Trên trang có chức năng Arrival Card để khai và Update Arrival Card để sửa thông tin đã khai. Người nước ngoài ở Thái Lan quá 90 ngày phải thông báo bằng văn bản cho Immigration Officer gần nhất về nơi ở ngay khi hết 90 ngày, và lặp lại mỗi 90 ngày. Người nước ngoài không được làm việc nếu không được cấp Work Permit. Phần trang được trích không nêu mức phí TDAC.",
+      "source": {
+        "title": "Thái Lan: Thailand Digital Arrival Card (TDAC), lưu trú quá 90 ngày, làm việc",
+        "url": "https://tdac.immigration.go.th/",
+        "authority": "Immigration Bureau, Royal Thai Police (TDAC official site)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:49:03Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/tdac.immigration.go.th.md",
+        "excerpt": "All passengers must complete the Thailand Digital Arrival Card. ... Foreigners are required to submit their arrival card information 3 days in advance of their arrival date in Thailand.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "o-qua-han-visa-overstay-va-muc-phat",
+      "title": "ở quá hạn visa (overstay) và mức phạt",
+      "topicGroups": [
+        1,
+        3
+      ],
+      "suggestedTopicSlug": [
+        "hinh-su",
+        "nhap-canh"
+      ],
+      "keywords": "overstay, fine, 500 baht per day, 20000 baht, deportation, ban",
+      "summaryVi": "Thái Lan — ở quá hạn visa (overstay), theo Royal Thai Embassy Bucharest (Bộ Ngoại giao Thái Lan). Ở quá thời hạn của visa hoặc dấu nhập cảnh là bất hợp pháp; du khách tự chịu trách nhiệm không ở quá hạn. Overstay ngắn bị phạt tiền: tối thiểu 500 Baht mỗi ngày, tối đa 20.000 Baht cho overstay từ 40 ngày trở lên. Ví dụ của trang: overstay 1 tuần phải trả 7 x 500 = 3.500 Baht trước khi rời Thái Lan, dễ nhất là trả khi bay ra; nếu không đủ tiền có thể bị đưa vào phòng tạm giữ cho tới khi có tiền. Overstay quá 90 ngày là vi phạm nghiêm trọng: bị trục xuất và bị cấm quay lại, thời gian cấm tùy độ dài overstay. Bị Immigration officer phát hiện overstay có thể bị đưa vào trại giam nếu không trả được tiền phạt hoặc overstay dài. Theo trang, overstay vài giờ do lỡ chuyến thường được miễn khoản phạt 500 Baht. Overstay lặp lại có thể bị đóng dấu “undesirable alien” vào hộ chiếu.",
+      "source": {
+        "title": "Thái Lan: ở quá hạn visa (overstay) và mức phạt",
+        "url": "https://bucharest.thaiembassy.org/en/page/overstaying-in-thailand?menu=5d7e9a9a15e39c1d9000618f",
+        "authority": "Royal Thai Embassy, Bucharest (Ministry of Foreign Affairs of Thailand)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:55:51Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/bucharest.thaiembassy.org-overstaying-in-thailand.md",
+        "excerpt": "The minimum charge is 500 Baht per day. This goes to a maximum of 20,000 Baht for overstays of 40 days or longer.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "han-muc-mien-thue-thuoc-la-ruou-va-luong-hai-quan-xanh-do",
+      "title": "hạn mức miễn thuế thuốc lá, rượu và luồng hải quan xanh/đỏ",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "customs, duty free, cigarettes, alcohol, green channel, red channel",
+      "summaryVi": "Thái Lan — hạn mức miễn thuế hành lý khi nhập cảnh, theo Thai Customs Department. Được miễn thuế: không quá 200 điếu thuốc lá hoặc 250 g thuốc lá (hoặc tổng 250 g mọi loại), và không quá 1 lít đồ uống có cồn. Lượng thuốc lá hoặc rượu vượt mức phải bỏ vào thùng do Hải quan bố trí, nếu không sẽ bị truy tố. Người không có hàng phải khai đi luồng Nothing to Declare (luồng xanh); đồ dùng cá nhân số lượng hợp lý, tổng giá trị không quá 20.000 Baht, không phải hàng cấm, hàng hạn chế hay thực phẩm thì được miễn thuế. Người có hàng phải khai đi luồng Goods to Declare (luồng đỏ), xuất trình hộ chiếu và hóa đơn (nếu có). Hàng không vì mục đích thương mại và không quá 200.000 Baht: hải quan tính thuế khoán, trả bằng tiền mặt hoặc thẻ. Mang hàng cấm hoặc hàng hạn chế: hành khách bị truy tố. Customs Care Center: 1164.",
+      "source": {
+        "title": "Thái Lan: hạn mức miễn thuế thuốc lá, rượu và luồng hải quan xanh/đỏ",
+        "url": "https://www.customs.go.th/list_strc_simple_neted.php?ini_content=individual_160503_03_160905_01&lang=en&top_menu=menu_homepage&left_menu=menu_individual_submenu_01_160421_01",
+        "authority": "Thai Customs Department",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:49:19Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/customs.go.th-individual_160503_03_160905_01.md",
+        "excerpt": "No more than 200 cigarettes ... No more than 1 litre ... The excess quantities of cigarettes, tobacco or alcoholic beverages must be dropped in the box provided by Customs, otherwise prosecution will be carried out.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "hang-cam-va-hang-han-che-khi-nhap-xuat-canh",
+      "title": "hàng cấm và hàng hạn chế khi nhập/xuất cảnh",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "prohibited goods, restricted goods, permit, Buddha image, medicine, food",
+      "summaryVi": "Thái Lan — hàng cấm và hàng hạn chế, theo Thai Customs Department (trang cập nhật 27/2/2025). Hàng cấm là hàng bị cấm nhập vào hoặc xuất khỏi Thái Lan, ví dụ: ma túy, ấn phẩm khiêu dâm, hàng giả nhãn hiệu và hàng vi phạm sở hữu trí tuệ, tiền giấy hoặc tiền xu giả, động vật hoang dã được bảo vệ hoặc thuộc danh mục CITES. Hàng hạn chế cần giấy phép của cơ quan liên quan và phải xuất trình giấy phép khi làm thủ tục hải quan, ví dụ: tượng Phật, cổ vật (Fine Arts Department); súng, đạn, chất nổ (Department of Provincial Administration, Ministry of Interior); thực vật (Department of Agriculture); động vật sống (Department of Livestock Development); thực phẩm, thuốc, mỹ phẩm, thực phẩm bổ sung (Food and Drug Administration); phụ tùng xe (Ministry of Industry); thuốc lá và đồ uống có cồn (Excise Department); thiết bị vô tuyến, viễn thông (NBTC). Đây là danh sách ví dụ, không phải toàn bộ.",
+      "source": {
+        "title": "Thái Lan: hàng cấm và hàng hạn chế khi nhập/xuất cảnh",
+        "url": "https://www.customs.go.th/cont_strc_simple.php?ini_content=individual_160426_01&lang=en&left_menu=menu_individual_submenu_03_01",
+        "authority": "Thai Customs Department",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:49:26Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/customs.go.th-individual_160426_01.md",
+        "excerpt": "Restricted goods are goods of which the imports and exports are restricted by law and therefore require a permit from related government agencies.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khai-bao-ngoai-te-tren-20-000-usd-va-tien-baht-mang-ra",
+      "title": "khai báo ngoại tệ trên 20.000 USD và tiền Baht mang ra",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "cash declaration, foreign currency, USD 20000, Thai baht, departure",
+      "summaryVi": "Thái Lan — khai báo tiền mặt, theo Thai Customs Department (trang ghi cập nhật lần cuối 29/2/2016). Người mang ngoại tệ (cả tiền giấy và tiền xu) tổng giá trị trên 20.000 USD hoặc tương đương vào hoặc ra khỏi Thái Lan phải khai báo với cán bộ Hải quan tại cửa khẩu bằng Foreign Currency Declaration Form (điền, ký và nộp), theo Ministerial Regulation (No. 25) B.E. 2530 thuộc Currency Exchange Control Act B.E. 2485. Người khai phải trả lời trung thực câu hỏi của cán bộ. Theo trang này, tiền Baht mang ra nước ngoài không vượt quá 50.000 THB; mang sang các nước giáp biên, Việt Nam và Vân Nam (Trung Quốc) thì tổng không quá 2.000.000 THB, và khoản 450.000–2.000.000 THB phải khai với Hải quan tại cửa khẩu. Mang hàng cấm hoặc hạn chế (ma túy, tiền giả, đồ đồi trụy…) ra khỏi Thái Lan là bất hợp pháp; Hải quan tịch thu và người vi phạm có thể bị phạt tiền và phạt tù. Trang lưu ý thông tin chỉ là hướng dẫn chung và có thể thay đổi không báo trước.",
+      "source": {
+        "title": "Thái Lan: khai báo ngoại tệ trên 20.000 USD và tiền Baht mang ra",
+        "url": "https://en.customs.go.th/content.php?ini_content=departing_from_thailand&lang=en&left_menu=menu_departing_from_thailand",
+        "authority": "Thai Customs Department",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:50:01Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/en.customs.go.th-departing_from_thailand.md",
+        "excerpt": "The travelers bringing foreign currency more than USD 20,000 or its equivalent into or out of Thailand are required to make a report to Customs.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mang-thuoc-ca-nhan-chua-chat-gay-nghien-huong-than",
+      "title": "mang thuốc cá nhân chứa chất gây nghiện, hướng thần",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "medication, prescription, narcotic, psychotropic, permit, 30 days, 90 days, 15 days",
+      "summaryVi": "Thái Lan — mang thuốc cá nhân chứa chất gây nghiện (narcotic drugs) hoặc chất hướng thần (psychotropic substances), theo Food and Drug Administration (FDA) Thái Lan. Thuốc chứa narcotic drugs Schedule II và III: theo Ministerial Regulation B.E. 2567 (2024), hiệu lực từ 21/9/2024, người đang điều trị được mang dùng cá nhân không quá lượng 90 ngày theo đơn và phải xin giấy phép FDA ít nhất 15 ngày trước khi vào hoặc rời Thái Lan. Thuốc chứa psychotropic substances Schedule II, III, IV: lượng không quá 30 ngày theo đơn được mang nếu có giấy chứng nhận hoặc đơn thuốc của bác sĩ kê đơn; lượng 31–90 ngày phải xin giấy phép FDA trước khi đi. Nộp đơn trực tuyến tại https://permitfortraveler.fda.moph.go.th/nct_permit_main/ ít nhất 15 ngày trước ngày đến hoặc rời Thái Lan; FDA cấp phép trong khoảng 3 ngày làm việc sau khi nhận hồ sơ đầy đủ. Người mang thuốc phải tuân thủ quy định áp dụng cho đúng loại thuốc mình mang.",
+      "source": {
+        "title": "Thái Lan: mang thuốc cá nhân chứa chất gây nghiện, hướng thần",
+        "url": "https://en.fda.moph.go.th/entrepreneurs-narcotic-drugs-and-psychotropic-substances/category/guidance-for-travelers-under-treatment-carrying-personal-medications-containing-narcotic-drugs-into-/",
+        "authority": "Food and Drug Administration (FDA), Thailand",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:50:20Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/en.fda.moph.go.th-guidance-for-travelers-personal-medications.md",
+        "excerpt": "provided the quantity does **not exceed a 30-day supply as prescribed** and they carry a certificate or medical prescription from the prescribing physician ... at least 15 days before your arrival or departure date",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "thuoc-la-dien-tu-vape-bi-cam-va-muc-phat",
+      "title": "thuốc lá điện tử, vape bị cấm và mức phạt",
+      "topicGroups": [
+        2,
+        3
+      ],
+      "suggestedTopicSlug": [
+        "hai-quan",
+        "hinh-su"
+      ],
+      "keywords": "e-cigarette, vape, import ban, possession, fine, prison, Customs Act",
+      "summaryVi": "Thái Lan — thuốc lá điện tử/vape bị cấm, theo The Government Public Relations Department (thailand.go.th, cập nhật 11/7/2023), tổng hợp quan điểm của Department of Disease Control, Office of the Consumer Protection Board, Royal Thai Police, Customs Department và Department of Foreign Trade. Bán hoặc cung cấp dịch vụ baraku/shisha, baraku điện, thuốc lá điện tử hoặc dung dịch nạp: phạt tù không quá 3 năm hoặc phạt tiền không quá 600.000 Baht theo Consumer Protection Act. Thuốc lá điện tử bị cấm nhập khẩu từ năm 2014: nhập khẩu bị phạt tù không quá 10 năm hoặc phạt tiền gấp 5 lần giá hàng, hoặc cả hai, bị tịch thu hàng, bao bì và phương tiện chở; đồng thời vi phạm Section 24 Customs Act 2017. Tàng trữ hoặc nhận thuốc lá điện tử khi biết là hàng chưa qua thủ tục hải quan: vi phạm Section 246 Customs Act 2017, phạt tù không quá 5 năm hoặc phạt tiền gấp 4 lần giá hàng, hoặc cả hai. Tobacco Products Control Act 2017 cấm hút baraku, baraku điện, thuốc lá điện tử (nếu có nicotine) ở nơi công cộng, phạt tiền không quá 5.000 Baht.",
+      "source": {
+        "title": "Thái Lan: thuốc lá điện tử, vape bị cấm và mức phạt",
+        "url": "https://thailand.go.th/issue-focus-detail/009_130",
+        "authority": "The Government Public Relations Department (thailand.go.th)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:49:54Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/thailand.go.th-issue-focus-detail-009_130.md",
+        "excerpt": "Importation is punishable by imprisonment for not more than 10 years or a fine of 5 times the price of the product, or both ... Offenders are liable to imprisonment for a term not exceeding 5 years or a fine four times the price of goods or both.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "gio-ban-ruou-bia-tuoi-uong-ruou-va-noi-cam-uong",
+      "title": "giờ bán rượu bia, tuổi uống rượu và nơi cấm uống",
+      "topicGroups": [
+        3
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "alcohol sales hours, 11.00-24.00, drinking age 20, temples, public parks",
+      "summaryVi": "Thái Lan — giờ bán rượu bia và nơi cấm uống, theo Tourism Authority of Thailand (TAT), thông báo ngày 29/5/2026. Theo thông báo mới nhất trên Royal Gazette của Alcoholic Beverage Control Committee, từ 29/5/2026 đồ uống có cồn nhìn chung được bán từ 11:00 đến 24:00; khung 14:00–17:00 trước đây bị hạn chế nay thuộc thời gian được phép thông thường. Bán ngoài khung giờ này vẫn bị hạn chế, trừ nơi có điều kiện pháp lý riêng như khu vực sân bay quốc tế phục vụ khách quốc tế, khách sạn, cơ sở giải trí có giấy phép, khu sự kiện được duyệt; giờ phục vụ có thể khác theo loại cơ sở, giấy phép và địa điểm. Tuổi uống rượu hợp pháp ở Thái Lan là 20. Việc bán hoặc uống rượu vẫn bị hạn chế ở một số nơi công cộng như chùa, cơ quan nhà nước, trạm xăng, công viên công cộng và khu vực giao thông công cộng, trừ khi luật cho phép. Bán rượu có thể bị hạn chế trong ngày bầu cử, ngày lễ tôn giáo lớn hoặc giai đoạn khác do cơ quan chức năng công bố.",
+      "source": {
+        "title": "Thái Lan: giờ bán rượu bia, tuổi uống rượu và nơi cấm uống",
+        "url": "https://www.tatnews.org/2026/05/alcohol-sales-and-consumption-rules-updated-in-thailand-what-tourists-need-to-know/",
+        "authority": "Tourism Authority of Thailand (TAT Newsroom)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:50:55Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/tatnews.org-2026-05-alcohol-sales-and-consumption-rules.md",
+        "excerpt": "Effective 29 May 2026, alcoholic beverages may generally be sold from 11.00 to 24.00 Hrs. ... The legal drinking age in Thailand is **20**",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "hoang-cung-bangkok-grand-palace-trang-phuc-cam-drone-ve",
+      "title": "Hoàng cung Bangkok (Grand Palace) — trang phục, cấm drone, vé",
+      "topicGroups": [
+        4,
+        5
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "Grand Palace, Wat Phra Kaew, dress code, no drone zone, ticket 500 baht, photography regulation",
+      "summaryVi": "Thái Lan — Hoàng cung Bangkok (The Grand Palace) và chùa Phật Ngọc Wat Phra Kaew: trang phục, flycam, vé, theo trang chính thức The Grand Palace (Bureau of the Royal Household). Khách phải ăn mặc phù hợp vì đây là nơi tôn kính của người Thái. Trang phục không được vào: áo sát nách, áo ba lỗ (vests), áo hở bụng (short top), áo xuyên thấu, quần short hoặc hot pants, quần rách, quần bó, quần đạp xe, váy ngắn (mini skirts), quần váy (pants skirts), đồ ngủ. No Drone Zone: không được bay drone/flycam trên khu vực Grand Palace. Bureau of the Royal Household có quy định về tham quan, quay phim, ghi hình và chụp ảnh trong Grand Palace B.E. 2024 (file tải trên trang). Vé người nước ngoài 500 Baht, gồm Wat Phra Kaew và Queen Sirikit Museum of Textile; mua tại cổng hoặc online. Mở cửa hằng ngày 8:30–15:30, Tel. +66-2-623-5500 Ext.2171. Đồ thất lạc tìm thấy trong Hoàng cung có thể xin nhận lại tại phòng thông tin, kèm giấy tờ tùy thân. Trang lưu ý đi tuk tuk nếu không quen mặc cả có thể tốn hơn taxi; nên thỏa thuận giá trước.",
+      "source": {
+        "title": "Thái Lan: Hoàng cung Bangkok (Grand Palace) — trang phục, cấm drone, vé",
+        "url": "https://www.royalgrandpalace.th/en/visit/practical-information",
+        "authority": "The Grand Palace (Bureau of the Royal Household)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:51:30Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/royalgrandpalace.th-en-visit-practical-information.md",
+        "excerpt": "Visitors to The Grand Palace must dress appropriately because The Grand Palace is a place of reverence for the Thai people. ... Drone is not allowed flying over the area of the   Grand Palace",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "phong-tuc-ung-xu-o-chua-voi-nha-su-va-hoang-gia",
+      "title": "phong tục, ứng xử ở chùa, với nhà sư và Hoàng gia",
+      "topicGroups": [
+        3,
+        4
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "etiquette, temple, monks, royal family, Buddha images, dress, wai, drugs death penalty",
+      "summaryVi": "Thái Lan — phong tục và ứng xử, theo Royal Thai Embassy Moscow (Bộ Ngoại giao Thái Lan, cập nhật 29/11/2022). Thái Lan là nước Phật giáo, tượng Phật được coi là linh thiêng; hành vi báng bổ có thể bị phạt tù kể cả với du khách nước ngoài. Người Thái hết sức tôn kính Nhà vua, Hoàng hậu và Hoàng gia, không chấp nhận người nước ngoài bất kính. Vào chùa phải ăn mặc đúng mực, không mặc váy ngắn và quần short; cởi giày trước khi vào điện thờ. Phụ nữ tuyệt đối không chạm vào nhà sư, không trao đồ trực tiếp cho nhà sư hay nhận đồ trực tiếp từ nhà sư. Không chạm vào phụ nữ Thái khi chưa được đồng ý; không thân mật nam nữ nơi công cộng; cấm tắm nắng khỏa thân. Không chạm vào đầu người khác; không gác chân lên bàn, không dùng chân chỉ đồ vật hay chạm vào người khác. Vi phạm luật ma túy (tàng trữ, sử dụng, sản xuất, bán, vận chuyển) có thể bị tử hình. Hàng cấm còn gồm ấn triện Hoàng gia và hàng in hình quốc kỳ Thái.",
+      "source": {
+        "title": "Thái Lan: phong tục, ứng xử ở chùa, với nhà sư và Hoàng gia",
+        "url": "https://moscow.thaiembassy.org/en/publicservice/84777-local-law-and-customs?cate=5d843b6a15e39c1abc00518b",
+        "authority": "Royal Thai Embassy, Moscow (Ministry of Foreign Affairs of Thailand)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:55:25Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/moscow.thaiembassy.org-local-law-and-customs.md",
+        "excerpt": "Sacrilegious acts are punishable by imprisonment even if committed by foreign visitors. ... Ladies must not on any account touch a Buddhist monk, give things direct to him or receive things direct from him.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "dang-ky-flycam-drone-cho-du-khach-nuoc-ngoai",
+      "title": "đăng ký flycam/drone cho du khách nước ngoài",
+      "topicGroups": [
+        5
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "drone, UAV, RPA, registration, CAAT, insurance 1 million baht, age 18",
+      "summaryVi": "Thái Lan — đăng ký flycam/drone cho du khách, theo Royal Thai Embassy London (Bộ Ngoại giao Thái Lan, cập nhật 29/11/2022). Sử dụng UAV/RPA/drone ở Thái Lan bị quản lý; người muốn bay phải đăng ký, du khách nước ngoài cũng phải tuân thủ Announcement of the Ministry of Transport. Người nước ngoài từ 18 tuổi trở lên gửi email tới atreg@caat.or.th và tl.erd@caat.or.th gồm: UAV Registration Application Form, Consent to the Disclosure of Personal Information, Self-Declaration Form, bản sao hộ chiếu còn hạn, bản sao work permit/giấy cư trú/visa/dấu nhập cảnh (tùy trường hợp), và chi tiết bảo hiểm thiệt hại cho bên thứ ba (thương tích, tử vong, tài sản) với mức bảo hiểm tối thiểu 1 triệu Baht. Thường mất 1–2 tuần để được duyệt, nên đăng ký trước khi đến; người được miễn thị thực du lịch 30 ngày chưa có giấy cư trú có thể gửi bổ sung bản sao dấu nhập cảnh sau khi đến. Ghi khối lượng drone (kg) tới 3 chữ số thập phân. Thông tin thêm tại Civil Aviation Authority of Thailand (CAAT). Trang không nêu lệ phí đăng ký.",
+      "source": {
+        "title": "Thái Lan: đăng ký flycam/drone cho du khách nước ngoài",
+        "url": "https://london.thaiembassy.org/en/publicservice/85820-bringing-unmanned-aerial-vehicles-(drones)-to-thailand?cate=5d6636c215e39c3bd0006c9f",
+        "authority": "Royal Thai Embassy, London (Ministry of Foreign Affairs of Thailand)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:51:55Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/london.thaiembassy.org-bringing-drones-to-thailand.md",
+        "excerpt": "The use of UAVs or RPA or drones are regulated in Thailand. Those who wish to use them have to register. ... Normally, it will take 1-2 weeks to get approval.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "dang-ky-drone-qua-uas-portal-cua-caat",
+      "title": "đăng ký drone qua UAS Portal của CAAT",
+      "topicGroups": [
+        5
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "drone registration, RPA, UAS Portal, drone pilot certificate",
+      "summaryVi": "Thái Lan — đăng ký drone hiện hành, theo Civil Aviation Authority of Thailand (CAAT). Theo trang Remotely Piloted Aircraft (RPA) Registration của CAAT, việc đăng ký chứng chỉ người điều khiển drone (drone pilot certificate) và đăng ký drone có thể thực hiện qua UAS Portal tại uasportal.caat.or.th. Trang CAAT có các hướng dẫn: chuẩn bị trước khi bay drone ở Thái Lan, những điều quan trọng cần biết trước khi bay và cách hiển thị số đăng ký drone. Liên hệ Unmanned Aircraft Standards Department: email uav@caat.or.th, Tel +66 2568 8851. Phần trang được trích không nêu lệ phí cụ thể.",
+      "source": {
+        "title": "Thái Lan: đăng ký drone qua UAS Portal của CAAT",
+        "url": "https://www.caat.or.th/en/aviation/aviation-fees-and-charges/remotely-piloted-aircraft-rpa/remotely-piloted-aircraft-rpa-registration/",
+        "authority": "Civil Aviation Authority of Thailand (CAAT)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:52:12Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/caat.or.th-en-rpa-registration.md",
+        "excerpt": "Registration for a drone pilot certificate and drone registration can be completed",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "lai-xe-xe-may-va-bang-lai-quoc-te",
+      "title": "lái xe, xe máy và bằng lái quốc tế",
+      "topicGroups": [
+        6
+      ],
+      "suggestedTopicSlug": "giao-thong",
+      "keywords": "driving, motorcycle, international driving license, IDP, temporary licence, Department of Land Transport",
+      "summaryVi": "Thái Lan — lái ô tô, xe máy và bằng lái quốc tế, theo Royal Thai Embassy London (Bộ Ngoại giao Thái Lan, cập nhật 30/11/2022). Muốn lái ô tô hoặc xe máy khi du lịch Thái Lan, luật yêu cầu phải có bằng lái quốc tế (international driving license); khi được yêu cầu phải xuất trình bằng lái quốc tế cùng hộ chiếu và bằng lái quốc gia. Người lưu trú tạm thời có thể xin bằng lái tạm thời (1 năm) tại Department of Land Transport hoặc Provincial Land Transport Office với: hộ chiếu có visa phù hợp (trừ visa du lịch), giấy xác nhận nơi cư trú do đại sứ quán chứng thực hoặc work permit, giấy khám sức khỏe không quá 1 tháng, bằng lái quốc tế hoặc bằng lái quốc gia kèm bản dịch tiếng Anh/Thái được đại sứ quán chứng thực. Department of Land Transport: +662 271 8888. Có thể nộp trực tiếp, không cần qua đại lý (có thể bị thu phí không cần thiết). Trang không nêu mức phạt giao thông, quy định mũ bảo hiểm hay thuê xe máy.",
+      "source": {
+        "title": "Thái Lan: lái xe, xe máy và bằng lái quốc tế",
+        "url": "https://london.thaiembassy.org/en/publicservice/84710-driving-in-thailand?page=5d6636ce15e39c3bd000734d&menu=5d6636cd15e39c3bd00072e2",
+        "authority": "Royal Thai Embassy, London (Ministry of Foreign Affairs of Thailand)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:52:32Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/london.thaiembassy.org-driving-in-thailand.md",
+        "excerpt": "If you would like to drive, either vehicle or motorcycle, while visiting Thailand, you are required by law to hold an international driving license.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "dai-su-quan-viet-nam-tai-bangkok-lien-he-duong-day-nong-bao",
+      "title": "Đại sứ quán Việt Nam tại Bangkok — liên hệ, đường dây nóng bảo hộ công dân",
+      "topicGroups": [
+        7
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "Vietnamese embassy Bangkok, citizen protection hotline, consular section, address",
+      "summaryVi": "Thái Lan — Đại sứ quán Việt Nam tại Thái Lan (Bangkok): liên hệ và đường dây nóng bảo hộ công dân, theo trang của Đại sứ quán (Bộ Ngoại giao Việt Nam, đăng 29/4/2026). Địa chỉ: 83/1 Wireless Road, Lumpini, Pathumwan, Bangkok, Thái Lan. Đường dây nóng bảo hộ công dân: +66 89 896 6653. Lãnh sự và các thủ tục lãnh sự: Tel +66 (0) 2 650 8979, email consular.section.bkk@gmail.com; trực điện thoại 09h00–11h30 các ngày làm việc; nhận hồ sơ 09h00–11h30 và trả hồ sơ 15h00–16h30 các ngày Thứ Hai, Thứ Ba, Thứ Tư và Thứ Sáu. Các vấn đề khác: Tel +66 (0) 2 253 4464 (trực 09h00–11h30). Kinh tế, thương mại: Tel +66 (0) 2 251 5838 (Ext. 118). Điện thoại Đại sứ quán: +66 (0) 2 650 8979; Fax: +66 (0) 2 251 7525. Email Đại sứ quán: vnemb.th@mofa.gov.vn. Website: https://vnembassy-bangkok.mofa.gov.vn.",
+      "source": {
+        "title": "Thái Lan: Đại sứ quán Việt Nam tại Bangkok — liên hệ, đường dây nóng bảo hộ công dân",
+        "url": "https://vnembassy-bangkok.mofa.gov.vn/tin-chi-tiet/chi-tiet/thong-tin-lien-he-59579-1126.html",
+        "authority": "Đại sứ quán Việt Nam tại Thái Lan (Bộ Ngoại giao Việt Nam)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:52:51Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/vnembassy-bangkok.mofa.gov.vn-thong-tin-lien-he-59579-1126.md",
+        "excerpt": "2\\. Đường dây nóng bảo hộ công dân: +66 89 896 6653 ... 83/1 Wireless Road, Lumpini, Pathumwan, Bangkok, Thái Lan",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mat-ho-chieu-viet-nam-o-nuoc-ngoai-trinh-bao-va-xin-thong-ha",
+      "title": "mất hộ chiếu Việt Nam ở nước ngoài — trình báo và xin Thông hành",
+      "topicGroups": [
+        7,
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "lost passport, police report, travel document, Thông hành, 5 working days, 24 hours",
+      "summaryVi": "Thái Lan — mất hộ chiếu, theo Cục Lãnh sự Bộ Ngoại giao Việt Nam (hướng dẫn chung cho công dân Việt Nam ở nước ngoài). Khi thất lạc hoặc bị mất cắp hộ chiếu còn giá trị ở nước ngoài, cần thông báo ngay cho cảnh sát nước sở tại và Cơ quan Đại diện Việt Nam gần nhất. Cần: điền Đơn trình báo mất hộ chiếu theo mẫu, gửi email về Cục Lãnh sự (cls.mfa@mofa.gov.vn) và Cơ quan Đại diện nơi đang có mặt, kèm 02 ảnh 4x6 cm; nộp kèm bản chụp giấy xác nhận báo mất hộ chiếu của cảnh sát; có mặt tại Cơ quan Đại diện. Hộ chiếu đã báo mất bị hủy giá trị, không dùng lại được dù tìm thấy; phải xin hộ chiếu mới. Thời gian: nếu có giấy tờ khác chứng minh quốc tịch Việt Nam và bằng chứng nhập cảnh hợp pháp (vé máy bay, tờ khai nhập cảnh), trong vòng 5 ngày làm việc được cấp lại hộ chiếu nếu đi tiếp nước khác, hoặc cấp Thông hành nếu về nước; nếu đi theo tour/đoàn và người cùng đoàn xác nhận, được cấp Thông hành về nước trong vòng 24 giờ; nếu không có giấy tờ nào, Cơ quan Đại diện phải xác minh, không quá 5 ngày làm việc.",
+      "source": {
+        "title": "Thái Lan: mất hộ chiếu Việt Nam ở nước ngoài — trình báo và xin Thông hành",
+        "url": "https://lanhsuvietnam.gov.vn/Lists/BaiViet/DispForm.aspx?ID=73",
+        "authority": "Cục Lãnh sự, Bộ Ngoại giao Việt Nam",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:53:15Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/lanhsuvietnam.gov.vn-BaiViet-ID-73.md",
+        "excerpt": "bạn cần thông báo ngay việc mất hộ chiếu cho cảnh sát nước sở tại và ... Nếu bạn đi theo tour hoặc nhóm, đoàn công tác, người đi cùng đoàn xuất trình hộ chiếu cá nhân, xác nhận bạn là thành viên của đoàn, bạn sẽ được cấp Thông hành về nước trong vòng 24 giờ.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "bi-bat-tam-giu-o-nuoc-ngoai-co-quan-dai-dien-viet-nam-giup-g",
+      "title": "bị bắt, tạm giữ ở nước ngoài — Cơ quan Đại diện Việt Nam giúp gì",
+      "topicGroups": [
+        7,
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "arrest, detention, consular access, lawyer list, citizen protection fund",
+      "summaryVi": "Thái Lan — bị bắt hoặc tạm giữ, theo Cục Lãnh sự Bộ Ngoại giao Việt Nam (hướng dẫn chung cho công dân Việt Nam ở nước ngoài). Vi phạm pháp luật nước ngoài (trộm cắp, lấy hàng không trả tiền, ở quá hạn visa, làm việc chui, vi phạm luật giao thông, lấy áo phao trên máy bay…) đều có thể bị bắt, phạt tù, phạt tiền. Người bị bắt có thể yêu cầu gặp viên chức lãnh sự Việt Nam và cần chứng minh mình vô tội nếu bị oan. Cơ quan Đại diện có thể: đến thăm, nghe trình bày nguyện vọng; can thiệp nếu bị oan sai; bảo hộ quyền lợi chính đáng khi bị giam giữ (đối xử nhân đạo, không bị tra tấn, nhục hình, ốm đau được chữa bệnh, xét xử có luật sư, phiên dịch); cung cấp danh sách luật sư để tự chọn, tự ký hợp đồng và trả tiền; thông báo cho gia đình; cấp Thông hành về nước khi mãn hạn tù; giúp chuyển tiền từ người thân để nộp phạt, thuê luật sư qua Quỹ Bảo hộ công dân. Cần giúp đỡ khẩn cấp: khai đơn đề nghị và gửi Cục Lãnh sự (cls.mfa@mofa.gov.vn) và Cơ quan Đại diện Việt Nam.",
+      "source": {
+        "title": "Thái Lan: bị bắt, tạm giữ ở nước ngoài — Cơ quan Đại diện Việt Nam giúp gì",
+        "url": "https://lanhsuvietnam.gov.vn/Lists/BaiViet/DispForm.aspx?ID=78",
+        "authority": "Cục Lãnh sự, Bộ Ngoại giao Việt Nam",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:53:38Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/lanhsuvietnam.gov.vn-BaiViet-ID-78.md",
+        "excerpt": "Bạn có thể yêu cầu được gặp viên chức lãnh sự của Việt Nam. ... Cung cấp danh sách luật sư để bạn lựa chọn và tự ký hợp đồng thuê, trả tiền.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "canh-sat-du-lich-1155-va-cac-so-khan-cap",
+      "title": "Cảnh sát du lịch 1155 và các số khẩn cấp",
+      "topicGroups": [
+        8,
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "tourist police, hotline 1155, emergency numbers 191 199 1669, TAT 1672, immigration 1178",
+      "summaryVi": "Thái Lan — Cảnh sát du lịch (Tourist Police) và số khẩn cấp, theo trang Tourist Police Bureau (touristpolice.go.th). Đường dây nóng Tourist Police (สายด่วน): 1155. Ứng dụng Thailand Tourist Police tải miễn phí để yêu cầu hỗ trợ khẩn cấp, dịch thuật, hỏi thông tin điểm du lịch và tin du lịch. Các số liên quan nêu trên trang: Royal Thai Police 191; Fire/Accidents/Rescue (cháy, tai nạn, cứu hộ) 199; Emergency Medical (cấp cứu y tế) 1669; Tourism Authority of Thailand 1672; Immigration Police 1178; Ministry of Tourism & Sports +66 2-283-1500; Department of Tourism +66 2-401-1111.",
+      "source": {
+        "title": "Thái Lan: Cảnh sát du lịch 1155 và các số khẩn cấp",
+        "url": "https://www.touristpolice.go.th/en/main",
+        "authority": "Tourist Police Bureau, Royal Thai Police",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:53:59Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/touristpolice.go.th-en-main.md",
+        "excerpt": "To request immediate assistance, translation services, or to inquire about tourist attractions and the latest tourism news in the country. ... Emergency   Medical  1669",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khieu-nai-hang-hoa-dich-vu-nha-hang-office-of-the-consumer-p",
+      "title": "khiếu nại hàng hóa, dịch vụ, nhà hàng — Office of the Consumer Protection Board",
+      "topicGroups": [
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "complaint, consumer protection, OCPB, 1166, restaurant, shop, entertainment venue",
+      "summaryVi": "Thái Lan — khiếu nại hàng hóa và dịch vụ (nhà hàng, cơ sở giải trí, hàng đã mua, cửa hàng, sản phẩm/dịch vụ không đạt chuẩn), theo trung tâm khiếu nại du lịch của Tourism Authority of Thailand (TAT). Loại khiếu nại này do Office of the Consumer Protection Board (OCPB, cơ quan bảo vệ người tiêu dùng) tiếp nhận: website https://complaint.ocpb.go.th/, Call Center 1166, 02-141-3490, email consumer@ocpb.go.th.",
+      "source": {
+        "title": "Thái Lan: khiếu nại hàng hóa, dịch vụ, nhà hàng — Office of the Consumer Protection Board",
+        "url": "https://complaint-center.tourismthailand.org/en/p/complaint-about-product-and-services",
+        "authority": "Tourism Authority of Thailand (Tourism Complaint and Suggestion Coordination Centre)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:21Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/complaint-center.tourismthailand.org-complaint-about-product-and-services.md",
+        "excerpt": "Complaint about PRODUCT and SERVICES, Restaurants, Entertainment Venues, Purchased Goods, Shops, Non-standard Products/Service as specified by responsible Agency ... Call Center : 1166, 02-141-3490",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khieu-nai-taxi-tuk-tuk-xe-may-xe-buyt-department-of-land-tra",
+      "title": "khiếu nại taxi, tuk tuk, xe máy, xe buýt — Department of Land Transport 1584",
+      "topicGroups": [
+        6,
+        9
+      ],
+      "suggestedTopicSlug": [
+        "giao-thong",
+        "khan-cap"
+      ],
+      "keywords": "complaint, taxi, tuk tuk, motorcycle, bus, Department of Land Transport, 1584",
+      "summaryVi": "Thái Lan — khiếu nại phương tiện giao thông (taxi, xe máy, xe buýt, minibus, tuk tuk hoặc loại khác), theo trung tâm khiếu nại du lịch của Tourism Authority of Thailand (TAT). Loại khiếu nại này gửi Department of Land Transport, Ministry of Transport: website khiếu nại https://ins.dlt.go.th/cmpweb/, email 1584complaint@dlt.mail.go.th, Call Center and Public Passenger Protection Center: Tel. 1584.",
+      "source": {
+        "title": "Thái Lan: khiếu nại taxi, tuk tuk, xe máy, xe buýt — Department of Land Transport 1584",
+        "url": "https://complaint-center.tourismthailand.org/en/p/complaint-about-transporation",
+        "authority": "Tourism Authority of Thailand (Tourism Complaint and Suggestion Coordination Centre)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:49Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/complaint-center.tourismthailand.org-complaint-about-transporation.md",
+        "excerpt": "Complaint about TRANSPORATION, Taxi, Motorcycle, Bus, Mini Bus, Tuk Tuk, or Other. ... Call Center and Public Passenger Protection Center: Tel. 1584",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "bao-trom-cap-moc-tui-hanh-hung-lua-dao-tourist-police",
+      "title": "báo trộm cắp, móc túi, hành hung, lừa đảo — Tourist Police",
+      "topicGroups": [
+        8,
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "complaint, robbery, pickpocketing, assault, fraud, scam, tourist police 1155",
+      "summaryVi": "Thái Lan — báo trộm cắp, móc túi, hành hung, lừa đảo (fraud) hoặc việc khác, theo trung tâm khiếu nại du lịch của Tourism Authority of Thailand (TAT). Loại khiếu nại này gửi Tourist Police (cảnh sát du lịch): CALL CENTER 1155, 02-134-0521; email tpd501@hotmail.com; Facebook: Tourist Police Bureau; trang liên hệ trên touristpolice.go.th.",
+      "source": {
+        "title": "Thái Lan: báo trộm cắp, móc túi, hành hung, lừa đảo — Tourist Police",
+        "url": "https://complaint-center.tourismthailand.org/en/p/complaint-about-robbery",
+        "authority": "Tourism Authority of Thailand (Tourism Complaint and Suggestion Coordination Centre)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:58Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/th/complaint-center.tourismthailand.org-complaint-about-robbery.md",
+        "excerpt": "Complaint about Robbery, Pickpocketing, Assult, Frad or Other ... CALL CENTER 1155, 02-134-0521",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    }
+  ]
+}
