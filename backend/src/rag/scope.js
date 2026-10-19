@@ -250,6 +250,12 @@ export const PERSONAL_ADVICE_NOTICE =
   "Mình chỉ cung cấp thông tin từ nguồn đã có, không đánh giá tình huống cá nhân hay thay luật sư. " +
   "Với trường hợp cụ thể, hãy liên hệ Đại sứ quán/Lãnh sự quán Việt Nam hoặc luật sư địa phương.";
 
+// Khi là ca khẩn cấp mà không có nguồn pháp lý phù hợp: số khẩn cấp đã là câu trả lời hữu ích nhất.
+export const EMERGENCY_NO_EVIDENCE_NOTE =
+  "Be.Travel chưa có thông tin pháp lý đã kiểm chứng cho tình huống cụ thể này, nên mình không " +
+  "suy đoán. Hãy ưu tiên an toàn, làm theo hướng dẫn của cơ quan chức năng tại chỗ và liên hệ " +
+  "Đại sứ quán Việt Nam.";
+
 /**
  * Khối khẩn cấp dựng từ dữ liệu quốc gia do Admin quản lý, KHÔNG do AI sinh.
  * Trường nào trống thì bỏ qua; không bao giờ điền số tự nghĩ ra.

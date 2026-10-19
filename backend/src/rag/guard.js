@@ -178,6 +178,12 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER, opt
     };
   }
 
+  // Model tu khai <context> khong du de tra loi truc tiep: khong hien noi dung nao do AI viet
+  // (tranh viec chen marker cho co nguon roi hien mot cau tra loi rong tuech).
+  if (raw.answerable === false) {
+    return rejected(["MODEL_REPORTED_INSUFFICIENT"], FallbackReason.INSUFFICIENT_EVIDENCE);
+  }
+
   const found = new Set();
   // (a) Loai marker bia -- marker khong nam trong tap da truy hoi. Tra ve {text, count}.
   const stripFakeMarkers = (text) => {

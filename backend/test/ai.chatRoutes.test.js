@@ -199,13 +199,33 @@ test("khan cap: so khan cap tu du lieu quoc gia dung dau cau tra loi, needsOffic
   assert.ok(message.citations.length >= 1);
 });
 
-test("khan cap nhung thieu bang chung: van co so khan cap, khong con fallback tro", async () => {
+test("khan cap nhung thieu bang chung: tra so khan cap + loi nhac, khong phai fallback tro", async () => {
   await seed();
   const user = await createUser();
   const { message } = await ask(user, "Tôi bị tấn công, cần làm gì ở Hàn Quốc về hồ sơ bảo lãnh?");
 
   assert.equal(message.route, "emergency");
   assert.match(message.text, /Công an 112/);
+  assert.match(message.text, /chưa có thông tin pháp lý đã kiểm chứng/);
+  assert.doesNotMatch(message.text, /Mình chưa có dữ liệu đã kiểm chứng đủ/);
+  assert.equal(message.fallbackReason, null);
+  assert.equal(message.needsOfficialHelp, true);
+  // Thong ke khoang trong nguon van thay truy hoi that bai.
+  const event = await m.AiEvent.findOne({ userId: user._id }).lean();
+  assert.equal(event.fallbackReason, "INSUFFICIENT_EVIDENCE");
+  assert.equal(event.route, "emergency");
+});
+
+test("khan cap khi guard tu choi cau tra loi AI: van giu so khan cap", async () => {
+  await seed();
+  useLlm(mockLlm.createHallucinatingMockLlmProvider());
+  const user = await createUser();
+  const { message } = await ask(user, "Vượt đèn đỏ gây tai nạn bị phạt bao nhiêu?");
+
+  assert.equal(message.route, "emergency");
+  assert.match(message.text, /Công an 112/);
+  assert.equal(message.fallbackReason, null);
+  assert.equal(message.citations.length, 0);
   assert.equal(message.needsOfficialHelp, true);
 });
 
@@ -285,4 +305,26 @@ test("AI tu bao ngoai pham vi: dung loi tu choi cua code, ghi route out_of_scope
   assert.equal(message.fallbackReason, "OUT_OF_SCOPE");
   assert.equal(message.route, "out_of_scope");
   assert.match(message.text, /Hàn Quốc/);
+});
+
+test("AI bao khong du du lieu tra loi truc tiep: fallback thieu bang chung, khong hien citation", async () => {
+  await seed();
+  useLlm({
+    provider: "mock",
+    model: "mock-unanswerable",
+    complete: async () =>
+      JSON.stringify({
+        answerable: false,
+        answer: "Chưa có dữ liệu [S1]",
+        usedSources: [],
+        confidence: "low",
+        needsOfficialHelp: false,
+      }),
+  });
+  const user = await createUser();
+  const { message } = await ask(user, "Vượt đèn đỏ bị phạt bao nhiêu?");
+
+  assert.equal(message.fallbackReason, "INSUFFICIENT_EVIDENCE");
+  assert.equal(message.citations.length, 0);
+  assert.doesNotMatch(message.text, /\[S1\]/);
 });

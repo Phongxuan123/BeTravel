@@ -237,3 +237,25 @@ test("parseLlmJson: nhan 3 phan, cho phep thieu actions/avoid, answer rong khi i
   assert.equal(parseLlmJson(JSON.stringify({ ...base, answer: "A", avoid: [1] })), null);
   assert.equal(parseLlmJson(JSON.stringify({ ...base, answer: "A", inScope: "yes" })), null);
 });
+
+test("guard: model tu khai khong du du lieu (answerable=false) thi bo noi dung, du da chen marker", () => {
+  const result = guardAnswer(
+    {
+      answerable: false,
+      answer: "Chưa có dữ liệu về địa điểm nộp hồ sơ [S1] [S2].",
+      usedSources: [],
+      confidence: "low",
+    },
+    RETRIEVED,
+  );
+  assert.equal(result.fallbackReason, "INSUFFICIENT_EVIDENCE");
+  assert.equal(result.answer, FALLBACK_MESSAGE);
+  assert.deepEqual(result.citations, []);
+  assert.ok(result.violations.includes("MODEL_REPORTED_INSUFFICIENT"));
+});
+
+test("parseLlmJson: answerable=false cho phep answer rong, sai kieu thi bi tu choi", () => {
+  const base = { usedSources: [], confidence: "low", needsOfficialHelp: false };
+  assert.ok(parseLlmJson(JSON.stringify({ ...base, answerable: false, answer: "" })));
+  assert.equal(parseLlmJson(JSON.stringify({ ...base, answerable: "no", answer: "A" })), null);
+});

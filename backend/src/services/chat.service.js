@@ -16,6 +16,7 @@ import {
   buildOutOfScopeAnswer,
   buildGreetingAnswer,
   PERSONAL_ADVICE_NOTICE,
+  EMERGENCY_NO_EVIDENCE_NOTE,
 } from "../rag/scope.js";
 import { getLlmProvider } from "../rag/llm/index.js";
 import { getEmbeddingProvider } from "../rag/embedding/index.js";
@@ -26,6 +27,8 @@ import { env } from "../core/env.js";
 import { AppError, ErrorCode } from "../core/errors.js";
 
 const CACHE_TTL_MS = env.AI_CACHE_TTL_HOURS * 60 * 60 * 1000;
+// Tăng khi đổi prompt hoặc guard để câu trả lời cũ trong cache không còn được dùng.
+const ANSWER_CACHE_VERSION = "answer-v4";
 
 export const createSession = async (userId, countryCode) => {
   if (!(await Country.exists({ code: countryCode, status: "active" }))) {
@@ -150,7 +153,9 @@ async function logAiEvent({
     model,
     embeddingModel,
     latencyMs,
-    fallbackReason: result.fallbackReason,
+    // Ca khẩn cấp được trả lời bằng số khẩn cấp thì message không còn là fallback, nhưng thống kê
+    // khoảng trống nguồn vẫn cần biết truy hồi đã thất bại.
+    fallbackReason: result.eventFallbackReason ?? result.fallbackReason,
     route: result.route ?? QuestionRoute.LEGAL,
     cacheHit,
   });
@@ -191,11 +196,29 @@ async function replyWithoutLlm({ session, userId, question, startedAt, result, e
   return { session, message };
 }
 
+// Ca khẩn cấp không có nguồn pháp lý: trả số khẩn cấp + lời nhắn, không phải fallback "thiếu dữ liệu".
+const emergencyOnlyResult = (emergency, eventFallbackReason) => ({
+  answer: [emergency.text, EMERGENCY_NO_EVIDENCE_NOTE, `---\n${DEFAULT_DISCLAIMER}`].join("\n\n"),
+  needsOfficialHelp: true,
+  fallbackReason: null,
+  eventFallbackReason,
+});
+
 const emptyRetrieval = (topScore = 0) => ({ topScore, chunkIds: [], passed: false });
 
 // Khối khẩn cấp (nếu có) luôn đứng ĐẦU câu trả lời, trước mọi nội dung do AI viết.
 const withEmergencyNotice = (route, emergency, text) =>
   route === QuestionRoute.EMERGENCY ? `${emergency.text}\n\n${text}` : text;
+
+// Lỗi provider (hết quota, mạng, timeout) không được nuốt im lặng: ghi log ngắn, không kèm key.
+async function completeOrNull(llm, input) {
+  try {
+    return await llm.complete(input);
+  } catch (error) {
+    console.error("[chat] LLM thất bại:", String(error?.message ?? error).slice(0, 200));
+    return null;
+  }
+}
 
 /*
  * Gọi LLM + hậu kiểm + cache. Cache chỉ lưu câu trả lời ĐÃ QUA guard; `regenerate` bỏ
@@ -214,7 +237,7 @@ async function generateGuardedAnswer({
     question,
     currentCountry.code,
     retrieval.chunks,
-    `${llm.model}:citations-v3${route === QuestionRoute.PERSONAL_ADVICE ? ":advice" : ""}`,
+    `${llm.model}:${ANSWER_CACHE_VERSION}${route === QuestionRoute.PERSONAL_ADVICE ? ":advice" : ""}`,
   );
   // TTL Mongo dọn theo chu kỳ, do đó phải tự lọc thời điểm hết hạn khi đọc.
   const cached = regenerate
@@ -243,10 +266,16 @@ async function generateGuardedAnswer({
   });
   const userPrompt = buildUserPrompt({ chunks: retrieval.chunks, question });
 
-  const rawJson = await llm
-    .complete({ systemPrompt, userPrompt, chunks: retrieval.chunks, question })
-    .then(parseLlmJson)
-    .catch(() => null);
+  const rawText = await completeOrNull(llm, {
+    systemPrompt,
+    userPrompt,
+    chunks: retrieval.chunks,
+    question,
+  });
+  const rawJson = rawText === null ? null : parseLlmJson(rawText);
+  if (rawText !== null && rawJson === null) {
+    console.error("[chat] LLM trả JSON không hợp lệ, độ dài:", rawText.length);
+  }
 
   if (!rawJson) {
     return {
@@ -271,6 +300,10 @@ async function generateGuardedAnswer({
     allowedNumbers,
     countryName: currentCountry.name,
   });
+  if (guarded.violations.length > 0) {
+    // Chỉ tên vi phạm (không kèm nội dung) để theo dõi chất lượng prompt/guard.
+    console.warn("[chat] guard:", guarded.violations.join(","));
+  }
   const confidence = guarded.fallbackReason ? "low" : rawJson.confidence;
   const needsOfficialHelp = rawJson.needsOfficialHelp;
 
@@ -393,6 +426,8 @@ export const sendMessage = async ({
   }
 
   if (!retrieval.passed) {
+    const isEmergency = route === QuestionRoute.EMERGENCY;
+    const noEvidenceReason = retrieval.reason ?? FallbackReason.INSUFFICIENT_EVIDENCE;
     return replyWithoutLlm({
       session,
       userId,
@@ -401,10 +436,14 @@ export const sendMessage = async ({
       embeddingModel: getEmbeddingProvider().model,
       result: {
         ...baseResult,
-        answer: withEmergencyNotice(route, emergency, FALLBACK_MESSAGE),
-        confidence: "low",
-        needsOfficialHelp: route === QuestionRoute.EMERGENCY,
-        fallbackReason: retrieval.reason ?? FallbackReason.INSUFFICIENT_EVIDENCE,
+        ...(isEmergency
+          ? emergencyOnlyResult(emergency, noEvidenceReason)
+          : {
+              answer: FALLBACK_MESSAGE,
+              needsOfficialHelp: false,
+              fallbackReason: noEvidenceReason,
+            }),
+        confidence: isEmergency ? "high" : "low",
         retrieval: emptyRetrieval(retrieval.topScore),
       },
     });
@@ -422,21 +461,33 @@ export const sendMessage = async ({
   });
 
   const latencyMs = Date.now() - startedAt;
-  const result = {
-    route:
-      guarded.fallbackReason === FallbackReason.OUT_OF_SCOPE ? QuestionRoute.OUT_OF_SCOPE : route,
-    answer: withEmergencyNotice(route, emergency, guarded.answer),
-    sections: guarded.sections ?? null,
-    citations: guarded.citations,
-    confidence,
-    needsOfficialHelp: needsOfficialHelp || route === QuestionRoute.EMERGENCY,
-    fallbackReason: guarded.fallbackReason,
-    retrieval: {
-      topScore: retrieval.topScore,
-      chunkIds: retrieval.chunks.map((c) => c.chunkId),
-      passed: true,
-    },
+  const retrievalMeta = {
+    topScore: retrieval.topScore,
+    chunkIds: retrieval.chunks.map((c) => c.chunkId),
+    passed: true,
   };
+  // Ca khẩn cấp mà AI/guard không cho ra câu trả lời dùng được: giữ số khẩn cấp, bỏ lời fallback.
+  const result =
+    route === QuestionRoute.EMERGENCY && guarded.fallbackReason
+      ? {
+          ...baseResult,
+          ...emergencyOnlyResult(emergency, guarded.fallbackReason),
+          confidence: "high",
+          retrieval: retrievalMeta,
+        }
+      : {
+          route:
+            guarded.fallbackReason === FallbackReason.OUT_OF_SCOPE
+              ? QuestionRoute.OUT_OF_SCOPE
+              : route,
+          answer: withEmergencyNotice(route, emergency, guarded.answer),
+          sections: guarded.sections ?? null,
+          citations: guarded.citations,
+          confidence,
+          needsOfficialHelp: needsOfficialHelp || route === QuestionRoute.EMERGENCY,
+          fallbackReason: guarded.fallbackReason,
+          retrieval: retrievalMeta,
+        };
 
   const message = await persistAssistantMessage({
     sessionId: session._id,
