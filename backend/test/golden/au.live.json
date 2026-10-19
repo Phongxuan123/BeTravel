@@ -1,6 +1,6 @@
 {
   "countryCode": "AU",
-  "note": "Bo cau danh gia CHAY THAT (Atlas + Gemini), khong chay trong CI. Can index 3 luat truoc: npm run index-au-laws -- C2004A01918 C2005A00005 C1946A00045. Chay: npm run evaluate-ai -- test/golden/au.live.json. Nguong: >= 80% tong, cau bay (trap/scope/emergency) 100%.",
+  "note": "Bo cau danh gia CHAY THAT (Atlas + Gemini), khong chay trong CI. Can index 5 luat truoc: npm run index-au-laws -- C2004A01918 C2005A00005 C1946A00045 F1996B03403 F1996B03651. Cac cau hai quan viet SAU khi xem dap an that (chi la kiem tra hoi quy). Chay: npm run evaluate-ai -- test/golden/au.live.json. Nguong: >= 80% tong, cau bay (trap/scope/emergency) 100%.",
   "cases": [
     { "id": "au-pmc-exempt", "kind": "fact",
       "question": "Ai được miễn Passenger Movement Charge của Úc?",
@@ -21,6 +21,16 @@
       "question": "Trẻ em không phải công dân đến Úc có người giám hộ là ai theo luật?",
       "expectCitationTitle": "Immigration (Guardianship of Children) Act 1946",
       "answerMustMatch": ["Bộ trưởng"] },
+
+    { "id": "au-customs-import-drugs", "kind": "fact",
+      "question": "Mang ma túy hoặc chất gây nghiện vào Úc có bị cấm nhập khẩu không?",
+      "expectCitationTitle": "Customs (Prohibited Imports) Regulations 1956",
+      "answerMustMatch": ["cấm|giấy phép|phép"] },
+
+    { "id": "au-customs-export-drugs", "kind": "fact",
+      "question": "Mang thuốc gây nghiện ra khỏi Úc có cần giấy phép không?",
+      "expectCitationTitle": "Customs (Prohibited Exports) Regulations 1958",
+      "answerMustMatch": ["phép|cấm"] },
 
     { "id": "au-trap-pmc-amount", "kind": "trap",
       "question": "Mức phí cụ thể của Passenger Movement Charge hiện nay là bao nhiêu AUD?",
