@@ -1,7 +1,7 @@
 import { View, Text, Pressable, Linking } from 'react-native';
 import { router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
-import { ThumbsUp, ThumbsDown, Flag, BookOpen, Phone, Copy, RefreshCw, ExternalLink } from 'lucide-react-native';
+import { ThumbsUp, ThumbsDown, Flag, BookOpen, Phone, Copy, RefreshCw, ExternalLink, Compass } from 'lucide-react-native';
 import { Badge } from '@/components/ui/Badge';
 import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
@@ -15,6 +15,8 @@ const BOLD_RE = /^\*\*([^*]+)\*\*$/;
 const MARKER_RE = /^\[S(\d+)\]$/;
 const NUMBERED_RE = /^(\d+)[.)]\s+(.*)$/;
 const LINE_BREAK = String.fromCharCode(10);
+// Tiêu đề 3 phần do backend ghép (rag/guard.js#composeAnswerText); "Nguồn" là danh sách bên dưới thẻ.
+const SECTION_HEADING_RE = /^\*\*(Trả lời ngắn|Việc nên làm|Điều cần tránh)\*\*$/;
 
 type SourceRef = { marker?: string; articleSlug?: string; countryCode?: string };
 
@@ -56,6 +58,14 @@ function AnswerBody({ content, sources }: { content: string; sources: SourceRef[
   return (
     <View style={{ gap: 8 }}>
       {lines.map((line, i) => {
+        const heading = line.match(SECTION_HEADING_RE);
+        if (heading) {
+          return (
+            <Text key={i} className="mt-1 text-[11px] font-body-bold uppercase tracking-wider text-muted">
+              {heading[1]}
+            </Text>
+          );
+        }
         const numbered = line.match(NUMBERED_RE);
         if (numbered) {
           return (
@@ -103,6 +113,26 @@ export function AnswerCard({
   // Thông tin liên hệ chính thức (Đại sứ quán) hiển thị khi câu trả lời cần hỗ trợ trực tiếp.
   contact?: ContactInfo | null;
 }) {
+  if (answer.status === 'out_of_scope') {
+    return (
+      <View testID="answer-card-out-of-scope" className="rounded-[20px] border border-line bg-surface p-4" style={{ borderTopLeftRadius: 6 }}>
+        <View className="flex-row items-center" style={{ gap: 8 }}>
+          <Compass size={18} color={colors.primary} />
+          <Text className="text-[13px] font-body-bold text-primary-strong">
+            {answer.greeting ? 'Be.Travel AI' : 'Ngoài phạm vi hỗ trợ'}
+          </Text>
+        </View>
+        <View className="mt-3">
+          <AnswerBody content={answer.message} sources={[]} />
+        </View>
+        <View className="mt-4" style={{ gap: 8 }}>
+          <Button label="Xem cẩm nang pháp lý" iconLeft={<BookOpen size={18} color="#fff" />} onPress={() => router.push('/explore')} />
+          <Button label="Mở SOS" variant="secondary" iconLeft={<Phone size={18} color={colors.primary} />} onPress={() => router.push('/sos')} />
+        </View>
+      </View>
+    );
+  }
+
   if (answer.status === 'insufficient_evidence') {
     return (
       <View testID="answer-card-insufficient" className="rounded-[20px] border border-cream-line bg-cream p-4">
@@ -177,6 +207,11 @@ export function AnswerCard({
                 <View className="flex-1" style={{ gap: 2 }}>
                   {s.marker ? <Text className="text-[11px] font-body-bold text-primary-strong">[{s.marker}]</Text> : null}
                   <Text className="text-sm font-body-semibold text-ink">{s.name}</Text>
+                  {s.verified === false ? (
+                    <Text className="text-[11px]" style={{ color: colors.warningStrong }}>
+                      Văn bản luật gốc, chưa được Be.Travel kiểm chứng
+                    </Text>
+                  ) : null}
                 </View>
                 {openInApp ? <BookOpen size={16} color={colors.primary} /> : <ExternalLink size={16} color={colors.primary} />}
               </Pressable>
@@ -184,10 +219,16 @@ export function AnswerCard({
           })}
         </View>
       )}
-      <View className="mt-3 flex-row items-center" style={{ gap: 8 }}>
-        <Badge label="Có nguồn pháp lý" tone="success" dot />
-        <Text className="text-xs text-subtle">Cập nhật {answer.updatedAt}</Text>
-      </View>
+      {answer.sources.length > 0 && (
+        <View className="mt-3 flex-row items-center" style={{ gap: 8 }}>
+          {answer.sources.some((s) => s.verified === false) ? (
+            <Badge label="Gồm luật gốc chưa kiểm chứng" tone="warning" dot />
+          ) : (
+            <Badge label="Có nguồn pháp lý" tone="success" dot />
+          )}
+          <Text className="text-xs text-subtle">Cập nhật {answer.updatedAt}</Text>
+        </View>
+      )}
       <FeedbackRow
         feedback={feedback}
         onFeedback={onFeedback}

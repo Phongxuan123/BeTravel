@@ -57,4 +57,55 @@ describe('chat.ts adapter', () => {
       { name: 'Mức phạt quá hạn — Mức phạt', url: '', marker: 'S1', articleSlug: 'qua-han-luu-tru', countryCode: 'KR' },
     ]);
   });
+
+  const base = {
+    _id: 'm3',
+    sessionId: 's1',
+    role: 'assistant' as const,
+    citations: [],
+    retrieval: { topScore: 0, chunkIds: [], passed: false },
+    confidence: 'high' as const,
+    feedback: null,
+    createdAt: '2026-03-15T00:00:00.000Z',
+  };
+
+  it('adaptMessage: OUT_OF_SCOPE -> out_of_scope, phan biet loi chao qua route', () => {
+    const refusal = adaptMessage(
+      { ...base, text: ['Mình chỉ hỗ trợ pháp lý.', '', '---', 'ghi chú'].join(String.fromCharCode(10)), fallbackReason: 'OUT_OF_SCOPE', route: 'out_of_scope' },
+      'KR',
+    );
+    expect(refusal).toEqual({ status: 'out_of_scope', message: 'Mình chỉ hỗ trợ pháp lý.', greeting: false });
+
+    const greeting = adaptMessage({ ...base, text: 'Xin chào', fallbackReason: 'OUT_OF_SCOPE', route: 'greeting' }, 'KR');
+    expect(greeting).toMatchObject({ status: 'out_of_scope', greeting: true });
+  });
+
+  it('adaptMessage: nguon luat goc (au_legislation) mo bang URL chinh thuc va danh dau chua kiem chung', () => {
+    const answer = adaptMessage(
+      {
+        ...base,
+        text: 'Visa có thể bị huỷ [S1].',
+        fallbackReason: null,
+        citations: [
+          {
+            marker: 'S1',
+            title: 'Migration Act 1958',
+            heading: 'Section 116',
+            sourceType: 'au_legislation',
+            officialUrl: 'https://www.legislation.gov.au/C1958A00062/latest/text',
+          },
+        ],
+      },
+      'AU',
+    );
+    if (answer.status !== 'answered') throw new Error('expected answered');
+    expect(answer.sources).toEqual([
+      {
+        name: 'Migration Act 1958 — Section 116',
+        url: 'https://www.legislation.gov.au/C1958A00062/latest/text',
+        marker: 'S1',
+        verified: false,
+      },
+    ]);
+  });
 });

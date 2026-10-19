@@ -65,3 +65,48 @@ describe('giao diện theo mẫu Be.Travel AI', () => {
     expect(notUrgent.queryByTestId('contact-card')).toBeNull();
   });
 });
+
+describe('ngoài phạm vi, tiêu đề 3 phần và nguồn chưa kiểm chứng', () => {
+  it('biến thể "out_of_scope" hiện lời từ chối của backend kèm lối sang Cẩm nang và SOS, không có nút báo sai', async () => {
+    const { getByTestId, getByText, queryByText } = await render(
+      <AnswerCard answer={{ status: 'out_of_scope', message: 'Mình chỉ hỗ trợ thông tin pháp lý.', greeting: false }} onFeedback={() => {}} />,
+    );
+    expect(getByTestId('answer-card-out-of-scope')).toBeTruthy();
+    expect(getByText('Ngoài phạm vi hỗ trợ')).toBeTruthy();
+    expect(getByText('Mình chỉ hỗ trợ thông tin pháp lý.')).toBeTruthy();
+    expect(queryByText('Báo sai')).toBeNull();
+  });
+
+  it('lời chào đổi nhãn đầu thẻ', async () => {
+    const { getByText } = await render(
+      <AnswerCard answer={{ status: 'out_of_scope', message: 'Xin chào', greeting: true }} onFeedback={() => {}} />,
+    );
+    expect(getByText('Be.Travel AI')).toBeTruthy();
+  });
+
+  it('tiêu đề 3 phần hiện thành nhãn, không còn dấu sao', async () => {
+    const content = ['**Trả lời ngắn**', 'Không được mang vape [S1].', '', '**Việc nên làm**', '1. Để vape ở nhà [S1]', '', '**Điều cần tránh**', '- Giấu vape trong hành lý [S1]'].join(String.fromCharCode(10));
+    const { getByText, queryByText } = await render(
+      <AnswerCard answer={{ ...answered, content, sources: [{ name: 'Luật A', url: '', marker: 'S1' }] }} onFeedback={() => {}} />,
+    );
+    expect(getByText('Trả lời ngắn')).toBeTruthy();
+    expect(getByText('Việc nên làm')).toBeTruthy();
+    expect(getByText('Điều cần tránh')).toBeTruthy();
+    expect(queryByText(/\*\*/)).toBeNull();
+  });
+
+  it('nguồn luật gốc chưa kiểm chứng được gắn nhãn cảnh báo; không có nguồn thì không hiện huy hiệu "Có nguồn pháp lý"', async () => {
+    const unverified = await render(
+      <AnswerCard
+        answer={{ ...answered, sources: [{ name: 'Migration Act 1958', url: 'https://example.com', marker: 'S1', verified: false }] }}
+        onFeedback={() => {}}
+      />,
+    );
+    expect(unverified.getByText('Văn bản luật gốc, chưa được Be.Travel kiểm chứng')).toBeTruthy();
+    expect(unverified.getByText('Gồm luật gốc chưa kiểm chứng')).toBeTruthy();
+    expect(unverified.queryByText('Có nguồn pháp lý')).toBeNull();
+
+    const noSource = await render(<AnswerCard answer={{ ...answered, sources: [] }} onFeedback={() => {}} />);
+    expect(noSource.queryByText('Có nguồn pháp lý')).toBeNull();
+  });
+});
