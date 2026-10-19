@@ -36,3 +36,32 @@ describe('AnswerCard', () => {
     expect(queryByText(/quay phim/)).toBeNull();
   });
 });
+
+describe('giao diện theo mẫu Be.Travel AI', () => {
+  const guidance = {
+    ...answered,
+    content: 'Đừng quá lo lắng!\n1. Trình báo công an gần nhất\n2. Chuẩn bị **ảnh 4x6** và giấy tờ',
+    needsOfficialHelp: true,
+  };
+
+  test('dòng đánh số hiển thị thành từng bước và chữ in đậm không còn dấu **', async () => {
+    const { getByText, queryByText } = await render(<AnswerCard answer={guidance} onFeedback={() => {}} />);
+    expect(getByText('Trình báo công an gần nhất')).toBeTruthy();
+    expect(getByText('ảnh 4x6')).toBeTruthy();
+    expect(queryByText(/\*\*/)).toBeNull();
+  });
+
+  test('thẻ thông tin liên hệ chỉ hiện khi cần hỗ trợ chính thức và có dữ liệu liên hệ', async () => {
+    const contact = { name: 'Đại sứ quán Việt Nam', address: '61 Rue de Miromesnil', phone: '+33 144 14 64 00' };
+
+    const withContact = await render(<AnswerCard answer={guidance} contact={contact} onFeedback={() => {}} />);
+    expect(withContact.getByTestId('contact-card')).toBeTruthy();
+    expect(withContact.getByText('+33 144 14 64 00')).toBeTruthy();
+
+    const noContact = await render(<AnswerCard answer={guidance} contact={{ name: 'Chỉ có tên' }} onFeedback={() => {}} />);
+    expect(noContact.queryByTestId('contact-card')).toBeNull();
+
+    const notUrgent = await render(<AnswerCard answer={{ ...guidance, needsOfficialHelp: false }} contact={contact} onFeedback={() => {}} />);
+    expect(notUrgent.queryByTestId('contact-card')).toBeNull();
+  });
+});

@@ -1,6 +1,17 @@
 # TIEN DO BE.TRAVEL
 
-## Luật liên bang Úc — 18/10/2026 (cập nhật mới nhất)
+## Giao diện Be.Travel AI theo mẫu — 19/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng, thiết kế lại màn chat AI theo mẫu (chỉ giao diện, không đổi contract `ChatAnswer`).
+
+- Header (avatar, "Đang trực tuyến · Luật <quốc gia>", nút cuộc trò chuyện mới và lịch sử), màn chào với 4 thẻ nhanh,
+  câu trả lời có bước đánh số và chữ đậm, ô nhập hình viên thuốc, bọc trong `AppShell` (thanh tab, nhãn "Trợ lý AI").
+- Thẻ "Thông tin liên hệ" lấy từ hồ sơ Đại sứ quán của quốc gia (do Admin quản lý), KHÔNG do AI sinh; ẩn khi thiếu dữ liệu.
+- Thẻ "Bệnh viện" và "Đại sứ quán" mở bản đồ SOS (dữ liệu địa điểm đã xác minh); thẻ "Luật" và "Khẩn cấp" hỏi AI.
+- Chưa làm: nút mic trong chat (nhập giọng nói chỉ có ở màn Dịch theo phạm vi MVP), màn khách chưa đăng nhập chưa đổi theo mẫu.
+- Màn chat vẫn bị khóa bằng `EXPO_PUBLIC_AI_CHAT_ENABLED` (mặc định false); bật trong `mobile/.env` để xem.
+
+## Luật liên bang Úc — 18/10/2026
 
 Theo yêu cầu người dùng (ngoài lộ trình B1-B9). Tra cứu luật Commonwealth của Úc từ Federal Register of
 Legislation (API công khai, không cần key), thêm quốc gia Úc (AU), phân loại 5 mục, tóm lược và dịch tiếng Việt.
