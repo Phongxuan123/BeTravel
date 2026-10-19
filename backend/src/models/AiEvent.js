@@ -22,6 +22,8 @@ const aiEventSchema = new mongoose.Schema(
     completionTokens: { type: Number, default: 0 },
     costEstimateUsd: { type: Number, default: 0 },
     fallbackReason: { type: String, default: null },
+    // Luồng phân loại bởi rag/scope.js (emergency, out_of_scope, ...) -- thống kê theo luồng.
+    route: { type: String, default: "legal" },
     cacheHit: { type: Boolean, default: false },
   },
   { timestamps: true },

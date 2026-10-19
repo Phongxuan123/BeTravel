@@ -468,25 +468,39 @@ GET    /chat/sessions                              200, danh sach phien CUA CHIN
 POST   /chat/sessions            {countryCode}      201, tao phien moi
 DELETE /chat/sessions/:id                           200 { deleted: true }
 GET    /chat/sessions/:id/messages                  200, lich su tin nhan cua phien
-POST   /chat/sessions/:id/messages {question, focusArticleId?}  201 { sessionId, message } --
+POST   /chat/sessions/:id/messages {question, focusArticleId?, regenerate?}  201 { sessionId, message } --
                                                       [!] TRA MOT LAN, KHONG STREAMING (master plan B.7).
                                                       focusArticleId (B5): CTA "Hoi AI ve bai nay" tu man
                                                       hinh chi tiet bai luat -- uu tien chunk cua bai do
                                                       trong RRF (xem rag/retrieval.js FOCUS_ARTICLE_WEIGHT).
+                                                      regenerate (nut "Tao lai"): true --> bo qua cache cau tra loi,
+                                                      goi lai LLM, van tinh luot quota.
 POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  200
 ```
 
 `message` (role='assistant') co dang:
 ```jsonc
 {
-  "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer",
-  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading" }],
+  "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer (markdown, da ghep tu sections)",
+  "route": "legal",       // "legal" | "emergency" | "personal_advice" | "out_of_scope" | "greeting"
+  "sections": { "answer": "...", "actions": ["... [S1]"], "avoid": ["... [S1]"] },  // null neu khong co AI tra loi
+  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading",
+                  "sourceType": "article",   // hoac "au_legislation" (van ban luat goc, CHUA duoc Be.Travel kiem chung)
+                  "officialUrl": "" }],      // chi co voi au_legislation; bai noi bo mo trong app theo articleSlug
   "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
-  "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR"
+  "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR" | "OUT_OF_SCOPE"
   "confidence": "medium",
   "needsOfficialHelp": false
 }
 ```
+
+[!] **Phan luong cau hoi bang code** (`backend/src/rag/scope.js`, chay TRUOC retrieval, khong goi LLM):
+`out_of_scope` va `greeting` tra loi do code soan, `fallbackReason:"OUT_OF_SCOPE"`, **khong ton quota**.
+`emergency`: khoi so khan cap lay tu `Country.emergencyNumbers` + `Country.embassy.phone` dung DAU
+`text`, `needsOfficialHelp:true`; neu het luot AI trong ngay van nhan duoc khoi nay (khong bi 429).
+`personal_advice`: van tra thong tin nhung `text` them cau ranh gioi co dinh. `sections` gom 3 phan do
+LLM sinh; phan "Nguon" cua UI dung `citations`, KHONG phai do LLM viet. `text` van la ban ghep san
+(co tieu de `**Tra loi ngan**`, `**Viec nen lam**`, `**Dieu can tranh**`) de client cu khong vo.
 
 [!] **Cau hoi nhac ten mot quoc gia KHAC voi `countryCode` cua session** duoc
 chan o tang service (`chat.service.js#detectOtherCountryMention`) TRUOC ca

@@ -78,6 +78,8 @@ export const FallbackReason = Object.freeze({
   GUARD_REJECTED: "GUARD_REJECTED",
   // Provider loi (mang, parse JSON that bai...) -- khong phai loi nghiep vu.
   PROVIDER_ERROR: "PROVIDER_ERROR",
+  // Câu hỏi ngoài phạm vi pháp lý + an toàn du lịch (rag/scope.js hoặc AI báo inScope=false).
+  OUT_OF_SCOPE: "OUT_OF_SCOPE",
 });
 
 export const ChatRole = Object.freeze({
