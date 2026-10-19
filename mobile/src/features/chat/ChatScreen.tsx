@@ -1,17 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Clock, MessageCircle, Plus, Send, TriangleAlert, Pencil, Trash2, Check, X } from 'lucide-react-native';
+import { MessageCircle, Plus, Send, Pencil, Trash2, Check, X } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { QuickChip } from '@/components/ui/QuickChip';
-import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
-import { CountryFlag } from '@/components/brand/CountryFlag';
+import { AppShell, useAppShellNavClearance } from '@/components/common/AppShell';
 import { AnswerCard } from '@/features/chat/components/AnswerCard';
+import { BotAvatar } from '@/features/chat/components/BotAvatar';
+import { ChatHeader } from '@/features/chat/components/ChatHeader';
+import { WelcomeSection, type ActionKey } from '@/features/chat/components/WelcomeSection';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
@@ -43,6 +44,10 @@ type Message = {
   forQuestion?: string;
 };
 
+// Lưu ý cuối màn chat (theo mẫu), giữ ý "không thay thế tư vấn pháp lý chính thức" của wording chuẩn dự án.
+const CHAT_DISCLAIMER =
+  'Lưu ý: Be.Travel cung cấp thông tin dựa trên dữ liệu AI, không thay thế tư vấn pháp lý chính thức. Vui lòng xác nhận các thông tin khẩn cấp với cơ quan chức năng.';
+
 let messageIdCounter = 0;
 function nextMessageId(prefix: string): string {
   messageIdCounter += 1;
@@ -72,7 +77,7 @@ function buildFeedbackMap(history: ChatUiMessage[]): Record<string, 'up' | 'down
 }
 
 export default function ChatScreen() {
-  const insets = useSafeAreaInsets();
+  const navClearance = useAppShellNavClearance();
   const { isGuest } = useAuth();
   const { countryCode, country } = useCountry();
   const params = useLocalSearchParams<{ q?: string; focusArticleId?: string }>();
@@ -300,159 +305,158 @@ export default function ChatScreen() {
     ]);
   };
 
+  // Thẻ luật và khẩn cấp hỏi AI; thẻ bệnh viện và đại sứ quán mở bản đồ SOS (dữ liệu địa điểm đã xác minh).
+  const onWelcomeAction = (key: ActionKey) => {
+    const place = country?.name ?? 'nơi mình đang đến';
+    if (key === 'law') {
+      void send(`Cho mình biết những quy định pháp luật quan trọng cần lưu ý khi du lịch ở ${place}.`);
+    } else if (key === 'emergency') {
+      void send(`Mình đang gặp tình huống khẩn cấp ở ${place}, mình cần làm gì trước tiên?`);
+    } else {
+      router.push({ pathname: '/sos/map', params: { type: key === 'hospital' ? 'hospital' : 'embassy' } } as never);
+    }
+  };
+
+  const canSend = input.trim().length > 0 && !isAwaitingAnswer;
+
   return (
-    <View className="flex-1 bg-bg">
-      <PageHeader
-        title="Be.Travel AI"
-        subtitle="Trợ lý pháp lý du lịch của bạn"
-        right={
-          <IconButton accessibilityLabel="Lịch sử phiên chat" variant="outline" icon={<Clock size={18} color={colors.ink} />} onPress={openHistory} />
-        }
-      />
-      <View className="border-b border-line bg-surface px-[18px] py-2.5">
-        <View className="flex-row items-center self-start rounded-full bg-primary-soft px-3 py-1.5" style={{ gap: 6 }}>
-          <CountryFlag code={countryCode} width={16} height={12} />
-          <Text className="text-[13px] font-body-semibold text-muted">Áp dụng luật {country?.name}</Text>
-        </View>
-        <Text className="mt-2 text-[11px] leading-4 text-muted">
-          AI hỗ trợ tham khảo, không thay thế tư vấn pháp lý chuyên nghiệp.
-        </Text>
-      </View>
+    <AppShell active="chat">
+      <View className="flex-1 bg-bg">
+        <ChatHeader countryName={country?.name} onOpenHistory={openHistory} onNewConversation={startNewConversation} />
 
-      <ScrollView ref={scrollRef} contentContainerStyle={{ padding: 18, gap: 14 }}>
-        {messages.length === 0 && (
-          <Text className="mt-6 text-center text-sm text-muted">Hỏi mình về quy định pháp luật khi du lịch, hoặc chọn một câu gợi ý bên dưới.</Text>
-        )}
-        {messages.map((m, index) =>
-          m.role === 'user' ? (
-            <View key={m.id} className="max-w-[80%] self-end rounded-[18px] bg-primary px-4 py-3" style={{ borderBottomRightRadius: 6 }}>
-              <Text className="text-base text-white">{m.text}</Text>
-            </View>
-          ) : (
-            <View key={m.id} className="flex-row items-start" style={{ gap: 10 }}>
-              <View className={`h-9 w-9 items-center justify-center rounded-sm ${m.answer?.status === 'insufficient_evidence' ? 'bg-warning-soft' : 'bg-primary-soft'}`}>
-                {m.answer?.status === 'insufficient_evidence' ? (
-                  <TriangleAlert size={18} color={colors.warning} />
-                ) : (
-                  <MessageCircle size={18} color={colors.primary} />
-                )}
-              </View>
-              <View className="flex-1">
-                {m.pending ? (
-                  <TypingDots />
-                ) : m.answer ? (
-                  <AnswerCard
-                    answer={m.answer}
-                    feedback={feedback[m.id]}
-                    onFeedback={(v) => onFeedback(m, v)}
-                    onReport={() => openReport(m)}
-                    onRegenerate={
-                      index === messages.length - 1 && m.forQuestion && !isAwaitingAnswer
-                        ? () => send(m.forQuestion ?? '')
-                        : undefined
-                    }
-                  />
-                ) : null}
-              </View>
-            </View>
-          ),
-        )}
-      </ScrollView>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="border-t border-line bg-surface px-[18px] py-2.5">
-        <View className="flex-row" style={{ gap: 8 }}>
-          {['Tôi có quyền gì?', 'Tôi nên nói gì?', 'Có bị phạt không?', 'Tôi cần liên hệ ai?'].map((s) => (
-            <QuickChip key={s} label={s} onPress={() => send(s)} />
-          ))}
-        </View>
-      </ScrollView>
-
-      <View className="flex-row items-end gap-2.5 bg-surface px-[18px] pt-2.5" style={{ paddingBottom: insets.bottom + 12 }}>
-        <TextInput
-          className="max-h-28 flex-1 rounded-lg border border-line bg-surface px-4 py-3 text-base text-ink"
-          placeholder="Hỏi về quy định..."
-          placeholderTextColor={colors.subtle}
-          value={input}
-          onChangeText={setInput}
-          multiline
-        />
-        <Pressable
-          accessibilityLabel="Gửi câu hỏi"
-          disabled={!input.trim() || isAwaitingAnswer}
-          onPress={() => send(input)}
-          className={`h-14 w-14 items-center justify-center rounded-lg bg-primary ${!input.trim() || isAwaitingAnswer ? 'opacity-50' : ''}`}
-        >
-          <Send size={22} color="#fff" />
-        </Pressable>
-      </View>
-
-      <SimpleSheet visible={historyOpen} onClose={() => setHistoryOpen(false)} title="Lịch sử phiên chat">
-        <View style={{ gap: 8 }}>
-          <Pressable
-            className="flex-row items-center rounded-md border border-line bg-primary-soft px-3.5 py-3"
-            style={{ gap: 8 }}
-            onPress={startNewConversation}
-          >
-            <Plus size={18} color={colors.primary} />
-            <Text className="font-body-bold text-primary">Cuộc trò chuyện mới</Text>
-          </Pressable>
-
-          {loadingSessions && <Text className="py-3 text-center text-sm text-muted">Đang tải...</Text>}
-          {!loadingSessions && sessions.length === 0 && (
-            <Text className="py-3 text-center text-sm text-muted">Chưa có cuộc trò chuyện nào cho {country?.name}.</Text>
-          )}
-          {sessions.map((s) =>
-            renamingSessionId === s._id ? (
-              <View key={s._id} className="flex-row items-center gap-2 rounded-md border border-primary px-3.5 py-2">
-                <TextInput
-                  className="flex-1 text-[15px] text-ink"
-                  value={renameDraft}
-                  onChangeText={setRenameDraft}
-                  autoFocus
-                  onSubmitEditing={() => saveRename(s)}
-                />
-                <Pressable accessibilityLabel="Lưu tên" onPress={() => saveRename(s)} hitSlop={8}>
-                  <Check size={18} color={colors.primary} />
-                </Pressable>
-                <Pressable accessibilityLabel="Huỷ đổi tên" onPress={() => setRenamingSessionId(null)} hitSlop={8}>
-                  <X size={18} color={colors.muted} />
-                </Pressable>
+        <ScrollView ref={scrollRef} contentContainerStyle={{ padding: 18, gap: 14 }} keyboardShouldPersistTaps="handled">
+          {messages.length === 0 && <WelcomeSection onSelectAction={onWelcomeAction} />}
+          {messages.map((m, index) =>
+            m.role === 'user' ? (
+              <View key={m.id} className="max-w-[80%] self-end rounded-[18px] bg-primary px-4 py-3" style={{ borderBottomRightRadius: 6 }}>
+                <Text className="text-base text-white">{m.text}</Text>
               </View>
             ) : (
-              <View key={s._id} className="flex-row items-center rounded-md border border-line">
-                <Pressable className="flex-1 px-3.5 py-3" onPress={() => selectSession(s)}>
-                  <Text className="font-body-semibold text-ink" numberOfLines={1}>
-                    {s.title || 'Cuộc trò chuyện'}
-                  </Text>
-                  <Text className="mt-0.5 text-xs text-subtle">{new Date(s.updatedAt).toLocaleString('vi-VN')}</Text>
-                </Pressable>
-                <Pressable accessibilityLabel="Đổi tên" className="px-2.5 py-3" onPress={() => startRename(s)} hitSlop={8}>
-                  <Pencil size={16} color={colors.muted} />
-                </Pressable>
-                <Pressable accessibilityLabel="Xoá" className="px-2.5 py-3" onPress={() => removeSession(s)} hitSlop={8}>
-                  <Trash2 size={16} color={colors.danger} />
-                </Pressable>
+              <View key={m.id} className="flex-row items-start" style={{ gap: 10 }}>
+                <BotAvatar tone={m.answer?.status === 'insufficient_evidence' ? 'warning' : 'brand'} />
+                <View className="flex-1">
+                  {m.pending ? (
+                    <TypingDots />
+                  ) : m.answer ? (
+                    <AnswerCard
+                      answer={m.answer}
+                      contact={country?.embassy}
+                      feedback={feedback[m.id]}
+                      onFeedback={(v) => onFeedback(m, v)}
+                      onReport={() => openReport(m)}
+                      onRegenerate={
+                        index === messages.length - 1 && m.forQuestion && !isAwaitingAnswer
+                          ? () => send(m.forQuestion ?? '')
+                          : undefined
+                      }
+                    />
+                  ) : null}
+                </View>
               </View>
             ),
           )}
-        </View>
-      </SimpleSheet>
+        </ScrollView>
 
-      <SimpleSheet visible={!!reportTarget} onClose={() => setReportTarget(null)} title="Báo sai câu trả lời">
-        <View style={{ gap: 12 }}>
-          <Text className="text-sm text-muted">Cho mình biết câu trả lời sai ở chỗ nào để đội nội dung kiểm tra lại.</Text>
-          <TextField
-            multiline
-            numberOfLines={4}
-            style={{ height: 96, paddingTop: 12, textAlignVertical: 'top' }}
-            placeholder="Ví dụ: mức phạt ghi sai, bài luật đã lỗi thời..."
-            value={reportNote}
-            onChangeText={setReportNote}
-          />
-          <Button label="Gửi báo cáo" loading={reportSubmitting} onPress={submitReport} />
+        {messages.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="border-t border-line bg-surface px-[18px] py-2.5" style={{ flexGrow: 0 }}>
+            <View className="flex-row" style={{ gap: 8 }}>
+              {['Tôi có quyền gì?', 'Tôi nên nói gì?', 'Có bị phạt không?', 'Tôi cần liên hệ ai?'].map((suggestion) => (
+                <QuickChip key={suggestion} label={suggestion} onPress={() => send(suggestion)} />
+              ))}
+            </View>
+          </ScrollView>
+        )}
+
+        <View className="border-t border-line bg-surface px-[18px] pt-2.5" style={{ paddingBottom: navClearance }}>
+          <Text className="mb-2 text-center text-[11px] leading-4 text-muted">{CHAT_DISCLAIMER}</Text>
+          <View className="flex-row items-center rounded-full border border-line bg-bg pl-4 pr-1.5" style={{ minHeight: 52 }}>
+            <TextInput
+              className="max-h-28 flex-1 py-2.5 text-[15px] text-ink"
+              placeholder="Hỏi bất cứ điều gì về chuyến đi..."
+              placeholderTextColor={colors.subtle}
+              value={input}
+              onChangeText={setInput}
+              multiline
+            />
+            <Pressable
+              accessibilityLabel="Gửi câu hỏi"
+              disabled={!canSend}
+              onPress={() => send(input)}
+              className={`h-10 w-10 items-center justify-center rounded-full bg-primary ${canSend ? '' : 'opacity-50'}`}
+            >
+              <Send size={18} color="#fff" />
+            </Pressable>
+          </View>
         </View>
-      </SimpleSheet>
-    </View>
+
+        <SimpleSheet visible={historyOpen} onClose={() => setHistoryOpen(false)} title="Lịch sử phiên chat">
+          <View style={{ gap: 8 }}>
+            <Pressable
+              className="flex-row items-center rounded-md border border-line bg-primary-soft px-3.5 py-3"
+              style={{ gap: 8 }}
+              onPress={startNewConversation}
+            >
+              <Plus size={18} color={colors.primary} />
+              <Text className="font-body-bold text-primary">Cuộc trò chuyện mới</Text>
+            </Pressable>
+
+            {loadingSessions && <Text className="py-3 text-center text-sm text-muted">Đang tải...</Text>}
+            {!loadingSessions && sessions.length === 0 && (
+              <Text className="py-3 text-center text-sm text-muted">Chưa có cuộc trò chuyện nào cho {country?.name}.</Text>
+            )}
+            {sessions.map((s) =>
+              renamingSessionId === s._id ? (
+                <View key={s._id} className="flex-row items-center gap-2 rounded-md border border-primary px-3.5 py-2">
+                  <TextInput
+                    className="flex-1 text-[15px] text-ink"
+                    value={renameDraft}
+                    onChangeText={setRenameDraft}
+                    autoFocus
+                    onSubmitEditing={() => saveRename(s)}
+                  />
+                  <Pressable accessibilityLabel="Lưu tên" onPress={() => saveRename(s)} hitSlop={8}>
+                    <Check size={18} color={colors.primary} />
+                  </Pressable>
+                  <Pressable accessibilityLabel="Huỷ đổi tên" onPress={() => setRenamingSessionId(null)} hitSlop={8}>
+                    <X size={18} color={colors.muted} />
+                  </Pressable>
+                </View>
+              ) : (
+                <View key={s._id} className="flex-row items-center rounded-md border border-line">
+                  <Pressable className="flex-1 px-3.5 py-3" onPress={() => selectSession(s)}>
+                    <Text className="font-body-semibold text-ink" numberOfLines={1}>
+                      {s.title || 'Cuộc trò chuyện'}
+                    </Text>
+                    <Text className="mt-0.5 text-xs text-subtle">{new Date(s.updatedAt).toLocaleString('vi-VN')}</Text>
+                  </Pressable>
+                  <Pressable accessibilityLabel="Đổi tên" className="px-2.5 py-3" onPress={() => startRename(s)} hitSlop={8}>
+                    <Pencil size={16} color={colors.muted} />
+                  </Pressable>
+                  <Pressable accessibilityLabel="Xoá" className="px-2.5 py-3" onPress={() => removeSession(s)} hitSlop={8}>
+                    <Trash2 size={16} color={colors.danger} />
+                  </Pressable>
+                </View>
+              ),
+            )}
+          </View>
+        </SimpleSheet>
+
+        <SimpleSheet visible={!!reportTarget} onClose={() => setReportTarget(null)} title="Báo sai câu trả lời">
+          <View style={{ gap: 12 }}>
+            <Text className="text-sm text-muted">Cho mình biết câu trả lời sai ở chỗ nào để đội nội dung kiểm tra lại.</Text>
+            <TextField
+              multiline
+              numberOfLines={4}
+              style={{ height: 96, paddingTop: 12, textAlignVertical: 'top' }}
+              placeholder="Ví dụ: mức phạt ghi sai, bài luật đã lỗi thời..."
+              value={reportNote}
+              onChangeText={setReportNote}
+            />
+            <Button label="Gửi báo cáo" loading={reportSubmitting} onPress={submitReport} />
+          </View>
+        </SimpleSheet>
+      </View>
+    </AppShell>
   );
 }
 

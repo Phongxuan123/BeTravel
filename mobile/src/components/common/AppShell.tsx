@@ -19,7 +19,7 @@ const CONTENT_GAP = 16;
 const tabs: { key: Exclude<ActiveTab, 'sos'>; label: string; icon: typeof House; href: '/' | '/explore' | '/chat' | '/profile' }[] = [
   { key: 'home', label: 'Trang chủ', icon: House, href: '/' },
   { key: 'explore', label: 'Khám phá', icon: Compass, href: '/explore' },
-  { key: 'chat', label: 'AI pháp lý', icon: MessageCircle, href: '/chat' },
+  { key: 'chat', label: 'Trợ lý AI', icon: MessageCircle, href: '/chat' },
   { key: 'profile', label: 'Cá nhân', icon: User, href: '/profile' },
 ];
 
@@ -92,6 +92,13 @@ function NavItem({
  * Khoảng đệm dưới cho nội dung cuộn trong AppShell: thanh điều hướng, phần nút SOS nhô lên,
  * nhãn "Khẩn cấp" và vùng an toàn của máy. Thiếu vùng an toàn thì nút SOS che mục cuối (B14).
  */
+// Chừa chỗ cho thanh tab + phần nhô lên của nút SOS (không gồm nhãn): dùng cho thanh nhập liệu
+// đặt sát thanh tab (màn chat) thay vì cuộn nội dung như useAppShellBottomPadding.
+export function useAppShellNavClearance(): number {
+  const insets = useSafeAreaInsets();
+  return NAV_HEIGHT + insets.bottom + SOS_OVERLAP + CONTENT_GAP / 2;
+}
+
 export function useAppShellBottomPadding(): number {
   const insets = useSafeAreaInsets();
   return NAV_HEIGHT + insets.bottom + (SOS_BUTTON_SIZE - SOS_OVERLAP) + SOS_LABEL_HEIGHT + CONTENT_GAP;

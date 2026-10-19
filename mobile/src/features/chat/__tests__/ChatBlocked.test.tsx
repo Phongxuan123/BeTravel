@@ -7,6 +7,10 @@ import { ApiError } from '@/lib/api/http';
 // Backend phong toa tra cuu phap luat (FEATURE_DISABLED) --> chan ca man chat
 // bang man "dang hoan thien", khong hien khung chat vo dung.
 jest.mock('expo-router', () => ({ router: { push: jest.fn() }, useLocalSearchParams: () => ({}) }));
+jest.mock('@/components/common/AppShell', () => ({
+  AppShell: ({ children }: { children: React.ReactNode }) => children,
+  useAppShellNavClearance: () => 0,
+}));
 jest.mock('@/lib/auth', () => ({ useAuth: () => ({ isGuest: false }) }));
 jest.mock('@/lib/countryContext', () => ({
   useCountry: () => ({ countryCode: 'KR', country: { name: 'Hàn Quốc' } }),
