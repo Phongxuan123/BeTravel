@@ -13,6 +13,7 @@ import { LawRow } from '@/features/laws/LawRow';
 import { isFeatureDisabledError } from '@/lib/api/http';
 import {
   AU_COLLECTIONS,
+  AU_NAME_VI_NOTICE,
   AU_SCOPE_NOTICE,
   fetchAuLaws,
   fetchAuLawTopics,
@@ -43,6 +44,7 @@ export default function AustraliaLawsScreen() {
     <View style={{ gap: 12 }} className="pb-3">
       <View className="rounded-md bg-amber-soft p-3">
         <Text className="text-xs text-warning-strong">{AU_SCOPE_NOTICE}</Text>
+        <Text className="mt-1.5 text-xs text-warning-strong">{AU_NAME_VI_NOTICE}</Text>
       </View>
       <TextField
         placeholder="Tìm theo tên văn bản (tiếng Anh), vd: migration"

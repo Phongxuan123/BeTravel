@@ -851,3 +851,12 @@ client hien ban goc), va co `translationNotice` (PHAI hien thi). Query: `offset`
 - Dung model dich rieng (`TRANSLATION_MODEL`), khong dung model chat, de khong tieu han muc cua chat AI.
 - `/summary` them `deepStatus`: `ready|generating|not_generated|not_eligible|unavailable` va `deepSummary` (tom tat tung Phan, xem 24c);
   mac dinh KHONG tu sinh (`AU_LAW_DEEP_SUMMARY_AUTOGEN=false`), sinh bang `npm run summarize-au-laws`.
+
+### 24e. Ten tieng Viet cua luat — truong `nameVi`, `nameViSource`
+
+Moi item danh sach (`/laws/australia`, `/search`) va chi tiet (`/laws/australia/:id`) co them:
+- `nameVi: string | null` — ten tieng Viet THAM KHAO; `null` neu chua co (client hien ten tieng Anh).
+- `nameViSource: "curated" | "machine" | null` — `curated`: 31 luat tuyen chon, ten viet san (backend/src/core/auLawNames.js);
+  `machine`: AI dich ten theo lo (mot luot goi cho ca trang), cache DB, tat bang `AU_LAW_TITLE_TRANSLATION=false`.
+- Ten chinh thuc la tieng Anh (`name`) va PHAI luon hien thi kem. Ban dich bi loai neu them hoac bot con so (nam, so hieu).
+- Dich ten khong lam cham danh sach: cho toi da 8 giay, qua han hoac loi thi `nameVi:null` va viec dich van chay nen de lan sau co san.

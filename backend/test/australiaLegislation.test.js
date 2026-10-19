@@ -183,3 +183,36 @@ test("GET content-vi chan offset khong phai boi so 25 va luat ngoai danh sach tu
   const badOffset = await request(app).get("/api/laws/australia/C1971A00003/content-vi?offset=10");
   assert.equal(badOffset.status, 400);
 });
+
+test("attachNamesVi dung ten viet san, AI chi dich luat con lai va chan ban dich sai so", async () => {
+  const { __setLlmProviderForTest } = await import("../src/rag/llm/index.js");
+  const { attachNamesVi } = await import("../src/services/australiaLawTitleTranslation.service.js");
+
+  const requests = [];
+  __setLlmProviderForTest({
+    provider: "test",
+    complete: async ({ userPrompt }) => {
+      requests.push(JSON.parse(userPrompt));
+      // Ban dich thu hai sai nam (2099) nen phai bi guard bo.
+      return JSON.stringify({ translations: ["Dao luat Foo 2020", "Dao luat Bar 2099"] });
+    },
+  });
+
+  const items = [
+    { id: "C1958A00062", name: "Migration Act 1958" },
+    { id: "ZZTEST0001", name: "Foo Act 2020" },
+    { id: "ZZTEST0002", name: "Bar Act 2021" },
+  ];
+  const result = await attachNamesVi(items);
+
+  assert.deepEqual(requests, [["Foo Act 2020", "Bar Act 2021"]]); // luat tuyen chon khong gui cho AI
+  assert.equal(result[0].nameVi, "Đạo luật Di trú 1958");
+  assert.equal(result[0].nameViSource, "curated");
+  assert.equal(result[1].nameVi, "Dao luat Foo 2020");
+  assert.equal(result[1].nameViSource, "machine");
+  assert.equal(result[2].nameVi, null);
+
+  // Lan hai: ten da dich lay tu cache, chi con ten bi tu choi duoc gui lai.
+  await attachNamesVi(items);
+  assert.deepEqual(requests.at(-1), ["Bar Act 2021"]);
+});

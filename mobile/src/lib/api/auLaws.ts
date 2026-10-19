@@ -26,6 +26,9 @@ export const AU_COLLECTIONS = [
 export type AuLawSummary = {
   id: string;
   name: string;
+  // Tên tiếng Việt tham khảo: curated = viết sẵn, machine = AI dịch; null nếu chưa có (hiện tên tiếng Anh).
+  nameVi: string | null;
+  nameViSource: 'curated' | 'machine' | null;
   collection: string | null;
   status: string | null;
   isInForce: boolean;
@@ -37,6 +40,9 @@ export type AuLawSummary = {
 };
 
 export type AuLawTopic = { slug: string; label: string; note: string; lawCount: number };
+
+export const AU_NAME_VI_NOTICE =
+  'Tên tiếng Việt chỉ là bản dịch tham khảo; tên chính thức của luật là tiếng Anh (hiển thị bên dưới).';
 
 export const AU_TOPICS_NOTICE =
   'Các mục do Be.Travel tuyển chọn thủ công từ luật liên bang liên quan, không phải danh sách đầy đủ.';

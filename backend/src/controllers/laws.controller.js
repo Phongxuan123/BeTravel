@@ -1,5 +1,6 @@
 import { ok } from "../core/envelope.js";
 import * as australia from "../services/australiaLegislation.service.js";
+import { attachNamesVi } from "../services/australiaLawTitleTranslation.service.js";
 import { getTitleSummary } from "../services/australiaLawSummary.service.js";
 import { getTitleContentVi } from "../services/australiaLawTranslation.service.js";
 
@@ -11,7 +12,7 @@ import { getTitleContentVi } from "../services/australiaLawTranslation.service.j
 export const listAustralia = async (req, res, next) => {
   try {
     const { items, meta } = await australia.listTitles(req.query);
-    return ok(res, items, meta);
+    return ok(res, await attachNamesVi(items), meta);
   } catch (error) {
     next(error);
   }
@@ -21,7 +22,8 @@ export const topicsAustralia = (req, res) => ok(res, australia.listTopics());
 
 export const getAustralia = async (req, res, next) => {
   try {
-    return ok(res, await australia.getTitleDetail(req.params.id));
+    const [detail] = await attachNamesVi([await australia.getTitleDetail(req.params.id)]);
+    return ok(res, detail);
   } catch (error) {
     next(error);
   }

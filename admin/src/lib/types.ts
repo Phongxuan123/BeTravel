@@ -277,6 +277,9 @@ export type GeoAlert = {
 export type AuLawSummary = {
   id: string;
   name: string;
+  // Tên tiếng Việt tham khảo: curated = viết sẵn, machine = AI dịch; null nếu chưa có (hiện tên tiếng Anh).
+  nameVi: string | null;
+  nameViSource: 'curated' | 'machine' | null;
   collection: string | null;
   subCollection: string | null;
   status: string | null;

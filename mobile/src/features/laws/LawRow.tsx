@@ -16,8 +16,13 @@ export function LawRow({ law }: { law: AuLawSummary }) {
         <Scale size={18} color={colors.primary} />
         <View className="flex-1" style={{ gap: 6 }}>
           <Text className="text-sm font-body-bold text-ink" numberOfLines={3}>
-            {law.name}
+            {law.nameVi ?? law.name}
           </Text>
+          {law.nameVi ? (
+            <Text className="text-xs text-muted" numberOfLines={2}>
+              {law.name}
+            </Text>
+          ) : null}
           <Text className="text-xs text-muted">
             {law.id}
             {law.makingDate ? ` · ${law.makingDate}` : ''}

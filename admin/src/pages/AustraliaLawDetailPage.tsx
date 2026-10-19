@@ -234,7 +234,8 @@ export default function AustraliaLawDetailPage() {
       </Link>
 
       <PageHeader
-        title={law.name}
+        title={law.nameVi ?? law.name}
+        description={law.nameVi ? law.name : undefined}
         actions={
           <a href={law.officialUrl} target="_blank" rel="noreferrer">
             <Button variant="secondary" iconLeft={<ExternalLink size={16} />}>
