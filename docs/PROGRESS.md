@@ -56,7 +56,7 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
 ### Index luật Úc và đánh giá thật (20/10/2026)
 
 - Đã index **5/8 luật du khách** (586 chunk): Passenger Movement Charge, Passports, Customs Prohibited Exports, Customs Prohibited Imports, Guardianship of Children.
-- **3 luật chưa index** (C2015A00061, C2004A03952, C1901A00006; C2004A00109 chưa chạy): Gemini trả 429 "quota exceeded" sau khoảng 560 chunk,
+- **4 luật chưa index** (C2015A00061, C2004A03952, C1901A00006, C2004A00109, đều thất bại): Gemini trả 429 "quota exceeded" sau khoảng 560 chunk,
   nhiều khả năng **hạn mức embedding theo ngày** của gói miễn phí. Chạy lại sau khi quota reset hoặc dùng key trả phí:
   `npm run index-au-laws -- C2015A00061 C2004A03952 C1901A00006 C2004A00109`.
 - `evaluate-ai` với `gemini-3.5-flash-lite` trên `test/golden/au.live.json`: **11/11**. Lần chạy đầu 7/9: `au-guardianship` do luật chưa index,
