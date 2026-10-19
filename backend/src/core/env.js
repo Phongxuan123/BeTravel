@@ -131,6 +131,9 @@ const envSchema = z.object({
   // true = tự sinh tóm tắt từng Phần (nhiều lượt gọi AI) khi có người mở luật lần đầu. Mặc định tắt để
   // không âm thầm đốt hạn mức AI; sinh chủ động bằng `npm run summarize-au-laws`.
   AU_LAW_DEEP_SUMMARY_AUTOGEN: booleanish(false),
+  // true = AI dịch tên các luật Úc ngoài danh sách tuyển chọn (một lần gọi nhỏ cho mỗi trang danh sách, cache DB).
+  // Tắt nếu cần tiết kiệm hạn mức AI: tên luật tuyển chọn vẫn có tiếng Việt viết sẵn.
+  AU_LAW_TITLE_TRANSLATION: booleanish(true),
 
   APP_VERSION: z.string().default("1.0.0"),
 

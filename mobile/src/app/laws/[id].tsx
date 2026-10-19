@@ -27,7 +27,7 @@ export default function AustraliaLawDetailScreen() {
 
   return (
     <View className="flex-1 bg-bg">
-      <PageHeader title={law?.name ?? 'Văn bản luật Úc'} subtitle={law?.id} />
+      <PageHeader title={law?.nameVi ?? law?.name ?? 'Văn bản luật Úc'} subtitle={law?.id} />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 16 }}>
         <View className="rounded-md bg-amber-soft p-3">
           <Text className="text-xs text-warning-strong">{AU_SCOPE_NOTICE}</Text>
@@ -41,7 +41,8 @@ export default function AustraliaLawDetailScreen() {
         {law && (
           <>
             <View className="rounded-2xl border border-line bg-surface p-4" style={{ gap: 10 }}>
-              <Text className="text-base font-body-bold text-ink">{law.name}</Text>
+              <Text className="text-base font-body-bold text-ink">{law.nameVi ?? law.name}</Text>
+              {law.nameVi ? <Text className="text-xs text-muted">{law.name}</Text> : null}
               <Badge label={law.isInForce ? 'Đang có hiệu lực' : (law.status ?? 'Hết hiệu lực')} tone={law.isInForce ? 'success' : 'neutral'} />
               <InfoLine label="Mã văn bản" value={law.id} />
               <InfoLine label="Loại" value={law.collection} />

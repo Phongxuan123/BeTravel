@@ -11,7 +11,7 @@ import { Badge } from '../components/ui/Badge';
 import { Table, Thead, Th, Tbody, Td } from '../components/ui/Table';
 import { Pagination } from '../components/ui/Pagination';
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/Feedback';
-import { AU_SCOPE_NOTICE } from '../lib/auLaws';
+import { AU_NAME_VI_NOTICE, AU_SCOPE_NOTICE } from '../lib/auLaws';
 
 const LIMIT = 20;
 
@@ -55,7 +55,9 @@ export default function AustraliaLawsPage() {
     <div>
       <PageHeader title="Luật Úc" description="Tra cứu luật liên bang Úc từ nguồn chính thức (chỉ đọc)." />
 
-      <p className="mb-4 rounded-md bg-warn-tint px-4 py-3 text-sm text-warn">{AU_SCOPE_NOTICE}</p>
+      <p className="mb-4 rounded-md bg-warn-tint px-4 py-3 text-sm text-warn">
+        {AU_SCOPE_NOTICE} {AU_NAME_VI_NOTICE}
+      </p>
 
       <form onSubmit={onSubmit} className="mb-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
         <div className="sm:col-span-3">
@@ -134,7 +136,10 @@ export default function AustraliaLawsPage() {
             <Tbody>
               {laws.map((law) => (
                 <tr key={law.id} className="cursor-pointer hover:bg-slate-50" onClick={() => navigate(`/australia-laws/${law.id}`)}>
-                  <Td>{law.name}</Td>
+                  <Td>
+                    <span className="block font-medium">{law.nameVi ?? law.name}</span>
+                    {law.nameVi && <span className="block text-xs text-muted">{law.name}</span>}
+                  </Td>
                   <Td className="whitespace-nowrap font-mono text-xs">{law.id}</Td>
                   <Td className="whitespace-nowrap">{law.makingDate ?? '-'}</Td>
                   <Td>

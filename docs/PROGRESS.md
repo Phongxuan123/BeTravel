@@ -19,6 +19,10 @@ Legislation (API công khai, không cần key), thêm quốc gia Úc (AU), phân
 - Quyết định 2: tóm tắt từng Phần mặc định KHÔNG tự sinh (`AU_LAW_DEEP_SUMMARY_AUTOGEN=false`); sinh chủ động bằng
   `npm run summarize-au-laws`. Gặp 429 theo phút thì chờ rồi thử lại, hạn mức ngày thì báo lỗi ngay.
 - Quyết định 3: nguồn không hỗ trợ lọc phủ định nên nhóm luật thuế "A New Tax System" bị loại bằng code sau khi lấy trang.
+- Quyết định 4 (19/10/2026): tên luật có tiếng Việt hai lớp. 31 luật tuyển chọn có tên viết sẵn (`core/auLawNames.js`,
+  bản dịch tham khảo, chưa có người chuyên ngành luật rà soát); luật khác được AI dịch tên theo lô và cache DB
+  (`AU_LAW_TITLE_TRANSLATION`, mặc định bật; quá 8 giây hoặc lỗi thì hiện tên tiếng Anh). Bản dịch bị loại nếu thêm hoặc bớt số.
+  Tên chính thức tiếng Anh luôn hiển thị kèm. Tìm kiếm vẫn theo tên tiếng Anh.
 
 ### Đang vướng (Luật Úc)
 
