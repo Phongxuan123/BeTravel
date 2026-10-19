@@ -108,4 +108,23 @@ describe('chat.ts adapter', () => {
       },
     ]);
   });
+
+  it('adaptMessage: nhiều chunk của cùng một điều luật gốc gộp thành một dòng nguồn', () => {
+    const cite = (marker: string, heading: string) => ({
+      marker,
+      title: 'Passenger Movement Charge Collection Act 1978',
+      heading,
+      sourceType: 'au_legislation' as const,
+      officialUrl: 'https://www.legislation.gov.au/C2004A01918/latest/text',
+    });
+    const answer = adaptMessage(
+      { ...base, text: 'Trả lời [S1] [S2] [S3].', fallbackReason: null, citations: [cite('S1', '5 Persons exempt'), cite('S2', '5 Persons exempt'), cite('S3', '6 Liability')] },
+      'AU',
+    );
+    if (answer.status !== 'answered') throw new Error('expected answered');
+    expect(answer.sources.map((s) => [s.name.split(' — ')[1], s.marker])).toEqual([
+      ['5 Persons exempt', 'S1, S2'],
+      ['6 Liability', 'S3'],
+    ]);
+  });
 });

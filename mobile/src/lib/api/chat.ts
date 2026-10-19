@@ -72,6 +72,19 @@ function adaptSource(c: ApiCitation, countryCode: string): Extract<ChatAnswer, {
   return { name, url: '', marker: c.marker, articleSlug: c.articleSlug, countryCode };
 }
 
+type AnswerSource = Extract<ChatAnswer, { status: 'answered' }>['sources'][number];
+
+// Một điều luật gốc dài được chia thành nhiều chunk cùng tiêu đề: gộp thành một dòng nguồn, giữ các marker.
+function mergeSameSections(sources: AnswerSource[]): AnswerSource[] {
+  const merged: AnswerSource[] = [];
+  for (const source of sources) {
+    const same = source.verified === false ? merged.find((m) => m.verified === false && m.name === source.name) : undefined;
+    if (same) same.marker = `${same.marker}, ${source.marker}`;
+    else merged.push({ ...source });
+  }
+  return merged;
+}
+
 export function adaptMessage(message: ApiChatMessage, countryCode: string): ChatAnswer {
   if (message.fallbackReason === 'OUT_OF_SCOPE') {
     return {
@@ -88,7 +101,7 @@ export function adaptMessage(message: ApiChatMessage, countryCode: string): Chat
     updatedAt: formatUpdatedAt(message.createdAt),
     content: stripTrailingDisclaimer(message.text),
     needsOfficialHelp: message.needsOfficialHelp === true,
-    sources: message.citations.map((c) => adaptSource(c, countryCode)),
+    sources: mergeSameSections(message.citations.map((c) => adaptSource(c, countryCode))),
   };
 }
 

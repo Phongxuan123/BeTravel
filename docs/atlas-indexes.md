@@ -8,6 +8,8 @@ Ngân sách 3 search index trên Atlas M0 (CLAUDE.md mục 4.1, `docs/00_BeTrave
 | 2 | `legal_chunks` | `search` | `txt_idx` | Chưa tạo — làm theo hướng dẫn dưới |
 | 3 | — | — | dự phòng, không dùng | — |
 
+**Chunk luật liên bang Úc** (`sourceType:"au_legislation"`, `npm run index-au-laws`) nằm trong CÙNG collection và dùng đúng các filter `countryCode`, `status`, `topicSlug` ở trên, nên **không cần sửa index** hay tạo thêm index.
+
 **Chưa bắt buộc tạo ngay.** Code chạy được hoàn toàn với `SEARCH_DRIVER=memory` (mặc định trong `.env.example`) — chỉ cần tạo 2 index này khi muốn chuyển sang chạy RAG bằng Atlas Search thật (`SEARCH_DRIVER=atlas`).
 
 ## 1. `vec_idx` — Vector Search

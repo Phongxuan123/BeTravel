@@ -1,5 +1,7 @@
 # Kế hoạch hoàn thiện Be.Travel AI
 
+> **Trạng thái 20/10/2026:** G1-G5 đã triển khai trên máy (nhánh `feature/ai-completion`, chưa push). Kết quả, phát hiện khi chạy thật và việc còn lại: `docs/PROGRESS.md` mục "Hoàn thiện Be.Travel AI". Điểm lệch so với kế hoạch: không cần sửa `vec_idx` (chunk luật Úc dùng sẵn filter countryCode/status/topicSlug); thêm `answerable=false` và `ANSWER_CACHE_VERSION`; chưa có trang Admin index luật Úc (chỉ CLI).
+
 Lập ngày 19/10/2026 · Trạng thái: **bản nháp để nhóm duyệt, chưa code**.
 Căn cứ: code hiện tại trên `main` (`7e0ab29`), `docs/AI_KNOWLEDGE_BASE.md`, `docs/03_Contracts_v2.md` mục 7-8,
 `FRONTEND_UI_SPECIFICATION.md` mục 3.8 và các lựa chọn người dùng chốt ngày 19/10:

@@ -1,6 +1,56 @@
 # TIEN DO BE.TRAVEL
 
-## Giao diện Be.Travel AI theo mẫu — 19/10/2026 (cập nhật mới nhất)
+## Hoàn thiện Be.Travel AI (G1-G5) — 19-20/10/2026 (cập nhật mới nhất)
+
+Theo kế hoạch `docs/AI_FEATURE_PLAN.md`, nhánh `feature/ai-completion` (commit local, chưa push theo yêu cầu người dùng).
+Chat vẫn **khoá** bằng `EXPO_PUBLIC_AI_CHAT_ENABLED` (giữ nguyên quyết định B4, người dùng tự bật).
+
+- **Phân luồng bằng code** (`backend/src/rag/scope.js`, chạy trước retrieval): ngoài phạm vi, chào hỏi, chèn lệnh
+  vào câu hỏi thì trả lời do code soạn, `fallbackReason:"OUT_OF_SCOPE"`, không gọi LLM, không tốn quota.
+  Khẩn cấp: khối số khẩn cấp lấy từ `Country.emergencyNumbers` + số Đại sứ quán đứng đầu câu trả lời; hết lượt
+  AI trong ngày vẫn nhận được khối này. Xin tư vấn cá nhân: trả thông tin kèm câu ranh giới cố định.
+- **Câu trả lời 3 phần** (Trả lời ngắn / Việc nên làm / Điều cần tránh) + phần Nguồn do code dựng từ citations.
+  Guard kiểm từng phần: ý vi phạm bị bỏ, phần trả lời chính vi phạm thì hạ cả câu. Thêm: số điện thoại phải
+  có trong nguồn hoặc là số khẩn cấp quốc gia; đơn vị tiền AUD/RM/penalty units; điều luật tiếng Anh
+  (`section 116`, `s 116`). System prompt thêm 5 nguyên tắc (dữ liệu không phải lệnh, phạm vi, nguồn luật gốc,
+  số điện thoại, `answerable=false` khi không đủ dữ liệu trực tiếp). Nút "Tạo lại" bỏ qua cache.
+- **Luật liên bang Úc vào RAG**: chunk theo điều (`rag/auLawChunking.js`), index bằng
+  `npm run index-au-laws -- <titleId...>` (embed xong mới thay chunk cũ). Dùng chung `vec_idx`/`txt_idx`
+  (countryCode=AU) nên **không cần tạo thêm Atlas index**. Chunk luật gốc được xác minh bằng danh sách tuyển chọn
+  + `registerId` hiện hành (fail-closed khi không tra được); trích dẫn có `sourceType:"au_legislation"`,
+  URL chính thức, nhãn "chưa được Be.Travel kiểm chứng".
+- **Embedding gói miễn phí**: 100 lượt/phút, nên `gemini.embedding.js` chờ đúng `retryDelay` khi 429.
+- **Model chat mặc định** `gemini-3.5-flash-lite` (người dùng tự đổi `LLM_MODEL` trong `backend/.env`).
+- Mobile: thẻ "Ngoài phạm vi", tiêu đề 3 phần, nhãn nguồn chưa kiểm chứng, gộp chunk cùng điều luật, nút Tạo lại
+  thay đúng câu trả lời (không nhân đôi câu hỏi).
+
+Kiểm tra: backend lint + 344/344 (golden KR 32/32, thêm ca ngoài phạm vi và khẩn cấp), mobile tsc + lint +
+243/243, admin typecheck + 18/18.
+
+**Chạy thật (Atlas + Gemini `gemini-3.5-flash-lite`, 20/10)**: index thử 3 luật nhỏ (143 chunk), hỏi tiếng Việt về
+luật tiếng Anh, điểm truy hồi 0,71-0,83 với câu có nguồn và 0,58-0,67 với câu không có nguồn; 2-4 giây mỗi câu.
+`npm run evaluate-ai -- test/golden/au.live.json`: **9/9**. Lưu ý: bộ 9 câu này viết sau khi đã xem câu trả lời
+thử nên chỉ là kiểm tra hồi quy, chưa phải đánh giá độc lập. Trên emulator (đăng nhập thật, chọn Úc): câu có
+nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩn cấp 000), Tạo lại đều chạy đúng. Dữ liệu thử đã dọn
+(0 chunk AU, phiên chat thử đã xoá).
+
+### Phát hiện khi chạy thật
+
+- Model có thể chèn marker `[S1]..[S8]` vào câu "không có dữ liệu" để qua guard; đã xử lý bằng `answerable=false`.
+- Cache câu trả lời lưu cả câu trả lời cũ qua thay đổi prompt: đã thêm `ANSWER_CACHE_VERSION`, phải tăng khi đổi prompt/guard.
+- `LLM_MODEL` trong `.env` ghi đè biến môi trường khi chạy (dotenv `override`), và `env` bị đóng băng; muốn thử model khác
+  phải đặt provider qua `__setLlmProviderForTest`, không sửa `.env`.
+
+### Chưa làm / đang vướng (AI)
+
+- Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí
+  100 lượt/phút nên mỗi luật lớn mất vài chục phút. Cần người quyết định phạm vi index thật.
+- Chưa có bài Hàn Quốc đã duyệt nên chat KR vẫn từ chối gần hết; TH/SG/MY chờ PR #47 và người duyệt.
+- Chưa đo hạn mức ngày thật của `gemini-3.5-flash-lite`; quota 40 câu/người/ngày chưa được kiểm chứng với hạn mức Google.
+- Chưa có trang Admin để bấm index luật Úc (hiện chỉ CLI) và chưa thống kê `route` trên Dashboard.
+- Chưa nghiệm thu máy thật; emulator không gõ được chữ có dấu nên câu hỏi thử dùng chữ không dấu.
+
+## Giao diện Be.Travel AI theo mẫu — 19/10/2026
 
 Theo yêu cầu người dùng, thiết kế lại màn chat AI theo mẫu (chỉ giao diện, không đổi contract `ChatAnswer`).
 
