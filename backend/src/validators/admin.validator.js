@@ -240,6 +240,15 @@ export const ragStatusQuerySchema = z.object({
   countryCode: countryCodeSchema.optional(),
 });
 
+// Mã luật trên Federal Register of Legislation dạng C2004A01918 / F1996B03551.
+const auTitleIdSchema = z.string().regex(/^[A-Z]\d{4}[A-Z]\d{5}$/, "Mã luật không hợp lệ");
+
+export const ragAuLawIndexSchema = z.object({
+  titleIds: z.array(auTitleIdSchema).min(1).max(40),
+});
+
+export const ragAuLawParamSchema = z.object({ titleId: auTitleIdSchema });
+
 // ── Feedback queue (B5, A08) ────────────────────────────────────────────
 export const feedbackListQuerySchema = paginationQuerySchema.extend({
   rating: z.enum(Object.values(FeedbackRating)).optional(),

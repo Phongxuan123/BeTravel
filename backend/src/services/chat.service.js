@@ -8,7 +8,13 @@ import AiEvent from "../models/AiEvent.js";
 import Country from "../models/Country.js";
 import { retrieve } from "../rag/retrieval.js";
 import { buildSystemPrompt, buildUserPrompt, parseLlmJson } from "../rag/prompt.js";
-import { guardAnswer, FALLBACK_MESSAGE, DEFAULT_DISCLAIMER } from "../rag/guard.js";
+import {
+  guardAnswer,
+  FALLBACK_MESSAGE,
+  PROVIDER_BUSY_MESSAGE,
+  DEFAULT_DISCLAIMER,
+} from "../rag/guard.js";
+import { completeWithRateLimitRetry } from "../rag/llm/rateLimitRetry.js";
 import {
   classifyQuestion,
   QuestionRoute,
@@ -29,6 +35,10 @@ import { AppError, ErrorCode } from "../core/errors.js";
 const CACHE_TTL_MS = env.AI_CACHE_TTL_HOURS * 60 * 60 * 1000;
 // Tăng khi đổi prompt hoặc guard để câu trả lời cũ trong cache không còn được dùng.
 const ANSWER_CACHE_VERSION = "answer-v4";
+// Gói Gemini miễn phí giới hạn theo PHÚT trên cả dự án (flash-lite: 15, đã đo 20/10/2026), nên một
+// lần chờ ngắn rồi thử lại cứu được phần lớn lỗi 429; chờ lâu hơn thì báo bận, không treo người dùng.
+const CHAT_RATE_LIMIT_RETRIES = 1;
+const CHAT_RATE_LIMIT_MAX_WAIT_MS = 20_000;
 
 export const createSession = async (userId, countryCode) => {
   if (!(await Country.exists({ code: countryCode, status: "active" }))) {
@@ -213,7 +223,10 @@ const withEmergencyNotice = (route, emergency, text) =>
 // Lỗi provider (hết quota, mạng, timeout) không được nuốt im lặng: ghi log ngắn, không kèm key.
 async function completeOrNull(llm, input) {
   try {
-    return await llm.complete(input);
+    return await completeWithRateLimitRetry(input, () => llm, {
+      maxRetries: CHAT_RATE_LIMIT_RETRIES,
+      maxWaitMs: CHAT_RATE_LIMIT_MAX_WAIT_MS,
+    });
   } catch (error) {
     console.error("[chat] LLM thất bại:", String(error?.message ?? error).slice(0, 200));
     return null;
@@ -280,7 +293,7 @@ async function generateGuardedAnswer({
   if (!rawJson) {
     return {
       guarded: {
-        answer: FALLBACK_MESSAGE,
+        answer: PROVIDER_BUSY_MESSAGE,
         sections: null,
         citations: [],
         fallbackReason: FallbackReason.PROVIDER_ERROR,

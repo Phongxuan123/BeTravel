@@ -9,6 +9,7 @@ import type {
   DashboardSummary,
   ContentStatus,
   RagArticleStatus,
+  AuLawRagStatus,
   Feedback,
   FeedbackDetail,
   FeedbackRating,
@@ -76,6 +77,11 @@ export const ragApi = {
   status: (countryCode?: string) => apiRequest<RagArticleStatus[]>('/admin/rag/status', { query: { countryCode } }),
   reindexCountry: (countryCode: string) =>
     apiRequest<{ queued: number }>('/admin/rag/reindex-country', { method: 'POST', body: { countryCode } }),
+  auLaws: () => apiRequest<AuLawRagStatus[]>('/admin/rag/au-laws'),
+  indexAuLaws: (titleIds: string[]) =>
+    apiRequest<{ queued: string[]; skipped: string[] }>('/admin/rag/au-laws/index', { method: 'POST', body: { titleIds } }),
+  removeAuLaw: (titleId: string) =>
+    apiRequest<{ titleId: string; deleted: number }>(`/admin/rag/au-laws/${titleId}`, { method: 'DELETE' }),
 };
 
 export const feedbackApi = {

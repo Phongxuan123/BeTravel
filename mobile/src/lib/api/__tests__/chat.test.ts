@@ -127,4 +127,15 @@ describe('chat.ts adapter', () => {
       ['6 Liability', 'S3'],
     ]);
   });
+
+  it('adaptMessage: PROVIDER_ERROR -> thẻ AI đang bận, không giả làm thiếu dữ liệu', () => {
+    const answer = adaptMessage(
+      { ...base, text: 'Trợ lý AI đang bận, thử lại sau ít phút.', fallbackReason: 'PROVIDER_ERROR' },
+      'KR',
+    );
+    expect(answer).toMatchObject({ status: 'insufficient_evidence', badge: 'AI đang bận', title: 'Chưa thể trả lời lúc này.' });
+    if (answer.status !== 'insufficient_evidence') throw new Error('expected insufficient_evidence');
+    expect(answer.reason).toBe('Trợ lý AI đang bận, thử lại sau ít phút.');
+    expect(answer.suggestions.length).toBeGreaterThan(0);
+  });
 });

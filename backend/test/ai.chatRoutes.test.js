@@ -328,3 +328,41 @@ test("AI bao khong du du lieu tra loi truc tiep: fallback thieu bang chung, khon
   assert.equal(message.citations.length, 0);
   assert.doesNotMatch(message.text, /\[S1\]/);
 });
+
+test("LLM 429 ngắn hạn: chờ rồi thử lại một lần, người dùng vẫn nhận câu trả lời", async () => {
+  await seed();
+  const inner = mockLlm.createMockLlmProvider();
+  let calls = 0;
+  useLlm({
+    ...inner,
+    model: "mock-rate-limited",
+    complete: async (input) => {
+      calls += 1;
+      if (calls === 1) throw new Error("GEMINI_LLM_FAILED: 429 Please retry in 0.1s.");
+      return inner.complete(input);
+    },
+  });
+  const user = await createUser();
+  const { message } = await ask(user, "Vượt đèn đỏ bị phạt bao nhiêu?");
+
+  assert.equal(message.fallbackReason, null);
+  assert.ok(message.citations.length >= 1);
+  assert.equal(calls, 2);
+});
+
+test("LLM hết hạn mức lâu: báo AI đang bận (PROVIDER_ERROR), không giả làm thiếu dữ liệu", async () => {
+  await seed();
+  useLlm({
+    provider: "mock",
+    model: "mock-quota-exhausted",
+    complete: async () => {
+      throw new Error("GEMINI_LLM_FAILED: 429 Please retry in 3600s.");
+    },
+  });
+  const user = await createUser();
+  const { message } = await ask(user, "Vượt đèn đỏ bị phạt bao nhiêu?");
+
+  assert.equal(message.fallbackReason, "PROVIDER_ERROR");
+  assert.match(message.text, /Trợ lý AI đang bận/);
+  assert.doesNotMatch(message.text, /chưa có dữ liệu đã kiểm chứng/);
+});

@@ -66,6 +66,11 @@ const SECTION_HEADINGS = Object.freeze({
   avoid: "Điều cần tránh",
 });
 
+// Lỗi phía nhà cung cấp AI (quá tải, hết hạn mức phút/ngày): không phải thiếu dữ liệu, nên lời nhắn khác.
+export const PROVIDER_BUSY_MESSAGE =
+  "Trợ lý AI đang bận hoặc đã hết lượt trong lúc này. Bạn hãy thử lại sau ít phút. " +
+  "Nếu việc gấp, mở mục SOS hoặc liên hệ Đại sứ quán Việt Nam.";
+
 const rejected = (violations, fallbackReason = FallbackReason.GUARD_REJECTED) => ({
   answer: FALLBACK_MESSAGE,
   sections: null,

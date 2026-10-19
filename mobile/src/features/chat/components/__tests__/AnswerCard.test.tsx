@@ -109,4 +109,16 @@ describe('ngoài phạm vi, tiêu đề 3 phần và nguồn chưa kiểm chứn
     const noSource = await render(<AnswerCard answer={{ ...answered, sources: [] }} onFeedback={() => {}} />);
     expect(noSource.queryByText('Có nguồn pháp lý')).toBeNull();
   });
+
+  it('lỗi nhà cung cấp AI đổi nhãn và tiêu đề thẻ, không dùng "Chưa đủ dữ liệu"', async () => {
+    const { getByText, queryByText } = await render(
+      <AnswerCard
+        answer={{ status: 'insufficient_evidence', badge: 'AI đang bận', title: 'Chưa thể trả lời lúc này.', reason: 'Thử lại sau.', suggestions: [] }}
+        onFeedback={() => {}}
+      />,
+    );
+    expect(getByText('AI đang bận')).toBeTruthy();
+    expect(getByText('Chưa thể trả lời lúc này.')).toBeTruthy();
+    expect(queryByText('Chưa đủ dữ liệu')).toBeNull();
+  });
 });

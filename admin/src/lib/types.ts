@@ -144,6 +144,15 @@ export type RagIndexState = {
   error: string;
 };
 
+// Luật liên bang Úc trong RAG (backend/src/services/ragAdmin.service.js#listAuLaws).
+export type AuLawRagStatus = {
+  titleId: string;
+  name: string | null;
+  topics: string[];
+  index: { chunks: number; registerId: string; embeddingModel: string } | null;
+  job: { status: 'pending' | 'running' | 'done' | 'failed'; lastError: string | null; createdAt: string } | null;
+};
+
 export type RagArticleStatus = {
   _id: string;
   title: string;
@@ -202,6 +211,8 @@ export type AnalyticsOverview = {
   avgLatencyMs: number;
   costEstimateUsd: number;
   pendingFeedbackCount: number;
+  // Số lượt theo luồng phân loại: legal, emergency, out_of_scope, greeting, personal_advice.
+  routeCounts: Record<string, number>;
   topFallbackQuestions: { question: string; count: number }[];
 };
 

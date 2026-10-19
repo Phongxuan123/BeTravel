@@ -28,7 +28,12 @@ export const parseRetryAfterMs = (message) => {
   return Math.ceil(totalSeconds + 1) * MS_PER_SECOND;
 };
 
-export const completeWithRateLimitRetry = async (request, getProvider = getTranslationProvider) => {
+// maxRetries/maxWaitMs: chat tương tác chỉ chờ ngắn (người dùng đang đợi), tác vụ nền chờ lâu hơn.
+export const completeWithRateLimitRetry = async (
+  request,
+  getProvider = getTranslationProvider,
+  { maxRetries = MAX_RATE_LIMIT_RETRIES, maxWaitMs = MAX_ACCEPTABLE_WAIT_MS } = {},
+) => {
   for (let retry = 0; ; retry += 1) {
     try {
       return await getProvider().complete(request);
@@ -36,8 +41,7 @@ export const completeWithRateLimitRetry = async (request, getProvider = getTrans
       const message = String(error?.message);
       const isRateLimited = RATE_LIMIT_PATTERN.test(message);
       const waitMs = parseRetryAfterMs(message) ?? DEFAULT_RATE_LIMIT_WAIT_MS;
-      const shouldGiveUp =
-        !isRateLimited || retry >= MAX_RATE_LIMIT_RETRIES || waitMs > MAX_ACCEPTABLE_WAIT_MS;
+      const shouldGiveUp = !isRateLimited || retry >= maxRetries || waitMs > maxWaitMs;
       if (shouldGiveUp) throw error;
       await wait(waitMs);
     }

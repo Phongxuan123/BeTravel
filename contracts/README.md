@@ -518,7 +518,18 @@ chi phi vi khong reset khi server restart.
 ```
 GET  /admin/rag/status?countryCode=            200, trang thai index tung bai published+isCurrent
 POST /admin/rag/reindex-country {countryCode}   200 { queued: N }, xep lai job reindex_article
+GET  /admin/rag/au-laws                         200, 31 luat lien bang Uc tuyen chon:
+                                                  [{ titleId, name|null, topics[], index:{chunks,registerId,embeddingModel}|null,
+                                                     job:{status,lastError,createdAt}|null }]
+POST /admin/rag/au-laws/index {titleIds[]}      200 { queued[], skipped[] }, xep job index_au_law (chay nen,
+                                                  luat dang co job pending/running thi bi bo qua); ma ngoai danh sach
+                                                  tuyen chon --> 400 VALIDATION_ERROR
+DELETE /admin/rag/au-laws/:titleId              200 { titleId, deleted }, xoa chunk cua luat do khoi RAG
 ```
+
+Chunk luat goc (`sourceType:"au_legislation"`) nam trong CUNG collection `legal_chunks`, dung chung
+`vec_idx`/`txt_idx` (filter `countryCode:"AU"`), nen khong can them Atlas index. CLI tuong duong:
+`npm run index-au-laws -- <titleId...> | --topic <slug> | --list | --remove <titleId>`.
 
 ## 11. ENDPOINT FEEDBACK — `/api/feedback` (B5, can dang nhap)
 
@@ -560,9 +571,14 @@ GET /admin/analytics/overview?days=7   200
   "avgLatencyMs": 1450,
   "costEstimateUsd": 0,  // [!] luon 0 -- provider Gemini/OpenAI chua tra usage tokens, xem docs/PROGRESS.md muc "No ky thuat"
   "pendingFeedbackCount": 3,
+  "routeCounts": { "legal": 30, "emergency": 3, "out_of_scope": 8, "greeting": 1 },  // theo luong phan loai (rag/scope.js)
   "topFallbackQuestions": [{ "question": "...", "count": 4 }]
 }
 ```
+
+[!] `fallbackCount`, `fallbackRate` va `topFallbackQuestions` CHI tinh khoang trong nguon
+(`INSUFFICIENT_EVIDENCE`, `GUARD_REJECTED`, `PROVIDER_ERROR`); cau `OUT_OF_SCOPE` (thoi tiet, chao hoi...)
+khong phai thieu du lieu nen bi loai. ai_event cu khong co `route` duoc dem la `legal`.
 
 ## 14. ENDPOINT SOS LOCATIONS CONG KHAI — `/api/support-locations/*` (B6)
 

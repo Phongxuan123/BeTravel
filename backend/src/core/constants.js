@@ -54,6 +54,8 @@ export const JobStatus = Object.freeze({
 export const JobName = Object.freeze({
   REINDEX_ARTICLE: "reindex_article",
   PURGE_CHUNKS: "purge_chunks",
+  // Index điều luật liên bang Úc vào RAG (rag/jobs/indexAuLaw.job.js).
+  INDEX_AU_LAW: "index_au_law",
 });
 
 export const IndexStateStatus = Object.freeze({

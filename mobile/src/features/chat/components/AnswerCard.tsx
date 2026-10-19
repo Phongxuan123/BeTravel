@@ -138,10 +138,10 @@ export function AnswerCard({
       <View testID="answer-card-insufficient" className="rounded-[20px] border border-cream-line bg-cream p-4">
         <View className="self-start rounded-full bg-amber-soft px-2.5 py-1">
           <Text className="text-[13px] font-body-bold" style={{ color: colors.warningStrong }}>
-            Chưa đủ dữ liệu
+            {answer.badge ?? 'Chưa đủ dữ liệu'}
           </Text>
         </View>
-        <Text className="mt-3 text-[18px] font-body-bold text-ink">Chưa tìm thấy nguồn pháp lý phù hợp.</Text>
+        <Text className="mt-3 text-[18px] font-body-bold text-ink">{answer.title ?? 'Chưa tìm thấy nguồn pháp lý phù hợp.'}</Text>
         <Text className="mt-2 text-base leading-6" style={{ color: '#334E68' }}>
           {answer.reason}
         </Text>

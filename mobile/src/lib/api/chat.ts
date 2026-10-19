@@ -85,12 +85,27 @@ function mergeSameSections(sources: AnswerSource[]): AnswerSource[] {
   return merged;
 }
 
+const PROVIDER_ERROR_SUGGESTIONS = [
+  'Thử lại sau ít phút, bấm nút Tạo lại ở câu trả lời này.',
+  'Nếu việc gấp, mở mục SOS hoặc liên hệ Đại sứ quán Việt Nam.',
+];
+
 export function adaptMessage(message: ApiChatMessage, countryCode: string): ChatAnswer {
   if (message.fallbackReason === 'OUT_OF_SCOPE') {
     return {
       status: 'out_of_scope',
       message: stripTrailingDisclaimer(message.text),
       greeting: message.route === 'greeting',
+    };
+  }
+  if (message.fallbackReason === 'PROVIDER_ERROR') {
+    // AI quá tải / hết lượt: không phải thiếu dữ liệu, nên không dùng nhãn "Chưa đủ dữ liệu".
+    return {
+      status: 'insufficient_evidence',
+      badge: 'AI đang bận',
+      title: 'Chưa thể trả lời lúc này.',
+      reason: stripTrailingDisclaimer(message.text),
+      suggestions: PROVIDER_ERROR_SUGGESTIONS,
     };
   }
   if (message.fallbackReason) {

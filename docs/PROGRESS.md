@@ -41,13 +41,24 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
 - `LLM_MODEL` trong `.env` ghi đè biến môi trường khi chạy (dotenv `override`), và `env` bị đóng băng; muốn thử model khác
   phải đặt provider qua `__setLlmProviderForTest`, không sửa `.env`.
 
+### Bổ sung cùng ngày (Admin, hạn mức, lỗi nhà cung cấp)
+
+- **Admin**: trang RAG Index có thêm mục "Luật liên bang Úc cho trợ lý AI" (xem trạng thái từng luật, Index / Index lại /
+  Xoá). Index chạy nền qua hàng đợi job `index_au_law`, không chạy trùng luật đang có job. Dashboard thêm "Phân loại
+  câu hỏi" và **không tính câu ngoài phạm vi vào tỉ lệ fallback** (trước đó câu hỏi thời tiết sẽ bị tính là thiếu nguồn).
+- **Hạn mức Gemini đã đo (key hiện tại, gói miễn phí, 20/10/2026)**: `gemini-3.5-flash-lite` **15 yêu cầu/phút/cả dự án**,
+  `gemini-3.6-flash` **5 yêu cầu/phút**, embedding 100 lượt/phút. Giới hạn theo ngày chưa chạm tới nên chưa đo được.
+  Hệ quả: chat, dịch và tóm lược luật Úc dùng chung 15 lượt/phút của flash-lite, nên nhiều người hỏi cùng lúc sẽ gặp 429.
+  Chat nay chờ tối đa 20 giây rồi thử lại một lần; vẫn lỗi thì hiện thẻ "AI đang bận" (không còn giả làm "thiếu dữ liệu").
+  Quota 40 câu/người/ngày chỉ là trần theo ngày, **không bảo vệ được giới hạn theo phút**; muốn nhiều người dùng đồng thời
+  cần key trả phí.
+
 ### Chưa làm / đang vướng (AI)
 
 - Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí
   100 lượt/phút nên mỗi luật lớn mất vài chục phút. Cần người quyết định phạm vi index thật.
 - Chưa có bài Hàn Quốc đã duyệt nên chat KR vẫn từ chối gần hết; TH/SG/MY chờ PR #47 và người duyệt.
-- Chưa đo hạn mức ngày thật của `gemini-3.5-flash-lite`; quota 40 câu/người/ngày chưa được kiểm chứng với hạn mức Google.
-- Chưa có trang Admin để bấm index luật Úc (hiện chỉ CLI) và chưa thống kê `route` trên Dashboard.
+- Hạn mức **ngày** của `gemini-3.5-flash-lite` chưa đo được (đã đo giới hạn phút, xem trên).
 - Chưa nghiệm thu máy thật; emulator không gõ được chữ có dấu nên câu hỏi thử dùng chữ không dấu.
 
 ## Giao diện Be.Travel AI theo mẫu — 19/10/2026

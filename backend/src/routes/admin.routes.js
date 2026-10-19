@@ -1,7 +1,7 @@
 import express from "express";
 
 import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
-import { validateBody, validateQuery } from "../middleware/validate.middleware.js";
+import { validateBody, validateQuery, validateParams } from "../middleware/validate.middleware.js";
 import { UserRole } from "../core/constants.js";
 
 import { countriesController } from "../controllers/adminCountries.controller.js";
@@ -40,6 +40,8 @@ import {
   auditListQuerySchema,
   ragReindexCountrySchema,
   ragStatusQuerySchema,
+  ragAuLawIndexSchema,
+  ragAuLawParamSchema,
   feedbackListQuerySchema,
   feedbackStatusUpdateSchema,
   analyticsOverviewQuerySchema,
@@ -103,6 +105,13 @@ router.post(
   ragController.reindexCountry,
 );
 router.get("/rag/status", validateQuery(ragStatusQuerySchema), ragController.status);
+router.get("/rag/au-laws", ragController.listAuLaws);
+router.post("/rag/au-laws/index", validateBody(ragAuLawIndexSchema), ragController.indexAuLaws);
+router.delete(
+  "/rag/au-laws/:titleId",
+  validateParams(ragAuLawParamSchema),
+  ragController.removeAuLaw,
+);
 
 router.get("/feedback", validateQuery(feedbackListQuerySchema), feedbackController.list);
 router.get("/feedback/:id", feedbackController.get);

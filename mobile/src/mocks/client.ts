@@ -222,6 +222,9 @@ export type ChatAnswer =
       status: 'insufficient_evidence';
       reason: string;
       suggestions: string[];
+      // Mặc định là "Chưa đủ dữ liệu" / "Chưa tìm thấy nguồn pháp lý phù hợp."; lỗi nhà cung cấp AI đổi nhãn.
+      badge?: string;
+      title?: string;
     }
   // Cau hoi ngoai pham vi phap ly + an toan du lich, hoac loi chao: loi do backend soan, khong co nguon.
   | {
