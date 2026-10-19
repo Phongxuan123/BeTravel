@@ -5,7 +5,19 @@ import { getEmbeddingProvider } from "./embedding/index.js";
 import { getSearchDriver } from "./search/index.js";
 import LegalChunk from "../models/LegalChunk.js";
 import LegalArticle from "../models/LegalArticle.js";
+import { isCuratedTitle } from "../core/auLawTopics.js";
+import { getCurrentRegisterId } from "../services/australiaLegislation.service.js";
 import { rrf } from "./rrf.js";
+
+const AU_SOURCE_TYPE = "au_legislation";
+const AU_AUTHORITY = "Federal Register of Legislation (Úc)";
+const isAuChunk = (chunk) => chunk.sourceType === AU_SOURCE_TYPE;
+
+// Tra mã bản biên soạn hiện hành của luật Úc; thay được trong test để không gọi mạng.
+let currentRegisterLookup = getCurrentRegisterId;
+export const __setAuRegisterLookupForTest = (lookup) => {
+  currentRegisterLookup = lookup ?? getCurrentRegisterId;
+};
 
 const FOCUS_ARTICLE_WEIGHT = 0.5;
 const VECTOR_WEIGHT = 0.7;
@@ -65,7 +77,69 @@ async function verifyAgainstArticles(chunks, countryCode) {
   return { verifiedChunks, articleById };
 }
 
+/*
+ * Chunk luật gốc Úc KHÔNG thuộc legal_articles nên xác minh bằng cách khác, cùng tinh thần
+ * "không tin bản sao trên chunk": (1) luật còn nằm trong danh sách tuyển chọn, (2) registerId
+ * của chunk đúng là bản biên soạn HIỆN HÀNH tra từ nguồn. Không tra được thì loại chunk
+ * (fail-closed), vì không chứng minh được còn hiệu lực.
+ */
+async function verifyAuChunks(chunks) {
+  const titleIds = [...new Set(chunks.map((chunk) => chunk.titleId))].filter(isCuratedTitle);
+  const currentByTitle = new Map(
+    await Promise.all(
+      titleIds.map(async (titleId) => {
+        try {
+          return [titleId, await currentRegisterLookup(titleId)];
+        } catch {
+          return [titleId, null];
+        }
+      }),
+    ),
+  );
+  return chunks.filter((chunk) => {
+    const current = currentByTitle.get(chunk.titleId);
+    return Boolean(current) && current === chunk.registerId;
+  });
+}
+
+// Xác minh theo loại nguồn của từng chunk; giữ nguyên thứ tự đầu vào.
+async function verifyChunks(chunks, countryCode) {
+  const [articleResult, verifiedAuChunks] = await Promise.all([
+    verifyAgainstArticles(
+      chunks.filter((chunk) => !isAuChunk(chunk)),
+      countryCode,
+    ),
+    verifyAuChunks(chunks.filter(isAuChunk)),
+  ]);
+  const verifiedIds = new Set(
+    [...articleResult.verifiedChunks, ...verifiedAuChunks].map((chunk) => String(chunk._id)),
+  );
+  return {
+    verifiedChunks: chunks.filter((chunk) => verifiedIds.has(String(chunk._id))),
+    articleById: articleResult.articleById,
+  };
+}
+
+function toAuCitation(chunk, marker) {
+  return {
+    marker,
+    chunkId: String(chunk._id),
+    articleId: null,
+    articleSlug: "",
+    title: chunk.lawName,
+    heading: chunk.heading,
+    text: chunk.text,
+    kind: chunk.kind,
+    authority: AU_AUTHORITY,
+    effectiveFrom: chunk.effectiveFrom ?? null,
+    updatedAt: chunk.effectiveFrom ?? null,
+    sourceType: AU_SOURCE_TYPE,
+    officialUrl: chunk.officialUrl ?? "",
+  };
+}
+
 function toCitation(chunk, article, marker) {
+  if (isAuChunk(chunk)) return toAuCitation(chunk, marker);
   const primarySource = article.sources?.[0];
   return {
     marker,
@@ -79,6 +153,7 @@ function toCitation(chunk, article, marker) {
     authority: primarySource?.authority ?? "",
     effectiveFrom: article.effectiveFrom ?? null,
     updatedAt: article.updatedAt,
+    sourceType: "article",
   };
 }
 
@@ -112,10 +187,7 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
   // [!] Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
   // (fusedScore chi co y nghia tuong doi giua cac chunk, khong tuyet doi).
   // Chunk bị gỡ không được góp điểm giúp tập bằng chứng vượt ngưỡng.
-  const { verifiedChunks: verifiedVectorHits } = await verifyAgainstArticles(
-    vectorHits,
-    countryCode,
-  );
+  const { verifiedChunks: verifiedVectorHits } = await verifyChunks(vectorHits, countryCode);
   const topScore = verifiedVectorHits[0]?.score ?? 0;
   const countAboveSoft = verifiedVectorHits.filter((h) => h.score >= env.RAG_MIN_SOFT_SCORE).length;
   const passed = topScore >= env.RAG_MIN_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
@@ -138,7 +210,7 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
   ];
   const fused = rrf(fusedLists).slice(0, env.RAG_TOP_K);
 
-  const { verifiedChunks, articleById } = await verifyAgainstArticles(fused, countryCode);
+  const { verifiedChunks, articleById } = await verifyChunks(fused, countryCode);
 
   if (verifiedChunks.length === 0) {
     return {

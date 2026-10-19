@@ -48,9 +48,17 @@ function cosineSimilarity(a, b) {
 function projectHit(chunk) {
   return {
     _id: String(chunk._id),
-    articleId: String(chunk.articleId),
+    articleId: chunk.articleId ? String(chunk.articleId) : null,
     articleSlug: chunk.articleSlug,
     articleVersion: chunk.articleVersion,
+    sourceType: chunk.sourceType,
+    titleId: chunk.titleId,
+    registerId: chunk.registerId,
+    lawName: chunk.lawName,
+    sectionRef: chunk.sectionRef,
+    partHeading: chunk.partHeading,
+    officialUrl: chunk.officialUrl,
+    effectiveFrom: chunk.effectiveFrom,
     heading: chunk.heading,
     text: chunk.text,
     textNorm: chunk.textNorm,

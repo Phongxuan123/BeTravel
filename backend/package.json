@@ -16,6 +16,7 @@
     "create-admin": "node scripts/create-admin.js",
     "seed": "node scripts/seed-content.js",
     "seed:demo": "node scripts/seed-demo.js",
+    "index-au-laws": "node scripts/index-au-laws.js",
     "check-indexes": "node scripts/check-content-indexes.js",
     "summarize-au-laws": "node scripts/summarize-au-laws.js"
   },

@@ -194,6 +194,10 @@ const findDisplayedVersion = async (titleId) => {
   return rawVersion ?? null;
 };
 
+// Mã bản biên soạn đang hiển thị của một đạo luật; RAG dùng để loại chunk của bản đã bị thay thế.
+export const getCurrentRegisterId = async (titleId) =>
+  (await findDisplayedVersion(titleId))?.registerId ?? null;
+
 const listRawDocuments = async (titleId, rawVersion) => {
   const response = await cachedJson("Documents", {
     $filter: `titleId eq ${odataString(titleId)} and start eq ${rawVersion.start}`,
