@@ -7,10 +7,12 @@ import { env } from "../core/env.js";
 import { QuestionRoute } from "../rag/scope.js";
 import { uniqueTerms } from "../rag/lexical.js";
 import { areSourcesCurrent } from "../rag/retrieval.js";
+import { scoreQuestionSimilarity } from "../rag/questionSimilarity.js";
 
 /*
  * Câu trả lời đã duyệt cho câu hỏi lặp lại (G6, docs/AI_FEATURE_PLAN.md mục 6).
- * - Đề xuất: gom ai_events 15 ngày theo độ giống từ khoá, nhóm đủ số lần lặp thì hiện cho admin.
+ * - Đề xuất: lọc sơ bộ ai_events 15 ngày theo từ khoá chung, rồi AI chấm mức trùng lặp nội dung;
+ *   chỉ câu được AI chấm >= FAQ_AI_MIN_SIMILARITY mới vào nhóm, nhóm đủ số lần lặp mới hiện cho admin.
  * - Duyệt: lưu NGUYÊN VĂN một câu trả lời AI đã sinh kèm phiên bản từng nguồn được trích.
  * - Phát: câu hỏi mới giống FAQ đủ ngưỡng và nguồn còn hiệu lực thì trả FAQ, không gọi LLM.
  */
@@ -24,6 +26,12 @@ const WARNING_MIN_DOWN = 3;
 const WARNING_DOWN_RATIO = 0.3;
 const SOURCES_CHANGED_REASON = "Nguồn luật đã đổi phiên bản hoặc bị gỡ, cần duyệt lại.";
 const MARKER_PATTERN = /^S(\d+)$/;
+
+// Test thay AI chấm trùng lặp bằng hàm giả (không gọi model).
+let similarityScorer = scoreQuestionSimilarity;
+export const __setSimilarityScorerForTest = (scorer) => {
+  similarityScorer = scorer ?? scoreQuestionSimilarity;
+};
 
 // Từ khoá để so câu cùng ý: ưu tiên danh sách tiếng Anh (khái niệm pháp lý ổn định hơn cách
 // diễn đạt tiếng Việt), không có thì dùng tiếng Việt, cuối cùng là chính câu hỏi.
@@ -67,26 +75,65 @@ export async function findServableFaq({ countryCode, terms }) {
 
 // ── Đề xuất cho admin ──────────────────────────────────────────────────────
 
-function clusterEvents(events) {
-  const groups = [];
+// Lọc sơ bộ RẺ (không gọi AI): câu có từ khoá chung đủ nhiều mới cần AI chấm. Không quyết định nhóm.
+function prefilterByKeywords(events) {
+  const buckets = [];
   for (const event of events) {
-    const group = groups.find(
+    const bucket = buckets.find(
       (candidate) =>
         candidate.countryCode === event.countryCode &&
-        jaccardSimilarity(candidate.keywordTerms, event.keywordTerms) >= env.FAQ_GROUP_MIN_SIMILARITY,
+        jaccardSimilarity(candidate.keywordTerms, event.keywordTerms) >= env.FAQ_PREFILTER_MIN_OVERLAP,
     );
-    if (group) group.events.push(event);
-    else groups.push({ countryCode: event.countryCode, keywordTerms: event.keywordTerms, events: [event] });
+    if (bucket) bucket.events.push(event);
+    else buckets.push({ countryCode: event.countryCode, keywordTerms: event.keywordTerms, events: [event] });
+  }
+  return buckets;
+}
+
+const mostAskedQuestion = (events) => {
+  const counts = new Map();
+  for (const { question } of events) counts.set(question, (counts.get(question) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+};
+
+/*
+ * Tách một nhóm lọc sơ bộ thành các nhóm đã được AI xác nhận: lấy câu hỏi nhiều nhất làm câu gốc, AI chấm
+ * mọi câu còn lại; câu đạt ngưỡng vào nhóm, phần còn lại lặp lại với câu gốc mới. AI lỗi --> dừng, không
+ * đưa nhóm chưa kiểm lên cho admin.
+ */
+async function splitBySimilarity(bucket) {
+  const groups = [];
+  let remaining = bucket.events;
+  while (remaining.length >= env.FAQ_MIN_REPEAT) {
+    const representative = mostAskedQuestion(remaining);
+    const scores = await similarityScorer(representative, remaining.map((event) => event.question));
+    if (!scores) break;
+    const isSimilar = (event) => (scores.get(event.question) ?? 0) >= env.FAQ_AI_MIN_SIMILARITY;
+    const similarEvents = remaining.filter(isSimilar);
+    groups.push({
+      countryCode: bucket.countryCode,
+      representative,
+      keywordTerms: similarEvents.find((event) => event.question === representative).keywordTerms,
+      minSimilarity: Math.min(...similarEvents.map((event) => scores.get(event.question))),
+      events: similarEvents,
+    });
+    remaining = remaining.filter((event) => !isSimilar(event));
   }
   return groups;
 }
 
-const isCoveredByFaq = (group, faqs) =>
-  faqs.some(
+// Câu hỏi đã có FAQ (mọi trạng thái, kể cả bỏ qua/đã gỡ) có trùng nội dung với câu đang xét không, theo AI.
+async function findSimilarFaq(question, countryCode, keywordTerms, faqs) {
+  const nearby = faqs.filter(
     (faq) =>
-      faq.countryCode === group.countryCode &&
-      jaccardSimilarity(faq.keywordTerms, group.keywordTerms) >= env.FAQ_GROUP_MIN_SIMILARITY,
+      faq.countryCode === countryCode &&
+      jaccardSimilarity(faq.keywordTerms, keywordTerms) >= env.FAQ_PREFILTER_MIN_OVERLAP,
   );
+  if (nearby.length === 0) return { found: false };
+  const scores = await similarityScorer(question, nearby.map((faq) => faq.question));
+  if (!scores) return { found: null };
+  return { found: nearby.some((faq) => (scores.get(faq.question) ?? 0) >= env.FAQ_AI_MIN_SIMILARITY) };
+}
 
 const countFeedback = (messages) => ({
   up: messages.filter((message) => message.feedback === "up").length,
@@ -109,10 +156,15 @@ async function toCandidateView(group) {
       citations: message.citations ?? [],
       createdAt: message.createdAt,
     }));
+  const otherQuestions = [...new Set(group.events.map((event) => event.question))].filter(
+    (question) => question !== group.representative,
+  );
   return {
     countryCode: group.countryCode,
     count: group.events.length,
-    questions: [...new Set(group.events.map((event) => event.question))].slice(0, MAX_QUESTIONS_SHOWN),
+    // Câu gốc đứng đầu; minSimilarity = điểm trùng lặp thấp nhất AI chấm trong nhóm.
+    questions: [group.representative, ...otherQuestions].slice(0, MAX_QUESTIONS_SHOWN),
+    minSimilarity: group.minSimilarity,
     keywordTerms: group.keywordTerms,
     answers,
     feedback: countFeedback(messages),
@@ -135,12 +187,25 @@ export async function listFaqCandidates({ countryCode } = {}) {
     .limit(MAX_EVENTS_FOR_CANDIDATES)
     .lean();
   // Mọi trạng thái (kể cả dismissed/retired): nhóm đã được admin xử lý không hiện lại.
-  const faqs = await ApprovedFaq.find(countryFilter).select("countryCode keywordTerms").lean();
+  const faqs = await ApprovedFaq.find(countryFilter).select("countryCode keywordTerms question").lean();
 
-  const repeatedGroups = clusterEvents(events).filter(
-    (group) => group.events.length >= env.FAQ_MIN_REPEAT && !isCoveredByFaq(group, faqs),
+  const repeatedBuckets = prefilterByKeywords(events).filter(
+    (bucket) => bucket.events.length >= env.FAQ_MIN_REPEAT,
   );
-  const candidates = await Promise.all(repeatedGroups.map(toCandidateView));
+  const groups = [];
+  // Tuần tự: mỗi nhóm có thể gọi AI, tránh dồn nhiều lượt cùng lúc vào giới hạn theo phút của nhà cung cấp.
+  for (const bucket of repeatedBuckets) {
+    for (const group of await splitBySimilarity(bucket)) {
+      const { found } = await findSimilarFaq(
+        group.representative,
+        group.countryCode,
+        group.keywordTerms,
+        faqs,
+      );
+      if (found === false) groups.push(group);
+    }
+  }
+  const candidates = await Promise.all(groups.map(toCandidateView));
   // Câu trả lời có thể đã bị xoá cùng phiên chat: nhóm không còn câu trả lời nào thì bỏ.
   return candidates.filter((candidate) => candidate.answers.length > 0).sort((a, b) => b.count - a.count);
 }
@@ -199,18 +264,17 @@ async function buildCitedSources(message) {
   }));
 }
 
-async function assertNoActiveDuplicate({ countryCode, keywordTerms, excludeId }) {
+async function assertNoActiveDuplicate({ countryCode, question, keywordTerms, excludeId }) {
   const openFaqs = await ApprovedFaq.find({
     countryCode,
     status: { $in: [FaqStatus.ACTIVE, FaqStatus.NEEDS_REVIEW] },
     ...(excludeId ? { _id: { $ne: excludeId } } : {}),
   })
-    .select("keywordTerms")
+    .select("countryCode keywordTerms question")
     .lean();
-  const isDuplicate = openFaqs.some(
-    (faq) => jaccardSimilarity(faq.keywordTerms, keywordTerms) >= env.FAQ_GROUP_MIN_SIMILARITY,
-  );
-  if (isDuplicate) throw new Error("FAQ_DUPLICATE");
+  const { found } = await findSimilarFaq(question, countryCode, keywordTerms, openFaqs);
+  if (found === null) throw new Error("FAQ_SIMILARITY_UNAVAILABLE");
+  if (found) throw new Error("FAQ_DUPLICATE");
 }
 
 async function loadEligibleAnswer(sourceMessageId) {
@@ -269,6 +333,7 @@ export async function setFaqStatus({ faqId, status, adminId }) {
   if (status === FaqStatus.ACTIVE) {
     await assertNoActiveDuplicate({
       countryCode: faq.countryCode,
+      question: faq.question,
       keywordTerms: faq.keywordTerms,
       excludeId: faq._id,
     });

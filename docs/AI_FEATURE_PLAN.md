@@ -172,6 +172,7 @@ gọi LLM trả lời, giảm thời gian chờ và token. Chưa duyệt thì AI
 | Câu hỏi | Chốt |
 |---|---|
 | Thế nào là "lặp cao" | Nhóm câu cùng ý được hỏi **từ 3 lần trở lên trong 15 ngày** |
+| Ai quyết định hai câu "cùng ý" | **AI chấm mức trùng lặp nội dung**, tối thiểu **85%** mới vào nhóm đề xuất (chốt 20/10/2026) |
 | Admin có sửa nội dung câu trả lời không | **Không.** Chỉ duyệt nguyên văn một câu trả lời AI đã sinh (kèm trích dẫn), từ chối, hoặc gỡ |
 | Người dùng có biết đó là câu đã duyệt không | **Có**, nhãn nhỏ "Đã được Be.Travel duyệt" trên thẻ trả lời |
 

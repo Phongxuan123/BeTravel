@@ -200,7 +200,9 @@ export type FaqSections = { answer: string; actions: string[]; avoid: string[] }
 export type FaqCandidate = {
   countryCode: string;
   count: number;
+  // Cau dau la cau goc; minSimilarity = diem trung lap noi dung thap nhat AI cham trong nhom (0-1).
   questions: string[];
+  minSimilarity: number;
   keywordTerms: string[];
   answers: { messageId: string; text: string; sections: FaqSections; citations: FaqCitation[]; createdAt: string }[];
   feedback: { up: number; down: number };

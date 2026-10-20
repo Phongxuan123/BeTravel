@@ -93,6 +93,10 @@ const DOMAIN_ERROR_MAP = Object.freeze({
     "Nguồn luật của câu trả lời này đã đổi hoặc bị gỡ, không thể duyệt",
   ],
   FAQ_DUPLICATE: [ErrorCode.CONFLICT, "Đã có FAQ cho nhóm câu hỏi này"],
+  FAQ_SIMILARITY_UNAVAILABLE: [
+    ErrorCode.UPSTREAM_ERROR,
+    "AI chưa chấm được mức trùng lặp với FAQ đã có, thử lại sau ít phút",
+  ],
 
   // Feedback (B5)
   FEEDBACK_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy feedback"],

@@ -123,6 +123,7 @@ function CandidateCard({
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <Badge tone="brand">{candidate.countryCode}</Badge>
         <Badge tone="warn">Hỏi {candidate.count} lần</Badge>
+        <Badge tone="neutral">AI chấm trùng lặp từ {Math.round(candidate.minSimilarity * 100)}%</Badge>
         <FeedbackCount up={candidate.feedback.up} down={candidate.feedback.down} />
       </div>
       <h3 className="font-semibold text-ink">{candidate.questions[0]}</h3>

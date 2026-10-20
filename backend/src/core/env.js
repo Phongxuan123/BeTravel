@@ -115,7 +115,10 @@ const envSchema = z.object({
   // FAQ đã duyệt (G6): độ giống từ khoá (Jaccard 0-1) để phát FAQ thay cho AI -- chặt hơn ngưỡng gom nhóm
   // đề xuất, vì trả nhầm FAQ cho câu khác ý tệ hơn để AI tự trả lời.
   FAQ_MATCH_MIN_SIMILARITY: numeric(0.85),
-  FAQ_GROUP_MIN_SIMILARITY: numeric(0.7),
+  // Đề xuất cho admin: lọc sơ bộ bằng từ khoá chung (rẻ), rồi AI chấm trùng lặp nội dung; chỉ câu đạt
+  // FAQ_AI_MIN_SIMILARITY (0-1) mới vào nhóm.
+  FAQ_PREFILTER_MIN_OVERLAP: numeric(0.4),
+  FAQ_AI_MIN_SIMILARITY: numeric(0.85),
   FAQ_MIN_REPEAT: numeric(3),
   FAQ_WINDOW_DAYS: numeric(15),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),

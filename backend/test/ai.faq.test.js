@@ -42,6 +42,7 @@ let memoryDriver;
 let mockEmbedding;
 let mockLlm;
 let llmCalls;
+let similarity;
 
 before(async () => {
   await startTestDb();
@@ -58,7 +59,20 @@ before(async () => {
   memoryDriver = await import("../src/rag/search/memory.driver.js");
   mockEmbedding = await import("../src/rag/embedding/mock.embedding.js");
   mockLlm = await import("../src/rag/llm/mock.llm.js");
+  similarity = await import("../src/rag/questionSimilarity.js");
 });
+
+// AI chấm trùng lặp giả, đối xứng: câu giống hệt (sau chuẩn hoá) = 1; cặp (QUESTION, câu X) lấy điểm
+// của X trong bảng; mọi cặp khác = 0.
+let similarityTable = new Map();
+const pairScore = (left, right) => {
+  if (similarity.normalizeQuestion(left) === similarity.normalizeQuestion(right)) return 1;
+  if (left === QUESTION) return similarityTable.get(right) ?? 0;
+  if (right === QUESTION) return similarityTable.get(left) ?? 0;
+  return 0;
+};
+const fakeScorer = async (base, questions) =>
+  new Map(questions.map((question) => [question, pairScore(base, question)]));
 
 after(stopTestDb);
 
@@ -79,6 +93,8 @@ beforeEach(async () => {
   });
   retrieval.__setAuRegisterLookupForTest(async () => "REGISTER-1");
   memoryDriver.invalidateMemorySearchCache();
+  similarityTable = new Map();
+  faqService.__setSimilarityScorerForTest(fakeScorer);
 
   await Country.create({ code: "AU", name: "Úc", status: "active", emergencyNumbers: { police: "000" } });
   await indexService.indexAuLaw(TITLE_ID, {
@@ -261,4 +277,42 @@ test("admin API: đề xuất, duyệt, gỡ qua HTTP với envelope chuẩn", a
     .send({ sourceMessageId: "not-an-id", decision: "approve" });
   assert.equal(invalid.status, 400);
   assert.equal(invalid.body.error.code, "VALIDATION_ERROR");
+});
+
+const PARAPHRASE = "Can the Minister cancel a visa when the holder breached a visa condition?";
+const NARROWER = "Can the Minister cancel a visa for breaching a condition, and what notice is given?";
+
+test("AI chấm trùng lặp: câu diễn đạt khác đạt 85% thì gom chung, dưới 85% thì không", async () => {
+  similarityTable = new Map([
+    [PARAPHRASE, 0.9],
+    [NARROWER, 0.6],
+  ]);
+  const user = await createUser();
+  await ask(user);
+  await ask(user, PARAPHRASE);
+  await ask(user, NARROWER);
+  assert.equal((await faqService.listFaqCandidates({ countryCode: "AU" })).length, 0);
+
+  await ask(user, PARAPHRASE);
+  const [candidate] = await faqService.listFaqCandidates({ countryCode: "AU" });
+  assert.equal(candidate.count, 3);
+  assert.ok(candidate.questions.includes(PARAPHRASE));
+  assert.ok(!candidate.questions.includes(NARROWER));
+  assert.equal(candidate.minSimilarity, 0.9);
+});
+
+test("AI chấm trùng lặp lỗi: không đưa nhóm chưa kiểm lên cho admin", async () => {
+  faqService.__setSimilarityScorerForTest(async () => null);
+  const user = await createUser();
+  await ask(user);
+  await ask(user, PARAPHRASE);
+  await ask(user, PARAPHRASE);
+  assert.equal((await faqService.listFaqCandidates({ countryCode: "AU" })).length, 0);
+});
+
+test("parseScores: nhận JSON điểm 0-100 đúng số lượng, loại kết quả sai", () => {
+  assert.deepEqual(similarity.parseScores('Kết quả {"scores":[90, 40]}', 2), [0.9, 0.4]);
+  assert.equal(similarity.parseScores('{"scores":[90]}', 2), null);
+  assert.equal(similarity.parseScores('{"scores":[120, 10]}', 2), null);
+  assert.equal(similarity.parseScores("không phải JSON", 1), null);
 });
