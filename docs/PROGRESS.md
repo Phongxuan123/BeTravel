@@ -110,6 +110,13 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
   từ khoá 0,75 / 0,50 / 0,40 (câu hỏi riêng về trẻ em) nên **chưa khớp** ngưỡng 0,85 --> AI trả lời bình thường.
   Muốn FAQ bắt được nhiều cách hỏi hơn thì hạ `FAQ_MATCH_MIN_SIMILARITY` (vd 0,7), đổi lại tăng rủi ro khớp nhầm.
 - Admin UI chưa được người nhìn trên trình duyệt; tôi chỉ kiểm qua chính các API trang đó gọi.
+- **Bổ sung cùng ngày (người dùng chốt):** nhóm đề xuất do **AI chấm mức trùng lặp nội dung**, tối thiểu 85% mới đưa
+  lên admin (lọc sơ bộ bằng từ khoá chung, điểm AI được cache 30 ngày, AI lỗi thì nhóm không hiện). Chạy thật với
+  `glm-5.3-flash`: 3 cách hỏi "ai được miễn PMC" được chấm 95-100% và gom thành 1 đề xuất; câu "trẻ em có phải đóng
+  PMC" chấm 40-65% nên tách riêng; câu hỏi mức phí chấm 10-30%. Sửa 2 lỗi phát hiện khi chạy thật: lọc sơ bộ tách
+  nhầm các cách hỏi (nay nối nhóm theo bất kỳ câu nào), và nhóm 1 câu từng lọt lên đề xuất.
+- **Còn hở:** lúc phát FAQ cho người dùng vẫn so bằng từ khoá (ngưỡng 0,85), nên câu đã được AI xếp cùng nhóm nhưng
+  khác từ khoá (vd "Ai được miễn PMC" so với FAQ "Những ai không phải đóng PMC", độ giống từ khoá 0,5) vẫn do AI trả lời.
 
 ### Chưa làm / đang vướng (AI)
 

@@ -75,17 +75,20 @@ export async function findServableFaq({ countryCode, terms }) {
 
 // ── Đề xuất cho admin ──────────────────────────────────────────────────────
 
-// Lọc sơ bộ RẺ (không gọi AI): câu có từ khoá chung đủ nhiều mới cần AI chấm. Không quyết định nhóm.
+// Lọc sơ bộ RẺ (không gọi AI): câu có từ khoá chung với BẤT KỲ câu nào trong nhóm thì vào nhóm (gộp các
+// nhóm cùng được nối), để cách hỏi khác nhau không bị tách sớm. Chỉ quyết định câu nào cần AI chấm.
 function prefilterByKeywords(events) {
-  const buckets = [];
+  let buckets = [];
   for (const event of events) {
-    const bucket = buckets.find(
-      (candidate) =>
-        candidate.countryCode === event.countryCode &&
-        jaccardSimilarity(candidate.keywordTerms, event.keywordTerms) >= env.FAQ_PREFILTER_MIN_OVERLAP,
-    );
-    if (bucket) bucket.events.push(event);
-    else buckets.push({ countryCode: event.countryCode, keywordTerms: event.keywordTerms, events: [event] });
+    const overlaps = (member) =>
+      member.countryCode === event.countryCode &&
+      jaccardSimilarity(member.keywordTerms, event.keywordTerms) >= env.FAQ_PREFILTER_MIN_OVERLAP;
+    const linked = buckets.filter((bucket) => bucket.events.some(overlaps));
+    const merged = {
+      countryCode: event.countryCode,
+      events: [...linked.flatMap((bucket) => bucket.events), event],
+    };
+    buckets = [...buckets.filter((bucket) => !linked.includes(bucket)), merged];
   }
   return buckets;
 }
@@ -110,6 +113,8 @@ async function splitBySimilarity(bucket) {
     if (!scores) break;
     const isSimilar = (event) => (scores.get(event.question) ?? 0) >= env.FAQ_AI_MIN_SIMILARITY;
     const similarEvents = remaining.filter(isSimilar);
+    remaining = remaining.filter((event) => !isSimilar(event));
+    if (similarEvents.length < env.FAQ_MIN_REPEAT) continue;
     groups.push({
       countryCode: bucket.countryCode,
       representative,
@@ -117,7 +122,6 @@ async function splitBySimilarity(bucket) {
       minSimilarity: Math.min(...similarEvents.map((event) => scores.get(event.question))),
       events: similarEvents,
     });
-    remaining = remaining.filter((event) => !isSimilar(event));
   }
   return groups;
 }

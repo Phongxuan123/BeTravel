@@ -294,7 +294,10 @@ test("AI chấm trùng lặp: câu diễn đạt khác đạt 85% thì gom chung
   assert.equal((await faqService.listFaqCandidates({ countryCode: "AU" })).length, 0);
 
   await ask(user, PARAPHRASE);
-  const [candidate] = await faqService.listFaqCandidates({ countryCode: "AU" });
+  const candidates = await faqService.listFaqCandidates({ countryCode: "AU" });
+  // Câu hẹp hơn tách riêng nhưng chỉ 1 lần hỏi: không được hiện thành đề xuất.
+  assert.equal(candidates.length, 1);
+  const [candidate] = candidates;
   assert.equal(candidate.count, 3);
   assert.ok(candidate.questions.includes(PARAPHRASE));
   assert.ok(!candidate.questions.includes(NARROWER));
