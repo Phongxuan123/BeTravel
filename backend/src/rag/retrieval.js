@@ -1,7 +1,9 @@
 import { env } from "../core/env.js";
 import { ContentStatus, FallbackReason } from "../core/constants.js";
 import { normalizeVi } from "../utils/textNormalize.js";
-import { getEmbeddingProvider } from "./embedding/index.js";
+import { getEmbeddingProvider, isLexicalMode } from "./embedding/index.js";
+import { rewriteQuestionToKeywords } from "./queryRewrite.js";
+import { uniqueTerms } from "./lexical.js";
 import { getSearchDriver } from "./search/index.js";
 import LegalChunk from "../models/LegalChunk.js";
 import LegalArticle from "../models/LegalArticle.js";
@@ -165,7 +167,70 @@ function toCitation(chunk, article, marker) {
  * @returns {{passed:boolean, reason:string|null, topScore:number,
  *   chunks:Array, retrievedMap:Map<string,object>}}
  */
-export async function retrieve({ question, countryCode, topicSlug, focusArticleId }) {
+export async function retrieve(params) {
+  return isLexicalMode() ? retrieveLexical(params) : retrieveHybrid(params);
+}
+
+const notEnoughEvidence = (topScore) => ({
+  passed: false,
+  reason: FallbackReason.INSUFFICIENT_EVIDENCE,
+  topScore,
+  chunks: [],
+  retrievedMap: new Map(),
+});
+
+// Xác minh lần cuối + gán marker S1..Sn; dùng chung cho hai chế độ.
+async function buildRetrievalResult(fusedChunks, countryCode, topScore) {
+  const { verifiedChunks, articleById } = await verifyChunks(fusedChunks, countryCode);
+  if (verifiedChunks.length === 0) return notEnoughEvidence(topScore);
+
+  const retrievedMap = new Map();
+  const chunks = verifiedChunks.map((chunk, index) => {
+    const marker = `S${index + 1}`;
+    const citation = toCitation(chunk, articleById.get(chunk.articleId), marker);
+    retrievedMap.set(marker, citation);
+    return citation;
+  });
+  return { passed: true, reason: null, topScore, chunks, retrievedMap };
+}
+
+/*
+ * RETRIEVAL_MODE=lexical: không có embedding. LLM chuyển câu hỏi thành từ khoá (tiếng Việt + Anh),
+ * tìm theo độ phủ từ khoá có trọng số, rồi áp NGƯỠNG TRƯỚC khi gọi LLM trả lời như chế độ hybrid và
+ * vẫn qua lớp xác minh nguồn thật. Điểm lexical lỏng hơn cosine: chống trả lời sai dựa nhiều hơn
+ * vào guard (marker, số liệu) và cờ answerable của model, không riêng ngưỡng này.
+ */
+export async function retrieveLexical({ question, countryCode, topicSlug, focusArticleId }) {
+  const { vi, en } = await rewriteQuestionToKeywords(question);
+  const driver = getSearchDriver();
+  const searches = [uniqueTerms(vi), uniqueTerms(en)].map((terms) =>
+    driver.lexicalSearch({ countryCode, topicSlug, terms, k: env.RAG_TOP_K }),
+  );
+  // Một chunk khớp danh sách tiếng Việt hoặc tiếng Anh: giữ điểm cao hơn của hai lần tìm.
+  const bestById = new Map();
+  for (const hit of (await Promise.all(searches)).flat()) {
+    const previous = bestById.get(hit._id);
+    if (!previous || hit.score > previous.score) bestById.set(hit._id, hit);
+  }
+  const hits = [...bestById.values()].sort((a, b) => b.score - a.score).slice(0, env.RAG_TOP_K);
+
+  const { verifiedChunks: verifiedHits } = await verifyChunks(hits, countryCode);
+  const topScore = verifiedHits[0]?.score ?? 0;
+  const countAboveSoft = verifiedHits.filter(
+    (hit) => hit.score >= env.RAG_MIN_KEYWORD_SOFT_SCORE,
+  ).length;
+  const passed = topScore >= env.RAG_MIN_KEYWORD_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
+  if (!passed) return notEnoughEvidence(topScore);
+
+  const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
+  const fused = rrf([
+    { items: verifiedHits, weight: 1 },
+    ...(focusChunks.length ? [{ items: focusChunks, weight: FOCUS_ARTICLE_WEIGHT }] : []),
+  ]).slice(0, env.RAG_TOP_K);
+  return buildRetrievalResult(fused, countryCode, topScore);
+}
+
+async function retrieveHybrid({ question, countryCode, topicSlug, focusArticleId }) {
   const embeddingProvider = getEmbeddingProvider();
   const [queryVector] = await embeddingProvider.embedBatch([question]);
   // Lech so chieu = cau hinh sai (EMBEDDING_DIMS/model) -- bao loi ro (caller
@@ -192,15 +257,7 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
   const countAboveSoft = verifiedVectorHits.filter((h) => h.score >= env.RAG_MIN_SOFT_SCORE).length;
   const passed = topScore >= env.RAG_MIN_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
 
-  if (!passed) {
-    return {
-      passed: false,
-      reason: FallbackReason.INSUFFICIENT_EVIDENCE,
-      topScore,
-      chunks: [],
-      retrievedMap: new Map(),
-    };
-  }
+  if (!passed) return notEnoughEvidence(topScore);
 
   const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
   const fusedLists = [
@@ -209,26 +266,5 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
     ...(focusChunks.length ? [{ items: focusChunks, weight: FOCUS_ARTICLE_WEIGHT }] : []),
   ];
   const fused = rrf(fusedLists).slice(0, env.RAG_TOP_K);
-
-  const { verifiedChunks, articleById } = await verifyChunks(fused, countryCode);
-
-  if (verifiedChunks.length === 0) {
-    return {
-      passed: false,
-      reason: FallbackReason.INSUFFICIENT_EVIDENCE,
-      topScore,
-      chunks: [],
-      retrievedMap: new Map(),
-    };
-  }
-
-  const retrievedMap = new Map();
-  const chunks = verifiedChunks.map((chunk, index) => {
-    const marker = `S${index + 1}`;
-    const citation = toCitation(chunk, articleById.get(chunk.articleId), marker);
-    retrievedMap.set(marker, citation);
-    return citation;
-  });
-
-  return { passed: true, reason: null, topScore, chunks, retrievedMap };
+  return buildRetrievalResult(fused, countryCode, topScore);
 }

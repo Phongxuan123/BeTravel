@@ -25,7 +25,7 @@ import {
   EMERGENCY_NO_EVIDENCE_NOTE,
 } from "../rag/scope.js";
 import { getLlmProvider } from "../rag/llm/index.js";
-import { getEmbeddingProvider } from "../rag/embedding/index.js";
+import { retrievalModelLabel } from "../rag/embedding/index.js";
 import { normalizeVi } from "../utils/textNormalize.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
 import { FallbackReason, ChatRole } from "../core/constants.js";
@@ -446,7 +446,7 @@ export const sendMessage = async ({
       userId,
       question,
       startedAt,
-      embeddingModel: getEmbeddingProvider().model,
+      embeddingModel: retrievalModelLabel(),
       result: {
         ...baseResult,
         ...(isEmergency
@@ -515,7 +515,7 @@ export const sendMessage = async ({
     question,
     result,
     model: llm.model,
-    embeddingModel: getEmbeddingProvider().model,
+    embeddingModel: retrievalModelLabel(),
     latencyMs,
     cacheHit,
   });

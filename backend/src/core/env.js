@@ -90,6 +90,9 @@ const envSchema = z.object({
   EMBEDDING_DIMS: numeric(768),
 
   SEARCH_DRIVER: z.enum(["atlas", "memory"]).default("memory"),
+  // hybrid = vector + từ khoá (cần dịch vụ embedding); lexical = chỉ từ khoá, không gọi embedding
+  // (câu hỏi được LLM chuyển thành từ khoá). lexical hiện chỉ chạy với SEARCH_DRIVER=memory.
+  RETRIEVAL_MODE: z.enum(["hybrid", "lexical"]).default("hybrid"),
   VECTOR_INDEX_NAME: z.string().default("vec_idx"),
   TEXT_INDEX_NAME: z.string().default("txt_idx"),
   // Cong tat tam thoi toan bo tra cuu phap luat (cam nang, tim kiem, AI Legal).
@@ -101,6 +104,9 @@ const envSchema = z.object({
   RAG_MIN_TOP_SCORE: numeric(0.62),
   RAG_MIN_SOFT_SCORE: numeric(0.55),
   RAG_MIN_CHUNKS: numeric(2),
+  // Ngưỡng cho điểm phủ từ khoá (0-1) của RETRIEVAL_MODE=lexical, thay cho ngưỡng cosine ở trên.
+  RAG_MIN_KEYWORD_TOP_SCORE: numeric(0.4),
+  RAG_MIN_KEYWORD_SOFT_SCORE: numeric(0.3),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   AI_CACHE_TTL_HOURS: numeric(24),
   AI_DAILY_QUOTA_USER: numeric(40),
@@ -167,6 +173,13 @@ const productionEnvSchema = envSchema.superRefine((data, ctx) => {
       message: "Thiếu SERPAPI_KEY cho PLACES_PROVIDER=serpapi",
     });
   }
+  if (data.RETRIEVAL_MODE === "lexical" && data.SEARCH_DRIVER !== "memory") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["SEARCH_DRIVER"],
+      message: "RETRIEVAL_MODE=lexical hiện chỉ hỗ trợ SEARCH_DRIVER=memory",
+    });
+  }
   if (data.NODE_ENV !== "production") return;
   if (data.JWT_ACCESS_SECRET.length < PRODUCTION_JWT_SECRET_MIN_LENGTH) {
     ctx.addIssue({
@@ -175,7 +188,10 @@ const productionEnvSchema = envSchema.superRefine((data, ctx) => {
       message: `Production cần JWT_ACCESS_SECRET dài ít nhất ${PRODUCTION_JWT_SECRET_MIN_LENGTH} ký tự`,
     });
   }
-  for (const key of ["LLM_PROVIDER", "EMBEDDING_PROVIDER"]) {
+  // Chế độ lexical không gọi embedding nên không bắt buộc provider embedding thật.
+  const providerKeys =
+    data.RETRIEVAL_MODE === "lexical" ? ["LLM_PROVIDER"] : ["LLM_PROVIDER", "EMBEDDING_PROVIDER"];
+  for (const key of providerKeys) {
     const provider = data[key];
     if (provider === "mock") {
       ctx.addIssue({

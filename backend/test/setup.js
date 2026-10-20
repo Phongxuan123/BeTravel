@@ -11,6 +11,8 @@ process.env.NODE_ENV = "test";
 process.env.LLM_PROVIDER = "mock";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
+// Test mac dinh chay che do hybrid (vector + tu khoa); che do lexical co test rieng goi thang ham.
+process.env.RETRIEVAL_MODE = "hybrid";
 // Khong goi SerpApi that (ton quota) du shell co san PLACES_PROVIDER/SERPAPI_KEY.
 process.env.PLACES_PROVIDER = "mock";
 // Test khong gui email that (xem email.service.js).

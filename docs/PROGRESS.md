@@ -63,6 +63,27 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
   `au-pmc-exempt` bị guard từ chối (MISSING_CITATION), chạy lại thì đạt, nên kết quả chat **không tất định**.
 - Hai câu hải quan mới được viết **sau khi xem đáp án thật**, chỉ là kiểm tra hồi quy, không phải bằng chứng độc lập về độ đúng.
 
+### Bỏ Gemini, chạy AI qua APIZ với truy hồi theo từ khoá (20/10/2026)
+
+- **Lý do**: hạn mức embedding miễn phí của Gemini cạn theo ngày (thử thật: 429, chờ khoảng 5 giờ 25 phút), chặn cả index
+  lẫn truy hồi câu hỏi; người dùng không đồng ý gói trả phí Gemini. APIZ (`https://api.apiz.vn/v1`, tương thích OpenAI)
+  **không bán model embedding** (đã thử `/v1/embeddings` với 2 model, đều 503 `model_not_found`).
+- **Quyết định** (người dùng chốt "vô hiệu hoá hoàn toàn Gemini"): thêm `RETRIEVAL_MODE=lexical`. LLM chuyển câu hỏi thành
+  từ khoá tiếng Việt và tiếng Anh, tìm theo độ phủ từ khoá có trọng số IDF (điểm 0-1), áp ngưỡng `RAG_MIN_KEYWORD_*`
+  trước khi gọi LLM trả lời, vẫn qua xác minh nguồn và guard như cũ. Chế độ `hybrid` (vector) giữ nguyên làm mặc định code.
+  [!] Đây là lệch khỏi hợp đồng chống ảo giác mục 4.2 bước 1 (`$vectorSearch`): ngưỡng từ khoá lỏng hơn cosine, nên chặn
+  sai dựa nhiều hơn vào guard và cờ `answerable` của model.
+- **Cấu hình chạy thật** (`backend/.env`): `LLM_PROVIDER=openai` + `OPENAI_BASE_URL` APIZ, `LLM_MODEL=gemini-3.8-flash`,
+  `EMBEDDING_PROVIDER=mock`, `RETRIEVAL_MODE=lexical`, `AI_PROVIDER_TIMEOUT_MS=60000`.
+- **Claude qua APIZ không dùng được**: model Claude bị APIZ chèn system prompt riêng, trả lời kiểu "I acknowledge these
+  instructions..." thay vì JSON. `gemini-3.8-flash` và `deepseek-v4.1-flash` qua APIZ trả JSON đúng.
+- **Index không cần embedding**: đã index nốt 4 luật (Customs Act 1901, Competition and Consumer Act 2010, Therapeutic Goods
+  Act 1989, Biosecurity Act 2015; 8.084 chunk, 43 giây). Nay đủ **9 luật Úc**, 8.670 chunk.
+- **Đánh giá thật** (`au.live.json`, 11 câu): `gemini-3.8-flash` 10/11 rồi 8/11 ở lần chạy lại (2 câu do APIZ quá 30 giây,
+  nay đã nâng timeout lên 60 giây); `deepseek-v4.1-flash` 8/11. **Mọi câu bẫy, ngoài phạm vi và khẩn cấp đều đạt ở cả ba lần.**
+  Câu trượt chủ yếu: hỏi xuất khẩu thuốc gây nghiện, truy hồi ra Customs Act thay vì Customs (Prohibited Exports) Regulations
+  nên model tự báo thiếu dữ liệu. Ngưỡng 0,4/0,3 được chọn theo chính 11 câu này nên cần bộ câu độc lập để kiểm chứng.
+
 ### Chưa làm / đang vướng (AI)
 
 - Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí

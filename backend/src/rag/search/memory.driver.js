@@ -1,6 +1,8 @@
 import LegalChunk from "../../models/LegalChunk.js";
 import { ContentStatus } from "../../core/constants.js";
+import { env } from "../../core/env.js";
 import { foldDStroke } from "../../utils/textNormalize.js";
+import { tokenize, inverseDocumentFrequency } from "../lexical.js";
 
 /*
  * MemorySearchDriver -- phuong an du phong khi Atlas Search truc trac hoac
@@ -18,9 +20,9 @@ let cache = null;
 async function loadPublishedChunks() {
   if (cache && Date.now() - cache.loadedAt < TTL_MS) return cache.chunks;
 
-  const chunks = await LegalChunk.find({ status: ContentStatus.PUBLISHED })
-    .select("+embedding")
-    .lean();
+  // Chế độ lexical không dùng vector nên khỏi nạp 768 số mỗi chunk vào RAM.
+  const query = LegalChunk.find({ status: ContentStatus.PUBLISHED });
+  const chunks = await (env.RETRIEVAL_MODE === "lexical" ? query : query.select("+embedding")).lean();
   cache = { loadedAt: Date.now(), chunks };
   return chunks;
 }
@@ -72,6 +74,15 @@ function projectHit(chunk) {
 const matchesFilter = (chunk, { countryCode, topicSlug }) =>
   chunk.countryCode === countryCode && (!topicSlug || chunk.topicSlug === topicSlug);
 
+// Tập từ đã chuẩn hoá của chunk, tính một lần và giữ cùng vòng đời với cache.
+const tokenSetOf = (chunk) => {
+  // Tên luật/phần được tính như một phần nội dung: câu hỏi nêu tên luật phải ưu tiên luật đó.
+  if (!chunk.tokenSet) {
+    chunk.tokenSet = new Set(tokenize(`${chunk.lawName ?? ""} ${chunk.partHeading ?? ""} ${chunk.textNorm}`));
+  }
+  return chunk.tokenSet;
+};
+
 export function createMemorySearchDriver() {
   return {
     driver: "memory",
@@ -88,6 +99,37 @@ export function createMemorySearchDriver() {
         .map((c) => ({ ...projectHit(c), score: cosineSimilarity(queryVector, c.embedding) }))
         .sort((a, b) => b.score - a.score)
         .slice(0, k);
+    },
+
+    /*
+     * Tìm theo từ khoá có trọng số IDF (RETRIEVAL_MODE=lexical). `terms` là các từ đã chuẩn hoá;
+     * score = tổng IDF từ khoá chunk chứa / tổng IDF mọi từ khoá, nằm trong [0, 1].
+     * IDF tính trên các chunk CÙNG quốc gia để kho luật tiếng Anh không bị lệch bởi kho tiếng Việt.
+     */
+    async lexicalSearch({ countryCode, topicSlug, terms, k }) {
+      if (terms.length === 0) return [];
+
+      const chunks = (await loadPublishedChunks()).filter((c) => c.countryCode === countryCode);
+      const idfByTerm = terms.map((term) => {
+        const frequency = chunks.filter((c) => tokenSetOf(c).has(term)).length;
+        return inverseDocumentFrequency(chunks.length, frequency);
+      });
+      const totalIdf = idfByTerm.reduce((sum, idf) => sum + idf, 0);
+
+      return chunks
+        .filter((c) => !topicSlug || c.topicSlug === topicSlug)
+        .map((c) => {
+          const tokens = tokenSetOf(c);
+          const matchedIdf = terms.reduce(
+            (sum, term, i) => sum + (tokens.has(term) ? idfByTerm[i] : 0),
+            0,
+          );
+          return { chunk: c, score: totalIdf > 0 ? matchedIdf / totalIdf : 0 };
+        })
+        .filter((x) => x.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, k)
+        .map(({ chunk, score }) => ({ ...projectHit(chunk), score }));
     },
 
     async keywordSearch({ countryCode, topicSlug, words, k }) {

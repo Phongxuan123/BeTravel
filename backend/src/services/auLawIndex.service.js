@@ -8,7 +8,11 @@ import {
   findAuLawTopic,
 } from "../core/auLawTopics.js";
 import { chunkAuLaw } from "../rag/auLawChunking.js";
-import { getEmbeddingProvider } from "../rag/embedding/index.js";
+import {
+  getEmbeddingProvider,
+  isLexicalMode,
+  LEXICAL_MODEL_LABEL,
+} from "../rag/embedding/index.js";
 import { invalidateMemorySearchCache } from "../rag/search/memory.driver.js";
 import {
   loadDisplayedBlocks,
@@ -56,7 +60,11 @@ export async function indexAuLaw(titleId, deps = {}) {
     throw new AppError(ErrorCode.UPSTREAM_ERROR, `Không rút được điều luật nào từ ${titleId}.`);
   }
 
-  const vectors = await embedder.embedBatch(pieces.map((piece) => piece.textForEmbedding));
+  // Chế độ lexical không embed: chunk chỉ cần text/textNorm để tìm theo từ khoá.
+  const useEmbedding = !isLexicalMode();
+  const vectors = useEmbedding
+    ? await embedder.embedBatch(pieces.map((piece) => piece.textForEmbedding))
+    : [];
   const officialUrl = buildOfficialUrl(titleId);
   const effectiveFrom = rawVersion.start ? new Date(rawVersion.start) : undefined;
 
@@ -76,8 +84,8 @@ export async function indexAuLaw(titleId, deps = {}) {
     order: piece.order,
     text: piece.text,
     textNorm: piece.textNorm,
-    embedding: vectors[index],
-    embeddingModel: embedder.model,
+    embedding: useEmbedding ? vectors[index] : undefined,
+    embeddingModel: useEmbedding ? embedder.model : LEXICAL_MODEL_LABEL,
     kind: "body",
   }));
 
