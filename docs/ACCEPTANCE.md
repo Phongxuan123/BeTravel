@@ -1,5 +1,19 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## OTP giữ phiên trước khi đổi mật khẩu — 20/10/2026
+
+- Đã đăng nhập: không có link “Nhớ ra mật khẩu rồi / Đăng nhập” ở email/OTP/password;
+  email không sửa được, quay lại Cài đặt không logout.
+- Mật khẩu hiển thị đủ yêu cầu khớp backend (ký tự đặc biệt tùy chọn), xác nhận
+  không khớp bị chặn. Reset lỗi giữ phiên, thành công mới logout.
+- Hồi quy guest vẫn gửi email > OTP > password > done như cũ.
+- Chưa thao tác điện thoại thật hoặc xác nhận thư đến Inbox; không coi test tự động
+  là nghiệm thu giao diện thực hay chứng nhận toàn hệ điều hành không lỗi.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (tổng 551);
+lint/typecheck tương ứng, format backend và admin build đạt. Hồi quy màn OTP
+chạy lại 2/2 sau chỉnh lỗi xác nhận/khóa nút quay lại, đạt.
+
 ## Auth/OTP — 20/10/2026 (nghiệm thu một phần)
 
 - SMTP verify thật đạt, không gửi email. Không coi verify là xác nhận Inbox.

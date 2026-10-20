@@ -19,7 +19,7 @@ import type { Preferences } from '@/lib/data';
 import type { PreferencesPatch } from '@/lib/api/preferences';
 import { changePassword } from '@/lib/api/auth';
 import { ApiError } from '@/lib/api/http';
-import { passwordValidationMessage } from '@/lib/password';
+import { passwordValidationMessage, PASSWORD_REQUIREMENTS } from '@/lib/password';
 
 function toast(message: string) {
   if (Platform.OS === 'android') ToastAndroid.show(message, ToastAndroid.SHORT);
@@ -238,7 +238,7 @@ export default function SettingsScreen() {
         }} />
         <View style={{ gap: 14 }}>
           <TextField label="Mật khẩu hiện tại" secureTextEntry value={pwForm.current} onChangeText={(v) => setPwForm((p) => ({ ...p, current: v }))} />
-          <TextField label="Mật khẩu mới" secureTextEntry helperText="Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số" value={pwForm.next} onChangeText={(v) => setPwForm((p) => ({ ...p, next: v }))} />
+          <TextField label="Mật khẩu mới" secureTextEntry helperText={PASSWORD_REQUIREMENTS} value={pwForm.next} onChangeText={(v) => setPwForm((p) => ({ ...p, next: v }))} />
           <TextField label="Xác nhận mật khẩu mới" secureTextEntry value={pwForm.confirm} onChangeText={(v) => setPwForm((p) => ({ ...p, confirm: v }))} />
           {pwError && (
             <View className="rounded-md bg-danger-tint p-3">

@@ -94,3 +94,12 @@ Maps và GPS thực tế cần nghiệm thu trên native build; xem MAPS_SETUP.m
 
 Nguồn vận hành: [Nodemailer SMTP](https://nodemailer.com/smtp),
 [OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).
+
+
+### OTP từ Cài đặt khi đang đăng nhập (20/10/2026)
+
+Màn khôi phục dùng email tài khoản hiện tại và ẩn link đăng nhập dành cho khách.
+Có thể quay lại Cài đặt mà không mất phiên trước khi hoàn tất; nếu API báo lỗi
+thì phiên vẫn giữ. Sau khi đặt mật khẩu thành công, đăng nhập lại là bước bắt buộc.
+Mật khẩu: 8–128 ký tự, chữ hoa A–Z, chữ thường a–z và số 0–9; ký tự đặc biệt
+không bắt buộc. Phải khác mật khẩu cũ và nhập xác nhận trùng khớp.

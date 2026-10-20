@@ -1,5 +1,18 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## OTP giữ ngữ cảnh đăng nhập — 20/10/2026
+
+- Dựa vào AuthContext thay vì tham số URL để quyết định giao diện đã đăng nhập.
+  Không tạo phiên giả hay giữ phiên sau khi đổi mật khẩu thành công.
+- Gom hướng dẫn PASSWORD_REQUIREMENTS, giữ validator backend và client thống nhất.
+  Quy tắc ký tự đặc biệt không bắt buộc được nói rõ, không tự nâng chính sách.
+- Rà file sửa: không import chết, không thay API/schema, giữ màn guest và chặn
+  nút điều hướng trong lúc gửi yêu cầu. Giữ hạn chế nhận email/thiết bị ở ACCEPTANCE.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (tổng 551);
+lint/typecheck tương ứng, format backend và admin build đạt. Hồi quy màn OTP
+chạy lại 2/2 sau chỉnh lỗi xác nhận/khóa nút quay lại, đạt.
+
 ## Auth/OTP — 20/10/2026 (Chế độ B)
 
 - Chuẩn hóa SMTP theo env đã validate, timeout có hằng; kiểm tra sức khỏe gộp

@@ -1,5 +1,28 @@
 # TIEN DO BE.TRAVEL
 
+## OTP khi đã đăng nhập — 20/10/2026 (bổ sung)
+
+Tiến độ `[###-] 3/4`: code và hồi quy xong; cần thử giao diện trên điện thoại thật.
+
+- Màn khôi phục nhận biết user: không hiện “Nhớ ra mật khẩu rồi / Đăng nhập”
+  khi đã đăng nhập; email gắn tài khoản hiện tại và không cho sửa sang tài khoản khác.
+- Quay lại Cài đặt/back trước khi hoàn tất giữ phiên; không logout khi API lỗi.
+  Chỉ reset thành công mới logout và yêu cầu đăng nhập lại. Back ở màn thành công
+  cũng về đăng nhập; khóa nút quay lại lúc đang xử lý.
+- Hiện yêu cầu ngay bước email và tạo mật khẩu: 8–128 ký tự, ít nhất một A–Z,
+  một a–z và một số; ký tự đặc biệt không bắt buộc theo backend hiện có.
+  Mật khẩu mới phải khác cũ; xác nhận phải trùng, lỗi hiển thị tại ô nhập.
+- Dùng cùng PASSWORD_REQUIREMENTS ở đổi trực tiếp/OTP. Không thay chính sách
+  backend hoặc contract, không gửi thư thật, không sửa dữ liệu Atlas.
+- Test thêm: user đăng nhập không thấy link login/sửa email; quay lại giữ auth;
+  gửi đúng email, xác nhận lệch bị chặn, API lỗi không logout, thành công mới logout.
+- Giữ thay đổi backend/.env.example của người dùng ở trạng thái chưa commit.
+  Không push Git. Nghiệm thu nhận thư thật ở mục Auth trước vẫn còn mở.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (tổng 551);
+lint/typecheck tương ứng, format backend và admin build đạt. Hồi quy màn OTP
+chạy lại 2/2 sau chỉnh lỗi xác nhận/khóa nút quay lại, đạt.
+
 ## Auth: đổi mật khẩu và email OTP — 20/10/2026
 
 Tiến độ `[###-] 3/4` — code, kiểm tự động và tài liệu hoàn tất; còn xác nhận

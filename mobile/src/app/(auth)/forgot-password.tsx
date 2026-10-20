@@ -16,16 +16,16 @@ import {
   resendPasswordResetOtp,
   resetPassword,
 } from '@/lib/api/auth';
-import { isPasswordValid, passwordValidationMessage } from '@/lib/password';
+import { isPasswordValid, passwordValidationMessage, PASSWORD_REQUIREMENTS } from '@/lib/password';
 
 type Step = 'email' | 'otp' | 'password' | 'done';
 const RESEND_WAIT_SECONDS = 30;
 
 export default function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const [step, setStep] = useState<Step>('email');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(user?.email ?? '');
   const [otp, setOtp] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +42,7 @@ export default function ForgotPasswordScreen() {
     return () => clearTimeout(timer);
   }, [resendWait]);
 
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedEmail = (user?.email ?? email).trim().toLowerCase();
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
 
   const sendOtp = async () => {
@@ -138,19 +138,25 @@ export default function ForgotPasswordScreen() {
       contentContainerStyle={{ paddingHorizontal: 24, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
       keyboardShouldPersistTaps="handled"
     >
-      <IconButton accessibilityLabel="Quay lại" variant="soft" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
+      <IconButton accessibilityLabel="Quay lại" disabled={loading} variant="soft" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => {
+        if (step === 'done') router.replace('/login');
+        else if (router.canGoBack()) router.back();
+        else router.replace(user ? '/settings' : '/login');
+      }} />
 
       {step === 'email' && (
         <>
           <Text className="mt-6 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-            Quên mật khẩu?
+            {user ? 'Đổi mật khẩu qua email' : 'Quên mật khẩu?'}
           </Text>
-          <Text className="mt-2 text-[15px] text-muted">Nhập email đã đăng ký, chúng tôi sẽ gửi mã OTP để xác thực.</Text>
+          <Text className="mt-2 text-[15px] text-muted">{user ? 'Xác thực bằng email của tài khoản đang đăng nhập. Phiên hiện tại được giữ cho đến khi đổi mật khẩu thành công.' : 'Nhập email đã đăng ký, chúng tôi sẽ gửi mã OTP để xác thực.'}</Text>
+          <Text className="mt-2 text-sm text-muted">Mật khẩu mới: {PASSWORD_REQUIREMENTS} Phải khác mật khẩu hiện tại và nhập xác nhận trùng khớp.</Text>
 
           <View className="mt-6" style={{ gap: 16 }}>
             <TextField
               label="Email"
-              value={email}
+              value={user?.email ?? email}
+              editable={!user && !loading}
               onChangeText={setEmail}
               iconLeft={<Mail size={20} color={colors.subtle} />}
               keyboardType="email-address"
@@ -194,9 +200,9 @@ export default function ForgotPasswordScreen() {
             )}
             <Button label="Xác thực OTP" onPress={verifyOtp} loading={loading} disabled={otp.length !== 6} />
             <Button label={resendWait > 0 ? `Gửi lại OTP sau ${resendWait}s` : 'Gửi lại OTP'} variant="secondary" onPress={resendOtp} disabled={loading || resendWait > 0} />
-            <Button label="Sửa email" variant="secondary" disabled={loading} onPress={() => {
+            {!user && <Button label="Sửa email" variant="secondary" disabled={loading} onPress={() => {
               setStep('email'); setOtp(''); setResetToken(''); setError(null); setMessage(null);
-            }} />
+            }} />}
           </View>
         </>
       )}
@@ -216,13 +222,14 @@ export default function ForgotPasswordScreen() {
                 onChangeText={setPassword}
                 secureTextEntry
                 iconLeft={<Lock size={20} color={colors.subtle} />}
-                helperText="Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số"
+                helperText={PASSWORD_REQUIREMENTS}
               />
               <PasswordStrength password={password} />
             </View>
             <TextField
               label="Xác nhận mật khẩu mới"
               value={confirm}
+              error={confirm && password !== confirm ? 'Xác nhận mật khẩu không khớp.' : undefined}
               onChangeText={setConfirm}
               secureTextEntry
               iconLeft={<Lock size={20} color={colors.subtle} />}
@@ -242,6 +249,8 @@ export default function ForgotPasswordScreen() {
         </>
       )}
 
+      {step !== 'done' && user && <Button label="Quay lại Cài đặt" variant="secondary" disabled={loading} onPress={() => router.replace('/settings')} />}
+
       {step === 'done' && (
         <View className="mt-10 items-center px-2">
           <View className="h-[100px] w-[100px] items-center justify-center rounded-full bg-primary-soft">
@@ -257,7 +266,7 @@ export default function ForgotPasswordScreen() {
         </View>
       )}
 
-      {step !== 'done' && (
+      {step !== 'done' && !user && (
         <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
           <Text className="text-muted">Nhớ ra mật khẩu rồi?</Text>
           <Pressable accessibilityRole="button" onPress={() => router.replace('/login')}>
