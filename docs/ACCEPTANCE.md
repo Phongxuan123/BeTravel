@@ -1,5 +1,19 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Khôi phục bố cục auth trước căn giữa — 20/10/2026
+
+Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
+`ded3785` (trước lần căn giữa đầu tiên). Nội dung xếp từ trên xuống trong
+ScrollView, không chia ba vùng hoặc căn giữa dọc. Xóa AuthScreen không còn dùng.
+Giữ nguyên handlers/state/API hiện tại; giữ luồng OTP, ràng buộc email tài khoản,
+quy tắc mật khẩu và chỉ logout sau khi đổi thành công. Giữ khoảng cách 16 giữa
+nút OTP và Quay lại Cài đặt, sửa chống co nút và header tự xuống dòng.
+
+Mobile lint/typecheck và 237/237 tests đạt. Đã quan sát login BlueStacks trở về
+bố cục cũ; chưa nghiệm thu register/forgot và bàn phím trên điện thoại ở đợt này.
+Không đổi backend/dữ liệu, không push; giữ backend/.env.example ngoài commit.
+Yêu cầu bố cục này thay thế phương án ba vùng ở mục lịch sử bên dưới.
+
 ## Auth chia ba vùng — 20/10/2026
 
 - Đạt: mobile typecheck, lint, 237 tests / 55 suites; diff không lỗi whitespace.
