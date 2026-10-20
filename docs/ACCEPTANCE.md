@@ -1,5 +1,13 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Auth phủ chiều rộng — 20/10/2026
+
+- Đã quan sát BlueStacks: màn login hết khung 480, bỏ khoảng trắng trên quá lớn,
+  nút chính/phụ có chiều cao đầy đủ. Shared layout áp dụng register/forgot-password.
+- Mobile 237/237 tests, lint/typecheck, git diff --check đạt.
+- Chưa xác nhận trực quan register/forgot trên máy thật, keyboard Samsung/iOS.
+  Backend không đổi; kết quả rà toàn bộ ở đợt trước vẫn là lịch sử, không chạy lại.
+
 ## Bố cục auth — 20/10/2026
 
 - Gửi OTP và Quay lại Cài đặt cách nhau 16 px; giữ phiên/auth như bản trước.

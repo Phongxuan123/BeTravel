@@ -1,5 +1,19 @@
 # TIEN DO BE.TRAVEL
 
+## Sửa hồi quy khung auth và nút bị co — 20/10/2026
+
+Tiến độ `[####] 4/4` cho sửa bố cục theo ảnh: code, test mobile, xem BlueStacks,
+đã ghi tài liệu. Không bao gồm nghiệm thu OTP thật hoặc Samsung/iOS.
+
+- Bỏ maxWidth 480 và căn giữa dọc ở AuthScreen. Form dùng toàn bộ chiều ngang
+  trừ lề 24; tiêu đề vẫn căn giữa, nội dung bắt đầu sau safe-area, dài thì cuộn.
+- Bỏ vòng tròn nền lớn của login; header logo/trợ giúp nằm hai phía, cho wrap.
+- Button chung dùng style tĩnh mặc định, minHeight 54/50, flexShrink:0 và padding;
+  không co thành thanh mỏng, chữ có thể xuống dòng. Giữ callback style tùy chọn.
+- Đã xem screenshot BlueStacks sau sửa: login full width, cả nút chính/phụ đủ cao,
+  khoảng cách rõ. Mobile lint/typecheck và 237/237 tests đạt (55 suites).
+- Không đổi backend/API/auth. Giữ thay đổi .env.example riêng, không push.
+
 ## Căn giữa giao diện auth — 20/10/2026
 
 Tiến độ `[###-] 3/4`: đã sửa bố cục, kiểm tự động và tài liệu; chờ xem trên máy thật.

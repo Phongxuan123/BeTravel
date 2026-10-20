@@ -43,8 +43,6 @@ export default function LoginScreen() {
 
   return (
     <AuthScreen>
-      <View pointerEvents="none" className="absolute -right-24 rounded-full bg-[#F0F5FD]" style={{ width: 340, height: 340, top: -60 }} />
-
       <AuthHeader />
 
       <Text className="mt-8 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
@@ -82,7 +80,7 @@ export default function LoginScreen() {
           </View>
         )}
 
-        <View className="flex-row items-center justify-between">
+        <View className="flex-row flex-wrap items-center justify-between" style={{ gap: 12 }}>
           {/* Không lồng Checkbox (Pressable) bên trong một Pressable khác.
               Hai Pressable lồng nhau có thể khiến một lần chạm bị xử lý hai lần. */}
           <View className="flex-row items-center" style={{ gap: 8 }}>

@@ -1,5 +1,12 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Hồi quy layout auth — 20/10/2026
+
+Bỏ giới hạn chiều rộng và căn giữa dọc không phù hợp ảnh người dùng. Button mặc
+định dùng mảng style tĩnh, minHeight/flexShrink thay chiều cao cứng trong callback;
+cho phép chữ lớn xuống dòng. Không đổi sự kiện onPress hoặc auth. Giữ lưới test
+mobile 237/237; đã xem login thật trên BlueStacks. Không thêm test phản chiếu CSS.
+
 ## Bố cục auth — 20/10/2026
 
 - Gom safe-area, padding và ScrollView vào AuthScreen để ba màn không lệch bố cục.
