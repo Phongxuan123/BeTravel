@@ -138,4 +138,11 @@ describe('chat.ts adapter', () => {
     expect(answer.reason).toBe('Trợ lý AI đang bận, thử lại sau ít phút.');
     expect(answer.suggestions.length).toBeGreaterThan(0);
   });
+
+  it('adaptMessage: answerSource approved_faq -> answered kèm approved=true', () => {
+    const answeredMessage = { ...base, text: 'Nội dung [S1]', fallbackReason: null };
+    const answer = adaptMessage({ ...answeredMessage, answerSource: 'approved_faq' }, 'AU');
+    expect(answer).toMatchObject({ status: 'answered', approved: true });
+    expect(adaptMessage(answeredMessage, 'AU')).toMatchObject({ status: 'answered', approved: false });
+  });
 });

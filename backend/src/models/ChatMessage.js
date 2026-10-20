@@ -67,6 +67,10 @@ const chatMessageSchema = new mongoose.Schema(
     completionTokens: { type: Number, default: 0 },
 
     feedback: { type: String, enum: ["up", "down", null], default: null },
+
+    // "approved_faq": câu trả lời lấy nguyên văn từ FAQ admin đã duyệt (G6), không gọi LLM.
+    answerSource: { type: String, enum: ["ai", "approved_faq"], default: "ai" },
+    faqId: { type: mongoose.Schema.Types.ObjectId, ref: "ApprovedFaq", default: null, index: true },
   },
   { timestamps: true },
 );

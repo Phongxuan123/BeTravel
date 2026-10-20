@@ -16,6 +16,7 @@ import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
 import * as ragController from "../controllers/adminRag.controller.js";
 import * as feedbackController from "../controllers/adminFeedback.controller.js";
+import * as faqController from "../controllers/adminFaq.controller.js";
 import * as analyticsController from "../controllers/adminAnalytics.controller.js";
 import { incidentsController } from "../controllers/adminIncidents.controller.js";
 import { quickPhrasesController } from "../controllers/adminQuickPhrases.controller.js";
@@ -42,6 +43,11 @@ import {
   ragStatusQuerySchema,
   ragAuLawIndexSchema,
   ragAuLawParamSchema,
+  faqCandidatesQuerySchema,
+  faqListQuerySchema,
+  faqDecisionSchema,
+  faqStatusUpdateSchema,
+  faqParamSchema,
   feedbackListQuerySchema,
   feedbackStatusUpdateSchema,
   analyticsOverviewQuerySchema,
@@ -111,6 +117,16 @@ router.delete(
   "/rag/au-laws/:titleId",
   validateParams(ragAuLawParamSchema),
   ragController.removeAuLaw,
+);
+
+router.get("/faq/candidates", validateQuery(faqCandidatesQuerySchema), faqController.candidates);
+router.get("/faq", validateQuery(faqListQuerySchema), faqController.list);
+router.post("/faq", validateBody(faqDecisionSchema), faqController.decide);
+router.patch(
+  "/faq/:id",
+  validateParams(faqParamSchema),
+  validateBody(faqStatusUpdateSchema),
+  faqController.updateStatus,
 );
 
 router.get("/feedback", validateQuery(feedbackListQuerySchema), feedbackController.list);

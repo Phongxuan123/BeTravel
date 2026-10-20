@@ -25,6 +25,11 @@ const aiEventSchema = new mongoose.Schema(
     // Luồng phân loại bởi rag/scope.js (emergency, out_of_scope, ...) -- thống kê theo luồng.
     route: { type: String, default: "legal" },
     cacheHit: { type: Boolean, default: false },
+    // G6: từ khoá đã chuẩn hoá của câu hỏi (gom nhóm câu cùng ý) và câu trả lời tương ứng.
+    keywordTerms: { type: [String], default: [] },
+    messageId: { type: mongoose.Schema.Types.ObjectId, ref: "ChatMessage", default: null },
+    answerSource: { type: String, default: "ai" },
+    faqId: { type: mongoose.Schema.Types.ObjectId, ref: "ApprovedFaq", default: null },
   },
   { timestamps: true },
 );

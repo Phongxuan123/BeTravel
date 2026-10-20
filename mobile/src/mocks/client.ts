@@ -217,6 +217,8 @@ export type ChatAnswer =
       }[];
       // Backend dat true cho tinh huong khan cap (bi bat, tai nan, mat giay to).
       needsOfficialHelp?: boolean;
+      // true: cau tra loi admin da duyet cho cau hoi hay gap (G6), hien nhan "Da duoc Be.Travel duyet".
+      approved?: boolean;
     }
   | {
       status: 'insufficient_evidence';

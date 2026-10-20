@@ -81,6 +81,19 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   CHAT_SESSION_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy phiên chat"],
   CHAT_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy tin nhắn"],
 
+  // FAQ đã duyệt (G6)
+  FAQ_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy FAQ"],
+  FAQ_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy câu trả lời nguồn"],
+  FAQ_MESSAGE_NOT_ELIGIBLE: [
+    ErrorCode.VALIDATION_ERROR,
+    "Chỉ duyệt được câu trả lời pháp lý của AI có trích dẫn nguồn",
+  ],
+  FAQ_SOURCES_CHANGED: [
+    ErrorCode.CONFLICT,
+    "Nguồn luật của câu trả lời này đã đổi hoặc bị gỡ, không thể duyệt",
+  ],
+  FAQ_DUPLICATE: [ErrorCode.CONFLICT, "Đã có FAQ cho nhóm câu hỏi này"],
+
   // Feedback (B5)
   FEEDBACK_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy feedback"],
   FEEDBACK_TARGET_NOT_FOUND: [

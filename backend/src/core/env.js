@@ -112,6 +112,12 @@ const envSchema = z.object({
   // Ngưỡng cho điểm phủ từ khoá (0-1) của RETRIEVAL_MODE=lexical, thay cho ngưỡng cosine ở trên.
   RAG_MIN_KEYWORD_TOP_SCORE: numeric(0.4),
   RAG_MIN_KEYWORD_SOFT_SCORE: numeric(0.3),
+  // FAQ đã duyệt (G6): độ giống từ khoá (Jaccard 0-1) để phát FAQ thay cho AI -- chặt hơn ngưỡng gom nhóm
+  // đề xuất, vì trả nhầm FAQ cho câu khác ý tệ hơn để AI tự trả lời.
+  FAQ_MATCH_MIN_SIMILARITY: numeric(0.85),
+  FAQ_GROUP_MIN_SIMILARITY: numeric(0.7),
+  FAQ_MIN_REPEAT: numeric(3),
+  FAQ_WINDOW_DAYS: numeric(15),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   AI_CACHE_TTL_HOURS: numeric(24),
   AI_DAILY_QUOTA_USER: numeric(40),

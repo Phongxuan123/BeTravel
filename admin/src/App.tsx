@@ -11,6 +11,7 @@ import ArticleEditorPage from './pages/ArticleEditorPage';
 import AuditPage from './pages/AuditPage';
 import RagIndexPage from './pages/RagIndexPage';
 import FeedbackQueuePage from './pages/FeedbackQueuePage';
+import FaqPage from './pages/FaqPage';
 import IncidentsPage from './pages/IncidentsPage';
 import IncidentEditorPage from './pages/IncidentEditorPage';
 import QuickPhrasesPage from './pages/QuickPhrasesPage';
@@ -47,6 +48,7 @@ export default function App() {
       <Route path="/audit" element={<ProtectedRoute><AuditPage /></ProtectedRoute>} />
       <Route path="/rag" element={<ProtectedRoute><RagIndexPage /></ProtectedRoute>} />
       <Route path="/feedback" element={<ProtectedRoute><FeedbackQueuePage /></ProtectedRoute>} />
+      <Route path="/faq" element={<ProtectedRoute><FaqPage /></ProtectedRoute>} />
       <Route path="/incidents" element={<ProtectedRoute><IncidentsPage /></ProtectedRoute>} />
       <Route path="/incidents/new" element={<ProtectedRoute><IncidentEditorPage /></ProtectedRoute>} />
       <Route path="/incidents/:id" element={<ProtectedRoute><IncidentEditorPage /></ProtectedRoute>} />

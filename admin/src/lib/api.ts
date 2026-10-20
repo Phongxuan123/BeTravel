@@ -25,6 +25,9 @@ import type {
   AuLawDetail,
   AuLawVersion,
   AuLawContent,
+  FaqCandidate,
+  ApprovedFaq,
+  FaqStatus,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -92,6 +95,15 @@ export const feedbackApi = {
 
   updateStatus: (id: string, payload: { status: FeedbackStatus; reviewerNote?: string }) =>
     apiRequest<Feedback>(`/admin/feedback/${id}`, { method: 'PATCH', body: payload }),
+};
+
+export const faqApi = {
+  candidates: (countryCode?: string) => apiRequest<FaqCandidate[]>('/admin/faq/candidates', { query: { countryCode } }),
+  list: (status?: FaqStatus) => apiRequest<ApprovedFaq[]>('/admin/faq', { query: { status } }),
+  decide: (sourceMessageId: string, decision: 'approve' | 'dismiss') =>
+    apiRequest<ApprovedFaq>('/admin/faq', { method: 'POST', body: { sourceMessageId, decision } }),
+  setStatus: (id: string, status: 'active' | 'retired') =>
+    apiRequest<ApprovedFaq>(`/admin/faq/${id}`, { method: 'PATCH', body: { status } }),
 };
 
 export const analyticsApi = {

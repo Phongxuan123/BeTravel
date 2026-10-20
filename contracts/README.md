@@ -490,9 +490,16 @@ POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  2
   "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
   "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR" | "OUT_OF_SCOPE"
   "confidence": "medium",
-  "needsOfficialHelp": false
+  "needsOfficialHelp": false,
+  "answerSource": "ai",    // hoac "approved_faq": tra tu cau tra loi admin da duyet (muc 10b), khong goi LLM
+  "faqId": null            // id FAQ khi answerSource="approved_faq"
 }
 ```
+
+[!] **Cau tra loi da duyet (FAQ, muc 10b)**: voi luong `legal`, khong `regenerate`, khong `focusArticleId`,
+backend so tu khoa cau hoi voi FAQ `active` cung quoc gia; khop du nguong `FAQ_MATCH_MIN_SIMILARITY` va nguon
+con hieu luc thi tra nguyen van FAQ (`answerSource:"approved_faq"`), van tinh luot quota. Nut "Tao lai"
+(`regenerate:true`) luon bo qua FAQ. Client hien nhan "Da duoc Be.Travel duyet".
 
 [!] **Phan luong cau hoi bang code** (`backend/src/rag/scope.js`, chay TRUOC retrieval, khong goi LLM):
 `out_of_scope` va `greeting` tra loi do code soan, `fallbackReason:"OUT_OF_SCOPE"`, **khong ton quota**.
@@ -530,6 +537,29 @@ DELETE /admin/rag/au-laws/:titleId              200 { titleId, deleted }, xoa ch
 Chunk luat goc (`sourceType:"au_legislation"`) nam trong CUNG collection `legal_chunks`, dung chung
 `vec_idx`/`txt_idx` (filter `countryCode:"AU"`), nen khong can them Atlas index. CLI tuong duong:
 `npm run index-au-laws -- <titleId...> | --topic <slug> | --list | --remove <titleId>`.
+
+## 10b. ENDPOINT ADMIN FAQ — `/api/admin/faq/*` (G6, role admin)
+
+Cau hoi lap lai (cung y, tu khoa giong nhau >= `FAQ_GROUP_MIN_SIMILARITY`) duoc hoi >= `FAQ_MIN_REPEAT` lan trong
+`FAQ_WINDOW_DAYS` ngay hien la de xuat. Admin chi DUYET NGUYEN VAN mot cau tra loi AI da sinh (khong sua noi dung).
+
+```
+GET   /admin/faq/candidates?countryCode=   200, [{ countryCode, count, questions[], keywordTerms[],
+                                              answers:[{ messageId, text, sections, citations, createdAt }],
+                                              feedback:{ up, down } }]
+GET   /admin/faq?status=                   200, [{ _id, countryCode, question, answer, sections, citations, status,
+                                              statusReason, approvedAt, servedCount, feedback:{up,down}, warning }]
+                                              status: active | needs_review | retired | dismissed
+POST  /admin/faq {sourceMessageId, decision:'approve'|'dismiss'}   201 FAQ vua tao.
+                                              approve: tin nhan phai la cau tra loi AI khong fallback, co trich dan,
+                                              nguon con hieu luc (khong --> 409 CONFLICT); trung FAQ da co --> 409.
+                                              dismiss: luu de nhom do khong con hien la de xuat.
+PATCH /admin/faq/:id {status:'active'|'retired'}  200. Kich hoat lai phai qua kiem nguon (khong --> 409).
+```
+
+[!] Moi lan phat FAQ, backend kiem lai nguon: bai `published`+`isCurrent` dung version, luat Uc dung `registerId`
+hien hanh. Nguon doi --> FAQ tu chuyen `needs_review` va khong phat. Collection `approvedfaqs` la MongoDB thuong,
+khong them Atlas Search index.
 
 ## 11. ENDPOINT FEEDBACK — `/api/feedback` (B5, can dang nhap)
 

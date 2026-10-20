@@ -190,6 +190,37 @@ export type ChatCitation = {
   heading: string;
 };
 
+// G6 -- cau tra loi da duyet cho cau hoi lap lai (contracts/README.md muc 10b).
+export type FaqStatus = 'active' | 'needs_review' | 'retired' | 'dismissed';
+
+export type FaqCitation = ChatCitation & { sourceType?: 'article' | 'au_legislation'; officialUrl?: string };
+
+export type FaqSections = { answer: string; actions: string[]; avoid: string[] } | null;
+
+export type FaqCandidate = {
+  countryCode: string;
+  count: number;
+  questions: string[];
+  keywordTerms: string[];
+  answers: { messageId: string; text: string; sections: FaqSections; citations: FaqCitation[]; createdAt: string }[];
+  feedback: { up: number; down: number };
+};
+
+export type ApprovedFaq = {
+  _id: string;
+  countryCode: string;
+  question: string;
+  answer: string;
+  sections: FaqSections;
+  citations: FaqCitation[];
+  status: FaqStatus;
+  statusReason: string;
+  decidedAt: string;
+  servedCount: number;
+  feedback: { up: number; down: number };
+  warning: boolean;
+};
+
 export type FeedbackDetail = {
   feedback: Feedback;
   message: {

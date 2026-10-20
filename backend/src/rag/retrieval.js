@@ -167,6 +167,42 @@ function toCitation(chunk, article, marker) {
  * @returns {{passed:boolean, reason:string|null, topScore:number,
  *   chunks:Array, retrievedMap:Map<string,object>}}
  */
+/*
+ * Kiểm một danh sách nguồn đã ghi phiên bản (FAQ đã duyệt, G6) còn hiệu lực không, theo đúng tinh thần
+ * lớp phòng thủ thứ hai: bài phải THẬT SỰ published + isCurrent và đúng version; luật Úc phải còn trong
+ * danh sách tuyển chọn và registerId vẫn là bản hiện hành. Tra cứu lỗi --> coi như hết hiệu lực.
+ */
+export async function areSourcesCurrent(sources) {
+  if (sources.length === 0) return false;
+  const articleSources = sources.filter((source) => source.sourceType !== AU_SOURCE_TYPE);
+  const auSources = sources.filter((source) => source.sourceType === AU_SOURCE_TYPE);
+
+  const articles = await LegalArticle.find({
+    _id: { $in: articleSources.map((source) => source.articleId) },
+    status: ContentStatus.PUBLISHED,
+    isCurrent: true,
+  })
+    .select("version")
+    .lean();
+  const versionById = new Map(articles.map((article) => [String(article._id), article.version]));
+  const articlesCurrent = articleSources.every(
+    (source) => versionById.get(String(source.articleId)) === source.articleVersion,
+  );
+  if (!articlesCurrent) return false;
+
+  const auChecks = await Promise.all(
+    auSources.map(async (source) => {
+      if (!isCuratedTitle(source.titleId)) return false;
+      try {
+        return (await currentRegisterLookup(source.titleId)) === source.registerId;
+      } catch {
+        return false;
+      }
+    }),
+  );
+  return auChecks.every(Boolean);
+}
+
 export async function retrieve(params) {
   return isLexicalMode() ? retrieveLexical(params) : retrieveHybrid(params);
 }
@@ -200,8 +236,15 @@ async function buildRetrievalResult(fusedChunks, countryCode, topScore) {
  * vẫn qua lớp xác minh nguồn thật. Điểm lexical lỏng hơn cosine: chống trả lời sai dựa nhiều hơn
  * vào guard (marker, số liệu) và cờ answerable của model, không riêng ngưỡng này.
  */
-export async function retrieveLexical({ question, countryCode, topicSlug, focusArticleId }) {
-  const { vi, en } = await getQuestionKeywords(question);
+export async function retrieveLexical({
+  question,
+  countryCode,
+  topicSlug,
+  focusArticleId,
+  keywords,
+}) {
+  // chat.service đã lấy từ khoá (để so FAQ) thì dùng lại, khỏi tra cache lần nữa.
+  const { vi, en } = keywords ?? (await getQuestionKeywords(question));
   const driver = getSearchDriver();
   const searches = [uniqueTerms(vi), uniqueTerms(en)].map((terms) =>
     driver.lexicalSearch({ countryCode, topicSlug, terms, k: env.RAG_TOP_K }),

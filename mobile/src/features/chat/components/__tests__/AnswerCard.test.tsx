@@ -121,4 +121,12 @@ describe('ngoài phạm vi, tiêu đề 3 phần và nguồn chưa kiểm chứn
     expect(getByText('Chưa thể trả lời lúc này.')).toBeTruthy();
     expect(queryByText('Chưa đủ dữ liệu')).toBeNull();
   });
+
+  it('câu trả lời đã duyệt hiện nhãn "Đã được Be.Travel duyệt", câu AI thường thì không', async () => {
+    const answered = { status: 'answered' as const, updatedAt: '10/2026', content: 'Nội dung [S1]', sources: [] };
+    const approved = await render(<AnswerCard answer={{ ...answered, approved: true }} onFeedback={() => {}} />);
+    expect(approved.getByText('Đã được Be.Travel duyệt')).toBeTruthy();
+    const plain = await render(<AnswerCard answer={answered} onFeedback={() => {}} />);
+    expect(plain.queryByTestId('answer-card-approved')).toBeNull();
+  });
 });

@@ -33,6 +33,8 @@ type ApiChatMessage = {
   confidence: 'high' | 'medium' | 'low' | null;
   needsOfficialHelp?: boolean;
   route?: 'legal' | 'emergency' | 'personal_advice' | 'out_of_scope' | 'greeting';
+  // 'approved_faq': câu trả lời admin đã duyệt cho câu hỏi hay gặp (G6), không do AI viết lúc này.
+  answerSource?: 'ai' | 'approved_faq';
   feedback: 'up' | 'down' | null;
   createdAt: string;
 };
@@ -116,6 +118,7 @@ export function adaptMessage(message: ApiChatMessage, countryCode: string): Chat
     updatedAt: formatUpdatedAt(message.createdAt),
     content: stripTrailingDisclaimer(message.text),
     needsOfficialHelp: message.needsOfficialHelp === true,
+    approved: message.answerSource === 'approved_faq',
     sources: mergeSameSections(message.citations.map((c) => adaptSource(c, countryCode))),
   };
 }

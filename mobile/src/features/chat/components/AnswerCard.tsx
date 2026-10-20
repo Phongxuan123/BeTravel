@@ -173,6 +173,11 @@ export function AnswerCard({
       className="rounded-[20px] border border-line bg-surface p-4"
       style={{ borderTopLeftRadius: 6 }}
     >
+      {answer.approved && (
+        <View testID="answer-card-approved" className="mb-3">
+          <Badge label="Đã được Be.Travel duyệt" tone="info" dot />
+        </View>
+      )}
       <AnswerBody content={answer.content} sources={answer.sources} />
       {answer.needsOfficialHelp && (
         <View testID="answer-card-official-help" className="mt-3">

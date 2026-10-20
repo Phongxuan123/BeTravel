@@ -25,7 +25,9 @@ import {
   EMERGENCY_NO_EVIDENCE_NOTE,
 } from "../rag/scope.js";
 import { getLlmProvider } from "../rag/llm/index.js";
-import { retrievalModelLabel } from "../rag/embedding/index.js";
+import { retrievalModelLabel, isLexicalMode } from "../rag/embedding/index.js";
+import { getQuestionKeywords } from "../rag/queryRewrite.js";
+import { faqTermsFor, findServableFaq } from "./faq.service.js";
 import { normalizeVi } from "../utils/textNormalize.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
 import { FallbackReason, ChatRole } from "../core/constants.js";
@@ -126,6 +128,8 @@ const NO_AI_ROUTES = new Set([QuestionRoute.OUT_OF_SCOPE, QuestionRoute.GREETING
 
 async function persistAssistantMessage({ sessionId, result, model, latencyMs }) {
   return ChatMessage.create({
+    answerSource: result.answerSource ?? "ai",
+    faqId: result.faqId ?? null,
     sessionId,
     role: ChatRole.ASSISTANT,
     text: result.answer,
@@ -151,8 +155,14 @@ async function logAiEvent({
   embeddingModel,
   latencyMs,
   cacheHit,
+  messageId,
+  keywordTerms = [],
 }) {
   await AiEvent.create({
+    messageId,
+    keywordTerms,
+    answerSource: result.answerSource ?? "ai",
+    faqId: result.faqId ?? null,
     userId,
     sessionId,
     countryCode,
@@ -184,12 +194,21 @@ async function recordUserTurn(session, question) {
  * khác quốc gia, thiếu bằng chứng, hết quota trong ca khẩn cấp. Lưu cả tin nhắn lẫn
  * ai_event để thống kê đầy đủ.
  */
-async function replyWithoutLlm({ session, userId, question, startedAt, result, embeddingModel }) {
+async function replyWithoutLlm({
+  session,
+  userId,
+  question,
+  startedAt,
+  result,
+  embeddingModel,
+  model = "none",
+  keywordTerms = [],
+}) {
   const latencyMs = Date.now() - startedAt;
   const message = await persistAssistantMessage({
     sessionId: session._id,
     result,
-    model: "none",
+    model,
     latencyMs,
   });
   await logAiEvent({
@@ -198,12 +217,38 @@ async function replyWithoutLlm({ session, userId, question, startedAt, result, e
     countryCode: session.countryCode,
     question,
     result,
-    model: "none",
+    model,
     embeddingModel,
     latencyMs,
     cacheHit: false,
+    messageId: message._id,
+    keywordTerms,
   });
   return { session, message };
+}
+
+// FAQ đã duyệt (G6): nguyên văn câu trả lời admin đã duyệt, không gọi LLM trả lời.
+const faqResult = (faq, route) => ({
+  route,
+  answer: faq.answer,
+  sections: faq.sections ?? null,
+  citations: faq.citations,
+  confidence: faq.confidence,
+  needsOfficialHelp: faq.needsOfficialHelp,
+  fallbackReason: null,
+  retrieval: { topScore: 0, chunkIds: faq.sources.map((source) => source.chunkId), passed: true },
+  answerSource: "approved_faq",
+  faqId: faq._id,
+});
+
+// Lỗi khi tra FAQ không được chặn câu trả lời: rơi về luồng AI bình thường.
+async function findFaqOrNull(countryCode, terms) {
+  try {
+    return await findServableFaq({ countryCode, terms });
+  } catch (error) {
+    console.error("[chat] tra FAQ thất bại:", error.message);
+    return null;
+  }
 }
 
 // Ca khẩn cấp không có nguồn pháp lý: trả số khẩn cấp + lời nhắn, không phải fallback "thiếu dữ liệu".
@@ -431,9 +476,29 @@ export const sendMessage = async ({
     });
   }
 
+  // Từ khoá dùng chung cho FAQ, truy hồi lexical và gom nhóm đề xuất FAQ (ai_events.keywordTerms).
+  const keywords = isLexicalMode() ? await getQuestionKeywords(question) : null;
+  const keywordTerms = faqTermsFor({ question, keywords });
+
+  // Chỉ câu pháp lý thông thường mới dùng FAQ; "Tạo lại" và câu hỏi về một bài cụ thể luôn chạy AI.
+  const canUseFaq = route === QuestionRoute.LEGAL && !regenerate && !focusArticleId;
+  const faq = canUseFaq ? await findFaqOrNull(countryCode, keywordTerms) : null;
+  if (faq) {
+    return replyWithoutLlm({
+      session,
+      userId,
+      question,
+      startedAt,
+      embeddingModel: retrievalModelLabel(),
+      model: "approved_faq",
+      keywordTerms,
+      result: faqResult(faq, route),
+    });
+  }
+
   let retrieval;
   try {
-    retrieval = await retrieve({ question, countryCode, focusArticleId });
+    retrieval = await retrieve({ question, countryCode, focusArticleId, keywords });
   } catch (error) {
     console.error("[chat] Truy hồi thất bại:", error.name);
     retrieval = { passed: false, reason: FallbackReason.PROVIDER_ERROR, topScore: 0, chunks: [] };
@@ -448,6 +513,7 @@ export const sendMessage = async ({
       question,
       startedAt,
       embeddingModel: retrievalModelLabel(),
+      keywordTerms,
       result: {
         ...baseResult,
         ...(isEmergency
@@ -519,6 +585,8 @@ export const sendMessage = async ({
     embeddingModel: retrievalModelLabel(),
     latencyMs,
     cacheHit,
+    messageId: message._id,
+    keywordTerms,
   });
 
   return { session, message };
