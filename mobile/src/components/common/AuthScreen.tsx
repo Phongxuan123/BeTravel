@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const PAGE_PADDING = 24;
 
-// Nền và form phủ chiều rộng màn hình; chỉ căn giữa chữ, không bó form vào card.
+// Form phủ chiều rộng và nằm giữa khi đủ chỗ; flexGrow cho nội dung dài vẫn cuộn.
 export function AuthScreen({ children }: { children: ReactNode }) {
   const insets = useSafeAreaInsets();
   return (
@@ -13,6 +13,7 @@ export function AuthScreen({ children }: { children: ReactNode }) {
         className="flex-1"
         contentContainerStyle={{
           flexGrow: 1,
+          justifyContent: 'center',
           alignItems: 'stretch',
           paddingHorizontal: PAGE_PADDING,
           paddingTop: insets.top + PAGE_PADDING,

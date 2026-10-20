@@ -1,5 +1,15 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Form auth giữa dọc, đủ rộng — 20/10/2026
+
+Đã xem screenshot BlueStacks: login nằm giữa, rộng theo màn và nút không co.
+Register/forgot dùng AuthScreen chung; chưa xem trực quan do công cụ chuyển màn
+báo noWindowsAvailable. Cần thử thêm màn ngắn, bàn phím và chữ lớn trên thiết bị.
+Không thay luồng auth hoặc hợp đồng backend.
+
+Kiểm tra đợt này: mobile 237/237, backend 296/296, admin 18/18 (551 tổng).
+Lint/typecheck tương ứng, format backend và admin build đạt.
+
 ## Auth phủ chiều rộng — 20/10/2026
 
 - Đã quan sát BlueStacks: màn login hết khung 480, bỏ khoảng trắng trên quá lớn,

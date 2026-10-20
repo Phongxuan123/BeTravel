@@ -1,5 +1,14 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Căn giữa form theo yêu cầu cuối — 20/10/2026
+
+Chỉ bổ sung justifyContent:center ở content container có flexGrow; không phục hồi
+maxWidth 480 hoặc chiều cao cố định. Giữ Button minHeight/flexShrink:0 để tránh
+hồi quy co nút. Đã quan sát login trên BlueStacks; hạn chế UI ghi tại ACCEPTANCE.
+
+Kiểm tra đợt này: mobile 237/237, backend 296/296, admin 18/18 (551 tổng).
+Lint/typecheck tương ứng, format backend và admin build đạt.
+
 ## Hồi quy layout auth — 20/10/2026
 
 Bỏ giới hạn chiều rộng và căn giữa dọc không phù hợp ảnh người dùng. Button mặc

@@ -1,5 +1,21 @@
 # TIEN DO BE.TRAVEL
 
+## Căn giữa dọc toàn bộ form auth — 20/10/2026 (mới nhất)
+
+Tiến độ `[###-] 3/4`: code/kiểm tự động và quan sát login BlueStacks; còn xem
+register/forgot-password và bàn phím trên Samsung/iOS.
+
+- AuthScreen dùng flexGrow + justifyContent:center, vẫn alignItems:stretch và
+  rộng 100%, không maxWidth. Form dài được cuộn, không ép co các nút.
+- Giữ lề 24, safe-area, chiều cao tối thiểu Button và khoảng cách OTP đã sửa.
+- Screenshot BlueStacks xác nhận login nằm giữa dọc, rộng đủ màn, nút đủ cao.
+  Thao tác mở đăng ký bị công cụ báo noWindowsAvailable; chưa xác nhận hai màn
+  còn lại trực quan. Không thay auth/API/backend hay dữ liệu thật.
+- Không push; giữ backend/.env.example của người dùng chưa commit.
+
+Kiểm tra đợt này: mobile 237/237, backend 296/296, admin 18/18 (551 tổng).
+Lint/typecheck tương ứng, format backend và admin build đạt.
+
 ## Sửa hồi quy khung auth và nút bị co — 20/10/2026
 
 Tiến độ `[####] 4/4` cho sửa bố cục theo ảnh: code, test mobile, xem BlueStacks,
