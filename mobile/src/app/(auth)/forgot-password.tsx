@@ -57,9 +57,13 @@ export default function ForgotPasswordScreen() {
       await requestPasswordReset(normalizedEmail);
       setStep('otp');
       setResendWait(RESEND_WAIT_SECONDS);
-      setMessage('Nếu email đã được đăng ký, bạn sẽ nhận mã OTP 6 số, hiệu lực 5 phút. Kiểm tra cả Spam/Thư rác; phản hồi này không xác nhận thư đã tới hộp thư.');
+      setMessage(
+        'Nếu email đã được đăng ký, bạn sẽ nhận mã OTP 6 số, hiệu lực 5 phút. Kiểm tra cả Spam/Thư rác; phản hồi này không xác nhận thư đã tới hộp thư.',
+      );
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Không thể gửi mã khôi phục. Vui lòng thử lại.');
+      setError(
+        err instanceof ApiError ? err.message : 'Không thể gửi mã khôi phục. Vui lòng thử lại.',
+      );
     } finally {
       setLoading(false);
     }
@@ -122,32 +126,163 @@ export default function ForgotPasswordScreen() {
     try {
       await resetPassword(resetToken, password);
       await logout();
-      setResetToken(''); setPassword(''); setConfirm('');
+      setResetToken('');
+      setPassword('');
+      setConfirm('');
       setStep('done');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Không thể đặt lại mật khẩu. Vui lòng thử lại.');
+      setError(
+        err instanceof ApiError ? err.message : 'Không thể đặt lại mật khẩu. Vui lòng thử lại.',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthScreen>
-      <IconButton accessibilityLabel="Quay lại" disabled={loading} variant="soft" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => {
-        if (step === 'done') router.replace('/login');
-        else if (router.canGoBack()) router.back();
-        else router.replace(user ? '/settings' : '/login');
-      }} />
+    <AuthScreen
+      header={
+        <View>
+          <IconButton
+            accessibilityLabel="Quay lại"
+            disabled={loading}
+            variant="soft"
+            icon={<ChevronLeft size={20} color={colors.ink} />}
+            onPress={() => {
+              if (step === 'done') router.replace('/login');
+              else if (router.canGoBack()) router.back();
+              else router.replace(user ? '/settings' : '/login');
+            }}
+          />
+          {step === 'email' && (
+            <>
+              <Text
+                className="mt-6 text-center font-display text-ink"
+                style={{ fontSize: 30, lineHeight: 36 }}
+              >
+                {user ? 'Đổi mật khẩu qua email' : 'Quên mật khẩu?'}
+              </Text>
+              <Text className="mt-2 text-center text-[15px] text-muted">
+                {user
+                  ? 'Xác thực bằng email của tài khoản đang đăng nhập. Phiên hiện tại được giữ cho đến khi đổi mật khẩu thành công.'
+                  : 'Nhập email đã đăng ký, chúng tôi sẽ gửi mã OTP để xác thực.'}
+              </Text>
+              <Text className="mt-2 text-sm text-muted">
+                Mật khẩu mới: {PASSWORD_REQUIREMENTS} Phải khác mật khẩu hiện tại và nhập xác nhận
+                trùng khớp.
+              </Text>
+            </>
+          )}
+          {step === 'otp' && (
+            <>
+              <Text
+                className="mt-6 text-center font-display text-ink"
+                style={{ fontSize: 30, lineHeight: 36 }}
+              >
+                Nhập mã OTP
+              </Text>
+              <Text className="mt-2 text-center text-[15px] text-muted">
+                Kiểm tra hộp thư {normalizedEmail}, gồm cả Spam/Thư rác.
+              </Text>
+            </>
+          )}
+          {step === 'password' && (
+            <>
+              <Text
+                className="mt-6 text-center font-display text-ink"
+                style={{ fontSize: 30, lineHeight: 36 }}
+              >
+                Tạo mật khẩu mới
+              </Text>
+              <Text className="mt-2 text-center text-[15px] text-muted">
+                Mật khẩu mới phải khác mật khẩu hiện tại.
+              </Text>
+            </>
+          )}
+        </View>
+      }
+      footer={
+        <View style={{ gap: 16 }}>
+          {step === 'email' && (
+            <>
+              <Button label="Gửi mã OTP" onPress={sendOtp} loading={loading} />
+            </>
+          )}
+          {step === 'otp' && (
+            <>
+              <Button
+                label="Xác thực OTP"
+                onPress={verifyOtp}
+                loading={loading}
+                disabled={otp.length !== 6}
+              />
+              <Button
+                label={resendWait > 0 ? `Gửi lại OTP sau ${resendWait}s` : 'Gửi lại OTP'}
+                variant="secondary"
+                onPress={resendOtp}
+                disabled={loading || resendWait > 0}
+              />
+              {!user && (
+                <Button
+                  label="Sửa email"
+                  variant="secondary"
+                  disabled={loading}
+                  onPress={() => {
+                    setStep('email');
+                    setOtp('');
+                    setResetToken('');
+                    setError(null);
+                    setMessage(null);
+                  }}
+                />
+              )}
+            </>
+          )}
+          {step === 'password' && (
+            <>
+              <Button
+                label="Đặt lại mật khẩu"
+                onPress={submitNewPassword}
+                loading={loading}
+                disabled={!isPasswordValid(password) || password !== confirm}
+              />
+            </>
+          )}
+          {step !== 'done' && user && (
+            <View>
+              <Button
+                label="Quay lại Cài đặt"
+                variant="secondary"
+                disabled={loading}
+                onPress={() => router.replace('/settings')}
+              />
+            </View>
+          )}
 
+          {step === 'done' && (
+            <View className="mt-6 w-full">
+              <Button
+                label="Về đăng nhập"
+                onPress={() =>
+                  router.replace(`/login?email=${encodeURIComponent(normalizedEmail)}` as never)
+                }
+              />
+            </View>
+          )}
+          {step !== 'done' && !user && (
+            <View className="flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
+              <Text className="text-muted">Nhớ ra mật khẩu rồi?</Text>
+              <Pressable accessibilityRole="button" onPress={() => router.replace('/login')}>
+                <Text className="font-body-bold text-primary">Đăng nhập</Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      }
+    >
       {step === 'email' && (
         <>
-          <Text className="mt-6 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-            {user ? 'Đổi mật khẩu qua email' : 'Quên mật khẩu?'}
-          </Text>
-          <Text className="mt-2 text-center text-[15px] text-muted">{user ? 'Xác thực bằng email của tài khoản đang đăng nhập. Phiên hiện tại được giữ cho đến khi đổi mật khẩu thành công.' : 'Nhập email đã đăng ký, chúng tôi sẽ gửi mã OTP để xác thực.'}</Text>
-          <Text className="mt-2 text-sm text-muted">Mật khẩu mới: {PASSWORD_REQUIREMENTS} Phải khác mật khẩu hiện tại và nhập xác nhận trùng khớp.</Text>
-
-          <View className="mt-6" style={{ gap: 16 }}>
+          <View style={{ gap: 16 }}>
             <TextField
               label="Email"
               value={user?.email ?? email}
@@ -162,19 +297,13 @@ export default function ForgotPasswordScreen() {
                 <Text className="text-sm text-danger">{error}</Text>
               </View>
             )}
-            <Button label="Gửi mã OTP" onPress={sendOtp} loading={loading} />
           </View>
         </>
       )}
 
       {step === 'otp' && (
         <>
-          <Text className="mt-6 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-            Nhập mã OTP
-          </Text>
-          <Text className="mt-2 text-center text-[15px] text-muted">Kiểm tra hộp thư {normalizedEmail}, gồm cả Spam/Thư rác.</Text>
-
-          <View className="mt-6" style={{ gap: 16 }}>
+          <View style={{ gap: 16 }}>
             <TextField
               label="OTP 6 chữ số"
               value={otp}
@@ -193,23 +322,13 @@ export default function ForgotPasswordScreen() {
                 <Text className="text-sm text-danger">{error}</Text>
               </View>
             )}
-            <Button label="Xác thực OTP" onPress={verifyOtp} loading={loading} disabled={otp.length !== 6} />
-            <Button label={resendWait > 0 ? `Gửi lại OTP sau ${resendWait}s` : 'Gửi lại OTP'} variant="secondary" onPress={resendOtp} disabled={loading || resendWait > 0} />
-            {!user && <Button label="Sửa email" variant="secondary" disabled={loading} onPress={() => {
-              setStep('email'); setOtp(''); setResetToken(''); setError(null); setMessage(null);
-            }} />}
           </View>
         </>
       )}
 
       {step === 'password' && (
         <>
-          <Text className="mt-6 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-            Tạo mật khẩu mới
-          </Text>
-          <Text className="mt-2 text-center text-[15px] text-muted">Mật khẩu mới phải khác mật khẩu hiện tại.</Text>
-
-          <View className="mt-6" style={{ gap: 16 }}>
+          <View style={{ gap: 16 }}>
             <View>
               <TextField
                 label="Mật khẩu mới"
@@ -234,20 +353,8 @@ export default function ForgotPasswordScreen() {
                 <Text className="text-sm text-danger">{error}</Text>
               </View>
             )}
-            <Button
-              label="Đặt lại mật khẩu"
-              onPress={submitNewPassword}
-              loading={loading}
-              disabled={!isPasswordValid(password) || password !== confirm}
-            />
           </View>
         </>
-      )}
-
-      {step !== 'done' && user && (
-        <View className="mt-4">
-          <Button label="Quay lại Cài đặt" variant="secondary" disabled={loading} onPress={() => router.replace('/settings')} />
-        </View>
       )}
 
       {step === 'done' && (
@@ -258,19 +365,9 @@ export default function ForgotPasswordScreen() {
           <Text className="mt-5 text-center font-display text-ink" style={{ fontSize: 22 }}>
             Đã đặt lại mật khẩu
           </Text>
-          <Text className="mt-2 text-center text-[15px] text-muted">Bạn có thể đăng nhập bằng mật khẩu mới ngay bây giờ.</Text>
-          <View className="mt-6 w-full">
-            <Button label="Về đăng nhập" onPress={() => router.replace(`/login?email=${encodeURIComponent(normalizedEmail)}` as never)} />
-          </View>
-        </View>
-      )}
-
-      {step !== 'done' && !user && (
-        <View className="mt-8 flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
-          <Text className="text-muted">Nhớ ra mật khẩu rồi?</Text>
-          <Pressable accessibilityRole="button" onPress={() => router.replace('/login')}>
-            <Text className="font-body-bold text-primary">Đăng nhập</Text>
-          </Pressable>
+          <Text className="mt-2 text-center text-[15px] text-muted">
+            Bạn có thể đăng nhập bằng mật khẩu mới ngay bây giờ.
+          </Text>
         </View>
       )}
     </AuthScreen>

@@ -4,16 +4,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const PAGE_PADDING = 24;
 
-// Form phủ chiều rộng và nằm giữa khi đủ chỗ; flexGrow cho nội dung dài vẫn cuộn.
-export function AuthScreen({ children }: { children: ReactNode }) {
+// Ba vùng cùng cuộn khi thiếu chỗ; chỉ vùng nhập liệu giãn và căn giữa.
+type AuthScreenProps = { header: ReactNode; children: ReactNode; footer: ReactNode };
+
+export function AuthScreen({ header, children, footer }: AuthScreenProps) {
   const insets = useSafeAreaInsets();
   return (
-    <KeyboardAvoidingView className="flex-1 bg-surface" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      className="flex-1 bg-surface"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: 'center',
           alignItems: 'stretch',
           paddingHorizontal: PAGE_PADDING,
           paddingTop: insets.top + PAGE_PADDING,
@@ -22,7 +26,11 @@ export function AuthScreen({ children }: { children: ReactNode }) {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <View style={{ width: '100%', flexShrink: 0 }}>{children}</View>
+        <View style={{ flexShrink: 0 }}>{header}</View>
+        <View style={{ flexGrow: 1, flexShrink: 0, justifyContent: 'center', paddingVertical: 32 }}>
+          {children}
+        </View>
+        <View style={{ flexShrink: 0 }}>{footer}</View>
       </ScrollView>
     </KeyboardAvoidingView>
   );

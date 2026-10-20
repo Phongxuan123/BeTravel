@@ -1,5 +1,13 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Lịch sử cập nhật: Auth ba vùng — 20/10/2026
+
+Tách header/footer thành props của AuthScreen, chỉ vùng nhập dùng flexGrow và
+justifyContent:center. Không đo chiều cao màn hình hoặc dùng vị trí absolute;
+form dài có thể cuộn cùng các nút. Giữ minHeight/flexShrink của Button để tránh
+hồi quy co nút. Không thêm dependency, không đổi logic xác thực. Mobile 237 tests,
+lint/typecheck đạt; giới hạn nghiệm thu và logo ghi trong ACCEPTANCE/PROGRESS.
+
 ## Căn giữa form theo yêu cầu cuối — 20/10/2026
 
 Chỉ bổ sung justifyContent:center ở content container có flexGrow; không phục hồi

@@ -18,7 +18,11 @@ import { isPasswordValid, passwordValidationMessage } from '@/lib/password';
 const openPendingLegalText = (title: string) =>
   router.push({
     pathname: '/coming-soon',
-    params: { title, detail: 'Văn bản này đang được hoàn thiện và sẽ được công bố trước khi ứng dụng phát hành chính thức.' },
+    params: {
+      title,
+      detail:
+        'Văn bản này đang được hoàn thiện và sẽ được công bố trước khi ứng dụng phát hành chính thức.',
+    },
   } as never);
 
 export default function RegisterScreen() {
@@ -38,11 +42,19 @@ export default function RegisterScreen() {
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const canSubmit =
-    name.trim().length >= 2 && isValidEmail && isValidPhone && isPasswordValid(password) && confirm === password && agree;
+    name.trim().length >= 2 &&
+    isValidEmail &&
+    isValidPhone &&
+    isPasswordValid(password) &&
+    confirm === password &&
+    agree;
 
   const onSubmit = async () => {
     if (!canSubmit) {
-      setError(passwordValidationMessage(password) ?? 'Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.');
+      setError(
+        passwordValidationMessage(password) ??
+          'Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.',
+      );
       return;
     }
     setError(null);
@@ -51,23 +63,59 @@ export default function RegisterScreen() {
       await register(name, email, password, phone.trim());
       router.replace('/trips/new?step=1');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Không thể tạo tài khoản. Kiểm tra kết nối mạng và thử lại.');
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Không thể tạo tài khoản. Kiểm tra kết nối mạng và thử lại.',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthScreen>
-      <AuthHeader />
+    <AuthScreen
+      header={
+        <View>
+          <AuthHeader />
 
-      <Text className="mt-8 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-        Tạo tài khoản Be.Travel
-      </Text>
-      <Text className="mt-2 text-center text-[15px] text-muted">Đồng hành pháp lý và bảo vệ an toàn cho công dân Việt Nam trên mọi hành trình quốc tế.</Text>
+          <Text
+            className="mt-8 text-center font-display text-ink"
+            style={{ fontSize: 30, lineHeight: 36 }}
+          >
+            Tạo tài khoản Be.Travel
+          </Text>
+          <Text className="mt-2 text-center text-[15px] text-muted">
+            Đồng hành pháp lý và bảo vệ an toàn cho công dân Việt Nam trên mọi hành trình quốc tế.
+          </Text>
+        </View>
+      }
+      footer={
+        <View style={{ gap: 16 }}>
+          <Button
+            label="Đăng ký tài khoản"
+            onPress={onSubmit}
+            loading={loading}
+            disabled={!canSubmit}
+            iconRight={<ArrowRight size={18} color="#fff" />}
+          />
 
-      <View className="mt-6" style={{ gap: 16 }}>
-        <TextField label="Họ và tên (Full name)" value={name} onChangeText={setName} iconLeft={<User size={20} color={colors.subtle} />} />
+          <View className="flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
+            <Text className="text-muted">Đã có tài khoản Be.Travel?</Text>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/login')}>
+              <Text className="font-body-bold text-primary">Đăng nhập</Text>
+            </Pressable>
+          </View>
+        </View>
+      }
+    >
+      <View style={{ gap: 16 }}>
+        <TextField
+          label="Họ và tên (Full name)"
+          value={name}
+          onChangeText={setName}
+          iconLeft={<User size={20} color={colors.subtle} />}
+        />
         <TextField
           label="Email"
           value={email}
@@ -93,8 +141,15 @@ export default function RegisterScreen() {
             iconLeft={<Lock size={20} color={colors.subtle} />}
             helperText="Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số"
             slotRight={
-              <Pressable accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onPress={() => setShowPassword((v) => !v)}>
-                {showPassword ? <EyeOff size={20} color={colors.primary} /> : <Eye size={20} color={colors.primary} />}
+              <Pressable
+                accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                onPress={() => setShowPassword((v) => !v)}
+              >
+                {showPassword ? (
+                  <EyeOff size={20} color={colors.primary} />
+                ) : (
+                  <Eye size={20} color={colors.primary} />
+                )}
               </Pressable>
             }
           />
@@ -106,17 +161,30 @@ export default function RegisterScreen() {
           onChangeText={setConfirm}
           secureTextEntry={!showPassword}
           iconLeft={<Lock size={20} color={colors.subtle} />}
-          slotRight={confirm && confirm === password ? <Check size={20} color={colors.success} /> : undefined}
+          slotRight={
+            confirm && confirm === password ? <Check size={20} color={colors.success} /> : undefined
+          }
         />
 
-        <Pressable className="flex-row items-start" style={{ gap: 10 }} onPress={() => setAgree((v) => !v)}>
+        <Pressable
+          className="flex-row items-start"
+          style={{ gap: 10 }}
+          onPress={() => setAgree((v) => !v)}
+        >
           <Checkbox checked={agree} onChange={setAgree} accessibilityLabel="Đồng ý điều khoản" />
           <Text className="flex-1 text-sm leading-5 text-[#334E68]">
-            Tôi đồng ý với <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Điều khoản sử dụng')}>
+            Tôi đồng ý với{' '}
+            <Text
+              className="font-body-bold text-primary"
+              onPress={() => openPendingLegalText('Điều khoản sử dụng')}
+            >
               Điều khoản sử dụng
             </Text>{' '}
             và{' '}
-            <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Chính sách bảo vệ dữ liệu')}>
+            <Text
+              className="font-body-bold text-primary"
+              onPress={() => openPendingLegalText('Chính sách bảo vệ dữ liệu')}
+            >
               Chính sách bảo vệ dữ liệu
             </Text>
             .
@@ -128,21 +196,6 @@ export default function RegisterScreen() {
             <Text className="text-sm text-danger">{error}</Text>
           </View>
         )}
-
-        <Button
-          label="Đăng ký tài khoản"
-          onPress={onSubmit}
-          loading={loading}
-          disabled={!canSubmit}
-          iconRight={<ArrowRight size={18} color="#fff" />}
-        />
-      </View>
-
-      <View className="mt-8 flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
-        <Text className="text-muted">Đã có tài khoản Be.Travel?</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/login')}>
-          <Text className="font-body-bold text-primary">Đăng nhập</Text>
-        </Pressable>
       </View>
     </AuthScreen>
   );

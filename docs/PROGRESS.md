@@ -1,5 +1,25 @@
 # TIEN DO BE.TRAVEL
 
+## Auth ba vùng và logo chính thức — 20/10/2026 (mới nhất)
+
+Tiến độ `[##--] 2/4`: bố cục và kiểm tự động xong; logo chờ tệp gốc,
+nghiệm thu thiết bị còn một phần.
+
+- Thay cách căn giữa cả trang bằng AuthScreen có header / vùng nhập / footer.
+  Login, register và mọi bước OTP dùng chung bố cục: đầu trang trên, ô nhập
+  giữa phần còn lại, nút/liên kết dưới; nội dung dài cuộn chung, không ép co.
+- Giữ safe-area, lề 24, khoảng cách nút 16, minHeight Button và luồng auth.
+- Mobile lint/typecheck đạt; 237/237 tests (55 suites) đạt. Đã thấy login
+  ba vùng trên BlueStacks. Công cụ chuyển sang đăng ký báo noWindowsAvailable;
+  chưa nghiệm thu register/forgot/keyboard trên Samsung/iOS.
+- Logo người dùng gửi là biểu tượng ong/vô cực/ghim địa cầu xanh-vàng.
+  Ảnh có trong chat nhưng không có tệp ảnh truy cập được ở attachments.
+  Chưa thay logo: cần người dùng cung cấp tệp PNG/JPG hoặc đường dẫn gốc.
+  Không tự vẽ lại hoặc dùng ảnh khác thay thế thương hiệu chính thức.
+- Không đổi backend, không push. backend/.env.example vẫn là thay đổi riêng
+  của người dùng. Kết quả backend/admin ở mục cũ là lịch sử, không chạy lại
+  trong đợt chỉ sửa giao diện này.
+
 ## Căn giữa dọc toàn bộ form auth — 20/10/2026 (mới nhất)
 
 Tiến độ `[###-] 3/4`: code/kiểm tự động và quan sát login BlueStacks; còn xem

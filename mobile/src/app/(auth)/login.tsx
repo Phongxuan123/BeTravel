@@ -35,22 +35,69 @@ export default function LoginScreen() {
       await login(identifier.trim(), password, remember);
       router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.');
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AuthScreen>
-      <AuthHeader />
+    <AuthScreen
+      header={
+        <View>
+          <AuthHeader />
 
-      <Text className="mt-8 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
-        Chào mừng trở lại
-      </Text>
-      <Text className="mt-2 text-center text-[15px] text-muted">Đăng nhập để tra cứu luật pháp quốc tế, nhận cảnh báo an toàn và kết nối trợ lý AI 24/7.</Text>
+          <Text
+            className="mt-8 text-center font-display text-ink"
+            style={{ fontSize: 30, lineHeight: 36 }}
+          >
+            Chào mừng trở lại
+          </Text>
+          <Text className="mt-2 text-center text-[15px] text-muted">
+            Đăng nhập để tra cứu luật pháp quốc tế, nhận cảnh báo an toàn và kết nối trợ lý AI 24/7.
+          </Text>
+        </View>
+      }
+      footer={
+        <View style={{ gap: 16 }}>
+          <Button
+            label="Đăng nhập"
+            onPress={onSubmit}
+            loading={loading}
+            iconRight={<ArrowRight size={18} color="#fff" />}
+          />
 
-      <View className="mt-6" style={{ gap: 16 }}>
+          <View className="flex-row items-center" style={{ gap: 12 }}>
+            <View className="h-px flex-1 bg-line" />
+            <Text className="text-[13px] text-subtle">Hoặc tiếp tục với</Text>
+            <View className="h-px flex-1 bg-line" />
+          </View>
+
+          <Button
+            label="Đăng nhập bằng số điện thoại"
+            variant="secondary"
+            iconLeft={<Phone size={18} color={colors.primary} />}
+            onPress={() => router.push('/login-phone' as never)}
+          />
+
+          <View className="flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
+            <Text className="text-muted">Chưa có tài khoản Be.Travel?</Text>
+            <Pressable accessibilityRole="button" onPress={() => router.push('/register')}>
+              <Text className="font-body-bold text-primary">Đăng ký ngay</Text>
+            </Pressable>
+          </View>
+
+          <View>
+            <EmergencyEntryButton variant="block" />
+          </View>
+        </View>
+      }
+    >
+      <View style={{ gap: 16 }}>
         <TextField
           label="Email hoặc tên tài khoản"
           value={identifier}
@@ -68,8 +115,15 @@ export default function LoginScreen() {
           secureTextEntry={!showPassword}
           iconLeft={<Lock size={20} color={colors.subtle} />}
           slotRight={
-            <Pressable accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onPress={() => setShowPassword((v) => !v)}>
-              {showPassword ? <EyeOff size={20} color={colors.primary} /> : <Eye size={20} color={colors.primary} />}
+            <Pressable
+              accessibilityLabel={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              onPress={() => setShowPassword((v) => !v)}
+            >
+              {showPassword ? (
+                <EyeOff size={20} color={colors.primary} />
+              ) : (
+                <Eye size={20} color={colors.primary} />
+              )}
             </Pressable>
           }
         />
@@ -84,49 +138,29 @@ export default function LoginScreen() {
           {/* Không lồng Checkbox (Pressable) bên trong một Pressable khác.
               Hai Pressable lồng nhau có thể khiến một lần chạm bị xử lý hai lần. */}
           <View className="flex-row items-center" style={{ gap: 8 }}>
-            <Checkbox checked={remember} onChange={setRemember} accessibilityLabel="Ghi nhớ đăng nhập" />
-            <Pressable accessibilityRole="button" onPress={() => setRemember((value) => !value)} hitSlop={8}>
+            <Checkbox
+              checked={remember}
+              onChange={setRemember}
+              accessibilityLabel="Ghi nhớ đăng nhập"
+            />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setRemember((value) => !value)}
+              hitSlop={8}
+            >
               <Text className="text-[15px] text-[#334E68]" numberOfLines={1}>
                 Ghi nhớ đăng nhập
               </Text>
             </Pressable>
           </View>
 
-          <Pressable accessibilityRole="button" onPress={() => router.push('/forgot-password' as never)}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push('/forgot-password' as never)}
+          >
             <Text className="text-[15px] font-body-bold text-primary">Quên mật khẩu?</Text>
           </Pressable>
         </View>
-
-        <Button
-          label="Đăng nhập"
-          onPress={onSubmit}
-          loading={loading}
-          iconRight={<ArrowRight size={18} color="#fff" />}
-        />
-
-        <View className="flex-row items-center" style={{ gap: 12 }}>
-          <View className="h-px flex-1 bg-line" />
-          <Text className="text-[13px] text-subtle">Hoặc tiếp tục với</Text>
-          <View className="h-px flex-1 bg-line" />
-        </View>
-
-        <Button
-          label="Đăng nhập bằng số điện thoại"
-          variant="secondary"
-          iconLeft={<Phone size={18} color={colors.primary} />}
-          onPress={() => router.push('/login-phone' as never)}
-        />
-      </View>
-
-      <View className="mt-8 flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
-        <Text className="text-muted">Chưa có tài khoản Be.Travel?</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/register')}>
-          <Text className="font-body-bold text-primary">Đăng ký ngay</Text>
-        </Pressable>
-      </View>
-
-      <View className="mt-6">
-        <EmergencyEntryButton variant="block" />
       </View>
     </AuthScreen>
   );

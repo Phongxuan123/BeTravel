@@ -1,5 +1,15 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Auth chia ba vùng — 20/10/2026
+
+- Đạt: mobile typecheck, lint, 237 tests / 55 suites; diff không lỗi whitespace.
+- Đã quan sát login BlueStacks: tiêu đề đầu trang, ô nhập giữa, hành động cuối.
+- Chờ: kiểm tra đăng ký dài, các bước OTP và bàn phím trên máy thật;
+  công cụ click BlueStacks báo noWindowsAvailable nên chưa xác nhận trực quan.
+- Chưa hoàn tất logo chính thức: cần tệp PNG/JPG có thể truy cập để sao chép
+  nguyên bản vào assets và nối component Logo dùng chung.
+- Không sửa API/backend, không gửi OTP thật, không push Git.
+
 ## Form auth giữa dọc, đủ rộng — 20/10/2026
 
 Đã xem screenshot BlueStacks: login nằm giữa, rộng theo màn và nút không co.
