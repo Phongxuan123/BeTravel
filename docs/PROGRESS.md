@@ -1,5 +1,30 @@
 # TIEN DO BE.TRAVEL
 
+## Auth: đổi mật khẩu và email OTP — 20/10/2026
+
+Tiến độ `[###-] 3/4` — code, kiểm tự động và tài liệu hoàn tất; còn xác nhận
+nhận email thật/điện thoại người dùng. Không push, không sửa dữ liệu Atlas hay .env.
+
+- Đã xác minh SMTP thực từ máy: kết nối/xác thực OK (không gửi thư). Vì vậy chưa
+  xác định nguyên nhân duy nhất email của người dùng không nhận OTP; chưa có log
+  người nhận hoặc xác nhận app đang gọi đúng backend này.
+- Đổi trực tiếp dùng mật khẩu cũ, KHÔNG OTP; UI giải thích và có nút khôi phục
+  qua email. Thành công hủy refresh token và yêu cầu OTP/reset còn chờ.
+- Khôi phục: kiểm tra SMTP trước lookup tài khoản; lỗi dịch vụ trả cùng 502 cho
+  mọi email. Giữ response chống dò tài khoản; không hứa thư đã đến hộp thư.
+  Validate email; lỗi gửi chỉ xóa đúng request, log không chứa email/OTP.
+- SMTP dùng env chuẩn hóa, TLS/STARTTLS, timeout; thêm `backend npm run email:check`.
+  SMTP_DISABLED chỉ bỏ gửi trong test. UI thêm sửa email, chờ gửi lại 30s,
+  xóa token/password và đăng xuất sau reset; TextField có nhãn accessibility.
+- Kiểm thử HTTP với DB tạm/transport tại chỗ đi đủ forgot > OTP > reset > login;
+  từ chối dùng lại token và đổi trực tiếp vẫn chạy khi SMTP lỗi. Không gửi thư ra ngoài.
+- Bước người dùng: restart backend/Metro, thử Cài đặt với mật khẩu cũ; hoặc thử
+  Quên mật khẩu với email đăng ký, xem Spam. Chẩn đoán phải chạy trên đúng API host.
+  Xem FEATURE_GUIDES mục Auth và ACCEPTANCE. Các vấn đề OSM/native cũ vẫn mở.
+
+Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
+Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
+
 ## Giao diện Be.Travel AI theo mẫu — 19/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng, thiết kế lại màn chat AI theo mẫu (chỉ giao diện, không đổi contract `ChatAnswer`).

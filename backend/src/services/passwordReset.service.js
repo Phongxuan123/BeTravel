@@ -1,11 +1,12 @@
 import crypto from "crypto";
 import bcrypt from "bcrypt";
+import { z } from "zod";
 
 import User from "../models/User.js";
 import PasswordReset from "../models/PasswordReset.js";
 import RefreshToken from "../models/RefreshToken.js";
 
-import { sendPasswordResetOtpEmail } from "./email.service.js";
+import { sendPasswordResetOtpEmail, verifyPasswordResetEmailService } from "./email.service.js";
 
 const OTP_EXPIRES_MS = 5 * 60 * 1000;
 const RESET_TOKEN_EXPIRES_MS = 10 * 60 * 1000;
@@ -55,9 +56,11 @@ const validateNewPassword = (password) => {
 export const requestPasswordReset = async (email) => {
   const normalizedEmail = normalizeEmail(email);
 
-  if (!normalizedEmail) {
+  if (!z.email().safeParse(normalizedEmail).success) {
     throw new Error("EMAIL_INVALID");
   }
+
+  await verifyPasswordResetEmailService();
 
   const user = await User.findOne({
     email: normalizedEmail,
@@ -77,7 +80,7 @@ export const requestPasswordReset = async (email) => {
   const otp = generateOtp();
   const now = Date.now();
 
-  await PasswordReset.create({
+  const resetRequest = await PasswordReset.create({
     userId: user._id,
     email: normalizedEmail,
     otpHash: hashValue(otp),
@@ -97,14 +100,12 @@ export const requestPasswordReset = async (email) => {
       fullName: user.fullName,
     });
   } catch (error) {
-    await PasswordReset.deleteMany({
-      userId: user._id,
-    });
+    await PasswordReset.deleteOne({ _id: resetRequest._id });
 
     // Van tra accepted de khong lo email nao ton tai (chong do tai khoan). He qua: SMTP loi
     // chi thay duoc o log server -- can giam sat dong log nay, neu khong nguoi dung se khong
     // nhan duoc OTP ma khong ai biet vi sao.
-    console.error("[password-reset] Gui email OTP that bai:", error.message);
+    console.error("[password-reset] Gui email OTP that bai:", error.code || "SMTP_SEND_FAILED");
     return { accepted: true };
   }
 
@@ -114,7 +115,7 @@ export const requestPasswordReset = async (email) => {
 export const verifyPasswordResetOtp = async ({ email, otp }) => {
   const normalizedEmail = normalizeEmail(email);
 
-  if (!normalizedEmail) {
+  if (!z.email().safeParse(normalizedEmail).success) {
     throw new Error("EMAIL_INVALID");
   }
 

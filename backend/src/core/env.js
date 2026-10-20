@@ -75,7 +75,7 @@ const envSchema = z.object({
   SMTP_SECURE: booleanish(true),
   SMTP_USER: z.string().optional().default(""),
   SMTP_PASSWORD: z.string().optional().default(""),
-  // true = khong gui email that (test/dev khong co SMTP). Mac dinh false: production gui that.
+  // true chỉ bỏ gửi trong NODE_ENV=test; ngoài test, luồng reset báo dịch vụ chưa sẵn sàng.
   SMTP_DISABLED: booleanish(false),
 
   LLM_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),

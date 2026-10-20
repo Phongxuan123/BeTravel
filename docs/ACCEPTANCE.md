@@ -1,5 +1,19 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Auth/OTP — 20/10/2026 (nghiệm thu một phần)
+
+- SMTP verify thật đạt, không gửi email. Không coi verify là xác nhận Inbox.
+- Hồi quy mới: cùng 502 cho tài khoản có/không tồn tại khi SMTP hỏng; khôi phục
+  dịch vụ > OTP > reset > đăng nhập mật khẩu mới; không dùng lại reset token.
+- Đổi trực tiếp không cần email, hủy reset đang chờ; refresh-token regression cũ giữ nguyên.
+- Mobile: lỗi SMTP không chuyển sang bước OTP; retry thành công, xác thực, reset,
+  xóa phiên. Bổ sung nhãn accessibility cho các ô nhập.
+- Chưa nghiệm thu Inbox/Spam của người dùng hoặc thao tác thiết bị thật. Không
+  chứng nhận hết mọi lỗi máy; chỉ kiểm backend/mobile/admin và SMTP của dự án.
+
+Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
+Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
+
 ## Khôi phục map e6361c3 — 17/10/2026 (thay thế nghiệm thu map trước)
 
 - Bản đồ quay lại nền ngay sau merge; giữ micro độc lập. Không còn Leaflet vendor.

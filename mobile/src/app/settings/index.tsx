@@ -232,6 +232,10 @@ export default function SettingsScreen() {
       </SimpleSheet>
 
       <SimpleSheet visible={changingPassword} onClose={() => setChangingPassword(false)} title="Đổi mật khẩu">
+        <Text className="mb-3 text-sm text-muted">Dùng mật khẩu hiện tại để đổi trực tiếp, không cần OTP. Nếu quên mật khẩu hoặc đăng nhập bằng Google, hãy chọn khôi phục qua email.</Text>
+        <Button label="Quên mật khẩu / Khôi phục qua email" variant="secondary" disabled={savingPassword} onPress={() => {
+          setChangingPassword(false); router.push('/forgot-password');
+        }} />
         <View style={{ gap: 14 }}>
           <TextField label="Mật khẩu hiện tại" secureTextEntry value={pwForm.current} onChangeText={(v) => setPwForm((p) => ({ ...p, current: v }))} />
           <TextField label="Mật khẩu mới" secureTextEntry helperText="Ít nhất 8 ký tự, gồm chữ hoa, chữ thường và chữ số" value={pwForm.next} onChangeText={(v) => setPwForm((p) => ({ ...p, next: v }))} />

@@ -22,6 +22,7 @@ export function TextField({ label, iconLeft, slotRight, helperText, error, style
         {iconLeft && <View className="mr-2.5">{iconLeft}</View>}
         <TextInput
           className="flex-1 text-base text-ink"
+          accessibilityLabel={label}
           placeholderTextColor={colors.subtle}
           style={style}
           {...rest}

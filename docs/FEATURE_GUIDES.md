@@ -72,3 +72,25 @@ vẫn được tôn trọng. Việc đổi nước tự động cần app render
 Kiểm thử: backend trips/qa.config/gemini.retry, mobile itinerary/ItineraryEditor,
 wizard/adapters/mapsConfig/usePollAlerts cùng các kiểm thử hồi quy ba workspace.
 Maps và GPS thực tế cần nghiệm thu trên native build; xem MAPS_SETUP.md.
+
+
+## Đổi mật khẩu và khôi phục OTP — 20/10/2026
+
+- Cài đặt > Đổi mật khẩu: nhập mật khẩu hiện tại, mật khẩu mới và xác nhận.
+  Không cần OTP/email. Thành công thu hồi refresh token, hủy yêu cầu reset cũ và đăng xuất.
+- Quên mật khẩu (hoặc nút khôi phục trong Cài đặt): email đăng ký > OTP 6 số >
+  mật khẩu mới > đăng nhập lại. Không có mật khẩu cũ (Google) dùng đường khôi phục.
+- Thông báo tiếp nhận không xác nhận email đã đến: kiểm tra đúng email tài khoản,
+  Spam/Thư rác. Không dùng phản hồi để kiểm tra email có đăng ký hay không.
+- Chẩn đoán tại backend: `npm run email:check`. Lệnh chỉ verify SMTP, không gửi thư;
+  kết quả OK không chứng minh email vào Inbox. Chạy trên đúng máy chạy API của app.
+- SMTP 465 dùng SMTP_SECURE=true; 587 dùng false và STARTTLS bắt buộc. Cấu hình
+  lấy từ env đã validate; không tắt TLS để né lỗi. SMTP_DISABLED=true ngoài test
+  trả lỗi dịch vụ, không giả lập thành công. Khởi động lại backend sau sửa .env.
+- Nếu verify OK nhưng không nhận thư: cần người dùng thử OTP với tài khoản của mình,
+  kiểm tra thư rác và log nhà cung cấp email. Không gửi key, OTP hoặc mật khẩu qua chat.
+- Phạm vi kiểm: SMTP verify thật, HTTP auth/database tạm và transport nội bộ;
+  chưa gửi email ra hộp thư thật trong phiên sửa này, chưa thao tác trên điện thoại.
+
+Nguồn vận hành: [Nodemailer SMTP](https://nodemailer.com/smtp),
+[OWASP Forgot Password](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).

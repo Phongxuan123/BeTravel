@@ -1,5 +1,20 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Auth/OTP — 20/10/2026 (Chế độ B)
+
+- Chuẩn hóa SMTP theo env đã validate, timeout có hằng; kiểm tra sức khỏe gộp
+  request đồng thời/cache 30s để không xác thực SMTP mỗi lần gửi.
+- Không lộ tài khoản qua lỗi cấu hình: kiểm dịch vụ trước lookup. Giữ hạn mức
+  route, không log email/OTP/password; escape tên người dùng trong HTML email.
+- Dọn đúng request khi gửi thất bại, không xóa request khác đến sau. Đổi mật khẩu
+  trực tiếp hủy OTP/reset cũ. Không thay schema hoặc thêm provider.
+- Dùng chung TextField với accessibilityLabel mặc định; caller vẫn ghi đè được.
+- Giới hạn: lỗi người nhận sau verify vẫn phản hồi tiếp nhận để chống dò email;
+  cần log provider/kiểm hộp thư để xác nhận gửi thực. Không tự sửa key hoặc gửi mail.
+
+Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
+Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
+
 ## Luật liên bang Úc — 18/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Rule 10: không còn import/biến thừa trong các file mới (`eslint`, `tsc`, `oxlint` xanh). Không xóa `mobile/src/mocks/`.

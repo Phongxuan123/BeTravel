@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { PasswordStrength } from '@/components/ui/PasswordStrength';
 import { colors } from '@/lib/theme';
+import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
 import {
   requestPasswordReset,
@@ -18,9 +19,11 @@ import {
 import { isPasswordValid, passwordValidationMessage } from '@/lib/password';
 
 type Step = 'email' | 'otp' | 'password' | 'done';
+const RESEND_WAIT_SECONDS = 30;
 
 export default function ForgotPasswordScreen() {
   const insets = useSafeAreaInsets();
+  const { logout } = useAuth();
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -30,6 +33,14 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  const [resendWait, setResendWait] = useState(0);
+  // Chặn bấm gửi liên tục làm vô hiệu mã vừa nhận; backend vẫn có rate limit riêng.
+  useEffect(() => {
+    if (resendWait <= 0) return;
+    const timer = setTimeout(() => setResendWait((value) => Math.max(0, value - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [resendWait]);
 
   const normalizedEmail = email.trim().toLowerCase();
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
@@ -46,7 +57,8 @@ export default function ForgotPasswordScreen() {
     try {
       await requestPasswordReset(normalizedEmail);
       setStep('otp');
-      setMessage('Nếu email đã được đăng ký, mã OTP 6 số đã được gửi và có hiệu lực trong 5 phút.');
+      setResendWait(RESEND_WAIT_SECONDS);
+      setMessage('Nếu email đã được đăng ký, bạn sẽ nhận mã OTP 6 số, hiệu lực 5 phút. Kiểm tra cả Spam/Thư rác; phản hồi này không xác nhận thư đã tới hộp thư.');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Không thể gửi mã khôi phục. Vui lòng thử lại.');
     } finally {
@@ -75,13 +87,15 @@ export default function ForgotPasswordScreen() {
   };
 
   const resendOtp = async () => {
+    if (loading || resendWait > 0) return;
     setError(null);
     setMessage(null);
     setLoading(true);
     try {
       await resendPasswordResetOtp(normalizedEmail);
       setOtp('');
-      setMessage('Đã gửi lại OTP mới. Mã cũ không còn hiệu lực.');
+      setResendWait(RESEND_WAIT_SECONDS);
+      setMessage('Đã tiếp nhận yêu cầu gửi lại. Nếu email hợp lệ, hãy dùng mã trong thư mới nhất.');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Không thể gửi lại OTP. Vui lòng thử lại.');
     } finally {
@@ -108,6 +122,8 @@ export default function ForgotPasswordScreen() {
     setLoading(true);
     try {
       await resetPassword(resetToken, password);
+      await logout();
+      setResetToken(''); setPassword(''); setConfirm('');
       setStep('done');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Không thể đặt lại mật khẩu. Vui lòng thử lại.');
@@ -155,7 +171,7 @@ export default function ForgotPasswordScreen() {
           <Text className="mt-6 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
             Nhập mã OTP
           </Text>
-          <Text className="mt-2 text-[15px] text-muted">Mã xác thực được gửi tới {normalizedEmail}.</Text>
+          <Text className="mt-2 text-[15px] text-muted">Kiểm tra hộp thư {normalizedEmail}, gồm cả Spam/Thư rác.</Text>
 
           <View className="mt-6" style={{ gap: 16 }}>
             <TextField
@@ -177,7 +193,10 @@ export default function ForgotPasswordScreen() {
               </View>
             )}
             <Button label="Xác thực OTP" onPress={verifyOtp} loading={loading} disabled={otp.length !== 6} />
-            <Button label="Gửi lại OTP" variant="secondary" onPress={resendOtp} disabled={loading} />
+            <Button label={resendWait > 0 ? `Gửi lại OTP sau ${resendWait}s` : 'Gửi lại OTP'} variant="secondary" onPress={resendOtp} disabled={loading || resendWait > 0} />
+            <Button label="Sửa email" variant="secondary" disabled={loading} onPress={() => {
+              setStep('email'); setOtp(''); setResetToken(''); setError(null); setMessage(null);
+            }} />
           </View>
         </>
       )}
