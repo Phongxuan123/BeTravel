@@ -161,3 +161,101 @@ lọc `published` + `isCurrent` cho tầng 1, Rule 12 không emoji.
 3. Cập nhật definition `vec_idx` trên Atlas UI để thêm filter `sourceType` (G3). Tôi sẽ viết sẵn JSON trong `docs/atlas-indexes.md`.
 4. Người duyệt nội dung cho KR/TH/SG để tầng 1 có bài.
 5. Danh sách từ khoá ngoài phạm vi / khẩn cấp: tôi soạn bản đầu, nhóm xem lại.
+
+## 6. G6 - Câu trả lời đã duyệt (FAQ) cho câu hỏi lặp lại
+
+Chốt với người dùng ngày 20/10/2026. Mục tiêu: câu hỏi hay gặp được trả lời ngay từ nội dung admin đã duyệt, không
+gọi LLM trả lời, giảm thời gian chờ và token. Chưa duyệt thì AI chạy như hiện tại.
+
+### 6.1. Quyết định đã chốt
+
+| Câu hỏi | Chốt |
+|---|---|
+| Thế nào là "lặp cao" | Nhóm câu cùng ý được hỏi **từ 3 lần trở lên trong 15 ngày** |
+| Admin có sửa nội dung câu trả lời không | **Không.** Chỉ duyệt nguyên văn một câu trả lời AI đã sinh (kèm trích dẫn), từ chối, hoặc gỡ |
+| Người dùng có biết đó là câu đã duyệt không | **Có**, nhãn nhỏ "Đã được Be.Travel duyệt" trên thẻ trả lời |
+
+### 6.2. Luồng
+
+```
+Người dùng hỏi --> phân luồng (scope.js) --> chỉ luồng "legal" mới xét FAQ
+  --> từ khoá câu hỏi (đã có cache) --> tìm FAQ đã duyệt cùng quốc gia, khớp chặt
+      khớp + nguồn còn hiệu lực  --> trả FAQ ngay (không gọi LLM trả lời, vẫn trừ quota, ghi ai_event route=faq)
+      không khớp / nguồn đã đổi   --> RAG + LLM như hiện tại
+```
+
+### 6.3. Dữ liệu (MongoDB thường, KHÔNG thêm Atlas Search index)
+
+- `ai_events` thêm `keywordTerms: [String]` (từ khoá đã chuẩn hoá của câu hỏi) và `messageId` (câu trả lời tương ứng),
+  để gom nhóm và để admin xem lại đúng câu trả lời đã phát.
+- Collection mới `approved_faqs`: `countryCode`, `question` (câu đại diện), `keywordTerms`, `answer`, `sections`,
+  `citations` (giữ nguyên như lúc AI trả lời), `sourceVersions` (mỗi nguồn: chunkId + `registerId` với luật Úc hoặc
+  `articleId`+`version` với bài đã duyệt), `status` (`active` | `needs_review` | `retired`), `approvedBy`, `approvedAt`,
+  `servedCount`, `feedbackUp`, `feedbackDown`, `sourceMessageId`.
+- Ghi `audit_logs` cho duyệt / từ chối / gỡ, như các thao tác admin khác.
+
+### 6.4. Gom nhóm câu cùng ý (cho trang admin)
+
+- Lấy `ai_events` 15 ngày gần nhất, luồng `legal`, đã trả lời được (không fallback), theo từng quốc gia.
+- Hai câu cùng nhóm khi tập `keywordTerms` giống nhau từ 70% trở lên (Jaccard). Nhóm có từ 3 câu trở lên thì hiện.
+- Mỗi nhóm hiện: số lần hỏi, các cách hỏi khác nhau, câu trả lời gần nhất (và các câu trả lời khác nếu có),
+  nguồn đã trích, tỉ lệ "Hữu ích / Không hữu ích".
+- Tính khi admin mở trang (dữ liệu 15 ngày nhỏ), không cần job nền.
+
+### 6.5. Khớp FAQ khi người dùng hỏi
+
+- Chỉ xét luồng `legal`, cùng `countryCode`, FAQ `active`.
+- Khớp khi Jaccard(`keywordTerms` câu hỏi, FAQ) từ **0,85** trở lên (chặt hơn ngưỡng gom nhóm). Ngưỡng nằm trong env
+  `FAQ_MATCH_MIN_SIMILARITY`. Không chắc thì không khớp: thà để AI trả lời còn hơn trả nhầm FAQ.
+- Câu xin tư vấn cá nhân (`personal_advice`) và khẩn cấp không dùng FAQ.
+- Nút "Tạo lại" trên thẻ FAQ bỏ qua FAQ, chạy AI như thường.
+
+### 6.6. Tự ẩn khi luật đổi
+
+- Trước khi phát FAQ, kiểm lại từng nguồn bằng chính logic xác minh của RAG: bài còn `published` + `isCurrent` đúng
+  version; luật Úc còn trong danh sách tuyển chọn và `registerId` vẫn là bản hiện hành.
+- Một nguồn hỏng --> FAQ chuyển `needs_review`, không phát, câu hỏi chạy AI như thường; trang admin báo "nguồn đã đổi".
+- FAQ có từ 3 lượt "Không hữu ích" và tỉ lệ xấu trên 30% thì gắn cảnh báo cho admin (không tự gỡ).
+
+### 6.7. API (contract trước, code sau)
+
+```
+GET    /api/admin/faq/candidates?countryCode=AU     nhóm câu lặp lại 15 ngày (6.4)
+GET    /api/admin/faq?status=active|needs_review|retired
+POST   /api/admin/faq            { countryCode, sourceMessageId }   duyệt nguyên văn câu trả lời đó
+PATCH  /api/admin/faq/:id        { status: "retired" | "active" }  gỡ / khôi phục (khôi phục phải qua kiểm nguồn)
+```
+
+Tất cả qua `requireRole('admin')`, Zod validate, envelope chuẩn. Phía chat: tin nhắn trả lời thêm
+`answerSource: "ai" | "approved_faq"` (trường thêm, client cũ bỏ qua được).
+
+### 6.8. Giao diện
+
+- **Admin:** trang mới "Câu hỏi thường gặp" với 2 tab: *Đề xuất* (nhóm lặp cao, nút Duyệt / Bỏ qua) và *Đã duyệt*
+  (trạng thái, số lần phát, phản hồi, nút Gỡ). Có loading / empty / error.
+- **Mobile:** `AnswerCard` hiện nhãn "Đã được Be.Travel duyệt" khi `answerSource="approved_faq"`, qua `adapters`/`chat.ts`.
+  Không đổi cấu trúc thẻ.
+
+### 6.9. Kiểm thử
+
+- Test tự động (nghiệp vụ lõi): FAQ chỉ phát khi khớp đủ ngưỡng; nguồn đổi phiên bản thì không phát và chuyển
+  `needs_review`; route khẩn cấp / tư vấn cá nhân không dùng FAQ; RBAC các route admin; FAQ không lộ sang quốc gia khác.
+- Chạy thật: hỏi lặp trên emulator để tạo nhóm, duyệt trên admin, hỏi lại cách khác để thấy FAQ trả lời nhanh và có nhãn.
+
+### 6.10. Thứ tự làm
+
+1. Contract + `keywordTerms`/`messageId` trên `ai_events` (bắt đầu tích dữ liệu ngay).
+2. Model `approved_faqs`, service gom nhóm, API admin + test.
+3. Khớp FAQ trong `chat.service` + kiểm nguồn + test.
+4. Trang admin, nhãn mobile.
+5. Chạy thật trên emulator + admin, ghi PROGRESS.
+
+### 6.11. Rủi ro
+
+| Rủi ro | Giảm thiểu |
+|---|---|
+| Trả FAQ cho câu khác ý | Ngưỡng khớp 0,85 cao hơn ngưỡng gom 0,7; chỉ luồng legal; nút "Tạo lại" chạy AI |
+| Câu trả lời AI sai được duyệt | Admin đọc trước khi duyệt, thấy nguồn và tỉ lệ phản hồi; cảnh báo khi phản hồi xấu |
+| FAQ cũ sau khi luật đổi | Kiểm nguồn mỗi lần phát, tự chuyển `needs_review` |
+| Ít dữ liệu lúc đầu | Trang có thể trống vài tuần; cơ chế AI vẫn chạy bình thường |
+| Từ khoá do LLM sinh thay đổi giữa các lần | Đã có cache từ khoá theo câu; gom nhóm dùng ngưỡng 0,7 chịu được sai khác nhỏ |
