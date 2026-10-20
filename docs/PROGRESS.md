@@ -97,6 +97,20 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
   hỏi lại cùng câu 0,2-3,5 giây và ra **cùng câu trả lời**. Câu bẫy phạt tốc độ, ngoài phạm vi, khẩn cấp (gọi 000) đều đúng.
   Còn trượt: "mang thuốc kê đơn vào Úc" báo thiếu dữ liệu dù đã index Therapeutic Goods Act.
 
+### G6 Câu trả lời đã duyệt cho câu hỏi lặp lại (20/10/2026, xong)
+
+- Backend: `approvedfaqs` (MongoDB thường), `ai_events` thêm `keywordTerms`/`messageId`/`answerSource`/`faqId`, API
+  `/api/admin/faq/*` (đề xuất, duyệt nguyên văn, bỏ qua, gỡ / kích hoạt lại), chat tra FAQ trước khi gọi AI (chỉ luồng
+  legal, không regenerate, không focusArticleId), kiểm nguồn mỗi lần phát và tự chuyển `needs_review` khi luật đổi.
+  Admin: trang "Câu hỏi thường gặp" (Đề xuất / Đã duyệt). Mobile: nhãn "Đã được Be.Travel duyệt".
+- Kiểm thử tự động: backend 369/369 (8 test mới G6), admin 22/22 + build, mobile tsc/lint sạch, jest 247 (6 test UI
+  không liên quan quá thời gian khi chạy song song với emulator, chạy riêng đạt hết).
+- **Chạy thật** (emulator + API admin, dữ liệu thử đã dọn): hỏi 3 lần --> 1 đề xuất; duyệt --> hỏi lại cùng câu trả FAQ
+  trong **0,2 giây** kèm nhãn trên thẻ (đã chụp màn hình); gỡ FAQ --> lại do AI trả lời. Câu diễn đạt khác: độ giống
+  từ khoá 0,75 / 0,50 / 0,40 (câu hỏi riêng về trẻ em) nên **chưa khớp** ngưỡng 0,85 --> AI trả lời bình thường.
+  Muốn FAQ bắt được nhiều cách hỏi hơn thì hạ `FAQ_MATCH_MIN_SIMILARITY` (vd 0,7), đổi lại tăng rủi ro khớp nhầm.
+- Admin UI chưa được người nhìn trên trình duyệt; tôi chỉ kiểm qua chính các API trang đó gọi.
+
 ### Chưa làm / đang vướng (AI)
 
 - Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí

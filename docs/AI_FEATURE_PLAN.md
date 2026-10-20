@@ -180,7 +180,7 @@ gọi LLM trả lời, giảm thời gian chờ và token. Chưa duyệt thì AI
 ```
 Người dùng hỏi --> phân luồng (scope.js) --> chỉ luồng "legal" mới xét FAQ
   --> từ khoá câu hỏi (đã có cache) --> tìm FAQ đã duyệt cùng quốc gia, khớp chặt
-      khớp + nguồn còn hiệu lực  --> trả FAQ ngay (không gọi LLM trả lời, vẫn trừ quota, ghi ai_event route=faq)
+      khớp + nguồn còn hiệu lực  --> trả FAQ ngay (không gọi LLM trả lời, vẫn trừ quota, ai_event answerSource=approved_faq)
       không khớp / nguồn đã đổi   --> RAG + LLM như hiện tại
 ```
 
