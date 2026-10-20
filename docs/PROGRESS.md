@@ -84,6 +84,19 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
   Câu trượt chủ yếu: hỏi xuất khẩu thuốc gây nghiện, truy hồi ra Customs Act thay vì Customs (Prohibited Exports) Regulations
   nên model tự báo thiếu dữ liệu. Ngưỡng 0,4/0,3 được chọn theo chính 11 câu này nên cần bộ câu độc lập để kiểm chứng.
 
+### Tăng tốc và ổn định AI qua APIZ (20/10/2026)
+
+- `QUERY_REWRITE_MODEL`: model riêng cho bước tạo từ khoá. Cache từ khoá theo câu hỏi (collection `querykeywordcaches`,
+  TTL 30 ngày): hỏi lại cùng câu không gọi LLM tạo từ khoá, ra cùng đoạn luật nên trúng cache câu trả lời. `LLM_MAX_OUTPUT_TOKENS`
+  (1500) và prompt yêu cầu "việc nên làm"/"điều cần tránh" tối đa 3 ý.
+- **Chọn model** (đo thật qua APIZ, 11 câu `au.live.json`): `glm-5.3-flash` 10/11, `gpt-6-luna` 9/11, `deepseek-v4.1-flash` 9/11;
+  tạo từ khoá: GLM 3,2s, Luna 3,6s, DeepSeek 4,8s (trung vị). `gemini-3.8-flash` qua APIZ lúc đo bị quá 60 giây 5/6 lần nên loại.
+  Chốt **`glm-5.3-flash` cho cả hai bước** (rẻ nhất: 1.170/3.900 đồng mỗi triệu token, điểm cao nhất). Phương án nhanh hơn:
+  `gpt-6-luna` cho câu trả lời (khoảng 4 giây) nhưng kém 1 câu.
+- **Emulator** (luồng thật, chuyến đi tạm sang Úc rồi đã xoá): câu luật mới 9-23 giây (trước 25-36 giây, có lần 80 giây lỗi),
+  hỏi lại cùng câu 0,2-3,5 giây và ra **cùng câu trả lời**. Câu bẫy phạt tốc độ, ngoài phạm vi, khẩn cấp (gọi 000) đều đúng.
+  Còn trượt: "mang thuốc kê đơn vào Úc" báo thiếu dữ liệu dù đã index Therapeutic Goods Act.
+
 ### Chưa làm / đang vướng (AI)
 
 - Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí
