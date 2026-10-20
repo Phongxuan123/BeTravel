@@ -1,5 +1,15 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Bố cục auth — 20/10/2026
+
+- Gom safe-area, padding và ScrollView vào AuthScreen để ba màn không lệch bố cục.
+- Giữ khoảng cách OTP đã sửa local; nền trang trí không bắt thao tác chạm.
+- Không viết test chỉ kiểm giá trị CSS cho chỉnh sửa bố cục; chạy bộ hồi quy sẵn có.
+- Không đổi contracts, mật khẩu, session hoặc nguồn dữ liệu; kiểm thiết bị còn mở.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (551 tổng);
+lint/typecheck tương ứng, backend format và admin build đạt.
+
 ## OTP giữ ngữ cảnh đăng nhập — 20/10/2026
 
 - Dựa vào AuthContext thay vì tham số URL để quyết định giao diện đã đăng nhập.

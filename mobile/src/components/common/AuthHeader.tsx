@@ -5,7 +5,7 @@ import { Logo } from '@/components/brand/Logo';
 // Header chung của Login/Register theo mẫu #01-#02: logo + tagline, nút "Xem giới thiệu" mở onboarding.
 export function AuthHeader() {
   return (
-    <View className="flex-row items-center justify-between">
+    <View className="flex-row flex-wrap items-center justify-center" style={{ gap: 12 }}>
       <Logo size={40} textSize={20} tagline="Smart Legal Travel Companion" />
       <Pressable
         accessibilityRole="button"

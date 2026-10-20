@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthScreen } from '@/components/common/AuthScreen';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Check, ArrowRight } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { AuthHeader } from '@/components/common/AuthHeader';
@@ -22,7 +22,6 @@ const openPendingLegalText = (title: string) =>
   } as never);
 
 export default function RegisterScreen() {
-  const insets = useSafeAreaInsets();
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -59,17 +58,13 @@ export default function RegisterScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-surface"
-      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: insets.top + 16, paddingBottom: insets.bottom + 24 }}
-      keyboardShouldPersistTaps="handled"
-    >
+    <AuthScreen>
       <AuthHeader />
 
-      <Text className="mt-8 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
+      <Text className="mt-8 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
         Tạo tài khoản Be.Travel
       </Text>
-      <Text className="mt-2 text-[15px] text-muted">Đồng hành pháp lý và bảo vệ an toàn cho công dân Việt Nam trên mọi hành trình quốc tế.</Text>
+      <Text className="mt-2 text-center text-[15px] text-muted">Đồng hành pháp lý và bảo vệ an toàn cho công dân Việt Nam trên mọi hành trình quốc tế.</Text>
 
       <View className="mt-6" style={{ gap: 16 }}>
         <TextField label="Họ và tên (Full name)" value={name} onChangeText={setName} iconLeft={<User size={20} color={colors.subtle} />} />
@@ -143,12 +138,12 @@ export default function RegisterScreen() {
         />
       </View>
 
-      <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
+      <View className="mt-8 flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
         <Text className="text-muted">Đã có tài khoản Be.Travel?</Text>
         <Pressable accessibilityRole="button" onPress={() => router.push('/login')}>
           <Text className="font-body-bold text-primary">Đăng nhập</Text>
         </Pressable>
       </View>
-    </ScrollView>
+    </AuthScreen>
   );
 }

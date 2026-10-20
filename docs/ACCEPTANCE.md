@@ -1,5 +1,16 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Bố cục auth — 20/10/2026
+
+- Gửi OTP và Quay lại Cài đặt cách nhau 16 px; giữ phiên/auth như bản trước.
+- Ba form auth căn giữa, chiều rộng tối đa 480, không đặt chiều cao cố định;
+  nội dung vượt màn hình vẫn cuộn. Header/footer cho xuống dòng khi thiếu ngang.
+- Chưa kiểm hình ảnh trực tiếp trên Samsung/iOS; cần nghiệm thu keyboard và chữ
+  lớn. Không thay backend hoặc dữ liệu thật; không tuyên bố toàn máy hết lỗi.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (551 tổng);
+lint/typecheck tương ứng, backend format và admin build đạt.
+
 ## OTP giữ phiên trước khi đổi mật khẩu — 20/10/2026
 
 - Đã đăng nhập: không có link “Nhớ ra mật khẩu rồi / Đăng nhập” ở email/OTP/password;

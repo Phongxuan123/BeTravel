@@ -1,5 +1,22 @@
 # TIEN DO BE.TRAVEL
 
+## Căn giữa giao diện auth — 20/10/2026
+
+Tiến độ `[###-] 3/4`: đã sửa bố cục, kiểm tự động và tài liệu; chờ xem trên máy thật.
+
+- Giữ khoảng cách mt-4 (16 px) đang sửa local giữa khối gửi/xác thực OTP và
+  Quay lại Cài đặt; tích hợp thay đổi đó theo yêu cầu người dùng.
+- Login/Register/ForgotPassword dùng AuthScreen chung: form rộng tối đa 480,
+  nằm giữa màn khi còn chỗ, vẫn cuộn nếu dài. Có safe-area và tránh bàn phím iOS;
+  Android giữ cơ chế resize hiện hành. Tiêu đề/mô tả căn giữa; ô nhập căn trái.
+- Header và liên kết cuối form cho xuống dòng; header căn giữa. Không sửa luồng
+  auth, API hoặc dữ liệu. Không push; giữ backend/.env.example chưa commit.
+- Còn cần xem Samsung/BlueStacks: màn nhỏ, bàn phím mở, cỡ chữ lớn và form đăng ký
+  dài. Không coi unit test là nghiệm thu vị trí pixel/keyboard trên thiết bị.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (551 tổng);
+lint/typecheck tương ứng, backend format và admin build đạt.
+
 ## OTP khi đã đăng nhập — 20/10/2026 (bổ sung)
 
 Tiến độ `[###-] 3/4`: code và hồi quy xong; cần thử giao diện trên điện thoại thật.

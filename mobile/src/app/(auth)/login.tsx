@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AuthScreen } from '@/components/common/AuthScreen';
 import { Mail, Lock, Eye, EyeOff, Phone, ArrowRight } from 'lucide-react-native';
 import { AuthHeader } from '@/components/common/AuthHeader';
 import { EmergencyEntryButton } from '@/components/common/EmergencyEntryButton';
@@ -13,7 +13,6 @@ import { useAuth } from '@/lib/auth';
 import { ApiError } from '@/lib/api/http';
 
 export default function LoginScreen() {
-  const insets = useSafeAreaInsets();
   const { login } = useAuth();
   const params = useLocalSearchParams<{ next?: string; email?: string }>();
   const [identifier, setIdentifier] = useState(params.email ?? '');
@@ -43,23 +42,15 @@ export default function LoginScreen() {
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-surface"
-      contentContainerStyle={{
-        paddingHorizontal: 24,
-        paddingTop: insets.top + 16,
-        paddingBottom: insets.bottom + 24,
-      }}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View className="absolute -right-24 rounded-full bg-[#F0F5FD]" style={{ width: 340, height: 340, top: -60 }} />
+    <AuthScreen>
+      <View pointerEvents="none" className="absolute -right-24 rounded-full bg-[#F0F5FD]" style={{ width: 340, height: 340, top: -60 }} />
 
       <AuthHeader />
 
-      <Text className="mt-8 font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
+      <Text className="mt-8 text-center font-display text-ink" style={{ fontSize: 30, lineHeight: 36 }}>
         Chào mừng trở lại
       </Text>
-      <Text className="mt-2 text-[15px] text-muted">Đăng nhập để tra cứu luật pháp quốc tế, nhận cảnh báo an toàn và kết nối trợ lý AI 24/7.</Text>
+      <Text className="mt-2 text-center text-[15px] text-muted">Đăng nhập để tra cứu luật pháp quốc tế, nhận cảnh báo an toàn và kết nối trợ lý AI 24/7.</Text>
 
       <View className="mt-6" style={{ gap: 16 }}>
         <TextField
@@ -129,7 +120,7 @@ export default function LoginScreen() {
         />
       </View>
 
-      <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
+      <View className="mt-8 flex-row flex-wrap items-center justify-center" style={{ gap: 4 }}>
         <Text className="text-muted">Chưa có tài khoản Be.Travel?</Text>
         <Pressable accessibilityRole="button" onPress={() => router.push('/register')}>
           <Text className="font-body-bold text-primary">Đăng ký ngay</Text>
@@ -139,6 +130,6 @@ export default function LoginScreen() {
       <View className="mt-6">
         <EmergencyEntryButton variant="block" />
       </View>
-    </ScrollView>
+    </AuthScreen>
   );
 }
