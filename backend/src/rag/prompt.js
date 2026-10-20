@@ -98,6 +98,13 @@ export function buildUserPrompt({ chunks, question }) {
  * responseMimeType -- go phong thu them truoc khi parse. Tra null khi khong
  * parse duoc de caller ha cap xuong fallback thay vi crash.
  */
+// Model chat hay thêm vài chữ trước/sau JSON; lấy từ "{" đầu đến "}" cuối trước khi parse.
+const extractJsonObject = (text) => {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  return start >= 0 && end > start ? text.slice(start, end + 1) : text;
+};
+
 export function parseLlmJson(rawText) {
   try {
     const cleaned = rawText
@@ -106,7 +113,7 @@ export function parseLlmJson(rawText) {
       .replace(/^```\s*/, "")
       .replace(/```\s*$/, "")
       .trim();
-    const parsed = JSON.parse(cleaned);
+    const parsed = JSON.parse(extractJsonObject(cleaned));
 
     // inScope=false: AI tự báo ngoài phạm vi nên answer được phép rỗng.
     const outOfScope = parsed?.inScope === false || parsed?.answerable === false;

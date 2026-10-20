@@ -81,6 +81,8 @@ const envSchema = z.object({
   LLM_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   GEMINI_API_KEY: z.string().optional().default(""),
   OPENAI_API_KEY: z.string().optional().default(""),
+  OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
+  OPENAI_JSON_MODE: booleanish(true),
   LLM_MODEL: z.string().default("gemini-3.5-flash-lite"),
   TRANSLATION_MODEL: z.string().default("gemini-3.5-flash-lite"),
   EMBEDDING_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),

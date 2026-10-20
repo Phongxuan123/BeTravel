@@ -10,6 +10,7 @@ import AiEvent from "../src/models/AiEvent.js";
 import * as chatService from "../src/services/chat.service.js";
 import { __setLlmProviderForTest } from "../src/rag/llm/index.js";
 import { createGeminiLlmProvider } from "../src/rag/llm/gemini.llm.js";
+import { createOpenAiLlmProvider } from "../src/rag/llm/openai.llm.js";
 
 /*
  * Đánh giá AI THẬT (Atlas + Gemini) theo bộ câu trong test/golden/*.live.json. KHÔNG chạy trong CI:
@@ -68,7 +69,13 @@ function judge(testCase, message) {
 }
 
 await mongoose.connect(env.MONGODB_URI, { maxPoolSize: 2 });
-if (model) __setLlmProviderForTest(createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model }));
+if (model) {
+  const createProvider =
+    env.LLM_PROVIDER === "openai"
+      ? () => createOpenAiLlmProvider({ apiKey: env.OPENAI_API_KEY, model })
+      : () => createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model });
+  __setLlmProviderForTest(createProvider());
+}
 
 const stamp = Date.now();
 const user = await User.create({
