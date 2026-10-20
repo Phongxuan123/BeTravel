@@ -2,7 +2,7 @@ import { env } from "../core/env.js";
 import { ContentStatus, FallbackReason } from "../core/constants.js";
 import { normalizeVi } from "../utils/textNormalize.js";
 import { getEmbeddingProvider, isLexicalMode } from "./embedding/index.js";
-import { rewriteQuestionToKeywords } from "./queryRewrite.js";
+import { getQuestionKeywords } from "./queryRewrite.js";
 import { uniqueTerms } from "./lexical.js";
 import { getSearchDriver } from "./search/index.js";
 import LegalChunk from "../models/LegalChunk.js";
@@ -201,7 +201,7 @@ async function buildRetrievalResult(fusedChunks, countryCode, topScore) {
  * vào guard (marker, số liệu) và cờ answerable của model, không riêng ngưỡng này.
  */
 export async function retrieveLexical({ question, countryCode, topicSlug, focusArticleId }) {
-  const { vi, en } = await rewriteQuestionToKeywords(question);
+  const { vi, en } = await getQuestionKeywords(question);
   const driver = getSearchDriver();
   const searches = [uniqueTerms(vi), uniqueTerms(en)].map((terms) =>
     driver.lexicalSearch({ countryCode, topicSlug, terms, k: env.RAG_TOP_K }),

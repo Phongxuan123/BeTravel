@@ -136,3 +136,35 @@ test("lexical: LLM rewrite lỗi thì dùng câu hỏi gốc, không ném lỗi 
   const result = await ask("Bị huỷ visa Úc có được báo trước không?");
   assert.equal(result.passed, false);
 });
+
+test("cache từ khoá: hỏi lại câu giống nhau (khác hoa/thường, dấu câu) không gọi LLM lần nữa", async () => {
+  let calls = 0;
+  llmIndex.__setLlmProviderForTest({
+    provider: "fake",
+    model: "fake",
+    complete: async () => {
+      calls += 1;
+      return JSON.stringify({ vi: ["huỷ thị thực"], en: ["cancel visa", "notice"] });
+    },
+  });
+  const first = await queryRewrite.getQuestionKeywords("Bị huỷ visa Úc có được báo trước không?");
+  const again = await queryRewrite.getQuestionKeywords("bị huỷ visa úc có được báo trước không");
+
+  assert.equal(calls, 1);
+  assert.deepEqual(again, first);
+});
+
+test("cache từ khoá: không lưu bản dự phòng khi LLM lỗi, lần sau vẫn thử lại LLM", async () => {
+  let calls = 0;
+  llmIndex.__setLlmProviderForTest({
+    provider: "fake",
+    model: "fake",
+    complete: async () => {
+      calls += 1;
+      throw new Error("UPSTREAM 500");
+    },
+  });
+  await queryRewrite.getQuestionKeywords("Câu hỏi khi AI lỗi");
+  await queryRewrite.getQuestionKeywords("Câu hỏi khi AI lỗi");
+  assert.equal(calls, 2);
+});

@@ -85,6 +85,11 @@ const envSchema = z.object({
   OPENAI_JSON_MODE: booleanish(true),
   LLM_MODEL: z.string().default("gemini-3.5-flash-lite"),
   TRANSLATION_MODEL: z.string().default("gemini-3.5-flash-lite"),
+  // Model riêng cho bước chuyển câu hỏi thành từ khoá (RETRIEVAL_MODE=lexical): việc nhỏ, nên dùng
+  // model nhanh/rẻ. Rỗng = dùng LLM_MODEL.
+  QUERY_REWRITE_MODEL: z.string().optional().default(""),
+  // Trần token đầu ra của câu trả lời chat: câu trả lời ngắn hơn thì model trả nhanh hơn.
+  LLM_MAX_OUTPUT_TOKENS: numeric(1500),
   EMBEDDING_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   EMBEDDING_MODEL: z.string().default("gemini-embedding-001"),
   EMBEDDING_DIMS: numeric(768),

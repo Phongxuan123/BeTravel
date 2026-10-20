@@ -284,6 +284,7 @@ async function generateGuardedAnswer({
     userPrompt,
     chunks: retrieval.chunks,
     question,
+    maxOutputTokens: env.LLM_MAX_OUTPUT_TOKENS,
   });
   const rawJson = rawText === null ? null : parseLlmJson(rawText);
   if (rawText !== null && rawJson === null) {

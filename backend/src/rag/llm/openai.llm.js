@@ -12,7 +12,7 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
   return {
     provider: "openai",
     model,
-    async complete({ systemPrompt, userPrompt }) {
+    async complete({ systemPrompt, userPrompt, maxOutputTokens }) {
       const res = await fetch(chatUrl(), {
         method: "POST",
         signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
@@ -20,6 +20,8 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
         body: JSON.stringify({
           model,
           temperature: 0.2,
+          // Chỉ chat/rewrite đặt trần; dịch văn bản dài không bị cắt.
+          ...(maxOutputTokens && { max_tokens: maxOutputTokens }),
           // Mot so dich vu tuong thich khong ho tro json_object; prompt da yeu cau JSON, parseLlmJson kiem lai.
           ...(env.OPENAI_JSON_MODE && { response_format: { type: "json_object" } }),
           messages: [

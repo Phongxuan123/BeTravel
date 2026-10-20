@@ -1,4 +1,9 @@
-import { getLlmProvider } from "./llm/index.js";
+import crypto from "node:crypto";
+
+import QueryKeywordCache from "../models/QueryKeywordCache.js";
+import { env } from "../core/env.js";
+import { normalizeVi } from "../utils/textNormalize.js";
+import { getRewriteProvider } from "./llm/index.js";
 import { completeWithRateLimitRetry } from "./llm/rateLimitRetry.js";
 
 /*
@@ -11,6 +16,9 @@ const MAX_TERMS_PER_LANGUAGE = 8;
 const MAX_TERM_LENGTH = 40;
 const REWRITE_RETRIES = 1;
 const REWRITE_MAX_WAIT_MS = 15_000;
+// Danh sách từ khoá JSON rất ngắn; trần thấp giữ bước này nhanh.
+const REWRITE_MAX_OUTPUT_TOKENS = 300;
+const KEYWORD_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const REWRITE_SYSTEM_PROMPT = [
   "Bạn chuyển câu hỏi pháp lý/du lịch của người dùng thành từ khoá tìm kiếm trong kho điều luật.",
@@ -47,10 +55,16 @@ export const parseRewriteJson = (rawText) => {
  * @returns {Promise<{vi:string[], en:string[]}>} luôn có kết quả: lỗi LLM thì dùng chính câu hỏi
  * làm từ khoá tiếng Việt (đủ cho kho bài tiếng Việt, kém hơn với luật tiếng Anh).
  */
-export async function rewriteQuestionToKeywords(question, getProvider = getLlmProvider) {
+export async function rewriteQuestionToKeywords(question, getProvider = getRewriteProvider) {
   try {
     const rawText = await completeWithRateLimitRetry(
-      { systemPrompt: REWRITE_SYSTEM_PROMPT, userPrompt: question, chunks: [], question },
+      {
+        systemPrompt: REWRITE_SYSTEM_PROMPT,
+        userPrompt: question,
+        chunks: [],
+        question,
+        maxOutputTokens: REWRITE_MAX_OUTPUT_TOKENS,
+      },
       getProvider,
       { maxRetries: REWRITE_RETRIES, maxWaitMs: REWRITE_MAX_WAIT_MS },
     );
@@ -61,4 +75,34 @@ export async function rewriteQuestionToKeywords(question, getProvider = getLlmPr
     console.error("[rag] rewrite thất bại:", String(error?.message ?? error).slice(0, 200));
   }
   return { vi: [question], en: [] };
+}
+
+// Câu hỏi chỉ khác hoa/thường, dấu cách hay dấu câu vẫn dùng chung một bản từ khoá.
+const keywordCacheKey = (question) => {
+  const normalized = normalizeVi(question).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const model = env.QUERY_REWRITE_MODEL || env.LLM_MODEL;
+  return crypto.createHash("sha256").update(`${model}|${normalized}`).digest("hex");
+};
+
+/*
+ * Như rewriteQuestionToKeywords nhưng đọc/ghi cache. Chỉ lưu kết quả LLM hợp lệ, không lưu bản dự
+ * phòng (câu hỏi gốc) để lần sau còn thử lại LLM. Lỗi đọc/ghi cache không chặn việc trả lời.
+ */
+export async function getQuestionKeywords(question) {
+  const key = keywordCacheKey(question);
+  const cached = await QueryKeywordCache.findOne({ key, expiresAt: { $gt: new Date() } })
+    .lean()
+    .catch(() => null);
+  if (cached) return { vi: cached.vi, en: cached.en };
+
+  const keywords = await rewriteQuestionToKeywords(question);
+  const isFallback = keywords.en.length === 0 && keywords.vi.length === 1 && keywords.vi[0] === question;
+  if (!isFallback) {
+    await QueryKeywordCache.updateOne(
+      { key },
+      { $set: { ...keywords, expiresAt: new Date(Date.now() + KEYWORD_CACHE_TTL_MS) } },
+      { upsert: true },
+    ).catch((error) => console.error("[rag] không lưu được cache từ khoá:", error.message));
+  }
+  return keywords;
 }
