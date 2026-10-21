@@ -109,7 +109,10 @@ async function splitBySimilarity(bucket) {
   let remaining = bucket.events;
   while (remaining.length >= env.FAQ_MIN_REPEAT) {
     const representative = mostAskedQuestion(remaining);
-    const scores = await similarityScorer(representative, remaining.map((event) => event.question));
+    const scores = await similarityScorer(
+      representative,
+      remaining.map((event) => event.question),
+    );
     if (!scores) break;
     const isSimilar = (event) => (scores.get(event.question) ?? 0) >= env.FAQ_AI_MIN_SIMILARITY;
     const similarEvents = remaining.filter(isSimilar);
@@ -134,9 +137,14 @@ async function findSimilarFaq(question, countryCode, keywordTerms, faqs) {
       jaccardSimilarity(faq.keywordTerms, keywordTerms) >= env.FAQ_PREFILTER_MIN_OVERLAP,
   );
   if (nearby.length === 0) return { found: false };
-  const scores = await similarityScorer(question, nearby.map((faq) => faq.question));
+  const scores = await similarityScorer(
+    question,
+    nearby.map((faq) => faq.question),
+  );
   if (!scores) return { found: null };
-  return { found: nearby.some((faq) => (scores.get(faq.question) ?? 0) >= env.FAQ_AI_MIN_SIMILARITY) };
+  return {
+    found: nearby.some((faq) => (scores.get(faq.question) ?? 0) >= env.FAQ_AI_MIN_SIMILARITY),
+  };
 }
 
 const countFeedback = (messages) => ({
@@ -191,7 +199,9 @@ export async function listFaqCandidates({ countryCode } = {}) {
     .limit(MAX_EVENTS_FOR_CANDIDATES)
     .lean();
   // Mọi trạng thái (kể cả dismissed/retired): nhóm đã được admin xử lý không hiện lại.
-  const faqs = await ApprovedFaq.find(countryFilter).select("countryCode keywordTerms question").lean();
+  const faqs = await ApprovedFaq.find(countryFilter)
+    .select("countryCode keywordTerms question")
+    .lean();
 
   const repeatedBuckets = prefilterByKeywords(events).filter(
     (bucket) => bucket.events.length >= env.FAQ_MIN_REPEAT,
@@ -211,7 +221,9 @@ export async function listFaqCandidates({ countryCode } = {}) {
   }
   const candidates = await Promise.all(groups.map(toCandidateView));
   // Câu trả lời có thể đã bị xoá cùng phiên chat: nhóm không còn câu trả lời nào thì bỏ.
-  return candidates.filter((candidate) => candidate.answers.length > 0).sort((a, b) => b.count - a.count);
+  return candidates
+    .filter((candidate) => candidate.answers.length > 0)
+    .sort((a, b) => b.count - a.count);
 }
 
 // ── Danh sách FAQ đã xử lý ─────────────────────────────────────────────────

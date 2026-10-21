@@ -48,12 +48,12 @@ export async function reindexArticleHandler({ articleId }) {
     if (
       useEmbedding &&
       (embeddings.length !== pieces.length ||
-      embeddings.some(
-        (vector) =>
-          !Array.isArray(vector) ||
-          vector.length !== provider.dims ||
-          !vector.every(Number.isFinite),
-      ))
+        embeddings.some(
+          (vector) =>
+            !Array.isArray(vector) ||
+            vector.length !== provider.dims ||
+            !vector.every(Number.isFinite),
+        ))
     ) {
       throw new Error("Embedding trả về số chiều hoặc số lượng không hợp lệ");
     }

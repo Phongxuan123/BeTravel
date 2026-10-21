@@ -82,7 +82,9 @@ export async function rewriteQuestionToKeywords(question, getProvider = getRewri
 
 // Câu hỏi chỉ khác hoa/thường, dấu cách hay dấu câu vẫn dùng chung một bản từ khoá.
 const keywordCacheKey = (question) => {
-  const normalized = normalizeVi(question).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  const normalized = normalizeVi(question)
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
   const model = env.QUERY_REWRITE_MODEL || env.LLM_MODEL;
   return crypto
     .createHash("sha256")
@@ -102,7 +104,8 @@ export async function getQuestionKeywords(question) {
   if (cached) return { vi: cached.vi, en: cached.en };
 
   const keywords = await rewriteQuestionToKeywords(question);
-  const isFallback = keywords.en.length === 0 && keywords.vi.length === 1 && keywords.vi[0] === question;
+  const isFallback =
+    keywords.en.length === 0 && keywords.vi.length === 1 && keywords.vi[0] === question;
   if (!isFallback) {
     await QueryKeywordCache.updateOne(
       { key },

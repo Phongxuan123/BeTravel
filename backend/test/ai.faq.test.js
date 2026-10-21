@@ -23,7 +23,10 @@ const block = (className, text, kind = className.startsWith("ActHead") ? "headin
 const BLOCKS = [
   block("ActHead2", "Part 2 - Arrival, presence and departure of non-citizens"),
   block("ActHead5", "116 Cancellation of visas"),
-  block("paragraph", "The Minister may cancel a visa if the holder has breached a condition of the visa."),
+  block(
+    "paragraph",
+    "The Minister may cancel a visa if the holder has breached a condition of the visa.",
+  ),
   block("ActHead5", "118 Notice of cancellation"),
   block("paragraph", "The Minister must give the holder notice of the decision to cancel."),
 ];
@@ -96,7 +99,12 @@ beforeEach(async () => {
   similarityTable = new Map();
   faqService.__setSimilarityScorerForTest(fakeScorer);
 
-  await Country.create({ code: "AU", name: "Úc", status: "active", emergencyNumbers: { police: "000" } });
+  await Country.create({
+    code: "AU",
+    name: "Úc",
+    status: "active",
+    emergencyNumbers: { police: "000" },
+  });
   await indexService.indexAuLaw(TITLE_ID, {
     loadBlocks: async () => ({
       rawVersion: { registerId: "REGISTER-1", start: "2025-07-01" },
@@ -221,7 +229,11 @@ test("duyệt: từ chối câu trả lời fallback và FAQ trùng nhóm", asyn
   const fallback = await ask(await createUser(), "Phạt tốc độ ở Sydney bao nhiêu tiền?");
   assert.ok(fallback.fallbackReason);
   await assert.rejects(
-    faqService.decideFaq({ sourceMessageId: fallback._id, decision: "approve", adminId: admin._id }),
+    faqService.decideFaq({
+      sourceMessageId: fallback._id,
+      decision: "approve",
+      adminId: admin._id,
+    }),
     /FAQ_MESSAGE_NOT_ELIGIBLE/,
   );
 });
@@ -280,7 +292,8 @@ test("admin API: đề xuất, duyệt, gỡ qua HTTP với envelope chuẩn", a
 });
 
 const PARAPHRASE = "Can the Minister cancel a visa when the holder breached a visa condition?";
-const NARROWER = "Can the Minister cancel a visa for breaching a condition, and what notice is given?";
+const NARROWER =
+  "Can the Minister cancel a visa for breaching a condition, and what notice is given?";
 
 test("AI chấm trùng lặp: câu diễn đạt khác đạt 85% thì gom chung, dưới 85% thì không", async () => {
   similarityTable = new Map([

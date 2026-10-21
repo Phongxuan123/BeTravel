@@ -20,9 +20,15 @@ const block = (className, text, kind = className.startsWith("ActHead") ? "headin
 const BLOCKS = [
   block("ActHead2", "Part 2 - Arrival, presence and departure of non-citizens"),
   block("ActHead5", "116 Cancellation of visas"),
-  block("paragraph", "The Minister may cancel a visa if the holder breached a condition of the visa."),
+  block(
+    "paragraph",
+    "The Minister may cancel a visa if the holder breached a condition of the visa.",
+  ),
   block("ActHead5", "118 Notice of cancellation"),
-  block("paragraph", "The Minister must give the visa holder written notice before the cancellation."),
+  block(
+    "paragraph",
+    "The Minister must give the visa holder written notice before the cancellation.",
+  ),
   block("ActHead5", "119 Review of decisions"),
   block("paragraph", "A person affected by a decision under this Part may apply for review."),
 ];
@@ -78,12 +84,17 @@ const ask = (question) =>
   retrieval.retrieveLexical({ question, countryCode: "AU", topicSlug: undefined });
 
 test("tokenize: bỏ dấu, bỏ từ dừng, gộp số nhiều/quá khứ", () => {
-  assert.deepEqual(lexical.tokenize("Cancelled visas of the holders"), ["cancell", "visa", "holder"]);
+  assert.deepEqual(lexical.tokenize("Cancelled visas of the holders"), [
+    "cancell",
+    "visa",
+    "holder",
+  ]);
   assert.deepEqual(lexical.tokenize("Hộ chiếu bị từ chối"), ["ho", "chieu", "tu", "choi"]);
 });
 
 test("tokenize: các dạng của cùng một từ pháp lý về chung một gốc (câu hỏi và văn bản luật)", () => {
-  const sameStem = (left, right) => assert.deepEqual(lexical.tokenize(left), lexical.tokenize(right));
+  const sameStem = (left, right) =>
+    assert.deepEqual(lexical.tokenize(left), lexical.tokenize(right));
   sameStem("guardian", "guardianship");
   sameStem("declare", "declaration");
   sameStem("declared", "declaration");
@@ -94,10 +105,13 @@ test("tokenize: các dạng của cùng một từ pháp lý về chung một g�
 });
 
 test("parseRewriteJson: chịu chữ thừa quanh JSON, loại phần tử không phải chuỗi", () => {
-  assert.deepEqual(queryRewrite.parseRewriteJson('Kết quả: {"vi":["thị thực",3],"en":["visa"]} xong'), {
-    vi: ["thị thực"],
-    en: ["visa"],
-  });
+  assert.deepEqual(
+    queryRewrite.parseRewriteJson('Kết quả: {"vi":["thị thực",3],"en":["visa"]} xong'),
+    {
+      vi: ["thị thực"],
+      en: ["visa"],
+    },
+  );
   assert.equal(queryRewrite.parseRewriteJson("không có JSON"), null);
   assert.equal(queryRewrite.parseRewriteJson('{"vi":[],"en":[]}'), null);
 });

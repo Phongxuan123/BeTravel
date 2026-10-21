@@ -22,7 +22,9 @@ async function loadPublishedChunks() {
 
   // Chế độ lexical không dùng vector nên khỏi nạp 768 số mỗi chunk vào RAM.
   const query = LegalChunk.find({ status: ContentStatus.PUBLISHED });
-  const chunks = await (env.RETRIEVAL_MODE === "lexical" ? query : query.select("+embedding")).lean();
+  const chunks = await (
+    env.RETRIEVAL_MODE === "lexical" ? query : query.select("+embedding")
+  ).lean();
   cache = { loadedAt: Date.now(), chunks };
   return chunks;
 }
@@ -78,7 +80,9 @@ const matchesFilter = (chunk, { countryCode, topicSlug }) =>
 const tokenSetOf = (chunk) => {
   // Tên luật/phần được tính như một phần nội dung: câu hỏi nêu tên luật phải ưu tiên luật đó.
   if (!chunk.tokenSet) {
-    chunk.tokenSet = new Set(tokenize(`${chunk.lawName ?? ""} ${chunk.partHeading ?? ""} ${chunk.textNorm}`));
+    chunk.tokenSet = new Set(
+      tokenize(`${chunk.lawName ?? ""} ${chunk.partHeading ?? ""} ${chunk.textNorm}`),
+    );
   }
   return chunk.tokenSet;
 };

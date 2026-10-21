@@ -10,8 +10,32 @@ import { foldDStroke, normalizeVi } from "../utils/textNormalize.js";
 const MIN_STEMMABLE_LENGTH = 5;
 const MIN_TOKEN_LENGTH = 2;
 const STOP_WORDS = new Set([
-  "the", "of", "and", "or", "to", "in", "an", "for", "is", "are", "be", "on", "by", "with",
-  "la", "va", "cua", "co", "khong", "cho", "toi", "bi", "duoc", "nhu", "nao", "nay",
+  "the",
+  "of",
+  "and",
+  "or",
+  "to",
+  "in",
+  "an",
+  "for",
+  "is",
+  "are",
+  "be",
+  "on",
+  "by",
+  "with",
+  "la",
+  "va",
+  "cua",
+  "co",
+  "khong",
+  "cho",
+  "toi",
+  "bi",
+  "duoc",
+  "nhu",
+  "nao",
+  "nay",
 ]);
 
 const MIN_STEM_LENGTH = 4;

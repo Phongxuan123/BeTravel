@@ -463,7 +463,10 @@ test("H-06.b so tien dang ky hieu dung truoc van phai khop nguon duoc dan", () =
 test("H-06.c so khong phai phap ly khong bi ha cap nham", () => {
   // So dien thoai AI nhac phai nam trong chinh nguon duoc trich (xem H-06.d).
   const retrieved = new Map([
-    ["S1", { marker: "S1", text: "Goi 112 de bao canh sat. Tong dai 1345 ho tro nguoi nuoc ngoai." }],
+    [
+      "S1",
+      { marker: "S1", text: "Goi 112 de bao canh sat. Tong dai 1345 ho tro nguoi nuoc ngoai." },
+    ],
   ]);
   for (const answer of [
     "Hãy gọi 112 để báo cảnh sát.",

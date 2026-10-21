@@ -27,7 +27,9 @@ const SCORE_SYSTEM_PROMPT = [
 ].join("\n");
 
 export const normalizeQuestion = (question) =>
-  normalizeVi(question).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  normalizeVi(question)
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
 
 const pairKey = (model, base, other) =>
   crypto.createHash("sha256").update(`${model}|${base}|${other}`).digest("hex");
@@ -72,7 +74,11 @@ async function askModelForScores(baseQuestion, questions, getProvider) {
  * @returns {Promise<Map<string, number>|null>} câu hỏi --> điểm 0-1 so với câu gốc; null khi AI không
  * chấm được (caller KHÔNG được coi là trùng, để không đưa nhóm chưa kiểm lên cho admin).
  */
-export async function scoreQuestionSimilarity(baseQuestion, questions, getProvider = getRewriteProvider) {
+export async function scoreQuestionSimilarity(
+  baseQuestion,
+  questions,
+  getProvider = getRewriteProvider,
+) {
   const model = env.QUERY_REWRITE_MODEL || env.LLM_MODEL;
   const base = normalizeQuestion(baseQuestion);
   const scores = new Map();
@@ -94,7 +100,10 @@ export async function scoreQuestionSimilarity(baseQuestion, questions, getProvid
   try {
     fresh = await askModelForScores(baseQuestion, uncached, getProvider);
   } catch (error) {
-    console.error("[faq] AI chấm trùng lặp thất bại:", String(error?.message ?? error).slice(0, 200));
+    console.error(
+      "[faq] AI chấm trùng lặp thất bại:",
+      String(error?.message ?? error).slice(0, 200),
+    );
     return null;
   }
   if (!fresh) {

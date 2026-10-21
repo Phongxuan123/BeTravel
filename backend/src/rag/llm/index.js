@@ -27,8 +27,10 @@ export function __setLlmProviderForTest(provider) {
 export function getRewriteProvider() {
   const model = env.QUERY_REWRITE_MODEL;
   if (!model || model === env.LLM_MODEL) return getLlmProvider();
-  if (env.LLM_PROVIDER === "openai") return createOpenAiLlmProvider({ apiKey: env.OPENAI_API_KEY, model });
-  if (env.LLM_PROVIDER === "gemini") return createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model });
+  if (env.LLM_PROVIDER === "openai")
+    return createOpenAiLlmProvider({ apiKey: env.OPENAI_API_KEY, model });
+  if (env.LLM_PROVIDER === "gemini")
+    return createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model });
   return getLlmProvider();
 }
 
