@@ -18,7 +18,8 @@
     "seed:demo": "node scripts/seed-demo.js",
     "check-indexes": "node scripts/check-content-indexes.js",
     "summarize-au-laws": "node scripts/summarize-au-laws.js",
-    "seed:au-missions": "node scripts/seed-au-missions.js"
+    "seed:au-missions": "node scripts/seed-au-missions.js",
+    "seed:asia-missions": "node scripts/seed-asia-missions.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
