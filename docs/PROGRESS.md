@@ -16,8 +16,8 @@ Theo yêu cầu người dùng. Nguyên nhân gốc tìm được bằng chạy 
   "N địa điểm đã xác minh · Xem danh sách"; danh sách chỉ mở khi người dùng chọn loại (Đại sứ quán, Bệnh viện...), tìm địa điểm,
   định vị hoặc đi từ CTA có sẵn loại (`?type=`); đóng bằng nút X hoặc chạm thanh kéo; chọn "Tất cả" quay về chỉ xem bản đồ.
   Buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ, thiếu quốc gia).
-- Danh sách địa điểm dưới bản đồ SOS vuốt được: vuốt lên (từ thanh kéo/viên thuốc) để mở, vuốt xuống (trên thanh kéo/tiêu đề) để ẩn,
-  chạm thanh kéo hoặc nút X vẫn đóng được (`features/sos/useSheetSwipe.ts`). Chưa thử trên thiết bị thật.
+- Danh sách địa điểm dưới bản đồ SOS kéo theo ngón tay: kéo xuống (thanh kéo/tiêu đề) để ẩn, kéo lên (thanh kéo/viên thuốc) để hiện,
+  chạm thanh kéo hoặc nút X vẫn đóng được (`features/sos/useSheetDrag.ts`). Chưa thử trên thiết bị thật.
 - Backend: `GET /api/places/search` (Nominatim, cache 24 giờ, giãn cách 1 yêu cầu/giây, trần theo ngày). Contract mục 14c.
 - Mobile: bảng kết quả tìm địa điểm, chip "Đang xem quanh: ...", `useDebouncedValue`, ghim "đã chọn" trong Leaflet.
 

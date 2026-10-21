@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard } from 'react-native';
+import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard } from 'react-native';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -25,7 +25,7 @@ import { MAP_RADIUS_OPTIONS, MAP_LOCATION_LIMIT, searchLocations, validCoordinat
 import { mapRuntime, mapTiles, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
 import { OsmWebMap, type MapHandle, type OsmMarker } from '@/features/sos/OsmWebMap';
 import { useDebouncedValue } from '@/features/sos/useDebouncedValue';
-import { useSheetSwipe } from '@/features/sos/useSheetSwipe';
+import { useSheetDrag } from '@/features/sos/useSheetDrag';
 
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#EAF4FF' }] },
@@ -119,7 +119,6 @@ export default function SosMapScreen() {
   // Vuốt lên để xem danh sách, vuốt xuống để ẩn; chạm vào thanh kéo vẫn đổi trạng thái.
   const openSheet = useCallback(() => setSheetOpen(true), []);
   const closeSheet = useCallback(() => setSheetOpen(false), []);
-  const swipeHandlers = useSheetSwipe(openSheet, closeSheet);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsFailure, setGpsFailure] = useState<LocationFailure | null>(null);
   const [measuredAt, setMeasuredAt] = useState<number | null>(null);
@@ -147,6 +146,7 @@ export default function SosMapScreen() {
   const canRenderMap = osmTiles || runtime.available;
   // Bắt buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ) hoặc có lỗi cần người dùng thấy (thiếu quốc gia).
   const showSheet = sheetOpen || listOnly || !canRenderMap || !country;
+  const { panHandlers: swipeHandlers, translateY: sheetOffset } = useSheetDrag(showSheet, openSheet, closeSheet);
 
   useEffect(() => {
     if (!canRenderMap || listOnly || mapReady || mapTimedOut) return;
@@ -550,7 +550,8 @@ export default function SosMapScreen() {
       )}
 
       {!showSheet && (
-        <View {...swipeHandlers} className="absolute inset-x-0 items-center" style={{ bottom: insets.bottom + 8, paddingTop: 12 }}>
+        <Animated.View {...swipeHandlers}
+          style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center', bottom: insets.bottom + 8, paddingTop: 16, transform: [{ translateY: sheetOffset }] }}>
           <View className="mb-2 h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
           <Pressable accessibilityLabel="Mở danh sách địa điểm" onPress={openSheet}
             className="rounded-full bg-surface px-4 py-3"
@@ -560,10 +561,12 @@ export default function SosMapScreen() {
                 : activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh · Xem danh sách`}
             </Text>
           </Pressable>
-        </View>
+        </Animated.View>
       )}
 
-      {showSheet && <View className="absolute inset-x-0 bottom-0 rounded-t-[28px] bg-surface" style={{ maxHeight: 320, paddingBottom: insets.bottom + 16 }}>
+      {showSheet && <Animated.View
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, borderTopLeftRadius: 28, borderTopRightRadius: 28,
+          backgroundColor: colors.surface, maxHeight: 320, paddingBottom: insets.bottom + 16, transform: [{ translateY: sheetOffset }] }}>
         <View {...(listOnly ? {} : swipeHandlers)}>
         {listOnly ? (
           <View className="items-center py-2.5">
@@ -704,7 +707,7 @@ export default function SosMapScreen() {
             </View>
           )}
         </ScrollView>
-      </View>}
+      </Animated.View>}
 
       <SimpleSheet visible={!!detail} onClose={() => setDetail(null)} title={detail?.name ?? ''}>
         {detail && (
