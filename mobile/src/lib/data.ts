@@ -62,6 +62,16 @@ export const fetchExternalPlaces = USE_MOCKS
   ? async (): Promise<{ ok: true; data: SupportLocation[] }> => ({ ok: true, data: [] })
   : sosApi.fetchExternalPlaces;
 
+// Mock không có tìm địa điểm theo chữ: trả rỗng để màn hình vẫn chạy khi EXPO_PUBLIC_USE_MOCKS=true.
+export const searchPlaces = USE_MOCKS
+  ? async (): Promise<{ ok: true; data: sosApi.PlaceSearchResult[]; scope: sosApi.PlaceSearchScope }> => ({
+      ok: true,
+      data: [],
+      scope: 'global',
+    })
+  : sosApi.searchPlaces;
+export type { PlaceSearchResult } from '@/lib/api/sos';
+
 export const fetchIncidents = USE_MOCKS ? mock.fetchIncidents : incidentsApi.fetchIncidents;
 export const fetchIncident = USE_MOCKS ? mock.fetchIncident : incidentsApi.fetchIncident;
 export const getIncidentProgress = USE_MOCKS ? mock.getIncidentProgress : incidentsApi.getIncidentProgress;

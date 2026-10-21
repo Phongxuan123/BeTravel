@@ -110,6 +110,17 @@ const envSchema = z.object({
   PLACES_PROVIDER: z.enum(["osm", "serpapi", "mock"]).default("mock"),
   SERPAPI_KEY: z.string().optional().default(""),
   PLACES_OVERPASS_URL: z.string().default("https://overpass-api.de/api/interpreter"),
+  // Máy chủ Overpass DỰ PHÒNG (phân tách bằng dấu phẩy), thử lần lượt khi máy chủ chính trả 502/429 hoặc quá hạn.
+  // Máy chủ công cộng hay quá tải; một nguồn duy nhất làm gợi ý địa điểm thất bại hàng loạt.
+  PLACES_OVERPASS_FALLBACK_URLS: csv(
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter,https://overpass.kumi.systems/api/interpreter",
+  ),
+  // Tìm địa điểm theo chữ (geocoding) bằng Nominatim của OpenStreetMap. Chính sách sử dụng: có User-Agent
+  // nhận diện (PLACES_USER_AGENT), tối đa 1 yêu cầu/giây (code tự giãn cách) nên có cache và trần theo ngày.
+  GEOCODE_URL: z.string().default("https://nominatim.openstreetmap.org"),
+  GEOCODE_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+  GEOCODE_CACHE_TTL_MINUTES: numeric(1440),
+  GEOCODE_DAILY_LIMIT: numeric(1500),
   // Overpass yêu cầu User-Agent nhận diện được ứng dụng (chính sách sử dụng công bằng).
   PLACES_USER_AGENT: z.string().default("BeTravel/1.0"),
   // Cùng truy vấn (cùng loại, cùng ô ~1 km) trong TTL này dùng lại kết quả, không gọi nhà cung cấp.

@@ -1,6 +1,29 @@
 # TIEN DO BE.TRAVEL
 
-## Giao diện Be.Travel AI theo mẫu — 19/10/2026 (cập nhật mới nhất)
+## Sửa GPS và tìm kiếm trên bản đồ SOS — 21/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng. Nguyên nhân gốc tìm được bằng chạy thật (API thật, DB thật), không đoán:
+
+- Ô tìm kiếm chỉ lọc danh sách điểm hỗ trợ ĐÃ XÁC MINH, mà Atlas có 0 điểm ở mọi quốc gia nên gõ gì cũng không ra
+  (không phải lỗi code; vẫn không bịa dữ liệu). Nay ô tìm kiếm tìm địa điểm thật theo chữ và bản đồ bay tới đó.
+- Gợi ý OpenStreetMap thất bại vì Overpass công cộng sập (502/504/quá hạn, đã thử 6 máy chủ). Nay có máy chủ dự phòng
+  (`PLACES_OVERPASS_FALLBACK_URLS`) và, nếu tất cả hỏng, dự phòng bằng Nominatim (bệnh viện, cảnh sát, nhà thuốc, ĐSQ).
+- GPS: màn bản đồ gọi hàm trả `null` nên mọi lý do thất bại hiện chung "kiểm tra quyền". Nay dùng `requestLocationDetailed`:
+  báo đúng lý do, nút "Mở Cài đặt" khi bị chặn quyền/tắt GPS, chính sách vị trí dễ hơn riêng cho bản đồ (10 phút / 30 phút,
+  ghi giờ đo khi cũ), nút định vị nổi luôn có, và giữ lâu trên bản đồ để chọn vị trí khi máy không có GPS (LDPlayer).
+
+- Backend: `GET /api/places/search` (Nominatim, cache 24 giờ, giãn cách 1 yêu cầu/giây, trần theo ngày). Contract mục 14c.
+- Mobile: bảng kết quả tìm địa điểm, chip "Đang xem quanh: ...", `useDebouncedValue`, ghim "đã chọn" trong Leaflet.
+
+### Đang vướng (bản đồ)
+
+- Chưa kiểm trên điện thoại/máy ảo thật: giữ lâu trên bản đồ Leaflet (dựa vào sự kiện `contextmenu` của WebView Android),
+  nút định vị nổi, bảng kết quả khi bàn phím mở. Cần người bấm thử.
+- Nominatim công cộng cấm tự hoàn thành khi gõ: client đã chờ dừng gõ 500 ms, tối thiểu 3 ký tự, server giãn cách và cache;
+  khi ra sản phẩm thật nên trỏ `GEOCODE_URL` sang máy chủ riêng hoặc nhà cung cấp trả phí.
+- Điểm hỗ trợ đã xác minh vẫn 0 (cần người nhập, xem mục dữ liệu); danh sách gợi ý từ Nominatim không có số điện thoại/giờ mở cửa.
+
+## Giao diện Be.Travel AI theo mẫu — 19/10/2026
 
 Theo yêu cầu người dùng, thiết kế lại màn chat AI theo mẫu (chỉ giao diện, không đổi contract `ChatAnswer`).
 

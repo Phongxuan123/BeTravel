@@ -3,6 +3,7 @@ import { getJson } from "serpapi";
 import { env } from "../core/env.js";
 import { AppError, ErrorCode } from "../core/errors.js";
 import { haversineMeters } from "../utils/geo.js";
+import { searchNominatim } from "./geocode.service.js";
 
 /*
  * Lop dia diem BO SUNG tu ben thu ba, chon bang PLACES_PROVIDER:
@@ -234,16 +235,13 @@ const normalizeOsmElement = (element, type) => {
 export const normalizeOverpassElements = (json, type) =>
   (json?.elements ?? []).map((element) => normalizeOsmElement(element, type)).filter(Boolean);
 
-// Overpass cong cong thinh thoang tra 502/503/504 roi lan sau lai chay duoc: thu lai MOT lan, khong hon
-// (mien phi nhung dung chung, khong nen don dap).
-const OVERPASS_MAX_ATTEMPTS = 2;
-const OVERPASS_RETRY_DELAY_MS = 1_000;
-const TRANSIENT_HTTP_STATUSES = new Set([429, 502, 503, 504]);
+// Overpass cong cong thuong xuyen qua tai (502/429) hoac treo: thu LAN LUOT tung may chu (chinh roi du phong),
+// moi may mot lan, khong don dap mot may nao. Loi khong the thu lai (400...) cung chuyen sang may tiep theo vi
+// co the chi la may do loi; chi bao that bai khi tat ca deu that bai.
+const overpassMirrors = () => [env.PLACES_OVERPASS_URL, ...env.PLACES_OVERPASS_FALLBACK_URLS];
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const postOverpass = (body) =>
-  fetch(env.PLACES_OVERPASS_URL, {
+const postOverpass = (url, body) =>
+  fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -255,19 +253,81 @@ const postOverpass = (body) =>
 
 const fetchFromOverpass = async (params) => {
   const body = new URLSearchParams({ data: buildOverpassQuery(params) });
-  for (let attempt = 1; ; attempt += 1) {
-    const response = await postOverpass(body);
-    if (response.ok) return normalizeOverpassElements(await response.json(), params.type);
+  const failures = [];
+  for (const url of overpassMirrors()) {
+    try {
+      const response = await postOverpass(url, body);
+      if (response.ok) return normalizeOverpassElements(await response.json(), params.type);
+      failures.push(`${new URL(url).host} HTTP ${response.status}`);
+    } catch (error) {
+      failures.push(`${new URL(url).host} ${error?.name ?? "loi"}`);
+    }
+  }
+  throw new Error(`Overpass that bai: ${failures.join("; ")}`);
+};
 
-    const canRetry =
-      TRANSIENT_HTTP_STATUSES.has(response.status) && attempt < OVERPASS_MAX_ATTEMPTS;
-    if (!canRetry) throw new Error(`Overpass HTTP ${response.status}`);
-    await sleep(OVERPASS_RETRY_DELAY_MS);
+// ── Du phong: Nominatim ──────────────────────────────────────────────────
+/*
+ * Khi TAT CA may chu Overpass that bai (thuong xuyen qua tai), tim lai bang Nominatim (ha tang khac) voi tu khoa
+ * theo loai. Du lieu thieu so dien thoai/gio mo cua nhung van dua duoc nguoi dung toi dung cho. `limit` va khung
+ * tim kiem tuong duong ban kinh Overpass de ket qua cung quy mo.
+ */
+const NOMINATIM_TERM_BY_TYPE = Object.freeze({
+  embassy: "Embassy of Vietnam",
+  hospital: "hospital",
+  police: "police",
+  pharmacy: "pharmacy",
+});
+
+// Nua canh khung tim kiem (do) quanh diem: ~0.1 do ~ 11 km, dai su quan thua nen khung rong hon.
+const NOMINATIM_HALF_SPAN_DEG = Object.freeze({
+  embassy: 5,
+  hospital: 0.1,
+  police: 0.1,
+  pharmacy: 0.08,
+});
+const NOMINATIM_FALLBACK_LIMIT = 20;
+
+const buildViewbox = (lat, lng, halfSpan) =>
+  `${lng - halfSpan},${lat + halfSpan},${lng + halfSpan},${lat - halfSpan}`;
+
+const fromNominatimResult = (result, type) => ({
+  placeId: result.placeId,
+  name: result.name,
+  type,
+  category: result.category,
+  address: result.address,
+  phone: "",
+  website: "",
+  openState: "",
+  rating: null,
+  reviews: null,
+  location: result.location,
+  verified: false,
+  source: OSM_SOURCE,
+});
+
+const fetchFromNominatim = async ({ lat, lng, country, type }) => {
+  const options = { limit: NOMINATIM_FALLBACK_LIMIT };
+  if (country) options.country = country;
+  else options.viewbox = buildViewbox(lat, lng, NOMINATIM_HALF_SPAN_DEG[type]);
+
+  const results = await searchNominatim(NOMINATIM_TERM_BY_TYPE[type], options);
+  return results.map((result) => fromNominatimResult(result, type));
+};
+
+// Overpass truoc (co so dien thoai, gio mo cua); that bai het thi Nominatim; ca hai that bai moi bao loi.
+const fetchFromOsm = async (params) => {
+  try {
+    return await fetchFromOverpass(params);
+  } catch (overpassError) {
+    console.error("[places:osm] Overpass that bai, dung Nominatim:", overpassError.message);
+    return fetchFromNominatim(params);
   }
 };
 
 const FETCHERS = Object.freeze({
-  osm: fetchFromOverpass,
+  osm: fetchFromOsm,
   serpapi: fetchFromSerpApi,
   mock: fetchFromMock,
 });

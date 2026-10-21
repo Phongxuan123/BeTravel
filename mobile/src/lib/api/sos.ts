@@ -2,7 +2,7 @@
  * Nối SOS map/hub vào API thật (B6). CÙNG CHỮ KÝ mock cho fetchSupportLocations
  * (mở rộng thêm object tham số optional), bổ sung fetchNearbyLocations.
  */
-import { apiRequest } from './http';
+import { apiRequest, apiRequestWithMeta } from './http';
 import { adaptSupportLocation, adaptExternalPlace, type ApiExternalPlace, type ApiSupportLocation } from './adapters';
 import { StorageKeys, getJSON, setJSON } from '@/lib/storage';
 import { haversineKm } from '@/lib/geo';
@@ -99,4 +99,33 @@ export async function fetchExternalPlaces(query: ExternalQuery): Promise<Envelop
   const raw = await apiRequest<ApiExternalPlace[]>(`/support-locations/external?${params.toString()}`);
   const data = raw.map(adaptExternalPlace).filter((place) => validCoordinates(place.lat, place.lng));
   return { ok: true, data };
+}
+
+// Kết quả tìm địa điểm theo chữ (Nominatim/OpenStreetMap): chưa xác minh, chỉ để bản đồ bay tới đúng chỗ.
+export type PlaceSearchResult = { id: string; name: string; address: string; category: string; lat: number; lng: number };
+export type PlaceSearchScope = 'country' | 'global';
+type ApiPlaceSearchResult = {
+  placeId: string;
+  name: string;
+  address: string;
+  category: string;
+  location: { type: 'Point'; coordinates: [number, number] };
+};
+
+// `scope`: "country" nếu tìm thấy trong quốc gia đang chọn, "global" nếu phải mở rộng ra toàn cầu.
+export async function searchPlaces(
+  query: string,
+  country?: string,
+): Promise<{ ok: true; data: PlaceSearchResult[]; scope: PlaceSearchScope }> {
+  const params = new URLSearchParams({ q: query.trim() });
+  if (country) params.set('country', country);
+  const { data: raw, meta } = await apiRequestWithMeta<ApiPlaceSearchResult[]>(`/places/search?${params.toString()}`);
+  const data = raw.flatMap((item) => {
+    // GeoJSON là [lng, lat]; bỏ kết quả có toạ độ hỏng thay vì làm bản đồ bay tới chỗ vô nghĩa.
+    const [lng, lat] = item.location.coordinates;
+    return validCoordinates(lat, lng)
+      ? [{ id: item.placeId, name: item.name, address: item.address, category: item.category, lat, lng }]
+      : [];
+  });
+  return { ok: true, data, scope: meta?.scope === 'country' ? 'country' : 'global' };
 }

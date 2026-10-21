@@ -1,9 +1,10 @@
+import { Linking } from 'react-native';
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Constants from 'expo-constants';
 import SosMapScreen from '@/app/sos/map';
-import { fetchSupportLocations, fetchNearbyLocations, fetchExternalPlaces } from '@/lib/data';
-import { requestLocationWithExplanation } from '@/lib/locationPermission';
+import { fetchSupportLocations, fetchNearbyLocations, fetchExternalPlaces, searchPlaces } from '@/lib/data';
+import { requestLocationDetailed } from '@/lib/locationPermission';
 
 const mockAnimate = jest.fn();
 const mockFit = jest.fn();
@@ -12,8 +13,16 @@ let mockCountry: { code: string; name: string; embassy: { name: string; lat: num
 jest.mock('expo-router', () => ({ router: { back: jest.fn() }, useLocalSearchParams: () => ({}) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 jest.mock('@/lib/countryContext', () => ({ useCountry: () => ({ country: mockCountry }) }));
-jest.mock('@/lib/data', () => ({ fetchSupportLocations: jest.fn(), fetchNearbyLocations: jest.fn(), fetchExternalPlaces: jest.fn() }));
-jest.mock('@/lib/locationPermission', () => ({ requestLocationWithExplanation: jest.fn() }));
+jest.mock('@/lib/data', () => ({ fetchSupportLocations: jest.fn(), fetchNearbyLocations: jest.fn(), fetchExternalPlaces: jest.fn(), searchPlaces: jest.fn() }));
+jest.mock('@/lib/locationPermission', () => ({
+  requestLocationDetailed: jest.fn(),
+  MAP_LOCATION_POLICY: {},
+  LOCATION_FAILURE_MESSAGES: {
+    denied: 'Chưa được cấp quyền vị trí.',
+    'services-off': 'Dịch vụ vị trí đang tắt.',
+    unavailable: 'GPS chưa trả vị trí.',
+  },
+}));
 jest.mock('expo-constants', () => ({ __esModule: true, default: { executionEnvironment: 'standalone', expoConfig: { extra: {} } } }));
 jest.mock('react-native-maps', () => {
   const React = jest.requireActual('react');
@@ -39,13 +48,16 @@ jest.mock('@/components/common/SimpleSheet', () => {
 
 const point = { id: '1', name: 'Đồn cảnh sát Seoul', address: 'Gangnam', type: 'police',
   meta: 'Cảnh sát', phone: '112', lat: 37, lng: 127, verified: true };
+const gpsFix = (latitude: number, longitude: number) => ({ coords: { latitude, longitude }, measuredAt: Date.now(), failure: null });
+
 beforeEach(() => {
   jest.clearAllMocks();
   mockMapAutoReady = true;
   mockCountry = { code: 'KR', name: 'Hàn Quốc', embassy: { name: '', lat: 0, lng: 0 } };
   (fetchSupportLocations as jest.Mock).mockResolvedValue({ ok: true, data: [point] });
   (fetchNearbyLocations as jest.Mock).mockResolvedValue({ ok: true, data: [{ ...point, distanceKm: 0 }] });
-  (requestLocationWithExplanation as jest.Mock).mockResolvedValue({ latitude: 37, longitude: 127 });
+  (requestLocationDetailed as jest.Mock).mockResolvedValue(gpsFix(37, 127));
+  (searchPlaces as jest.Mock).mockResolvedValue({ ok: true, data: [], scope: 'country' });
 });
 
 test('camera về tâm và vệ tinh hoạt động sau khởi tạo', async () => {
@@ -84,7 +96,7 @@ function wrapper() {
 test('tải danh sách không tự xin GPS; tìm tên không dấu và địa chỉ', async () => {
   const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
   await waitFor(() => expect(screen.getByText(point.name)).toBeTruthy());
-  expect(requestLocationWithExplanation).not.toHaveBeenCalled();
+  expect(requestLocationDetailed).not.toHaveBeenCalled();
   await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'don Gangnam');
   expect(screen.getByText(point.name)).toBeTruthy();
   await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'không có');
@@ -101,7 +113,7 @@ test('GPS mới cập nhật camera và query; bán kính truyền đúng backen
 });
 
 test('GPS từ chối vẫn dùng danh sách; đổi quốc gia bỏ sheet cũ', async () => {
-  (requestLocationWithExplanation as jest.Mock).mockResolvedValue(null);
+  (requestLocationDetailed as jest.Mock).mockResolvedValue({ coords: null, failure: 'unavailable' });
   const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
   await waitFor(() => expect(screen.getByText(point.name)).toBeTruthy());
   await fireEvent.press(screen.getByLabelText('Lấy vị trí hiện tại'));
@@ -142,7 +154,7 @@ test('Android thiếu key hiển thị danh sách và giữ thao tác chi tiết
 
 
 test('đại sứ quán tại KR vẫn tìm theo quốc gia khi GPS đang ở Việt Nam', async () => {
-  (requestLocationWithExplanation as jest.Mock).mockResolvedValue({ latitude: 10.77, longitude: 106.69 });
+  (requestLocationDetailed as jest.Mock).mockResolvedValue(gpsFix(10.77, 106.69));
   (fetchExternalPlaces as jest.Mock).mockRejectedValueOnce(new Error('upstream timeout')).mockResolvedValue({ ok: true, data: [
     { ...point, id: 'osm-kr', type: 'embassy', name: 'Đại sứ quán Việt Nam tại Hàn Quốc', verified: false, source: 'openstreetmap' },
   ] });
@@ -156,4 +168,57 @@ test('đại sứ quán tại KR vẫn tìm theo quốc gia khi GPS đang ở Vi
   await fireEvent.press(screen.getByLabelText('Thử tải lại gợi ý'));
   await waitFor(() => expect(mockFit).toHaveBeenCalledWith([{ latitude: 37, longitude: 127 }], expect.anything()));
   expect(screen.getByLabelText('Xem chi tiết Đại sứ quán Việt Nam tại Hàn Quốc (chưa xác minh)')).toBeTruthy();
+});
+
+// Lỗi thực tế: mọi lý do thất bại GPS đều hiện chung "kiểm tra quyền", người dùng không biết phải làm gì.
+test('GPS thất bại báo đúng lý do và mở được Cài đặt khi bị chặn quyền', async () => {
+  const openSettings = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
+  (requestLocationDetailed as jest.Mock).mockResolvedValue({ coords: null, failure: 'denied' });
+  const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await fireEvent.press(screen.getByLabelText('Lấy vị trí hiện tại'));
+  await waitFor(() => expect(screen.getByText('Chưa được cấp quyền vị trí.')).toBeTruthy());
+  expect(screen.getByText(/giữ lâu trên bản đồ/)).toBeTruthy();
+  await fireEvent.press(screen.getByLabelText('Mở cài đặt vị trí'));
+  expect(openSettings).toHaveBeenCalled();
+
+  // Lý do khác không có nút Cài đặt (mở Cài đặt không giúp được gì).
+  (requestLocationDetailed as jest.Mock).mockResolvedValue({ coords: null, failure: 'unavailable' });
+  await fireEvent.press(screen.getByLabelText('Lấy vị trí hiện tại'));
+  await waitFor(() => expect(screen.getByText('GPS chưa trả vị trí.')).toBeTruthy());
+  expect(screen.queryByLabelText('Mở cài đặt vị trí')).toBeNull();
+  openSettings.mockRestore();
+});
+
+test('tìm địa điểm theo chữ: chọn kết quả bay tới đó và tìm điểm hỗ trợ quanh nơi vừa chọn', async () => {
+  (searchPlaces as jest.Mock).mockResolvedValue({
+    ok: true, scope: 'country',
+    data: [{ id: 'node/1', name: 'Quận Gangnam', address: 'Gangnam, Seoul', category: 'administrative', lat: 37.5177, lng: 127.0473 }],
+  });
+  const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'Gangnam');
+  await waitFor(() => expect(searchPlaces).toHaveBeenCalledWith('Gangnam', 'KR'), { timeout: 3000 });
+  await waitFor(() => expect(screen.getByLabelText('Đến Quận Gangnam')).toBeTruthy());
+
+  await fireEvent.press(screen.getByLabelText('Đến Quận Gangnam'));
+  expect(mockAnimate).toHaveBeenCalledWith(expect.objectContaining({ latitude: 37.5177, longitude: 127.0473 }), 400);
+  expect(screen.getByText(/Đang xem quanh: Quận Gangnam/)).toBeTruthy();
+  expect(screen.queryByTestId('place-search-panel')).toBeNull();
+  // Không cần GPS: danh sách điểm hỗ trợ được tìm quanh nơi vừa chọn.
+  await waitFor(() => expect(fetchNearbyLocations).toHaveBeenCalledWith(37.5177, 127.0473, expect.objectContaining({ country: 'KR' })));
+  expect(requestLocationDetailed).not.toHaveBeenCalled();
+
+  // Bỏ điểm đã chọn: quay về danh sách theo quốc gia.
+  await fireEvent.press(screen.getByLabelText('Bỏ điểm đã chọn'));
+  expect(screen.queryByTestId('picked-point-chip')).toBeNull();
+});
+
+test('chữ tìm quá ngắn không gọi tìm địa điểm; nguồn lỗi có nút thử lại', async () => {
+  const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'ab');
+  expect(screen.getByText(/Gõ ít nhất 3 ký tự/)).toBeTruthy();
+  expect(searchPlaces).not.toHaveBeenCalled();
+
+  (searchPlaces as jest.Mock).mockRejectedValueOnce(new Error('upstream'));
+  await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'Seoul');
+  await waitFor(() => expect(screen.getByLabelText('Thử tìm lại địa điểm')).toBeTruthy(), { timeout: 3000 });
 });
