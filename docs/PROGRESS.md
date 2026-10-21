@@ -35,8 +35,18 @@ Legislation (API công khai, không cần key), thêm quốc gia Úc (AU), phân
   (`AU_LAW_TITLE_TRANSLATION`, mặc định bật; quá 8 giây hoặc lỗi thì hiện tên tiếng Anh). Bản dịch bị loại nếu thêm hoặc bớt số.
   Tên chính thức tiếng Anh luôn hiển thị kèm. Tìm kiếm vẫn theo tên tiếng Anh.
 
+- Quyết định 5 (21/10/2026): xác minh cơ quan đại diện Việt Nam tại Úc bằng đối chiếu nguồn chính thức, nạp bằng
+  `npm run seed:au-missions` (nguồn dữ liệu và trích dẫn trong `backend/scripts/data/auVietnamMissions.js`). Theo DFAT
+  (danh bạ ngoại giao chính phủ Úc) chỉ có 1 Đại sứ quán (Canberra, ACT/VIC/TAS) và 2 Tổng lãnh sự quán (Sydney: NSW/QLD/SA;
+  Perth: WA/NT); KHÔNG có Melbourne hay Brisbane, không có lãnh sự danh dự. Đại sứ quán đã chuyển sang 47 Culgoa Circuit từ
+  24/02/2026 (địa chỉ cũ 6 Timbarra Crescent còn xuất hiện ở nhiều trang, đã lỗi thời). Ba điểm đặt `verified:true` kèm
+  `source` ghi rõ "chưa gọi điện xác nhận" vì định nghĩa gốc của `support_locations` là kiểm chứng qua điện thoại.
+
 ### Đang vướng (Luật Úc)
 
+- Gọi điện xác nhận 3 cơ quan đại diện tại Úc (số, giờ làm việc), đặc biệt số TLSQ Sydney: DFAT ghi 02 9327 2539 / 02 9327 1912
+  còn website TLSQ ghi 02 9326 1129 / 02 9326 1202 và giờ 9:00-17:30 (đang dùng số và giờ của DFAT). Sau khi gọi, sửa
+  `scripts/data/auVietnamMissions.js` rồi chạy lại `npm run seed:au-missions`.
 - Tóm tắt từng Phần của Migration Act mới có 5/37 phần (bị 429 ngắt). Cần chạy lại khi hạn mức hồi:
   `npm run summarize-au-laws -- C1958A00062`.
 - Dịch toàn bộ 31 luật (~18,8 triệu ký tự) chưa làm; cần API key trả phí.
