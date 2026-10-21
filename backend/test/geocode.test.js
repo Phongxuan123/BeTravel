@@ -76,7 +76,10 @@ test("mergeCountrySearch: ten ca mot quoc gia len dau du dang chon nuoc khac", a
     worldwide: [place(2, "Việt Nam", "country"), place(1, "Vietnam Veterans Museum", "tourism")],
     inCountry: [place(1, "Vietnam Veterans Museum", "tourism")],
   });
-  assert.deepEqual(places.map((p) => p.name), ["Việt Nam", "Vietnam Veterans Museum"]);
+  assert.deepEqual(
+    places.map((p) => p.name),
+    ["Việt Nam", "Vietnam Veterans Museum"],
+  );
   assert.equal(scope, "country");
   assert.equal("addressType" in places[0], false);
 });

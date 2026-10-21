@@ -14,8 +14,14 @@ test("cơ quan đại diện Châu Á: toạ độ đúng nước, có nguồn, 
   assert.equal(ASIA_VIETNAM_MISSIONS.length, 3);
   for (const mission of ASIA_VIETNAM_MISSIONS) {
     const { lat, lng } = BOUNDS[mission.countryCode];
-    assert.ok(mission.lat >= lat[0] && mission.lat <= lat[1], `${mission.name}: lat ${mission.lat}`);
-    assert.ok(mission.lng >= lng[0] && mission.lng <= lng[1], `${mission.name}: lng ${mission.lng}`);
+    assert.ok(
+      mission.lat >= lat[0] && mission.lat <= lat[1],
+      `${mission.name}: lat ${mission.lat}`,
+    );
+    assert.ok(
+      mission.lng >= lng[0] && mission.lng <= lng[1],
+      `${mission.name}: lng ${mission.lng}`,
+    );
     assert.match(mission.phone, /^\+\d+ /);
     assert.match(mission.source, /\[SITE\]/);
     assert.match(mission.source, /CHƯA gọi điện/);
