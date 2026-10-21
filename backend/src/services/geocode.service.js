@@ -150,16 +150,25 @@ const MOCK_RESULTS = Object.freeze([
   },
 ]);
 
-const dedupeByPlaceId = (places) => [...new Map(places.map((place) => [place.placeId, place])).values()];
+const dedupeByPlaceId = (places) => [
+  ...new Map(places.map((place) => [place.placeId, place])).values(),
+];
 
-const stripInternalFields = (places) => places.map(({ addressType: _addressType, ...place }) => place);
+const stripInternalFields = (places) =>
+  places.map(({ addressType: _addressType, ...place }) => place);
 
 // Gõ tên cả một quốc gia (ví dụ "Việt Nam" khi đang chọn Úc) thì quốc gia đó phải lên đầu,
 // nếu không người dùng chỉ thấy các địa danh trùng chữ nằm trong nước đang chọn.
 export const mergeCountrySearch = ({ worldwide, inCountry }) => {
   const wholeCountries = worldwide.filter((place) => place.addressType === "country");
-  const places = dedupeByPlaceId([...wholeCountries, ...inCountry, ...worldwide]).slice(0, MAX_RESULTS);
-  return { places: stripInternalFields(places), scope: inCountry.length > 0 ? "country" : "global" };
+  const places = dedupeByPlaceId([...wholeCountries, ...inCountry, ...worldwide]).slice(
+    0,
+    MAX_RESULTS,
+  );
+  return {
+    places: stripInternalFields(places),
+    scope: inCountry.length > 0 ? "country" : "global",
+  };
 };
 
 /*
