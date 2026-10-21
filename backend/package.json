@@ -22,7 +22,8 @@
     "summarize-au-laws": "node scripts/summarize-au-laws.js",
     "email:check": "node scripts/check-email.js",
     "seed:au-missions": "node scripts/seed-au-missions.js",
-    "seed:asia-missions": "node scripts/seed-asia-missions.js"
+    "seed:asia-missions": "node scripts/seed-asia-missions.js",
+    "seed:au-places": "node scripts/seed-au-support-places.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
