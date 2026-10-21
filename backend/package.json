@@ -19,7 +19,8 @@
     "index-au-laws": "node scripts/index-au-laws.js",
     "evaluate-ai": "node scripts/evaluate-ai.js",
     "check-indexes": "node scripts/check-content-indexes.js",
-    "summarize-au-laws": "node scripts/summarize-au-laws.js"
+    "summarize-au-laws": "node scripts/summarize-au-laws.js",
+    "email:check": "node scripts/check-email.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

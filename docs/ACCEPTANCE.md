@@ -1,5 +1,86 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Khôi phục bố cục auth trước căn giữa — 20/10/2026
+
+Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
+`ded3785` (trước lần căn giữa đầu tiên). Nội dung xếp từ trên xuống trong
+ScrollView, không chia ba vùng hoặc căn giữa dọc. Xóa AuthScreen không còn dùng.
+Giữ nguyên handlers/state/API hiện tại; giữ luồng OTP, ràng buộc email tài khoản,
+quy tắc mật khẩu và chỉ logout sau khi đổi thành công. Giữ khoảng cách 16 giữa
+nút OTP và Quay lại Cài đặt, sửa chống co nút và header tự xuống dòng.
+
+Mobile lint/typecheck và 237/237 tests đạt. Đã quan sát login BlueStacks trở về
+bố cục cũ; chưa nghiệm thu register/forgot và bàn phím trên điện thoại ở đợt này.
+Không đổi backend/dữ liệu, không push; giữ backend/.env.example ngoài commit.
+Yêu cầu bố cục này thay thế phương án ba vùng ở mục lịch sử bên dưới.
+
+## Auth chia ba vùng — 20/10/2026
+
+- Đạt: mobile typecheck, lint, 237 tests / 55 suites; diff không lỗi whitespace.
+- Đã quan sát login BlueStacks: tiêu đề đầu trang, ô nhập giữa, hành động cuối.
+- Chờ: kiểm tra đăng ký dài, các bước OTP và bàn phím trên máy thật;
+  công cụ click BlueStacks báo noWindowsAvailable nên chưa xác nhận trực quan.
+- Chưa hoàn tất logo chính thức: cần tệp PNG/JPG có thể truy cập để sao chép
+  nguyên bản vào assets và nối component Logo dùng chung.
+- Không sửa API/backend, không gửi OTP thật, không push Git.
+
+## Form auth giữa dọc, đủ rộng — 20/10/2026
+
+Đã xem screenshot BlueStacks: login nằm giữa, rộng theo màn và nút không co.
+Register/forgot dùng AuthScreen chung; chưa xem trực quan do công cụ chuyển màn
+báo noWindowsAvailable. Cần thử thêm màn ngắn, bàn phím và chữ lớn trên thiết bị.
+Không thay luồng auth hoặc hợp đồng backend.
+
+Kiểm tra đợt này: mobile 237/237, backend 296/296, admin 18/18 (551 tổng).
+Lint/typecheck tương ứng, format backend và admin build đạt.
+
+## Auth phủ chiều rộng — 20/10/2026
+
+- Đã quan sát BlueStacks: màn login hết khung 480, bỏ khoảng trắng trên quá lớn,
+  nút chính/phụ có chiều cao đầy đủ. Shared layout áp dụng register/forgot-password.
+- Mobile 237/237 tests, lint/typecheck, git diff --check đạt.
+- Chưa xác nhận trực quan register/forgot trên máy thật, keyboard Samsung/iOS.
+  Backend không đổi; kết quả rà toàn bộ ở đợt trước vẫn là lịch sử, không chạy lại.
+
+## Bố cục auth — 20/10/2026
+
+- Gửi OTP và Quay lại Cài đặt cách nhau 16 px; giữ phiên/auth như bản trước.
+- Ba form auth căn giữa, chiều rộng tối đa 480, không đặt chiều cao cố định;
+  nội dung vượt màn hình vẫn cuộn. Header/footer cho xuống dòng khi thiếu ngang.
+- Chưa kiểm hình ảnh trực tiếp trên Samsung/iOS; cần nghiệm thu keyboard và chữ
+  lớn. Không thay backend hoặc dữ liệu thật; không tuyên bố toàn máy hết lỗi.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (551 tổng);
+lint/typecheck tương ứng, backend format và admin build đạt.
+
+## OTP giữ phiên trước khi đổi mật khẩu — 20/10/2026
+
+- Đã đăng nhập: không có link “Nhớ ra mật khẩu rồi / Đăng nhập” ở email/OTP/password;
+  email không sửa được, quay lại Cài đặt không logout.
+- Mật khẩu hiển thị đủ yêu cầu khớp backend (ký tự đặc biệt tùy chọn), xác nhận
+  không khớp bị chặn. Reset lỗi giữ phiên, thành công mới logout.
+- Hồi quy guest vẫn gửi email > OTP > password > done như cũ.
+- Chưa thao tác điện thoại thật hoặc xác nhận thư đến Inbox; không coi test tự động
+  là nghiệm thu giao diện thực hay chứng nhận toàn hệ điều hành không lỗi.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (tổng 551);
+lint/typecheck tương ứng, format backend và admin build đạt. Hồi quy màn OTP
+chạy lại 2/2 sau chỉnh lỗi xác nhận/khóa nút quay lại, đạt.
+
+## Auth/OTP — 20/10/2026 (nghiệm thu một phần)
+
+- SMTP verify thật đạt, không gửi email. Không coi verify là xác nhận Inbox.
+- Hồi quy mới: cùng 502 cho tài khoản có/không tồn tại khi SMTP hỏng; khôi phục
+  dịch vụ > OTP > reset > đăng nhập mật khẩu mới; không dùng lại reset token.
+- Đổi trực tiếp không cần email, hủy reset đang chờ; refresh-token regression cũ giữ nguyên.
+- Mobile: lỗi SMTP không chuyển sang bước OTP; retry thành công, xác thực, reset,
+  xóa phiên. Bổ sung nhãn accessibility cho các ô nhập.
+- Chưa nghiệm thu Inbox/Spam của người dùng hoặc thao tác thiết bị thật. Không
+  chứng nhận hết mọi lỗi máy; chỉ kiểm backend/mobile/admin và SMTP của dự án.
+
+Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
+Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
+
 ## Khôi phục map e6361c3 — 17/10/2026 (thay thế nghiệm thu map trước)
 
 - Bản đồ quay lại nền ngay sau merge; giữ micro độc lập. Không còn Leaflet vendor.

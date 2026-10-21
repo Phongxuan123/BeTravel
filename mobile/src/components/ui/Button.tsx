@@ -52,6 +52,10 @@ export function Button({
   ...rest
 }: Props) {
   const isDisabled = disabled || loading;
+  // Style tĩnh cho trường hợp mặc định để NativeWind giữ kích thước trên native/web.
+  // Không cho flex co nút thành một dòng chữ khi form dài; chữ lớn được phép xuống dòng.
+  const baseStyle = { minHeight: heights[variant], flexShrink: 0, paddingVertical: 12 };
+  const buttonStyle = [baseStyle, variant === 'primary' ? shadows.ctaPrimary : null];
   return (
     <Pressable
       accessibilityRole="button"
@@ -60,11 +64,7 @@ export function Button({
       className={`flex-row items-center justify-center gap-2 px-5 ${containerClass[variant]} ${
         fullWidth ? 'w-full' : ''
       } ${isDisabled ? 'opacity-50' : ''}`}
-      style={(state) => [
-        { height: heights[variant] },
-        variant === 'primary' ? shadows.ctaPrimary : null,
-        typeof style === 'function' ? style(state) : style,
-      ]}
+      style={typeof style === 'function' ? (state) => [...buttonStyle, style(state)] : [...buttonStyle, style]}
       {...rest}
     >
       {loading ? (
@@ -72,7 +72,7 @@ export function Button({
       ) : (
         <>
           {iconLeft}
-          <Text className={textClass[variant]}>{label}</Text>
+          <Text className={`text-center ${textClass[variant]}`} style={{ flexShrink: 1 }}>{label}</Text>
           {iconRight}
         </>
       )}

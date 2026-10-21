@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 
 import User from "../models/User.js";
 import RefreshToken from "../models/RefreshToken.js";
+import PasswordReset from "../models/PasswordReset.js";
 
 import { env } from "../core/env.js";
 import { serializeUser } from "../core/serializers.js";
@@ -365,6 +366,8 @@ export const changeUserPassword = async ({ userId, currentPassword, newPassword 
 
   // Đổi mật khẩu là sự kiện bảo mật: thu hồi mọi refresh token của tài khoản.
   await RefreshToken.deleteMany({ userId: user._id });
+  // OTP/token khôi phục trước lần đổi mật khẩu này không được dùng lại.
+  await PasswordReset.deleteMany({ userId: user._id });
 
   return true;
 };

@@ -1,0 +1,436 @@
+{
+  "countryCode": "MY",
+  "countryName": "Malaysia",
+  "provenance": {
+    "origin": "Gói BeAI của Thành Đạt, nhận 19/10/2026 (thư mục Betravel/, không commit)",
+    "retrievedAt": "2026-10-18T08:48:04Z",
+    "reviewedAt": "2026-10-18T09:10:00Z",
+    "reviewedBy": "Claude: Firecrawl official-source snapshot and Vietnamese summary checked; not legal counsel",
+    "method": "Firecrawl search and fresh main-content scrape of official Malaysian government pages and Vietnamese MOFA/embassy pages; translated factual summaries with source-specific attribution. Not fine-tuning. Raw cache in .firecrawl/; evidenceExcerpt is an abbreviated original quotation, not the whole page."
+  },
+  "reviewStatus": "ai_checked_needs_human_review",
+  "importRule": "Chỉ nhập ở trạng thái draft. Thiếu publishedAt và effectiveFrom nên chưa xuất bản được.",
+  "topicGroups": {
+    "1": {
+      "label": "Nhập cảnh, visa, thẻ khai báo",
+      "suggestedTopicSlug": "nhap-canh"
+    },
+    "2": {
+      "label": "Hải quan, tiền mặt, thuốc mang theo",
+      "suggestedTopicSlug": "hai-quan"
+    },
+    "3": {
+      "label": "Ứng xử nơi công cộng: rượu, thuốc lá, xả rác",
+      "suggestedTopicSlug": "hinh-su"
+    },
+    "4": {
+      "label": "Tôn giáo, trang phục, phong tục",
+      "suggestedTopicSlug": null
+    },
+    "5": {
+      "label": "Flycam, chụp ảnh",
+      "suggestedTopicSlug": null
+    },
+    "6": {
+      "label": "Giao thông, bằng lái",
+      "suggestedTopicSlug": "giao-thong"
+    },
+    "7": {
+      "label": "Đại sứ quán, bảo hộ công dân",
+      "suggestedTopicSlug": "khan-cap"
+    },
+    "8": {
+      "label": "Sự cố: mất hộ chiếu, bị bắt, lừa đảo",
+      "suggestedTopicSlug": "khan-cap"
+    },
+    "9": {
+      "label": "Khiếu nại, cảnh sát du lịch",
+      "suggestedTopicSlug": "khan-cap"
+    }
+  },
+  "gaps": [
+    {
+      "group": 6,
+      "reason": "No official jpj.gov.my page found stating whether tourists may drive with a foreign licence or an International Driving Permit, or traffic fine amounts; JPJ IDP pages only cover Malaysians applying for an IDP. Only the Vehicle Entry Permit (VEP) rule for foreign-registered vehicles is covered."
+    },
+    {
+      "group": 9,
+      "reason": "No official rmp.gov.my page found describing the Tourist Police Unit (Unit Polis Pelancong) or its contact; only news/Wikipedia mention it. Consumer claims (TTPM) and scam reporting (NSRC 997) are covered."
+    },
+    {
+      "group": 4,
+      "reason": "Partial: only Masjid Wilayah Persekutuan's own visitor guidance (robes/headscarves provided). No official nationwide dress-code rule for temples, churches or public places was found."
+    }
+  ],
+  "articles": [
+    {
+      "slug": "mdac-va-hieu-luc-ho-chieu-khi-nhap-canh",
+      "title": "MDAC và hiệu lực hộ chiếu khi nhập cảnh",
+      "topicGroups": [
+        1
+      ],
+      "suggestedTopicSlug": "nhap-canh",
+      "keywords": "entry, MDAC, digital arrival card, passport validity",
+      "summaryVi": "Malaysia — Malaysia Digital Arrival Card (MDAC) và hộ chiếu, theo Jabatan Imigresen Malaysia. Theo cổng MyVISA chính thức của Jabatan Imigresen Malaysia (Immigration Department of Malaysia), mọi người nước ngoài BẮT BUỘC đăng ký Malaysia Digital Arrival Card (MDAC) trong vòng 3 ngày trước khi đến Malaysia. Hộ chiếu phải còn hiệu lực ít nhất 6 tháng tính từ ngày nhập cảnh. Việc đăng ký MDAC thực hiện qua đường dẫn MDAC của Jabatan Imigresen Malaysia (imigresen-online.imi.gov.my/mdac). Trang này không nêu phí đăng ký MDAC. Những điều kiện này không xác nhận quyền nhập cảnh của một cá nhân cụ thể.",
+      "source": {
+        "title": "Malaysia: MDAC và hiệu lực hộ chiếu khi nhập cảnh",
+        "url": "https://malaysiavisa.imi.gov.my/",
+        "authority": "Jabatan Imigresen Malaysia (Immigration Department of Malaysia) – MyVISA portal",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:51:48Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/malaysiavisa.imi.gov.my-home.md",
+        "excerpt": "All foreign nationals are **REQUIRED** to register the Malaysia Digital Arrival Card ( **MDAC**) within 3 days before arriving in Malaysia. Passport must be valid for at least six (6) months from the date of entry.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mien-visa-cho-cong-dan-asean-luu-tru-duoi-1-thang",
+      "title": "miễn visa cho công dân ASEAN lưu trú dưới 1 tháng",
+      "topicGroups": [
+        1
+      ],
+      "suggestedTopicSlug": "nhap-canh",
+      "keywords": "visa exemption, ASEAN, Vietnam, length of stay",
+      "summaryVi": "Malaysia — yêu cầu visa theo quốc tịch, theo Jabatan Imigresen Malaysia. Theo trang Visa Requirement by Country của Jabatan Imigresen Malaysia: công dân các nước ASEAN, trừ Myanmar, không cần visa nếu lưu trú dưới một (1) tháng; nếu thời gian lưu trú vượt quá 1 tháng thì cần visa, trừ công dân Brunei và Singapore. Việt Nam là nước ASEAN và không có tên trong danh sách các nước phải xin visa để vào Malaysia nêu trên trang (danh sách gồm ví dụ Bangladesh, India, Nepal, Pakistan, Sri Lanka…). Trang chỉ nêu điều kiện visa chung; không xác nhận quyền nhập cảnh hay thời hạn lưu trú cụ thể của một cá nhân.",
+      "source": {
+        "title": "Malaysia: miễn visa cho công dân ASEAN lưu trú dưới 1 tháng",
+        "url": "https://www.imi.gov.my/index.php/en/main-services/visa/visa-requirement-by-country/",
+        "authority": "Jabatan Imigresen Malaysia (Immigration Department of Malaysia)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:48:30Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/imi.gov.my-en-main-services-visa-visa-requirement-by-country.md",
+        "excerpt": "Visa is not required for a stay of less than one (1) month for ASEAN nationals except Myanmar. Visas required for duration of stay exceeds (1) month except for Brunei and Singapore nationals.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "muc-mien-thue-hanh-ly-cho-du-khach",
+      "title": "mức miễn thuế hành lý cho du khách",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "customs, duty free allowance, alcohol, cigarettes, e-cigarette, green lane",
+      "summaryVi": "Malaysia — mức miễn thuế hành lý cho du khách, theo Jabatan Kastam Diraja Malaysia (JKDM). Theo Traveller's Guide của JKDM (cập nhật 05/01/2026), du khách nhập cảnh được miễn thuế với: rượu vang, rượu mạnh, bia hoặc malt liquor tổng cộng không quá 1 lít; quần áo mới không quá 3 chiếc; giày dép mới không quá 1 đôi; thực phẩm chế biến tổng giá trị không quá RM150; thiết bị chăm sóc cá nhân chạy điện/pin mới không quá 1 chiếc mỗi loại; các hàng hóa khác tổng giá trị không quá RM1.000 nếu nhập cảnh bằng đường hàng không, hoặc không quá RM500 nếu nhập cảnh bằng phương thức khác. Mức miễn cho hàng hóa khác không áp dụng cho thuốc lá điếu, sản phẩm thuốc lá, tẩu, thuốc lá điện tử và thiết bị hóa hơi cá nhân, dung dịch/gel dùng cho thuốc lá điện tử (có hay không có nicotine), lốp và săm. Hàng không chịu thuế đi Green Lane (Nothing to declare); có hàng chịu thuế phải đi Red Lane và khai báo; lạm dụng có thể bị phạt hoặc phạt tù.",
+      "source": {
+        "title": "Malaysia: mức miễn thuế hành lý cho du khách",
+        "url": "https://www.customs.gov.my/en/individu/pengembara/travelers-guide",
+        "authority": "Jabatan Kastam Diraja Malaysia (Royal Malaysian Customs Department, JKDM)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:52:21Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/customs.gov.my-en-individu-pengembara-travelers-guide.md",
+        "excerpt": "| Wine, spirits, beer or malt liquor | Not exceeding 1 litre in total |",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khai-bao-hai-quan-tien-mat-tu-usd-10-000-va-ma-tuy",
+      "title": "khai báo hải quan, tiền mặt từ USD 10.000 và ma túy",
+      "topicGroups": [
+        2,
+        3
+      ],
+      "suggestedTopicSlug": [
+        "hai-quan",
+        "hinh-su"
+      ],
+      "keywords": "customs declaration, cash, BNI, Customs Form No. 7, drugs, prescription drugs",
+      "summaryVi": "Malaysia — khai báo hải quan, tiền mặt và ma túy, theo Jabatan Kastam Diraja Malaysia (JKDM). Theo Customs Act 1967 (sửa đổi 2019) và Customs Regulations 2019, du khách nhập hoặc xuất cảnh Malaysia phải khai báo mọi hàng chịu thuế, hàng cấm, tiền mặt và công cụ chuyển nhượng vô danh mang theo; không khai hoặc khai sai là phạm tội. Du khách mang tiền mặt và BNI từ USD 10.000 trở lên khi nhập hoặc xuất cảnh phải khai bằng Customs Form No. 7 tại quầy hải quan; vi phạm có thể bị phạt tới RM3 triệu hoặc tù tới 5 năm, hoặc cả hai. Mang tiền Ringgit Malaysia (RM) vào/ra cần văn bản cho phép của Bank Negara Malaysia (BNM) qua mẫu CN-RM, sau đó vẫn phải khai Form No. 7. Theo JKDM, nhập và xuất ma túy (morphine, heroin, thuốc phiện, cần sa…) bị NGHIÊM CẤM (strictly PROHIBITED). Thuốc kê đơn chỉ được nhập/xuất theo giấy phép của Ministry of Health Malaysia. Danh sách hàng cấm/hạn chế nhập theo Customs (Prohibition of Imports) Order 2023.",
+      "source": {
+        "title": "Malaysia: khai báo hải quan, tiền mặt từ USD 10.000 và ma túy",
+        "url": "https://www.customs.gov.my/en/individu/pengembara/travelers-guide",
+        "authority": "Jabatan Kastam Diraja Malaysia (Royal Malaysian Customs Department, JKDM)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:52:21Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/customs.gov.my-en-individu-pengembara-travelers-guide.md",
+        "excerpt": "Therefore, for tourists or travellers entering or leaving Malaysia with cash and BNI amounting to or exceeding USD 10,000.00, they must declare it using Customs Form No. 7 provided at the customs counters at all entry and exit points in Malaysia.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mang-thuoc-ca-nhan-khi-nhap-canh",
+      "title": "mang thuốc cá nhân khi nhập cảnh",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "medication, prescription, personal use, one month supply, dangerous drugs, declaration",
+      "summaryVi": "Malaysia — mang thuốc cá nhân khi nhập cảnh, theo Ministry of Health Malaysia (MOH). Theo Traveller's Guide – Bringing Medication into Malaysia của MOH: người nhập cảnh được mang thuốc, kể cả vitamin và thực phẩm bổ sung, cho bản thân hoặc người thân trực hệ đi cùng, số lượng không quá mức hợp lý cho 1 tháng sử dụng của 1 người, tính theo liều trên nhãn. Thuốc kê đơn chứa chất ma túy nguy hiểm (như cần sa hoặc thuốc gốc narcotic) phải khai báo tại cửa khẩu khi đến. Với thuốc thuộc Dangerous Drugs Act 1952 và Poisons (Psychotropic Substances) Regulations 1989, cần mang đơn thuốc hợp lệ hoặc thư bác sĩ bằng tiếng Anh (hoặc kèm bản dịch), ghi tên thuốc, liều dùng và số lượng mang theo. Giữ nguyên nhãn cấp phát và bao bì gốc; không mang thuốc cho người khác. Ở hoặc thăm Malaysia quá 1 tháng và cần dùng thuốc liên tục thì nên đến bác sĩ đã đăng ký tại Malaysia để được kê đơn. MOH nêu: nhập khẩu sản phẩm chưa đăng ký hoặc không có giấy phép nhập khẩu có thể bị phạt tới RM25.000 hoặc tù tới 3 năm, hoặc cả hai.",
+      "source": {
+        "title": "Malaysia: mang thuốc cá nhân khi nhập cảnh",
+        "url": "https://pharmacy.moh.gov.my/sites/default/files/document-upload/travellers-guide-bringing-medication-malaysia-personal-use-edited-16012019.pdf",
+        "authority": "Ministry of Health Malaysia – Pharmaceutical Services Programme",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T09:00:49Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/pharmacy.moh.gov.my-travellers-guide-bringing-medication-malaysia.md",
+        "excerpt": "for one (1) month’s use by one (1) person only.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "28-khu-vuc-cam-hut-thuoc-theo-akta-852",
+      "title": "28 khu vực cấm hút thuốc theo Akta 852",
+      "topicGroups": [
+        3
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "smoking ban, Act 852, eateries, airport, compound fine, 30 days",
+      "summaryVi": "Malaysia — cấm hút thuốc nơi công cộng theo Akta 852, theo Kementerian Kesihatan Malaysia (KKM). Theo bài 'AKTA 852: Tiada Kompromi Terhadap Pelanggaran Larangan Merokok' trên MyHealth for Life của KKM (16/6/2026), Akta Kawalan Produk Merokok Demi Kesihatan Awam 2024 (Akta 852) có 28 khu vực/địa điểm cấm hút thuốc. Ví dụ được nêu: nơi ăn uống (tempat makan), cửa hàng có máy lạnh, khu vực sân bay, tòa nhà bến/nhà ga giao thông công cộng, thang máy hoặc nhà vệ sinh công cộng, khu vực bệnh viện hoặc phòng khám, khu giải trí hoặc nhà hát (trừ casino), khu vực cơ quan nhà nước, cơ sở giáo dục, nhà trẻ, tòa nhà giặt là, Tòa nhà Quốc hội Malaysia. Từ 15/10/2025: không giảm tiền phạt kompaun, phải nộp đủ; người bị phạt kompaun chỉ có 30 ngày để nộp; khi vụ việc đã đăng ký tại tòa thì không nhận nộp kompaun nữa; vi phạm lần thứ hai trở đi bị truy tố thẳng ra tòa. Bài này không nêu số tiền phạt cụ thể cho người hút thuốc.",
+      "source": {
+        "title": "Malaysia: 28 khu vực cấm hút thuốc theo Akta 852",
+        "url": "https://infosihat.moh.gov.my/images/media_sihat/emagazine/EdisiJun2026/files/basic-html/page20.html",
+        "authority": "Kementerian Kesihatan Malaysia (Ministry of Health Malaysia) – Info Sihat, MyHealth for Life",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:53:06Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/infosihat.moh.gov.my-emagJun2026-page20.md",
+        "excerpt": "Tempoh Bayaran Lebih Singkat: Orang Kena Kompaun (OKK) kini hanya diberikan tempoh 30 hari.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "tham-quan-nha-tho-hoi-giao-masjid-wilayah-persekutuan",
+      "title": "tham quan nhà thờ Hồi giáo Masjid Wilayah Persekutuan",
+      "topicGroups": [
+        4
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "mosque visit, etiquette, robes, headscarves, tour hours",
+      "summaryVi": "Malaysia — tham quan nhà thờ Hồi giáo (masjid), theo Masjid Wilayah Persekutuan, Kuala Lumpur. Theo trang Mosque Tour Programme của Masjid Wilayah Persekutuan: có tour hướng dẫn miễn phí khoảng 45 phút cho khách trong nước và quốc tế. Khách nên đến cửa Anjung B (Door B), nơi nhân viên đón và phát áo choàng (robes) và khăn trùm đầu (headscarves). Khu sân ngoài bị nắng chiếu nên khách được khuyên mang tất để bảo vệ chân khỏi nóng. Khách có thể quan sát buổi cầu nguyện tập thể (khoảng 1 giờ chiều). Đoàn khách gửi yêu cầu qua email masjidwp@jawi.gov.my và chờ duyệt; tour đoàn phù hợp với người từ 11 tuổi trở lên. Giờ tour: thứ Hai đến thứ Năm, thứ Bảy và Chủ nhật 10:00–15:30; thứ Sáu 10:00–11:30 và 15:00–16:30. Đây là hướng dẫn riêng của Masjid Wilayah Persekutuan; trang không nêu quy định trang phục chung cho mọi nhà thờ Hồi giáo hay nơi công cộng ở Malaysia.",
+      "source": {
+        "title": "Malaysia: tham quan nhà thờ Hồi giáo Masjid Wilayah Persekutuan",
+        "url": "https://masjidwilayah.gov.my/mosque-tour-programme",
+        "authority": "Masjid Wilayah Persekutuan (Jabatan Agama Islam Wilayah Persekutuan, JAWI)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:12Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/masjidwilayah.gov.my-mosque-tour-programme.md",
+        "excerpt": "we advise visitors to arrive at Anjung B entrance (Door B) where you will be greeted by our personnel and be given robes and headscarves.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "quy-dinh-bay-flycam-drone-va-khu-vuc-cam",
+      "title": "quy định bay flycam/drone và khu vực cấm",
+      "topicGroups": [
+        5
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "drone, UAS, flycam, authorisation to fly, protected places, CGSO, aerial photography",
+      "summaryVi": "Malaysia — flycam/drone, theo Civil Aviation Authority of Malaysia (CAAM). Theo CAAM, mọi hoạt động bay drone chịu Civil Aviation Regulation 2016 (Regulation 140–144). Không bay drone trong vùng trời class A, B, C hoặc G, trong aerodrome traffic zone hoặc cao hơn 400 feet so với mặt đất khi chưa được cho phép; cấm thả vật từ drone. Người điều khiển phải quan sát drone trực tiếp bằng mắt. Drone nhỏ có khả năng giám sát không được bay trên hoặc trong phạm vi 150 m quanh khu dân cư, thương mại, công nghiệp, trên đám đông ngoài trời hơn 1.000 người, hoặc trong phạm vi 50 m quanh phương tiện, công trình hay người (30 m khi cất/hạ cánh), trừ khi được phép. Drone trên 20 kg cần phép. Đơn Authorisation To Fly (ATF) gửi drone.atf@caam.gov.my ít nhất 14 ngày làm việc trước ngày bay. Trước khi xin ATF phải liên hệ các cơ quan khác: JUPEM nếu chụp ảnh/lập bản đồ trên không; CGSO quản lý khu vực và địa điểm cấm (Kawasan Larangan, Tempat Larangan, Sasaran Penting); MCMC về tần số; SIRIM; Sabah và Sarawak cần phép bổ sung.",
+      "source": {
+        "title": "Malaysia: quy định bay flycam/drone và khu vực cấm",
+        "url": "https://www.caam.gov.my/public/unmanned-aircraft-system-uas/",
+        "authority": "Civil Aviation Authority of Malaysia (CAAM)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:32Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/caam.gov.my-public-unmanned-aircraft-system-uas.md",
+        "excerpt": "These circumstances include flying over or within 150 meters of any designated area, flying over an open-air assembly of more than 1,000 people, and flying within 50 meters of any vessel, vehicle, structure, or person",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "giay-phep-vep-va-phi-duong-bo-cho-xe-nuoc-ngoai",
+      "title": "giấy phép VEP và phí đường bộ cho xe nước ngoài",
+      "topicGroups": [
+        6
+      ],
+      "suggestedTopicSlug": "giao-thong",
+      "keywords": "driving, foreign vehicle, Vehicle Entry Permit, road charge RM20",
+      "summaryVi": "Malaysia — xe nước ngoài vào Malaysia (VEP) và phí đường bộ, theo Jabatan Pengangkutan Jalan Malaysia (JPJ). Theo cổng VEP chính thức của JPJ: Vehicle Entry Permit (VEP) là giấy phép JPJ cấp theo Section 66H của Road Transport Act 1987 cho phép xe nước ngoài vào Malaysia. Chủ hoặc người đại diện được ủy quyền của mọi xe đăng ký nước ngoài vào Bán đảo Malaysia phải đăng ký VEP trực tuyến; sau khi kiểm tra giấy tờ và nộp phí xử lý RM10, xe được cấp thẻ VEP-RFID không chuyển nhượng, hiệu lực 5 năm. Road Charge (RC) RM20 thu mỗi lần xe cá nhân đăng ký nước ngoài vào Malaysia (từ 1/11/2016); xe máy, xe của chính phủ/đại sứ quán và xe thương mại được miễn Road Charge. Trang này không nêu quy định về bằng lái nước ngoài, giấy phép lái xe quốc tế (IDP) cho du khách, thuê xe máy hay mức phạt giao thông.",
+      "source": {
+        "title": "Malaysia: giấy phép VEP và phí đường bộ cho xe nước ngoài",
+        "url": "https://vep.jpj.gov.my/",
+        "authority": "Jabatan Pengangkutan Jalan Malaysia (Road Transport Department, JPJ) – VEP portal",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:56:40Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/vep.jpj.gov.my-home.md",
+        "excerpt": "With effect from November 1, 2016, each time a foreign vehicle enters Malaysia, the driver of the vehicle must pay a Road Charge of RM20.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "lien-he-dai-su-quan-viet-nam-tai-kuala-lumpur",
+      "title": "liên hệ Đại sứ quán Việt Nam tại Kuala Lumpur",
+      "topicGroups": [
+        7
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "Vietnamese embassy, consular protection, contact, address, phone, opening hours",
+      "summaryVi": "Malaysia — Đại sứ quán Việt Nam tại Malaysia, bảo hộ công dân, theo trang chính thức của Đại sứ quán. Đại sứ quán nước Cộng hòa xã hội chủ nghĩa Việt Nam tại Malaysia: địa chỉ Số 4 Persiaran Stonor, 50450 Kuala Lumpur; điện thoại +603-2148-4534; email vnemb.my@mofa.gov.vn; email hc.mls2022@gmail.com (khi cần liên hệ về công tác lãnh sự). Giờ mở cửa lãnh sự: thứ Hai, thứ Tư và sáng thứ Sáu hàng tuần (trừ ngày nghỉ lễ); thứ Hai và thứ Tư từ 9:00 đến 12:30 và từ 14:00 đến 16:00; thứ Sáu từ 9:00 đến 12:30. Website Đại sứ quán có mục Bảo hộ công dân và hướng dẫn thủ tục cấp đổi hộ chiếu phổ thông, hộ chiếu theo thủ tục rút gọn. Trang không nêu số đường dây nóng bảo hộ công dân ngoài giờ làm việc.",
+      "source": {
+        "title": "Malaysia: liên hệ Đại sứ quán Việt Nam tại Kuala Lumpur",
+        "url": "https://vnembassy-kualalumpur.mofa.gov.vn/tin-chi-tiet/chi-tiet/ho-chieu-pho-thong-va-ho-chieu-theo-thu-tuc-rut-gon-62384-1642.html",
+        "authority": "Đại sứ quán Việt Nam tại Malaysia (Bộ Ngoại giao Việt Nam)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:58:17Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/vnembassy-kualalumpur.mofa.gov.vn-ho-chieu-pho-thong-va-ho-chieu-theo-thu-tuc-rut-gon.md",
+        "excerpt": "Số 4 Persiaran Stonor, 50450 Kuala Lumpur",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mat-ho-chieu-o-nuoc-ngoai-huong-dan-cua-cuc-lanh-su",
+      "title": "mất hộ chiếu ở nước ngoài – hướng dẫn của Cục Lãnh sự",
+      "topicGroups": [
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "lost passport, stolen passport, police report, travel document, embassy",
+      "summaryVi": "Malaysia — mất hộ chiếu khi ở nước ngoài, áp dụng cho công dân Việt Nam ở Malaysia, theo Cục Lãnh sự – Bộ Ngoại giao Việt Nam. Khi thất lạc hoặc bị mất cắp hộ chiếu còn giá trị ở nước ngoài, cần thông báo ngay cho cảnh sát nước sở tại và Cơ quan Đại diện Việt Nam gần nhất. Cần làm: điền Đơn trình báo mất hộ chiếu theo mẫu, gửi email về Cục Lãnh sự (cls.mfa@mofa.gov.vn) và Cơ quan Đại diện nơi đang có mặt, kèm 02 ảnh cỡ 4x6 cm; nộp kèm bản chụp giấy xác nhận báo mất hộ chiếu của cảnh sát; có mặt tại Cơ quan Đại diện. Hộ chiếu đã được thông báo hủy sẽ không được khôi phục giá trị dù tìm lại được. Thời gian xét cấp: nếu có giấy tờ khác chứng minh quốc tịch Việt Nam (như chứng minh nhân dân) và bằng chứng nhập cảnh hợp pháp (vé máy bay, tờ khai nhập cảnh) thì trong vòng 5 ngày làm việc được cấp lại hộ chiếu nếu đi tiếp nước khác, hoặc cấp Thông hành nếu về nước; đi theo tour/đoàn có người cùng đoàn xác nhận thì được cấp Thông hành về nước trong vòng 24 giờ; không có giấy tờ nào thì phải xác minh, không quá 5 ngày làm việc.",
+      "source": {
+        "title": "Malaysia: mất hộ chiếu ở nước ngoài – hướng dẫn của Cục Lãnh sự",
+        "url": "https://lanhsuvietnam.gov.vn/Lists/BaiViet/DispForm.aspx?ID=73",
+        "authority": "Cục Lãnh sự – Bộ Ngoại giao Việt Nam",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:53:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/lanhsuvietnam.gov.vn-BaiViet-ID-73.md",
+        "excerpt": "bạn cần thông báo ngay việc mất hộ chiếu cho cảnh sát nước sở tại",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "bi-bat-tam-giu-o-nuoc-ngoai-co-quan-dai-dien-giup-gi",
+      "title": "bị bắt, tạm giữ ở nước ngoài – Cơ quan Đại diện giúp gì",
+      "topicGroups": [
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "arrest, detention, prison, consular visit, lawyer list, emergency assistance",
+      "summaryVi": "Malaysia — bị bắt, giam giữ khi ở nước ngoài, áp dụng cho công dân Việt Nam ở Malaysia, theo Cục Lãnh sự – Bộ Ngoại giao Việt Nam. Vi phạm pháp luật nước ngoài (trộm cắp, ở quá thời hạn visa, làm việc chui, vi phạm luật lệ giao thông, lấy áo phao trên máy bay…) đều có thể bị bắt, bị phạt tù, phạt tiền. Người bị bắt có thể yêu cầu được gặp viên chức lãnh sự Việt Nam và cần chứng minh bản thân vô tội nếu bị oan. Cơ quan Đại diện có thể: đến thăm để nghe trình bày nguyện vọng; can thiệp nếu bị oan sai; bảo hộ quyền lợi chính đáng khi bị giam giữ (đối xử nhân đạo, không bị tra tấn, ốm đau được chữa bệnh, xét xử có luật sư và phiên dịch); cung cấp danh sách luật sư để người bị bắt tự chọn, tự ký hợp đồng thuê và trả tiền; thông báo cho gia đình, thân nhân; cấp Thông hành về nước khi mãn hạn tù; giúp chuyển tiền từ người thân ở Việt Nam để nộp phạt, thuê luật sư qua Quỹ Bảo hộ công dân. Cần giúp đỡ khẩn cấp: khai đơn đề nghị giúp đỡ khẩn cấp và gửi Cục Lãnh sự (cls.mfa@mofa.gov.vn) cùng Cơ quan Đại diện Việt Nam ở nước ngoài.",
+      "source": {
+        "title": "Malaysia: bị bắt, tạm giữ ở nước ngoài – Cơ quan Đại diện giúp gì",
+        "url": "https://lanhsuvietnam.gov.vn/Lists/BaiViet/DispForm.aspx?ID=78",
+        "authority": "Cục Lãnh sự – Bộ Ngoại giao Việt Nam",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:53:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/lanhsuvietnam.gov.vn-BaiViet-ID-78.md",
+        "excerpt": "Bạn có thể yêu cầu được gặp viên chức lãnh sự của Việt Nam.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "bi-lua-dao-tai-chinh-goi-nsrc-997",
+      "title": "bị lừa đảo tài chính – gọi NSRC 997",
+      "topicGroups": [
+        8,
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "scam, fraud, NSRC 997, police report, bank",
+      "summaryVi": "Malaysia — bị lừa đảo tài chính, đường dây NSRC 997, theo cổng thông tin chính thức của Chính phủ Malaysia (MyGOV). National Scam Response Centre (NSRC) là trung tâm phản ứng nhanh do Chính phủ Malaysia lập để xử lý các vụ lừa đảo tài chính trực tuyến theo thời gian thực; các cơ quan tham gia gồm Bank Negara Malaysia (BNM) và Royal Malaysia Police (PDRM). Đường dây nóng NSRC: 997, hoạt động hằng ngày 24 giờ. Loại lừa đảo có thể báo: lừa đảo tình cảm, Macau scam, lừa đảo đầu tư, mua vàng số, tiền mã hóa (BTC, ETH), rửa tiền, giả danh ngân hàng hoặc cơ quan nhà nước, lừa đảo mua sắm trực tuyến, cuộc gọi giả danh cán bộ thực thi pháp luật, gian lận mua sắm. Cần làm: gọi NSRC trong vòng 24 giờ kể từ khi phát hiện bị lừa để cơ quan chức năng phong tỏa tài khoản và giao dịch, giúp thu hồi tiền; liên hệ ngân hàng liên quan; trình báo cảnh sát (police report) tại đồn gần nhất. Trang cập nhật 31/7/2026; trang không nêu riêng về bị nâng giá, chặt chém khi mua hàng.",
+      "source": {
+        "title": "Malaysia: bị lừa đảo tài chính – gọi NSRC 997",
+        "url": "https://www.malaysia.gov.my/en/categories/safety-and-community/cybersecurity/nsrc-997-hotline",
+        "authority": "Portal Rasmi Kerajaan Malaysia (MyGOV, malaysia.gov.my)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T09:00:05Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/malaysia.gov.my-en-categories-safety-and-community-cybersecurity-nsrc-997-hotline.md",
+        "excerpt": "Report the incident by calling the NSRC hotline within 24 hours of discovering that you have been scammed",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khieu-nai-mua-hang-dich-vu-tai-tribunal-for-consumer-claims",
+      "title": "khiếu nại mua hàng, dịch vụ tại Tribunal for Consumer Claims (TTPM)",
+      "topicGroups": [
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "consumer dispute, complaint, refund, overcharging, Tribunal for Consumer Claims, RM50,000",
+      "summaryVi": "Malaysia — tranh chấp mua hàng, dịch vụ: Tribunal for Consumer Claims Malaysia (TTPM), theo Kementerian Perdagangan Dalam Negeri dan Kos Sara Hidup (KPDN). TTPM là diễn đàn thay thế tòa án dân sự để người tiêu dùng đòi bồi thường về hàng hóa, dịch vụ đã mua, nhanh và chi phí thấp; thành lập ngày 15/11/1999 theo section 85, Part XII, Consumer Protection Act 1999 (Act 599). Thẩm quyền: yêu cầu bồi thường về mua hàng/dịch vụ theo Act 599, tổng số tiền không quá RM50.000 và phát sinh trong vòng 3 năm. Không xét: thương tích cá nhân hoặc tử vong, đất đai, di chúc, dịch vụ chuyên môn do luật điều chỉnh, dịch vụ y tế, dịch vụ hàng không, nhượng quyền, sở hữu trí tuệ. Người tiêu dùng là cá nhân mua/dùng hàng, dịch vụ cho mục đích cá nhân, gia đình. TTPM không xử lý khiếu nại (complaints), chỉ xét yêu cầu bồi thường (claims). Khi có thể, phán quyết ra trong 60 ngày từ phiên đầu, là chung thẩm, coi như lệnh Magistrate's Court; không thi hành sau 14 ngày có thể bị phạt tới RM10.000 hoặc tù tới 2 năm. Nộp đơn tại quầy Tribunal hoặc trực tuyến qua ttpm.kpdn.gov.my; phí nộp đơn RM5. Trang không nêu riêng về du khách nước ngoài.",
+      "source": {
+        "title": "Malaysia: khiếu nại mua hàng, dịch vụ tại Tribunal for Consumer Claims (TTPM)",
+        "url": "https://www.kpdn.gov.my/en/corporate-info/department/secretary-general/tribunal-for-consumer-claims",
+        "authority": "Kementerian Perdagangan Dalam Negeri dan Kos Sara Hidup (KPDN)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:59:42Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/my/kpdn.gov.my-en-tribunal-for-consumer-claims.md",
+        "excerpt": "a claim where the total amount does not exceed RM50,000.00; and",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    }
+  ]
+}

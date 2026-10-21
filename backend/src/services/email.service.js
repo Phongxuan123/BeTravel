@@ -3,6 +3,16 @@ import nodemailer from "nodemailer";
 import { env } from "../core/env.js";
 
 let transporter = null;
+const SMTP_TIMEOUT_MS = 10000;
+const HEALTH_TTL_MS = 30000;
+let healthyUntil = 0;
+let healthCheck = null;
+
+const escapeHtml = (value) =>
+  String(value).replace(
+    /[&<>"']/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
+  );
 
 const getTransporter = () => {
   if (transporter) {
@@ -11,23 +21,50 @@ const getTransporter = () => {
 
   const required = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD"];
 
-  const missing = required.filter((key) => !process.env[key]);
+  const missing = required.filter((key) => !env[key]);
 
   if (missing.length > 0) {
     throw new Error(`SMTP_CONFIG_MISSING:${missing.join(",")}`);
   }
 
   transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: process.env.SMTP_SECURE === "true",
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    secure: env.SMTP_SECURE,
+    requireTLS: !env.SMTP_SECURE,
+    connectionTimeout: SMTP_TIMEOUT_MS,
+    greetingTimeout: SMTP_TIMEOUT_MS,
+    socketTimeout: SMTP_TIMEOUT_MS,
     auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
+      user: env.SMTP_USER,
+      pass: env.SMTP_PASSWORD,
     },
   });
 
   return transporter;
+};
+
+// Kiểm tra chung TRƯỚC tra tài khoản: lỗi cấu hình/SMTP giống nhau cho mọi email.
+// Chỉ test được bỏ gửi; dev/production không được báo thành công khi tắt SMTP.
+export const verifyPasswordResetEmailService = async () => {
+  if (env.SMTP_DISABLED && env.NODE_ENV === "test") return;
+  if (env.SMTP_DISABLED) throw new Error("PASSWORD_RESET_EMAIL_FAILED");
+  if (healthyUntil > Date.now()) return;
+  if (!healthCheck) {
+    healthCheck = Promise.resolve()
+      .then(() => getTransporter().verify())
+      .then(() => {
+        healthyUntil = Date.now() + HEALTH_TTL_MS;
+      })
+      .catch((error) => {
+        console.error("[password-reset] SMTP unavailable:", error.code || "SMTP_CONFIG_ERROR");
+        throw new Error("PASSWORD_RESET_EMAIL_FAILED");
+      })
+      .finally(() => {
+        healthCheck = null;
+      });
+  }
+  await healthCheck;
 };
 
 export const sendPasswordResetOtpEmail = async ({
@@ -44,13 +81,14 @@ export const sendPasswordResetOtpEmail = async ({
     throw new Error("OTP_MISSING");
   }
 
-  // Cau hinh tuong minh thay vi do NODE_ENV: test/dev khong co SMTP dat SMTP_DISABLED=true.
-  if (env.SMTP_DISABLED) return;
+  // Chỉ test bỏ gửi; dev/production phải cấu hình SMTP thật.
+  if (env.SMTP_DISABLED && env.NODE_ENV === "test") return;
+  if (env.SMTP_DISABLED) throw new Error("PASSWORD_RESET_EMAIL_FAILED");
 
   const mailer = getTransporter();
 
-  await mailer.sendMail({
-    from: `"BeTravel" <${process.env.SMTP_USER}>`,
+  const result = await mailer.sendMail({
+    from: { name: "BeTravel", address: env.SMTP_USER },
     to,
     subject: "Mã OTP khôi phục mật khẩu - BeTravel",
     text: [
@@ -70,7 +108,7 @@ export const sendPasswordResetOtpEmail = async ({
     html: `
             <div style="font-family:Arial,sans-serif;line-height:1.6;color:#243447">
                 <h2>Khôi phục mật khẩu BeTravel</h2>
-                <p>Xin chào <strong>${fullName}</strong>,</p>
+                <p>Xin chào <strong>${escapeHtml(fullName)}</strong>,</p>
                 <p>Mã OTP của bạn là:</p>
                 <div style="font-size:28px;font-weight:700;letter-spacing:6px;padding:12px 18px;background:#f3f6f9;display:inline-block;border-radius:8px">${otp}</div>
                 <p>Mã có hiệu lực trong <strong>${expiresMinutes} phút</strong>.</p>
@@ -78,4 +116,8 @@ export const sendPasswordResetOtpEmail = async ({
             </div>
         `,
   });
+  if (!result.accepted?.length) {
+    healthyUntil = 0;
+    throw new Error("SMTP_RECIPIENT_REJECTED");
+  }
 };

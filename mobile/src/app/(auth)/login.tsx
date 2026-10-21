@@ -36,7 +36,11 @@ export default function LoginScreen() {
       await login(identifier.trim(), password, remember);
       router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.');
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.',
+      );
     } finally {
       setLoading(false);
     }

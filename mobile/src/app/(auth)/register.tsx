@@ -18,7 +18,11 @@ import { isPasswordValid, passwordValidationMessage } from '@/lib/password';
 const openPendingLegalText = (title: string) =>
   router.push({
     pathname: '/coming-soon',
-    params: { title, detail: 'Văn bản này đang được hoàn thiện và sẽ được công bố trước khi ứng dụng phát hành chính thức.' },
+    params: {
+      title,
+      detail:
+        'Văn bản này đang được hoàn thiện và sẽ được công bố trước khi ứng dụng phát hành chính thức.',
+    },
   } as never);
 
 export default function RegisterScreen() {
@@ -39,11 +43,19 @@ export default function RegisterScreen() {
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const canSubmit =
-    name.trim().length >= 2 && isValidEmail && isValidPhone && isPasswordValid(password) && confirm === password && agree;
+    name.trim().length >= 2 &&
+    isValidEmail &&
+    isValidPhone &&
+    isPasswordValid(password) &&
+    confirm === password &&
+    agree;
 
   const onSubmit = async () => {
     if (!canSubmit) {
-      setError(passwordValidationMessage(password) ?? 'Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.');
+      setError(
+        passwordValidationMessage(password) ??
+          'Vui lòng điền đầy đủ thông tin hợp lệ và đồng ý điều khoản.',
+      );
       return;
     }
     setError(null);
@@ -52,7 +64,11 @@ export default function RegisterScreen() {
       await register(name, email, password, phone.trim());
       router.replace('/trips/new?step=1');
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Không thể tạo tài khoản. Kiểm tra kết nối mạng và thử lại.');
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Không thể tạo tài khoản. Kiểm tra kết nối mạng và thử lại.',
+      );
     } finally {
       setLoading(false);
     }

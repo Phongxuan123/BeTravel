@@ -239,8 +239,14 @@ Rate limit chung: 8 lan / 15 phut. Tat ca tra `{ "ok": true, "data": {...} }`.
 | `POST /auth/resend-reset-otp` | `{ email }` | `{ "sent": true }` |
 | `POST /auth/reset-password` | `{ resetToken, password }` | `{ "reset": true }` |
 
-`forgot-password` va `resend-reset-otp` luon bao thanh cong du email co ton tai hay khong —
-co y, de khong ro ri danh sach email dang ky.
+`forgot-password` và `resend-reset-otp` trả cùng `{sent:true}` cho email có/không có tài khoản
+khi dịch vụ email sẵn sàng; `sent` là tiếp nhận yêu cầu, KHÔNG xác nhận thư đến hộp thư.
+Email sai định dạng: `400 VALIDATION_ERROR`. Kiểm tra SMTP thực hiện trước tra tài khoản;
+thiếu cấu hình, tắt SMTP ngoài test hoặc verify lỗi: cùng `502 UPSTREAM_ERROR` cho mọi email.
+Lỗi gửi riêng từng người nhận sau verify vẫn trả phản hồi chung để không lộ tài khoản;
+server ghi mã lỗi không chứa email/OTP. `SMTP_DISABLED=true` chỉ bỏ gửi trong NODE_ENV=test.
+OTP 5 phút; tối đa 5 lần sai; token reset 10 phút và dùng một lần. Đổi mật khẩu trực tiếp
+bằng mật khẩu hiện tại không dùng SMTP; hủy refresh token và các OTP/token reset đang chờ.
 
 ---
 

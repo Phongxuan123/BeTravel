@@ -13,6 +13,82 @@
   nhật vì quy tắc số điện thoại thay đổi có chủ đích (số điện thoại phải có trong nguồn).
 - Vấn đề còn tồn đọng: xem mục "Chưa làm / đang vướng (AI)" ở PROGRESS.md.
 
+## Khôi phục bố cục auth trước căn giữa — 20/10/2026
+
+Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
+`ded3785` (trước lần căn giữa đầu tiên). Nội dung xếp từ trên xuống trong
+ScrollView, không chia ba vùng hoặc căn giữa dọc. Xóa AuthScreen không còn dùng.
+Giữ nguyên handlers/state/API hiện tại; giữ luồng OTP, ràng buộc email tài khoản,
+quy tắc mật khẩu và chỉ logout sau khi đổi thành công. Giữ khoảng cách 16 giữa
+nút OTP và Quay lại Cài đặt, sửa chống co nút và header tự xuống dòng.
+
+Mobile lint/typecheck và 237/237 tests đạt. Đã quan sát login BlueStacks trở về
+bố cục cũ; chưa nghiệm thu register/forgot và bàn phím trên điện thoại ở đợt này.
+Không đổi backend/dữ liệu, không push; giữ backend/.env.example ngoài commit.
+Yêu cầu bố cục này thay thế phương án ba vùng ở mục lịch sử bên dưới.
+
+## Lịch sử cập nhật: Auth ba vùng — 20/10/2026
+
+Tách header/footer thành props của AuthScreen, chỉ vùng nhập dùng flexGrow và
+justifyContent:center. Không đo chiều cao màn hình hoặc dùng vị trí absolute;
+form dài có thể cuộn cùng các nút. Giữ minHeight/flexShrink của Button để tránh
+hồi quy co nút. Không thêm dependency, không đổi logic xác thực. Mobile 237 tests,
+lint/typecheck đạt; giới hạn nghiệm thu và logo ghi trong ACCEPTANCE/PROGRESS.
+
+## Căn giữa form theo yêu cầu cuối — 20/10/2026
+
+Chỉ bổ sung justifyContent:center ở content container có flexGrow; không phục hồi
+maxWidth 480 hoặc chiều cao cố định. Giữ Button minHeight/flexShrink:0 để tránh
+hồi quy co nút. Đã quan sát login trên BlueStacks; hạn chế UI ghi tại ACCEPTANCE.
+
+Kiểm tra đợt này: mobile 237/237, backend 296/296, admin 18/18 (551 tổng).
+Lint/typecheck tương ứng, format backend và admin build đạt.
+
+## Hồi quy layout auth — 20/10/2026
+
+Bỏ giới hạn chiều rộng và căn giữa dọc không phù hợp ảnh người dùng. Button mặc
+định dùng mảng style tĩnh, minHeight/flexShrink thay chiều cao cứng trong callback;
+cho phép chữ lớn xuống dòng. Không đổi sự kiện onPress hoặc auth. Giữ lưới test
+mobile 237/237; đã xem login thật trên BlueStacks. Không thêm test phản chiếu CSS.
+
+## Bố cục auth — 20/10/2026
+
+- Gom safe-area, padding và ScrollView vào AuthScreen để ba màn không lệch bố cục.
+- Giữ khoảng cách OTP đã sửa local; nền trang trí không bắt thao tác chạm.
+- Không viết test chỉ kiểm giá trị CSS cho chỉnh sửa bố cục; chạy bộ hồi quy sẵn có.
+- Không đổi contracts, mật khẩu, session hoặc nguồn dữ liệu; kiểm thiết bị còn mở.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (551 tổng);
+lint/typecheck tương ứng, backend format và admin build đạt.
+
+## OTP giữ ngữ cảnh đăng nhập — 20/10/2026
+
+- Dựa vào AuthContext thay vì tham số URL để quyết định giao diện đã đăng nhập.
+  Không tạo phiên giả hay giữ phiên sau khi đổi mật khẩu thành công.
+- Gom hướng dẫn PASSWORD_REQUIREMENTS, giữ validator backend và client thống nhất.
+  Quy tắc ký tự đặc biệt không bắt buộc được nói rõ, không tự nâng chính sách.
+- Rà file sửa: không import chết, không thay API/schema, giữ màn guest và chặn
+  nút điều hướng trong lúc gửi yêu cầu. Giữ hạn chế nhận email/thiết bị ở ACCEPTANCE.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (tổng 551);
+lint/typecheck tương ứng, format backend và admin build đạt. Hồi quy màn OTP
+chạy lại 2/2 sau chỉnh lỗi xác nhận/khóa nút quay lại, đạt.
+
+## Auth/OTP — 20/10/2026 (Chế độ B)
+
+- Chuẩn hóa SMTP theo env đã validate, timeout có hằng; kiểm tra sức khỏe gộp
+  request đồng thời/cache 30s để không xác thực SMTP mỗi lần gửi.
+- Không lộ tài khoản qua lỗi cấu hình: kiểm dịch vụ trước lookup. Giữ hạn mức
+  route, không log email/OTP/password; escape tên người dùng trong HTML email.
+- Dọn đúng request khi gửi thất bại, không xóa request khác đến sau. Đổi mật khẩu
+  trực tiếp hủy OTP/reset cũ. Không thay schema hoặc thêm provider.
+- Dùng chung TextField với accessibilityLabel mặc định; caller vẫn ghi đè được.
+- Giới hạn: lỗi người nhận sau verify vẫn phản hồi tiếp nhận để chống dò email;
+  cần log provider/kiểm hộp thư để xác nhận gửi thực. Không tự sửa key hoặc gửi mail.
+
+Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
+Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
+
 ## Luật liên bang Úc — 18/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Rule 10: không còn import/biến thừa trong các file mới (`eslint`, `tsc`, `oxlint` xanh). Không xóa `mobile/src/mocks/`.

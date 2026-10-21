@@ -152,6 +152,135 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
 - Hạn mức **ngày** của `gemini-3.5-flash-lite` chưa đo được (đã đo giới hạn phút, xem trên).
 - Chưa nghiệm thu máy thật; emulator không gõ được chữ có dấu nên câu hỏi thử dùng chữ không dấu.
 
+## Khôi phục bố cục auth trước căn giữa — 20/10/2026
+
+Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
+`ded3785` (trước lần căn giữa đầu tiên). Nội dung xếp từ trên xuống trong
+ScrollView, không chia ba vùng hoặc căn giữa dọc. Xóa AuthScreen không còn dùng.
+Giữ nguyên handlers/state/API hiện tại; giữ luồng OTP, ràng buộc email tài khoản,
+quy tắc mật khẩu và chỉ logout sau khi đổi thành công. Giữ khoảng cách 16 giữa
+nút OTP và Quay lại Cài đặt, sửa chống co nút và header tự xuống dòng.
+
+Mobile lint/typecheck và 237/237 tests đạt. Đã quan sát login BlueStacks trở về
+bố cục cũ; chưa nghiệm thu register/forgot và bàn phím trên điện thoại ở đợt này.
+Không đổi backend/dữ liệu, không push; giữ backend/.env.example ngoài commit.
+Yêu cầu bố cục này thay thế phương án ba vùng ở mục lịch sử bên dưới.
+
+## Auth ba vùng và logo chính thức — 20/10/2026 (mới nhất)
+
+Tiến độ `[##--] 2/4`: bố cục và kiểm tự động xong; logo chờ tệp gốc,
+nghiệm thu thiết bị còn một phần.
+
+- Thay cách căn giữa cả trang bằng AuthScreen có header / vùng nhập / footer.
+  Login, register và mọi bước OTP dùng chung bố cục: đầu trang trên, ô nhập
+  giữa phần còn lại, nút/liên kết dưới; nội dung dài cuộn chung, không ép co.
+- Giữ safe-area, lề 24, khoảng cách nút 16, minHeight Button và luồng auth.
+- Mobile lint/typecheck đạt; 237/237 tests (55 suites) đạt. Đã thấy login
+  ba vùng trên BlueStacks. Công cụ chuyển sang đăng ký báo noWindowsAvailable;
+  chưa nghiệm thu register/forgot/keyboard trên Samsung/iOS.
+- Logo người dùng gửi là biểu tượng ong/vô cực/ghim địa cầu xanh-vàng.
+  Ảnh có trong chat nhưng không có tệp ảnh truy cập được ở attachments.
+  Chưa thay logo: cần người dùng cung cấp tệp PNG/JPG hoặc đường dẫn gốc.
+  Không tự vẽ lại hoặc dùng ảnh khác thay thế thương hiệu chính thức.
+- Không đổi backend, không push. backend/.env.example vẫn là thay đổi riêng
+  của người dùng. Kết quả backend/admin ở mục cũ là lịch sử, không chạy lại
+  trong đợt chỉ sửa giao diện này.
+
+## Căn giữa dọc toàn bộ form auth — 20/10/2026 (mới nhất)
+
+Tiến độ `[###-] 3/4`: code/kiểm tự động và quan sát login BlueStacks; còn xem
+register/forgot-password và bàn phím trên Samsung/iOS.
+
+- AuthScreen dùng flexGrow + justifyContent:center, vẫn alignItems:stretch và
+  rộng 100%, không maxWidth. Form dài được cuộn, không ép co các nút.
+- Giữ lề 24, safe-area, chiều cao tối thiểu Button và khoảng cách OTP đã sửa.
+- Screenshot BlueStacks xác nhận login nằm giữa dọc, rộng đủ màn, nút đủ cao.
+  Thao tác mở đăng ký bị công cụ báo noWindowsAvailable; chưa xác nhận hai màn
+  còn lại trực quan. Không thay auth/API/backend hay dữ liệu thật.
+- Không push; giữ backend/.env.example của người dùng chưa commit.
+
+Kiểm tra đợt này: mobile 237/237, backend 296/296, admin 18/18 (551 tổng).
+Lint/typecheck tương ứng, format backend và admin build đạt.
+
+## Sửa hồi quy khung auth và nút bị co — 20/10/2026
+
+Tiến độ `[####] 4/4` cho sửa bố cục theo ảnh: code, test mobile, xem BlueStacks,
+đã ghi tài liệu. Không bao gồm nghiệm thu OTP thật hoặc Samsung/iOS.
+
+- Bỏ maxWidth 480 và căn giữa dọc ở AuthScreen. Form dùng toàn bộ chiều ngang
+  trừ lề 24; tiêu đề vẫn căn giữa, nội dung bắt đầu sau safe-area, dài thì cuộn.
+- Bỏ vòng tròn nền lớn của login; header logo/trợ giúp nằm hai phía, cho wrap.
+- Button chung dùng style tĩnh mặc định, minHeight 54/50, flexShrink:0 và padding;
+  không co thành thanh mỏng, chữ có thể xuống dòng. Giữ callback style tùy chọn.
+- Đã xem screenshot BlueStacks sau sửa: login full width, cả nút chính/phụ đủ cao,
+  khoảng cách rõ. Mobile lint/typecheck và 237/237 tests đạt (55 suites).
+- Không đổi backend/API/auth. Giữ thay đổi .env.example riêng, không push.
+
+## Căn giữa giao diện auth — 20/10/2026
+
+Tiến độ `[###-] 3/4`: đã sửa bố cục, kiểm tự động và tài liệu; chờ xem trên máy thật.
+
+- Giữ khoảng cách mt-4 (16 px) đang sửa local giữa khối gửi/xác thực OTP và
+  Quay lại Cài đặt; tích hợp thay đổi đó theo yêu cầu người dùng.
+- Login/Register/ForgotPassword dùng AuthScreen chung: form rộng tối đa 480,
+  nằm giữa màn khi còn chỗ, vẫn cuộn nếu dài. Có safe-area và tránh bàn phím iOS;
+  Android giữ cơ chế resize hiện hành. Tiêu đề/mô tả căn giữa; ô nhập căn trái.
+- Header và liên kết cuối form cho xuống dòng; header căn giữa. Không sửa luồng
+  auth, API hoặc dữ liệu. Không push; giữ backend/.env.example chưa commit.
+- Còn cần xem Samsung/BlueStacks: màn nhỏ, bàn phím mở, cỡ chữ lớn và form đăng ký
+  dài. Không coi unit test là nghiệm thu vị trí pixel/keyboard trên thiết bị.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (551 tổng);
+lint/typecheck tương ứng, backend format và admin build đạt.
+
+## OTP khi đã đăng nhập — 20/10/2026 (bổ sung)
+
+Tiến độ `[###-] 3/4`: code và hồi quy xong; cần thử giao diện trên điện thoại thật.
+
+- Màn khôi phục nhận biết user: không hiện “Nhớ ra mật khẩu rồi / Đăng nhập”
+  khi đã đăng nhập; email gắn tài khoản hiện tại và không cho sửa sang tài khoản khác.
+- Quay lại Cài đặt/back trước khi hoàn tất giữ phiên; không logout khi API lỗi.
+  Chỉ reset thành công mới logout và yêu cầu đăng nhập lại. Back ở màn thành công
+  cũng về đăng nhập; khóa nút quay lại lúc đang xử lý.
+- Hiện yêu cầu ngay bước email và tạo mật khẩu: 8–128 ký tự, ít nhất một A–Z,
+  một a–z và một số; ký tự đặc biệt không bắt buộc theo backend hiện có.
+  Mật khẩu mới phải khác cũ; xác nhận phải trùng, lỗi hiển thị tại ô nhập.
+- Dùng cùng PASSWORD_REQUIREMENTS ở đổi trực tiếp/OTP. Không thay chính sách
+  backend hoặc contract, không gửi thư thật, không sửa dữ liệu Atlas.
+- Test thêm: user đăng nhập không thấy link login/sửa email; quay lại giữ auth;
+  gửi đúng email, xác nhận lệch bị chặn, API lỗi không logout, thành công mới logout.
+- Giữ thay đổi backend/.env.example của người dùng ở trạng thái chưa commit.
+  Không push Git. Nghiệm thu nhận thư thật ở mục Auth trước vẫn còn mở.
+
+Kiểm tra: mobile 237/237, backend 296/296, admin 18/18 (tổng 551);
+lint/typecheck tương ứng, format backend và admin build đạt. Hồi quy màn OTP
+chạy lại 2/2 sau chỉnh lỗi xác nhận/khóa nút quay lại, đạt.
+
+## Auth: đổi mật khẩu và email OTP — 20/10/2026
+
+Tiến độ `[###-] 3/4` — code, kiểm tự động và tài liệu hoàn tất; còn xác nhận
+nhận email thật/điện thoại người dùng. Không push, không sửa dữ liệu Atlas hay .env.
+
+- Đã xác minh SMTP thực từ máy: kết nối/xác thực OK (không gửi thư). Vì vậy chưa
+  xác định nguyên nhân duy nhất email của người dùng không nhận OTP; chưa có log
+  người nhận hoặc xác nhận app đang gọi đúng backend này.
+- Đổi trực tiếp dùng mật khẩu cũ, KHÔNG OTP; UI giải thích và có nút khôi phục
+  qua email. Thành công hủy refresh token và yêu cầu OTP/reset còn chờ.
+- Khôi phục: kiểm tra SMTP trước lookup tài khoản; lỗi dịch vụ trả cùng 502 cho
+  mọi email. Giữ response chống dò tài khoản; không hứa thư đã đến hộp thư.
+  Validate email; lỗi gửi chỉ xóa đúng request, log không chứa email/OTP.
+- SMTP dùng env chuẩn hóa, TLS/STARTTLS, timeout; thêm `backend npm run email:check`.
+  SMTP_DISABLED chỉ bỏ gửi trong test. UI thêm sửa email, chờ gửi lại 30s,
+  xóa token/password và đăng xuất sau reset; TextField có nhãn accessibility.
+- Kiểm thử HTTP với DB tạm/transport tại chỗ đi đủ forgot > OTP > reset > login;
+  từ chối dùng lại token và đổi trực tiếp vẫn chạy khi SMTP lỗi. Không gửi thư ra ngoài.
+- Bước người dùng: restart backend/Metro, thử Cài đặt với mật khẩu cũ; hoặc thử
+  Quên mật khẩu với email đăng ký, xem Spam. Chẩn đoán phải chạy trên đúng API host.
+  Xem FEATURE_GUIDES mục Auth và ACCEPTANCE. Các vấn đề OSM/native cũ vẫn mở.
+
+Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
+Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
+
 ## Giao diện Be.Travel AI theo mẫu — 19/10/2026
 
 Theo yêu cầu người dùng, thiết kế lại màn chat AI theo mẫu (chỉ giao diện, không đổi contract `ChatAnswer`).
