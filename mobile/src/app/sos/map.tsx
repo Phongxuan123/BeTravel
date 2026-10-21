@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard } from 'react-native';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -25,6 +25,7 @@ import { MAP_RADIUS_OPTIONS, MAP_LOCATION_LIMIT, searchLocations, validCoordinat
 import { mapRuntime, mapTiles, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
 import { OsmWebMap, type MapHandle, type OsmMarker } from '@/features/sos/OsmWebMap';
 import { useDebouncedValue } from '@/features/sos/useDebouncedValue';
+import { useSheetSwipe } from '@/features/sos/useSheetSwipe';
 
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#EAF4FF' }] },
@@ -115,6 +116,10 @@ export default function SosMapScreen() {
   const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(initialFilter);
   // Danh sách phía dưới chỉ hiện khi người dùng chủ động (chọn bộ lọc, tìm địa điểm, định vị); mở từ CTA có sẵn loại (?type=) thì mở luôn.
   const [sheetOpen, setSheetOpen] = useState(initialFilter !== 'all');
+  // Vuốt lên để xem danh sách, vuốt xuống để ẩn; chạm vào thanh kéo vẫn đổi trạng thái.
+  const openSheet = useCallback(() => setSheetOpen(true), []);
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
+  const swipeHandlers = useSheetSwipe(openSheet, closeSheet);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsFailure, setGpsFailure] = useState<LocationFailure | null>(null);
   const [measuredAt, setMeasuredAt] = useState<number | null>(null);
@@ -545,8 +550,9 @@ export default function SosMapScreen() {
       )}
 
       {!showSheet && (
-        <View pointerEvents="box-none" className="absolute inset-x-0 items-center" style={{ bottom: insets.bottom + 16 }}>
-          <Pressable accessibilityLabel="Mở danh sách địa điểm" onPress={() => setSheetOpen(true)}
+        <View {...swipeHandlers} className="absolute inset-x-0 items-center" style={{ bottom: insets.bottom + 8, paddingTop: 12 }}>
+          <View className="mb-2 h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+          <Pressable accessibilityLabel="Mở danh sách địa điểm" onPress={openSheet}
             className="rounded-full bg-surface px-4 py-3"
             style={{ shadowColor: '#102A43', shadowOpacity: 0.15, shadowRadius: 10, elevation: 4 }}>
             <Text className={`text-sm font-body-bold ${activeQuery.isError ? 'text-danger' : 'text-ink'}`}>
@@ -558,13 +564,14 @@ export default function SosMapScreen() {
       )}
 
       {showSheet && <View className="absolute inset-x-0 bottom-0 rounded-t-[28px] bg-surface" style={{ maxHeight: 320, paddingBottom: insets.bottom + 16 }}>
+        <View {...(listOnly ? {} : swipeHandlers)}>
         {listOnly ? (
           <View className="items-center py-2.5">
             <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
           </View>
         ) : (
           // Chạm vào thanh kéo cũng đóng được danh sách (người dùng không có thao tác vuốt xuống).
-          <Pressable accessibilityLabel="Đóng danh sách" onPress={() => setSheetOpen(false)} className="items-center py-3">
+          <Pressable accessibilityLabel="Đóng danh sách" onPress={closeSheet} className="items-center py-3">
             <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
           </Pressable>
         )}
@@ -574,11 +581,12 @@ export default function SosMapScreen() {
           </Text>
           <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsFailure ? 'GPS không khả dụng' : country?.name}</Text>
           {!listOnly && (
-            <Pressable accessibilityLabel="Đóng danh sách địa điểm" hitSlop={10} onPress={() => setSheetOpen(false)}
+            <Pressable accessibilityLabel="Đóng danh sách địa điểm" hitSlop={10} onPress={closeSheet}
               className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">
               <X size={18} color={colors.ink} />
             </Pressable>
           )}
+        </View>
         </View>
         {showExternal && canQueryExternal && !externalQuery.isLoading && !externalQuery.isError && (
           <Text className="px-[18px] text-sm text-warning-strong">+ {externalPlaces.length} gợi ý thêm (chưa xác minh)</Text>
