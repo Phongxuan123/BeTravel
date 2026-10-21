@@ -1,5 +1,12 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Mở lại AI + luật hải quan Úc — 22/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 6: thời hạn dùng mã bản hiện hành đã xác minh là biến `AU_REGISTER_MAX_STALE_HOURS`, không hard-code.
+- Rule 7: lỗi tra lại ở nền được bắt có chủ đích (không ảnh hưởng câu trả lời đã xác minh); lần đầu vẫn fail-closed.
+- Rule 11: comment tiếng Việt giải thích lý do ở `retrieval.js` (`lookupCurrentRegister`).
+- Rule 13A: không phát sinh warning mới. Bug runtime (nguồn luật chập chờn làm AI từ chối) đã có test hồi quy.
+
 ## Sửa GPS và tìm kiếm bản đồ — 21/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Rule 10: xóa hằng/hàm thử lại Overpass cũ (thay bằng nhiều máy chủ); `requestLocationWithExplanation` vẫn dùng ở màn khác nên giữ.
@@ -196,6 +203,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 22/10/2026: mở lại chat AI, thêm Customs Regulation 2015, nhớ mã bản luật Úc đã xác minh khi nguồn chập chờn; holdout 26/30.
 
 - 20/10/2026: hoàn thiện Be.Travel AI (phân luồng, 3 phần, luật Úc vào RAG, guard số điện thoại); backend 344, mobile 243, admin 18 tests đạt; chạy thật 9/9 trên 3 luật Úc.
 

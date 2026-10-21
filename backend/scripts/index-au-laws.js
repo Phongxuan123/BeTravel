@@ -10,7 +10,7 @@ import {
 import { AU_LAW_TOPICS } from "../src/core/auLawTopics.js";
 
 /*
- * Đưa điều luật liên bang Úc (31 luật tuyển chọn) vào RAG để Be.Travel AI trả lời có trích dẫn.
+ * Đưa điều luật liên bang Úc (32 luật tuyển chọn) vào RAG để Be.Travel AI trả lời có trích dẫn.
  * Tốn lượt gọi embedding (mỗi luật hàng trăm đến hàng nghìn chunk), nên LUÔN chỉ định luật cần làm:
  *   npm run index-au-laws -- --list                  liệt kê luật đã index
  *   npm run index-au-laws -- C1946A00045             index (hoặc index lại) một luật
