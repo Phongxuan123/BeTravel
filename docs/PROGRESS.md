@@ -1,6 +1,35 @@
 # TIEN DO BE.TRAVEL
 
-## Hoàn thiện Be.Travel AI (G1-G5) — 19-20/10/2026 (cập nhật mới nhất)
+## Sửa GPS và tìm kiếm trên bản đồ SOS — 21/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng. Nguyên nhân gốc tìm được bằng chạy thật (API thật, DB thật), không đoán:
+
+- Ô tìm kiếm chỉ lọc danh sách điểm hỗ trợ ĐÃ XÁC MINH, mà Atlas có 0 điểm ở mọi quốc gia nên gõ gì cũng không ra
+  (không phải lỗi code; vẫn không bịa dữ liệu). Nay ô tìm kiếm tìm địa điểm thật theo chữ và bản đồ bay tới đó.
+- Gợi ý OpenStreetMap thất bại vì Overpass công cộng sập (502/504/quá hạn, đã thử 6 máy chủ). Nay có máy chủ dự phòng
+  (`PLACES_OVERPASS_FALLBACK_URLS`) và, nếu tất cả hỏng, dự phòng bằng Nominatim (bệnh viện, cảnh sát, nhà thuốc, ĐSQ).
+- GPS: màn bản đồ gọi hàm trả `null` nên mọi lý do thất bại hiện chung "kiểm tra quyền". Nay dùng `requestLocationDetailed`:
+  báo đúng lý do, nút "Mở Cài đặt" khi bị chặn quyền/tắt GPS, chính sách vị trí dễ hơn riêng cho bản đồ (10 phút / 30 phút,
+  ghi giờ đo khi cũ), nút định vị nổi luôn có, và giữ lâu trên bản đồ để chọn vị trí khi máy không có GPS (LDPlayer).
+
+- Danh sách địa điểm phía dưới bản đồ không còn luôn chiếm màn hình: mặc định chỉ có bản đồ và một viên thuốc nhỏ
+  "N địa điểm đã xác minh · Xem danh sách"; danh sách chỉ mở khi người dùng chọn loại (Đại sứ quán, Bệnh viện...), tìm địa điểm,
+  định vị hoặc đi từ CTA có sẵn loại (`?type=`); đóng bằng nút X hoặc chạm thanh kéo; chọn "Tất cả" quay về chỉ xem bản đồ.
+  Buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ, thiếu quốc gia).
+- Danh sách địa điểm dưới bản đồ SOS kéo theo ngón tay: kéo xuống (thanh kéo/tiêu đề) để ẩn, kéo lên (thanh kéo/viên thuốc) để hiện,
+  chạm thanh kéo hoặc nút X vẫn đóng được (`features/sos/useSheetDrag.ts`). Chưa thử trên thiết bị thật.
+- Backend: `GET /api/places/search` (Nominatim, cache 24 giờ, giãn cách 1 yêu cầu/giây, trần theo ngày). Contract mục 14c.
+- Mobile: bảng kết quả tìm địa điểm, chip "Đang xem quanh: ...", `useDebouncedValue`, ghim "đã chọn" trong Leaflet.
+
+### Đang vướng (bản đồ)
+
+- Chưa kiểm trên điện thoại/máy ảo thật: giữ lâu trên bản đồ Leaflet (dựa vào sự kiện `contextmenu` của WebView Android),
+  nút định vị nổi, bảng kết quả khi bàn phím mở. Cần người bấm thử.
+- Nominatim công cộng cấm tự hoàn thành khi gõ: client đã chờ dừng gõ 500 ms, tối thiểu 3 ký tự, server giãn cách và cache;
+  khi ra sản phẩm thật nên trỏ `GEOCODE_URL` sang máy chủ riêng hoặc nhà cung cấp trả phí.
+- Điểm hỗ trợ đã xác minh vẫn 0 (cần người nhập, xem mục dữ liệu); danh sách gợi ý từ Nominatim không có số điện thoại/giờ mở cửa.
+
+## Hoàn thiện Be.Travel AI (G1-G6) — 19-21/10/2026
 
 Theo kế hoạch `docs/AI_FEATURE_PLAN.md`, nhánh `feature/ai-completion` (commit local, chưa push theo yêu cầu người dùng).
 Chat vẫn **khoá** bằng `EXPO_PUBLIC_AI_CHAT_ENABLED` (giữ nguyên quyết định B4, người dùng tự bật).
@@ -316,8 +345,18 @@ Legislation (API công khai, không cần key), thêm quốc gia Úc (AU), phân
   (`AU_LAW_TITLE_TRANSLATION`, mặc định bật; quá 8 giây hoặc lỗi thì hiện tên tiếng Anh). Bản dịch bị loại nếu thêm hoặc bớt số.
   Tên chính thức tiếng Anh luôn hiển thị kèm. Tìm kiếm vẫn theo tên tiếng Anh.
 
+- Quyết định 5 (21/10/2026): xác minh cơ quan đại diện Việt Nam tại Úc bằng đối chiếu nguồn chính thức, nạp bằng
+  `npm run seed:au-missions` (nguồn dữ liệu và trích dẫn trong `backend/scripts/data/auVietnamMissions.js`). Theo DFAT
+  (danh bạ ngoại giao chính phủ Úc) chỉ có 1 Đại sứ quán (Canberra, ACT/VIC/TAS) và 2 Tổng lãnh sự quán (Sydney: NSW/QLD/SA;
+  Perth: WA/NT); KHÔNG có Melbourne hay Brisbane, không có lãnh sự danh dự. Đại sứ quán đã chuyển sang 47 Culgoa Circuit từ
+  24/02/2026 (địa chỉ cũ 6 Timbarra Crescent còn xuất hiện ở nhiều trang, đã lỗi thời). Ba điểm đặt `verified:true` kèm
+  `source` ghi rõ "chưa gọi điện xác nhận" vì định nghĩa gốc của `support_locations` là kiểm chứng qua điện thoại.
+
 ### Đang vướng (Luật Úc)
 
+- Gọi điện xác nhận 3 cơ quan đại diện tại Úc (số, giờ làm việc), đặc biệt số TLSQ Sydney: DFAT ghi 02 9327 2539 / 02 9327 1912
+  còn website TLSQ ghi 02 9326 1129 / 02 9326 1202 và giờ 9:00-17:30 (đang dùng số và giờ của DFAT). Sau khi gọi, sửa
+  `scripts/data/auVietnamMissions.js` rồi chạy lại `npm run seed:au-missions`.
 - Tóm tắt từng Phần của Migration Act mới có 5/37 phần (bị 429 ngắt). Cần chạy lại khi hạn mức hồi:
   `npm run summarize-au-laws -- C1958A00062`.
 - Dịch toàn bộ 31 luật (~18,8 triệu ký tự) chưa làm; cần API key trả phí.

@@ -134,7 +134,8 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
   return (await apiRequestWithMeta<T>(path, options)).data;
 }
 
-export type PageMeta = { page: number; limit: number; total: number };
+// scope: chỉ có ở /places/search ("country" | "global").
+export type PageMeta = { page: number; limit: number; total: number; scope?: string };
 
 /** Như apiRequest nhưng giữ cả `meta` phân trang của envelope (danh sách có total). */
 export async function apiRequestWithMeta<T>(

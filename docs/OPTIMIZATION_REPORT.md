@@ -1,5 +1,13 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Sửa GPS và tìm kiếm bản đồ — 21/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 10: xóa hằng/hàm thử lại Overpass cũ (thay bằng nhiều máy chủ); `requestLocationWithExplanation` vẫn dùng ở màn khác nên giữ.
+- Rule 6: mọi ngưỡng mới (debounce, số ký tự tối thiểu, tuổi vị trí, giãn cách Nominatim, trần ngày) là hằng số có tên hoặc biến `GEOCODE_*`.
+- Rule 13A: W5 không phát sinh (q/country qua Zod, URL dựng bằng URLSearchParams; không log câu tìm kiếm). W3: lint `react-hooks/purity`
+  buộc tách `Date.now()` khỏi thân component (đã tách thành hàm ngoài).
+- Còn tồn: xem mục "Đang vướng (bản đồ)" trong PROGRESS.md.
+
 ## Hoàn thiện Be.Travel AI — 20/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Rule 2/3: tách `sendMessage` thành `replyWithoutLlm`, `generateGuardedAnswer`, `completeOrNull`; gom ba khối trả lời
