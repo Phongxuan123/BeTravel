@@ -206,19 +206,38 @@ export type ChatAnswer =
       status: 'answered';
       updatedAt: string;
       content: string;
-      sources: { name: string; url: string; marker?: string; articleSlug?: string; countryCode?: string }[];
+      // verified=false: van ban luat goc chua duoc Be.Travel kiem chung (vi du luat lien bang Uc).
+      sources: {
+        name: string;
+        url: string;
+        marker?: string;
+        articleSlug?: string;
+        countryCode?: string;
+        verified?: boolean;
+      }[];
       // Backend dat true cho tinh huong khan cap (bi bat, tai nan, mat giay to).
       needsOfficialHelp?: boolean;
+      // true: cau tra loi admin da duyet cho cau hoi hay gap (G6), hien nhan "Da duoc Be.Travel duyet".
+      approved?: boolean;
     }
   | {
       status: 'insufficient_evidence';
       reason: string;
       suggestions: string[];
+      // Mặc định là "Chưa đủ dữ liệu" / "Chưa tìm thấy nguồn pháp lý phù hợp."; lỗi nhà cung cấp AI đổi nhãn.
+      badge?: string;
+      title?: string;
+    }
+  // Cau hoi ngoai pham vi phap ly + an toan du lich, hoac loi chao: loi do backend soan, khong co nguon.
+  | {
+      status: 'out_of_scope';
+      message: string;
+      greeting: boolean;
     };
 
 export async function askLegalAssistant(
   question: string,
-  _opts?: { countryCode?: string; focusArticleId?: string },
+  _opts?: { countryCode?: string; focusArticleId?: string; regenerate?: boolean },
 ): Promise<ChatAnswer> {
   await new Promise((r) => setTimeout(r, 600));
   const q = stripDiacritics(question);

@@ -163,19 +163,36 @@ export default function ChatScreen() {
   // State de lam mo nut; ref chan ca hai lan bam trong cung mot frame.
   const isAwaitingAnswer = messages.some((m) => m.pending);
 
-  const send = async (question: string) => {
+  // regenerateId: nút "Tạo lại" -- thay đúng câu trả lời đó, không thêm lượt hỏi mới,
+  // và báo backend bỏ qua cache để thật sự sinh lại.
+  const send = async (question: string, options: { regenerateId?: string } = {}) => {
     if (!question.trim() || sendingRef.current) return;
     sendingRef.current = true;
-    const userMsg: Message = { id: nextMessageId('u'), role: 'user', text: question };
-    const pendingMsg: Message = { id: nextMessageId('a'), role: 'assistant', pending: true, forQuestion: question };
-    setMessages((prev) => [...prev, userMsg, pendingMsg]);
-    setInput('');
+    const { regenerateId } = options;
+    const pendingMsg: Message = {
+      id: regenerateId ?? nextMessageId('a'),
+      role: 'assistant',
+      pending: true,
+      forQuestion: question,
+    };
+    if (regenerateId) {
+      setFeedback(({ [regenerateId]: _cleared, ...rest }) => rest);
+      setMessages((prev) => prev.map((m) => (m.id === regenerateId ? { ...pendingMsg } : m)));
+    } else {
+      const userMsg: Message = { id: nextMessageId('u'), role: 'user', text: question };
+      setMessages((prev) => [...prev, userMsg, pendingMsg]);
+      setInput('');
+    }
 
     const focusArticleId = !focusArticleIdUsedRef.current ? params.focusArticleId : undefined;
     focusArticleIdUsedRef.current = true;
 
     try {
-      const answer = await askLegalAssistant(question, { countryCode, focusArticleId });
+      const answer = await askLegalAssistant(question, {
+        countryCode,
+        focusArticleId,
+        regenerate: Boolean(regenerateId),
+      });
       const serverId = getLastChatMessageId() ?? undefined;
       setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer, serverId } : m)));
     } catch (error) {
@@ -346,7 +363,7 @@ export default function ChatScreen() {
                       onReport={() => openReport(m)}
                       onRegenerate={
                         index === messages.length - 1 && m.forQuestion && !isAwaitingAnswer
-                          ? () => send(m.forQuestion ?? '')
+                          ? () => send(m.forQuestion ?? '', { regenerateId: m.id })
                           : undefined
                       }
                     />

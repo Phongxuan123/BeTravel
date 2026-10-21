@@ -57,4 +57,92 @@ describe('chat.ts adapter', () => {
       { name: 'Mức phạt quá hạn — Mức phạt', url: '', marker: 'S1', articleSlug: 'qua-han-luu-tru', countryCode: 'KR' },
     ]);
   });
+
+  const base = {
+    _id: 'm3',
+    sessionId: 's1',
+    role: 'assistant' as const,
+    citations: [],
+    retrieval: { topScore: 0, chunkIds: [], passed: false },
+    confidence: 'high' as const,
+    feedback: null,
+    createdAt: '2026-03-15T00:00:00.000Z',
+  };
+
+  it('adaptMessage: OUT_OF_SCOPE -> out_of_scope, phan biet loi chao qua route', () => {
+    const refusal = adaptMessage(
+      { ...base, text: ['Mình chỉ hỗ trợ pháp lý.', '', '---', 'ghi chú'].join(String.fromCharCode(10)), fallbackReason: 'OUT_OF_SCOPE', route: 'out_of_scope' },
+      'KR',
+    );
+    expect(refusal).toEqual({ status: 'out_of_scope', message: 'Mình chỉ hỗ trợ pháp lý.', greeting: false });
+
+    const greeting = adaptMessage({ ...base, text: 'Xin chào', fallbackReason: 'OUT_OF_SCOPE', route: 'greeting' }, 'KR');
+    expect(greeting).toMatchObject({ status: 'out_of_scope', greeting: true });
+  });
+
+  it('adaptMessage: nguon luat goc (au_legislation) mo bang URL chinh thuc va danh dau chua kiem chung', () => {
+    const answer = adaptMessage(
+      {
+        ...base,
+        text: 'Visa có thể bị huỷ [S1].',
+        fallbackReason: null,
+        citations: [
+          {
+            marker: 'S1',
+            title: 'Migration Act 1958',
+            heading: 'Section 116',
+            sourceType: 'au_legislation',
+            officialUrl: 'https://www.legislation.gov.au/C1958A00062/latest/text',
+          },
+        ],
+      },
+      'AU',
+    );
+    if (answer.status !== 'answered') throw new Error('expected answered');
+    expect(answer.sources).toEqual([
+      {
+        name: 'Migration Act 1958 — Section 116',
+        url: 'https://www.legislation.gov.au/C1958A00062/latest/text',
+        marker: 'S1',
+        verified: false,
+      },
+    ]);
+  });
+
+  it('adaptMessage: nhiều chunk của cùng một điều luật gốc gộp thành một dòng nguồn', () => {
+    const cite = (marker: string, heading: string) => ({
+      marker,
+      title: 'Passenger Movement Charge Collection Act 1978',
+      heading,
+      sourceType: 'au_legislation' as const,
+      officialUrl: 'https://www.legislation.gov.au/C2004A01918/latest/text',
+    });
+    const answer = adaptMessage(
+      { ...base, text: 'Trả lời [S1] [S2] [S3].', fallbackReason: null, citations: [cite('S1', '5 Persons exempt'), cite('S2', '5 Persons exempt'), cite('S3', '6 Liability')] },
+      'AU',
+    );
+    if (answer.status !== 'answered') throw new Error('expected answered');
+    expect(answer.sources.map((s) => [s.name.split(' — ')[1], s.marker])).toEqual([
+      ['5 Persons exempt', 'S1, S2'],
+      ['6 Liability', 'S3'],
+    ]);
+  });
+
+  it('adaptMessage: PROVIDER_ERROR -> thẻ AI đang bận, không giả làm thiếu dữ liệu', () => {
+    const answer = adaptMessage(
+      { ...base, text: 'Trợ lý AI đang bận, thử lại sau ít phút.', fallbackReason: 'PROVIDER_ERROR' },
+      'KR',
+    );
+    expect(answer).toMatchObject({ status: 'insufficient_evidence', badge: 'AI đang bận', title: 'Chưa thể trả lời lúc này.' });
+    if (answer.status !== 'insufficient_evidence') throw new Error('expected insufficient_evidence');
+    expect(answer.reason).toBe('Trợ lý AI đang bận, thử lại sau ít phút.');
+    expect(answer.suggestions.length).toBeGreaterThan(0);
+  });
+
+  it('adaptMessage: answerSource approved_faq -> answered kèm approved=true', () => {
+    const answeredMessage = { ...base, text: 'Nội dung [S1]', fallbackReason: null };
+    const answer = adaptMessage({ ...answeredMessage, answerSource: 'approved_faq' }, 'AU');
+    expect(answer).toMatchObject({ status: 'answered', approved: true });
+    expect(adaptMessage(answeredMessage, 'AU')).toMatchObject({ status: 'answered', approved: false });
+  });
 });

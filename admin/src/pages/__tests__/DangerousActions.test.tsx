@@ -25,6 +25,7 @@ vi.mock('../../lib/api', () => ({
   ragApi: {
     status: vi.fn(async () => ({ data: [] })),
     reindexCountry: vi.fn(async () => ({ data: { queued: 0 } })),
+    auLaws: vi.fn(async () => ({ data: [] })),
   },
 }));
 

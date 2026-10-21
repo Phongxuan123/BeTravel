@@ -81,13 +81,23 @@ const envSchema = z.object({
   LLM_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   GEMINI_API_KEY: z.string().optional().default(""),
   OPENAI_API_KEY: z.string().optional().default(""),
-  LLM_MODEL: z.string().default("gemini-3.6-flash"),
+  OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
+  OPENAI_JSON_MODE: booleanish(true),
+  LLM_MODEL: z.string().default("gemini-3.5-flash-lite"),
   TRANSLATION_MODEL: z.string().default("gemini-3.5-flash-lite"),
+  // Model riêng cho bước chuyển câu hỏi thành từ khoá (RETRIEVAL_MODE=lexical): việc nhỏ, nên dùng
+  // model nhanh/rẻ. Rỗng = dùng LLM_MODEL.
+  QUERY_REWRITE_MODEL: z.string().optional().default(""),
+  // Trần token đầu ra của câu trả lời chat: câu trả lời ngắn hơn thì model trả nhanh hơn.
+  LLM_MAX_OUTPUT_TOKENS: numeric(1500),
   EMBEDDING_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   EMBEDDING_MODEL: z.string().default("gemini-embedding-001"),
   EMBEDDING_DIMS: numeric(768),
 
   SEARCH_DRIVER: z.enum(["atlas", "memory"]).default("memory"),
+  // hybrid = vector + từ khoá (cần dịch vụ embedding); lexical = chỉ từ khoá, không gọi embedding
+  // (câu hỏi được LLM chuyển thành từ khoá). lexical hiện chỉ chạy với SEARCH_DRIVER=memory.
+  RETRIEVAL_MODE: z.enum(["hybrid", "lexical"]).default("hybrid"),
   VECTOR_INDEX_NAME: z.string().default("vec_idx"),
   TEXT_INDEX_NAME: z.string().default("txt_idx"),
   // Cong tat tam thoi toan bo tra cuu phap luat (cam nang, tim kiem, AI Legal).
@@ -99,6 +109,18 @@ const envSchema = z.object({
   RAG_MIN_TOP_SCORE: numeric(0.62),
   RAG_MIN_SOFT_SCORE: numeric(0.55),
   RAG_MIN_CHUNKS: numeric(2),
+  // Ngưỡng cho điểm phủ từ khoá (0-1) của RETRIEVAL_MODE=lexical, thay cho ngưỡng cosine ở trên.
+  RAG_MIN_KEYWORD_TOP_SCORE: numeric(0.4),
+  RAG_MIN_KEYWORD_SOFT_SCORE: numeric(0.3),
+  // FAQ đã duyệt (G6): độ giống từ khoá (Jaccard 0-1) để phát FAQ thay cho AI -- chặt hơn ngưỡng gom nhóm
+  // đề xuất, vì trả nhầm FAQ cho câu khác ý tệ hơn để AI tự trả lời.
+  FAQ_MATCH_MIN_SIMILARITY: numeric(0.85),
+  // Đề xuất cho admin: lọc sơ bộ bằng từ khoá chung (rẻ), rồi AI chấm trùng lặp nội dung; chỉ câu đạt
+  // FAQ_AI_MIN_SIMILARITY (0-1) mới vào nhóm.
+  FAQ_PREFILTER_MIN_OVERLAP: numeric(0.4),
+  FAQ_AI_MIN_SIMILARITY: numeric(0.85),
+  FAQ_MIN_REPEAT: numeric(3),
+  FAQ_WINDOW_DAYS: numeric(15),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   AI_CACHE_TTL_HOURS: numeric(24),
   AI_DAILY_QUOTA_USER: numeric(40),
@@ -165,6 +187,13 @@ const productionEnvSchema = envSchema.superRefine((data, ctx) => {
       message: "Thiếu SERPAPI_KEY cho PLACES_PROVIDER=serpapi",
     });
   }
+  if (data.RETRIEVAL_MODE === "lexical" && data.SEARCH_DRIVER !== "memory") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["SEARCH_DRIVER"],
+      message: "RETRIEVAL_MODE=lexical hiện chỉ hỗ trợ SEARCH_DRIVER=memory",
+    });
+  }
   if (data.NODE_ENV !== "production") return;
   if (data.JWT_ACCESS_SECRET.length < PRODUCTION_JWT_SECRET_MIN_LENGTH) {
     ctx.addIssue({
@@ -173,7 +202,10 @@ const productionEnvSchema = envSchema.superRefine((data, ctx) => {
       message: `Production cần JWT_ACCESS_SECRET dài ít nhất ${PRODUCTION_JWT_SECRET_MIN_LENGTH} ký tự`,
     });
   }
-  for (const key of ["LLM_PROVIDER", "EMBEDDING_PROVIDER"]) {
+  // Chế độ lexical không gọi embedding nên không bắt buộc provider embedding thật.
+  const providerKeys =
+    data.RETRIEVAL_MODE === "lexical" ? ["LLM_PROVIDER"] : ["LLM_PROVIDER", "EMBEDDING_PROVIDER"];
+  for (const key of providerKeys) {
     const provider = data[key];
     if (provider === "mock") {
       ctx.addIssue({

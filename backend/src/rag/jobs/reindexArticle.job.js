@@ -3,7 +3,7 @@ import LegalTopic from "../../models/LegalTopic.js";
 import Country from "../../models/Country.js";
 import LegalChunk from "../../models/LegalChunk.js";
 import { chunkArticle } from "../chunking.js";
-import { getEmbeddingProvider } from "../embedding/index.js";
+import { getEmbeddingProvider, isLexicalMode, LEXICAL_MODEL_LABEL } from "../embedding/index.js";
 import { invalidateMemorySearchCache } from "../search/memory.driver.js";
 import { ContentStatus, IndexStateStatus } from "../../core/constants.js";
 
@@ -31,8 +31,12 @@ export async function reindexArticleHandler({ articleId }) {
       topicName: topic?.label,
     });
 
+    // Chế độ lexical không embed: chunk không có vector, chỉ phục vụ tìm theo từ khoá.
+    const useEmbedding = !isLexicalMode();
     const provider = getEmbeddingProvider();
-    const embeddings = await provider.embedBatch(pieces.map((p) => p.textForEmbedding));
+    const embeddings = useEmbedding
+      ? await provider.embedBatch(pieces.map((p) => p.textForEmbedding))
+      : [];
 
     // Publish/unpublish có thể xảy ra trong lúc chờ embedding từ provider.
     const stillPublished = await LegalArticle.exists({
@@ -42,13 +46,14 @@ export async function reindexArticleHandler({ articleId }) {
     });
     if (!stillPublished) return;
     if (
-      embeddings.length !== pieces.length ||
-      embeddings.some(
-        (vector) =>
-          !Array.isArray(vector) ||
-          vector.length !== provider.dims ||
-          !vector.every(Number.isFinite),
-      )
+      useEmbedding &&
+      (embeddings.length !== pieces.length ||
+        embeddings.some(
+          (vector) =>
+            !Array.isArray(vector) ||
+            vector.length !== provider.dims ||
+            !vector.every(Number.isFinite),
+        ))
     ) {
       throw new Error("Embedding trả về số chiều hoặc số lượng không hợp lệ");
     }
@@ -66,8 +71,8 @@ export async function reindexArticleHandler({ articleId }) {
         order: p.order,
         text: p.text,
         textNorm: p.textNorm,
-        embedding: embeddings[index],
-        embeddingModel: provider.model,
+        embedding: useEmbedding ? embeddings[index] : undefined,
+        embeddingModel: useEmbedding ? provider.model : LEXICAL_MODEL_LABEL,
         kind: p.kind,
       })),
     );

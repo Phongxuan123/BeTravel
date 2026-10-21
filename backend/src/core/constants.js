@@ -54,6 +54,8 @@ export const JobStatus = Object.freeze({
 export const JobName = Object.freeze({
   REINDEX_ARTICLE: "reindex_article",
   PURGE_CHUNKS: "purge_chunks",
+  // Index điều luật liên bang Úc vào RAG (rag/jobs/indexAuLaw.job.js).
+  INDEX_AU_LAW: "index_au_law",
 });
 
 export const IndexStateStatus = Object.freeze({
@@ -78,6 +80,8 @@ export const FallbackReason = Object.freeze({
   GUARD_REJECTED: "GUARD_REJECTED",
   // Provider loi (mang, parse JSON that bai...) -- khong phai loi nghiep vu.
   PROVIDER_ERROR: "PROVIDER_ERROR",
+  // Câu hỏi ngoài phạm vi pháp lý + an toàn du lịch (rag/scope.js hoặc AI báo inScope=false).
+  OUT_OF_SCOPE: "OUT_OF_SCOPE",
 });
 
 export const ChatRole = Object.freeze({

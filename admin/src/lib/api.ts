@@ -9,6 +9,7 @@ import type {
   DashboardSummary,
   ContentStatus,
   RagArticleStatus,
+  AuLawRagStatus,
   Feedback,
   FeedbackDetail,
   FeedbackRating,
@@ -24,6 +25,9 @@ import type {
   AuLawDetail,
   AuLawVersion,
   AuLawContent,
+  FaqCandidate,
+  ApprovedFaq,
+  FaqStatus,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -76,6 +80,11 @@ export const ragApi = {
   status: (countryCode?: string) => apiRequest<RagArticleStatus[]>('/admin/rag/status', { query: { countryCode } }),
   reindexCountry: (countryCode: string) =>
     apiRequest<{ queued: number }>('/admin/rag/reindex-country', { method: 'POST', body: { countryCode } }),
+  auLaws: () => apiRequest<AuLawRagStatus[]>('/admin/rag/au-laws'),
+  indexAuLaws: (titleIds: string[]) =>
+    apiRequest<{ queued: string[]; skipped: string[] }>('/admin/rag/au-laws/index', { method: 'POST', body: { titleIds } }),
+  removeAuLaw: (titleId: string) =>
+    apiRequest<{ titleId: string; deleted: number }>(`/admin/rag/au-laws/${titleId}`, { method: 'DELETE' }),
 };
 
 export const feedbackApi = {
@@ -86,6 +95,15 @@ export const feedbackApi = {
 
   updateStatus: (id: string, payload: { status: FeedbackStatus; reviewerNote?: string }) =>
     apiRequest<Feedback>(`/admin/feedback/${id}`, { method: 'PATCH', body: payload }),
+};
+
+export const faqApi = {
+  candidates: (countryCode?: string) => apiRequest<FaqCandidate[]>('/admin/faq/candidates', { query: { countryCode } }),
+  list: (status?: FaqStatus) => apiRequest<ApprovedFaq[]>('/admin/faq', { query: { status } }),
+  decide: (sourceMessageId: string, decision: 'approve' | 'dismiss') =>
+    apiRequest<ApprovedFaq>('/admin/faq', { method: 'POST', body: { sourceMessageId, decision } }),
+  setStatus: (id: string, status: 'active' | 'retired') =>
+    apiRequest<ApprovedFaq>(`/admin/faq/${id}`, { method: 'PATCH', body: { status } }),
 };
 
 export const analyticsApi = {

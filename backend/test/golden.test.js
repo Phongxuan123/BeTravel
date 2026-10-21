@@ -136,6 +136,27 @@ test("golden KR", async (t) => {
         return;
       }
 
+      if (c.type === "out_of_scope") {
+        // Ngoai pham vi: loi tu choi cua code, khong nguon, khong ton quota.
+        assert.equal(message.route, "out_of_scope");
+        assert.equal(message.fallbackReason, "OUT_OF_SCOPE");
+        assert.equal(message.citations.length, 0);
+        for (const pattern of c.assert.answerMustNotMatch ?? []) {
+          assert.doesNotMatch(message.text, new RegExp(pattern, "iu"));
+        }
+        return;
+      }
+
+      if (c.type === "emergency") {
+        // Khan cap: so khan cap tu du lieu quoc gia dung dau cau tra loi, can ho tro chinh thuc.
+        assert.equal(message.route, "emergency");
+        assert.equal(message.needsOfficialHelp, true);
+        for (const pattern of c.assert.answerMustMatch ?? []) {
+          assert.match(message.text, new RegExp(pattern, "iu"));
+        }
+        return;
+      }
+
       if (c.type === "country_isolation") {
         // Khong duoc tra loi nhu the du lieu KR la du lieu cua nuoc duoc hoi.
         assert.equal(message.citations.length, 0);

@@ -144,6 +144,15 @@ export type RagIndexState = {
   error: string;
 };
 
+// Luật liên bang Úc trong RAG (backend/src/services/ragAdmin.service.js#listAuLaws).
+export type AuLawRagStatus = {
+  titleId: string;
+  name: string | null;
+  topics: string[];
+  index: { chunks: number; registerId: string; embeddingModel: string } | null;
+  job: { status: 'pending' | 'running' | 'done' | 'failed'; lastError: string | null; createdAt: string } | null;
+};
+
 export type RagArticleStatus = {
   _id: string;
   title: string;
@@ -181,6 +190,39 @@ export type ChatCitation = {
   heading: string;
 };
 
+// G6 -- cau tra loi da duyet cho cau hoi lap lai (contracts/README.md muc 10b).
+export type FaqStatus = 'active' | 'needs_review' | 'retired' | 'dismissed';
+
+export type FaqCitation = ChatCitation & { sourceType?: 'article' | 'au_legislation'; officialUrl?: string };
+
+export type FaqSections = { answer: string; actions: string[]; avoid: string[] } | null;
+
+export type FaqCandidate = {
+  countryCode: string;
+  count: number;
+  // Cau dau la cau goc; minSimilarity = diem trung lap noi dung thap nhat AI cham trong nhom (0-1).
+  questions: string[];
+  minSimilarity: number;
+  keywordTerms: string[];
+  answers: { messageId: string; text: string; sections: FaqSections; citations: FaqCitation[]; createdAt: string }[];
+  feedback: { up: number; down: number };
+};
+
+export type ApprovedFaq = {
+  _id: string;
+  countryCode: string;
+  question: string;
+  answer: string;
+  sections: FaqSections;
+  citations: FaqCitation[];
+  status: FaqStatus;
+  statusReason: string;
+  decidedAt: string;
+  servedCount: number;
+  feedback: { up: number; down: number };
+  warning: boolean;
+};
+
 export type FeedbackDetail = {
   feedback: Feedback;
   message: {
@@ -202,6 +244,8 @@ export type AnalyticsOverview = {
   avgLatencyMs: number;
   costEstimateUsd: number;
   pendingFeedbackCount: number;
+  // Số lượt theo luồng phân loại: legal, emergency, out_of_scope, greeting, personal_advice.
+  routeCounts: Record<string, number>;
   topFallbackQuestions: { question: string; count: number }[];
 };
 

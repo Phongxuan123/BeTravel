@@ -32,6 +32,13 @@ export function getEmbeddingProvider() {
   return cachedProvider;
 }
 
+// RETRIEVAL_MODE=lexical: khong goi dich vu embedding o bat ky buoc nao (index lan truy hoi).
+export const isLexicalMode = () => env.RETRIEVAL_MODE === "lexical";
+export const LEXICAL_MODEL_LABEL = "lexical";
+// Nhan ghi vao ai_events/chunk: "lexical" thay vi ten model embedding khi khong dung embedding.
+export const retrievalModelLabel = () =>
+  isLexicalMode() ? LEXICAL_MODEL_LABEL : getEmbeddingProvider().model;
+
 // Chi dung trong test: ep doi provider (vi du mock du env that la gemini).
 export function __setEmbeddingProviderForTest(provider) {
   cachedProvider = provider;

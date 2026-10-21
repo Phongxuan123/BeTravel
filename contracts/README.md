@@ -474,25 +474,46 @@ GET    /chat/sessions                              200, danh sach phien CUA CHIN
 POST   /chat/sessions            {countryCode}      201, tao phien moi
 DELETE /chat/sessions/:id                           200 { deleted: true }
 GET    /chat/sessions/:id/messages                  200, lich su tin nhan cua phien
-POST   /chat/sessions/:id/messages {question, focusArticleId?}  201 { sessionId, message } --
+POST   /chat/sessions/:id/messages {question, focusArticleId?, regenerate?}  201 { sessionId, message } --
                                                       [!] TRA MOT LAN, KHONG STREAMING (master plan B.7).
                                                       focusArticleId (B5): CTA "Hoi AI ve bai nay" tu man
                                                       hinh chi tiet bai luat -- uu tien chunk cua bai do
                                                       trong RRF (xem rag/retrieval.js FOCUS_ARTICLE_WEIGHT).
+                                                      regenerate (nut "Tao lai"): true --> bo qua cache cau tra loi,
+                                                      goi lai LLM, van tinh luot quota.
 POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  200
 ```
 
 `message` (role='assistant') co dang:
 ```jsonc
 {
-  "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer",
-  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading" }],
+  "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer (markdown, da ghep tu sections)",
+  "route": "legal",       // "legal" | "emergency" | "personal_advice" | "out_of_scope" | "greeting"
+  "sections": { "answer": "...", "actions": ["... [S1]"], "avoid": ["... [S1]"] },  // null neu khong co AI tra loi
+  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading",
+                  "sourceType": "article",   // hoac "au_legislation" (van ban luat goc, CHUA duoc Be.Travel kiem chung)
+                  "officialUrl": "" }],      // chi co voi au_legislation; bai noi bo mo trong app theo articleSlug
   "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
-  "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR"
+  "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR" | "OUT_OF_SCOPE"
   "confidence": "medium",
-  "needsOfficialHelp": false
+  "needsOfficialHelp": false,
+  "answerSource": "ai",    // hoac "approved_faq": tra tu cau tra loi admin da duyet (muc 10b), khong goi LLM
+  "faqId": null            // id FAQ khi answerSource="approved_faq"
 }
 ```
+
+[!] **Cau tra loi da duyet (FAQ, muc 10b)**: voi luong `legal`, khong `regenerate`, khong `focusArticleId`,
+backend so tu khoa cau hoi voi FAQ `active` cung quoc gia; khop du nguong `FAQ_MATCH_MIN_SIMILARITY` va nguon
+con hieu luc thi tra nguyen van FAQ (`answerSource:"approved_faq"`), van tinh luot quota. Nut "Tao lai"
+(`regenerate:true`) luon bo qua FAQ. Client hien nhan "Da duoc Be.Travel duyet".
+
+[!] **Phan luong cau hoi bang code** (`backend/src/rag/scope.js`, chay TRUOC retrieval, khong goi LLM):
+`out_of_scope` va `greeting` tra loi do code soan, `fallbackReason:"OUT_OF_SCOPE"`, **khong ton quota**.
+`emergency`: khoi so khan cap lay tu `Country.emergencyNumbers` + `Country.embassy.phone` dung DAU
+`text`, `needsOfficialHelp:true`; neu het luot AI trong ngay van nhan duoc khoi nay (khong bi 429).
+`personal_advice`: van tra thong tin nhung `text` them cau ranh gioi co dinh. `sections` gom 3 phan do
+LLM sinh; phan "Nguon" cua UI dung `citations`, KHONG phai do LLM viet. `text` van la ban ghep san
+(co tieu de `**Tra loi ngan**`, `**Viec nen lam**`, `**Dieu can tranh**`) de client cu khong vo.
 
 [!] **Cau hoi nhac ten mot quoc gia KHAC voi `countryCode` cua session** duoc
 chan o tang service (`chat.service.js#detectOtherCountryMention`) TRUOC ca
@@ -510,7 +531,44 @@ chi phi vi khong reset khi server restart.
 ```
 GET  /admin/rag/status?countryCode=            200, trang thai index tung bai published+isCurrent
 POST /admin/rag/reindex-country {countryCode}   200 { queued: N }, xep lai job reindex_article
+GET  /admin/rag/au-laws                         200, 31 luat lien bang Uc tuyen chon:
+                                                  [{ titleId, name|null, topics[], index:{chunks,registerId,embeddingModel}|null,
+                                                     job:{status,lastError,createdAt}|null }]
+POST /admin/rag/au-laws/index {titleIds[]}      200 { queued[], skipped[] }, xep job index_au_law (chay nen,
+                                                  luat dang co job pending/running thi bi bo qua); ma ngoai danh sach
+                                                  tuyen chon --> 400 VALIDATION_ERROR
+DELETE /admin/rag/au-laws/:titleId              200 { titleId, deleted }, xoa chunk cua luat do khoi RAG
 ```
+
+Chunk luat goc (`sourceType:"au_legislation"`) nam trong CUNG collection `legal_chunks`, dung chung
+`vec_idx`/`txt_idx` (filter `countryCode:"AU"`), nen khong can them Atlas index. CLI tuong duong:
+`npm run index-au-laws -- <titleId...> | --topic <slug> | --list | --remove <titleId>`.
+
+## 10b. ENDPOINT ADMIN FAQ — `/api/admin/faq/*` (G6, role admin)
+
+Gom nhom de xuat: loc so bo bang tu khoa chung (`FAQ_PREFILTER_MIN_OVERLAP`), roi **AI cham muc trung lap noi dung**
+giua cac cau hoi (0-100); chi cau dat `FAQ_AI_MIN_SIMILARITY` (mac dinh 85%) moi vao nhom. Nhom duoc hoi >=
+`FAQ_MIN_REPEAT` lan trong `FAQ_WINDOW_DAYS` ngay moi hien la de xuat. AI cham loi --> nhom KHONG hien (khong dua nhom
+chua kiem len). Admin chi DUYET NGUYEN VAN mot cau tra loi AI da sinh (khong sua noi dung).
+
+```
+GET   /admin/faq/candidates?countryCode=   200, [{ countryCode, count, questions[] (cau goc dau tien), minSimilarity, keywordTerms[],
+                                              answers:[{ messageId, text, sections, citations, createdAt }],
+                                              feedback:{ up, down } }]
+GET   /admin/faq?status=                   200, [{ _id, countryCode, question, answer, sections, citations, status,
+                                              statusReason, approvedAt, servedCount, feedback:{up,down}, warning }]
+                                              status: active | needs_review | retired | dismissed
+POST  /admin/faq {sourceMessageId, decision:'approve'|'dismiss'}   201 FAQ vua tao.
+                                              approve: tin nhan phai la cau tra loi AI khong fallback, co trich dan,
+                                              nguon con hieu luc (khong --> 409 CONFLICT); AI cham trung FAQ dang mo
+                                              >= 85% --> 409; AI cham loi --> 502 UPSTREAM_ERROR.
+                                              dismiss: luu de nhom do khong con hien la de xuat.
+PATCH /admin/faq/:id {status:'active'|'retired'}  200. Kich hoat lai phai qua kiem nguon (khong --> 409).
+```
+
+[!] Moi lan phat FAQ, backend kiem lai nguon: bai `published`+`isCurrent` dung version, luat Uc dung `registerId`
+hien hanh. Nguon doi --> FAQ tu chuyen `needs_review` va khong phat. Collection `approvedfaqs` la MongoDB thuong,
+khong them Atlas Search index.
 
 ## 11. ENDPOINT FEEDBACK — `/api/feedback` (B5, can dang nhap)
 
@@ -552,9 +610,14 @@ GET /admin/analytics/overview?days=7   200
   "avgLatencyMs": 1450,
   "costEstimateUsd": 0,  // [!] luon 0 -- provider Gemini/OpenAI chua tra usage tokens, xem docs/PROGRESS.md muc "No ky thuat"
   "pendingFeedbackCount": 3,
+  "routeCounts": { "legal": 30, "emergency": 3, "out_of_scope": 8, "greeting": 1 },  // theo luong phan loai (rag/scope.js)
   "topFallbackQuestions": [{ "question": "...", "count": 4 }]
 }
 ```
+
+[!] `fallbackCount`, `fallbackRate` va `topFallbackQuestions` CHI tinh khoang trong nguon
+(`INSUFFICIENT_EVIDENCE`, `GUARD_REJECTED`, `PROVIDER_ERROR`); cau `OUT_OF_SCOPE` (thoi tiet, chao hoi...)
+khong phai thieu du lieu nen bi loai. ai_event cu khong co `route` duoc dem la `legal`.
 
 ## 14. ENDPOINT SOS LOCATIONS CONG KHAI — `/api/support-locations/*` (B6)
 

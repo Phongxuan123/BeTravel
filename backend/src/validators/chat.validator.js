@@ -19,6 +19,8 @@ export const chatMessageCreateSchema = z.object({
     .string()
     .regex(/^[a-fA-F0-9]{24}$/, "ID bài luật không hợp lệ")
     .optional(),
+  // Nút "Tạo lại": bỏ qua cache câu trả lời, vẫn tính lượt quota.
+  regenerate: z.boolean().optional(),
 });
 
 export const chatFeedbackSchema = z.object({

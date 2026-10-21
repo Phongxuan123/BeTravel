@@ -1,5 +1,18 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Hoàn thiện Be.Travel AI — 20/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 2/3: tách `sendMessage` thành `replyWithoutLlm`, `generateGuardedAnswer`, `completeOrNull`; gom ba khối trả lời
+  không gọi LLM (khác quốc gia, thiếu bằng chứng, ngoài phạm vi) về một hàm, bỏ lặp.
+- Rule 6: ngưỡng và hằng số mới (`ANSWER_CACHE_VERSION`, chờ 429 của embedding, độ dài chunk luật Úc) đặt thành hằng
+  có tên; model chat mặc định đổi qua `env.js`, không hard-code nơi khác.
+- Rule 7: hết quota hoặc lỗi LLM không còn bị nuốt im lặng (`completeOrNull` ghi log ngắn, không kèm key); log tên vi
+  phạm guard.
+- Rule 11: comment tiếng Việt cho `scope.js`, `guard.js`, `auLawChunking.js`, `auLawIndex.service.js`, `retrieval.js`.
+- Rule 13A: không phát sinh warning mới (lint sạch; Prettier sạch trên các file đã sửa). Test cũ H-06.c được cập
+  nhật vì quy tắc số điện thoại thay đổi có chủ đích (số điện thoại phải có trong nguồn).
+- Vấn đề còn tồn đọng: xem mục "Chưa làm / đang vướng (AI)" ở PROGRESS.md.
+
 ## Khôi phục bố cục auth trước căn giữa — 20/10/2026
 
 Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
@@ -175,6 +188,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 20/10/2026: hoàn thiện Be.Travel AI (phân luồng, 3 phần, luật Úc vào RAG, guard số điện thoại); backend 344, mobile 243, admin 18 tests đạt; chạy thật 9/9 trên 3 luật Úc.
 
 - 17/10/2026 (lần 2): khôi phục map e6361c3 theo yêu cầu, sửa embassy theo nước; 531 tests đạt, upstream OSM còn timeout.
 

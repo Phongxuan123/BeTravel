@@ -25,7 +25,23 @@ const PROJECT_FIELDS = {
   embeddingModel: 1,
   countryCode: 1,
   topicSlug: 1,
+  // Chunk luat goc (sourceType 'au_legislation') -- bai noi bo khong co cac truong nay.
+  sourceType: 1,
+  titleId: 1,
+  registerId: 1,
+  lawName: 1,
+  sectionRef: 1,
+  partHeading: 1,
+  officialUrl: 1,
+  effectiveFrom: 1,
 };
+
+// Chunk luat goc khong co articleId: giu null thay vi chuoi "undefined".
+const normalizeHit = (h) => ({
+  ...h,
+  _id: String(h._id),
+  articleId: h.articleId ? String(h.articleId) : null,
+});
 
 export function createAtlasSearchDriver() {
   return {
@@ -51,7 +67,7 @@ export function createAtlasSearchDriver() {
       ];
 
       const hits = await collection().aggregate(pipeline).toArray();
-      return hits.map((h) => ({ ...h, _id: String(h._id), articleId: String(h.articleId) }));
+      return hits.map(normalizeHit);
     },
 
     async keywordSearch({ countryCode, topicSlug, words, k }) {
@@ -76,7 +92,7 @@ export function createAtlasSearchDriver() {
       ];
 
       const hits = await collection().aggregate(pipeline).toArray();
-      return hits.map((h) => ({ ...h, _id: String(h._id), articleId: String(h.articleId) }));
+      return hits.map(normalizeHit);
     },
   };
 }

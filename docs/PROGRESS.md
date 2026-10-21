@@ -1,5 +1,157 @@
 # TIEN DO BE.TRAVEL
 
+## Hoàn thiện Be.Travel AI (G1-G5) — 19-20/10/2026 (cập nhật mới nhất)
+
+Theo kế hoạch `docs/AI_FEATURE_PLAN.md`, nhánh `feature/ai-completion` (commit local, chưa push theo yêu cầu người dùng).
+Chat vẫn **khoá** bằng `EXPO_PUBLIC_AI_CHAT_ENABLED` (giữ nguyên quyết định B4, người dùng tự bật).
+
+- **Phân luồng bằng code** (`backend/src/rag/scope.js`, chạy trước retrieval): ngoài phạm vi, chào hỏi, chèn lệnh
+  vào câu hỏi thì trả lời do code soạn, `fallbackReason:"OUT_OF_SCOPE"`, không gọi LLM, không tốn quota.
+  Khẩn cấp: khối số khẩn cấp lấy từ `Country.emergencyNumbers` + số Đại sứ quán đứng đầu câu trả lời; hết lượt
+  AI trong ngày vẫn nhận được khối này. Xin tư vấn cá nhân: trả thông tin kèm câu ranh giới cố định.
+- **Câu trả lời 3 phần** (Trả lời ngắn / Việc nên làm / Điều cần tránh) + phần Nguồn do code dựng từ citations.
+  Guard kiểm từng phần: ý vi phạm bị bỏ, phần trả lời chính vi phạm thì hạ cả câu. Thêm: số điện thoại phải
+  có trong nguồn hoặc là số khẩn cấp quốc gia; đơn vị tiền AUD/RM/penalty units; điều luật tiếng Anh
+  (`section 116`, `s 116`). System prompt thêm 5 nguyên tắc (dữ liệu không phải lệnh, phạm vi, nguồn luật gốc,
+  số điện thoại, `answerable=false` khi không đủ dữ liệu trực tiếp). Nút "Tạo lại" bỏ qua cache.
+- **Luật liên bang Úc vào RAG**: chunk theo điều (`rag/auLawChunking.js`), index bằng
+  `npm run index-au-laws -- <titleId...>` (embed xong mới thay chunk cũ). Dùng chung `vec_idx`/`txt_idx`
+  (countryCode=AU) nên **không cần tạo thêm Atlas index**. Chunk luật gốc được xác minh bằng danh sách tuyển chọn
+  + `registerId` hiện hành (fail-closed khi không tra được); trích dẫn có `sourceType:"au_legislation"`,
+  URL chính thức, nhãn "chưa được Be.Travel kiểm chứng".
+- **Embedding gói miễn phí**: 100 lượt/phút, nên `gemini.embedding.js` chờ đúng `retryDelay` khi 429.
+- **Model chat mặc định** `gemini-3.5-flash-lite` (người dùng tự đổi `LLM_MODEL` trong `backend/.env`).
+- Mobile: thẻ "Ngoài phạm vi", tiêu đề 3 phần, nhãn nguồn chưa kiểm chứng, gộp chunk cùng điều luật, nút Tạo lại
+  thay đúng câu trả lời (không nhân đôi câu hỏi).
+
+Kiểm tra: backend lint + 344/344 (golden KR 32/32, thêm ca ngoài phạm vi và khẩn cấp), mobile tsc + lint +
+243/243, admin typecheck + 18/18.
+
+**Chạy thật (Atlas + Gemini `gemini-3.5-flash-lite`, 20/10)**: index thử 3 luật nhỏ (143 chunk), hỏi tiếng Việt về
+luật tiếng Anh, điểm truy hồi 0,71-0,83 với câu có nguồn và 0,58-0,67 với câu không có nguồn; 2-4 giây mỗi câu.
+`npm run evaluate-ai -- test/golden/au.live.json`: **9/9**. Lưu ý: bộ 9 câu này viết sau khi đã xem câu trả lời
+thử nên chỉ là kiểm tra hồi quy, chưa phải đánh giá độc lập. Trên emulator (đăng nhập thật, chọn Úc): câu có
+nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩn cấp 000), Tạo lại đều chạy đúng. Dữ liệu thử đã dọn
+(0 chunk AU, phiên chat thử đã xoá).
+
+### Phát hiện khi chạy thật
+
+- Model có thể chèn marker `[S1]..[S8]` vào câu "không có dữ liệu" để qua guard; đã xử lý bằng `answerable=false`.
+- Cache câu trả lời lưu cả câu trả lời cũ qua thay đổi prompt: đã thêm `ANSWER_CACHE_VERSION`, phải tăng khi đổi prompt/guard.
+- `LLM_MODEL` trong `.env` ghi đè biến môi trường khi chạy (dotenv `override`), và `env` bị đóng băng; muốn thử model khác
+  phải đặt provider qua `__setLlmProviderForTest`, không sửa `.env`.
+
+### Bổ sung cùng ngày (Admin, hạn mức, lỗi nhà cung cấp)
+
+- **Admin**: trang RAG Index có thêm mục "Luật liên bang Úc cho trợ lý AI" (xem trạng thái từng luật, Index / Index lại /
+  Xoá). Index chạy nền qua hàng đợi job `index_au_law`, không chạy trùng luật đang có job. Dashboard thêm "Phân loại
+  câu hỏi" và **không tính câu ngoài phạm vi vào tỉ lệ fallback** (trước đó câu hỏi thời tiết sẽ bị tính là thiếu nguồn).
+- **Hạn mức Gemini đã đo (key hiện tại, gói miễn phí, 20/10/2026)**: `gemini-3.5-flash-lite` **15 yêu cầu/phút/cả dự án**,
+  `gemini-3.6-flash` **5 yêu cầu/phút**, embedding 100 lượt/phút. Giới hạn theo ngày chưa chạm tới nên chưa đo được.
+  Hệ quả: chat, dịch và tóm lược luật Úc dùng chung 15 lượt/phút của flash-lite, nên nhiều người hỏi cùng lúc sẽ gặp 429.
+  Chat nay chờ tối đa 20 giây rồi thử lại một lần; vẫn lỗi thì hiện thẻ "AI đang bận" (không còn giả làm "thiếu dữ liệu").
+  Quota 40 câu/người/ngày chỉ là trần theo ngày, **không bảo vệ được giới hạn theo phút**; muốn nhiều người dùng đồng thời
+  cần key trả phí.
+
+### Index luật Úc và đánh giá thật (20/10/2026)
+
+- Đã index **5/8 luật du khách** (586 chunk): Passenger Movement Charge, Passports, Customs Prohibited Exports, Customs Prohibited Imports, Guardianship of Children.
+- **4 luật chưa index** (C2015A00061, C2004A03952, C1901A00006, C2004A00109, đều thất bại): Gemini trả 429 "quota exceeded" sau khoảng 560 chunk,
+  nhiều khả năng **hạn mức embedding theo ngày** của gói miễn phí. Chạy lại sau khi quota reset hoặc dùng key trả phí:
+  `npm run index-au-laws -- C2015A00061 C2004A03952 C1901A00006 C2004A00109`.
+- `evaluate-ai` với `gemini-3.5-flash-lite` trên `test/golden/au.live.json`: **11/11**. Lần chạy đầu 7/9: `au-guardianship` do luật chưa index,
+  `au-pmc-exempt` bị guard từ chối (MISSING_CITATION), chạy lại thì đạt, nên kết quả chat **không tất định**.
+- Hai câu hải quan mới được viết **sau khi xem đáp án thật**, chỉ là kiểm tra hồi quy, không phải bằng chứng độc lập về độ đúng.
+
+### Bỏ Gemini, chạy AI qua APIZ với truy hồi theo từ khoá (20/10/2026)
+
+- **Lý do**: hạn mức embedding miễn phí của Gemini cạn theo ngày (thử thật: 429, chờ khoảng 5 giờ 25 phút), chặn cả index
+  lẫn truy hồi câu hỏi; người dùng không đồng ý gói trả phí Gemini. APIZ (`https://api.apiz.vn/v1`, tương thích OpenAI)
+  **không bán model embedding** (đã thử `/v1/embeddings` với 2 model, đều 503 `model_not_found`).
+- **Quyết định** (người dùng chốt "vô hiệu hoá hoàn toàn Gemini"): thêm `RETRIEVAL_MODE=lexical`. LLM chuyển câu hỏi thành
+  từ khoá tiếng Việt và tiếng Anh, tìm theo độ phủ từ khoá có trọng số IDF (điểm 0-1), áp ngưỡng `RAG_MIN_KEYWORD_*`
+  trước khi gọi LLM trả lời, vẫn qua xác minh nguồn và guard như cũ. Chế độ `hybrid` (vector) giữ nguyên làm mặc định code.
+  [!] Đây là lệch khỏi hợp đồng chống ảo giác mục 4.2 bước 1 (`$vectorSearch`): ngưỡng từ khoá lỏng hơn cosine, nên chặn
+  sai dựa nhiều hơn vào guard và cờ `answerable` của model.
+- **Cấu hình chạy thật** (`backend/.env`): `LLM_PROVIDER=openai` + `OPENAI_BASE_URL` APIZ, `LLM_MODEL=gemini-3.8-flash`,
+  `EMBEDDING_PROVIDER=mock`, `RETRIEVAL_MODE=lexical`, `AI_PROVIDER_TIMEOUT_MS=60000`.
+- **Claude qua APIZ không dùng được**: model Claude bị APIZ chèn system prompt riêng, trả lời kiểu "I acknowledge these
+  instructions..." thay vì JSON. `gemini-3.8-flash` và `deepseek-v4.1-flash` qua APIZ trả JSON đúng.
+- **Index không cần embedding**: đã index nốt 4 luật (Customs Act 1901, Competition and Consumer Act 2010, Therapeutic Goods
+  Act 1989, Biosecurity Act 2015; 8.084 chunk, 43 giây). Nay đủ **9 luật Úc**, 8.670 chunk.
+- **Đánh giá thật** (`au.live.json`, 11 câu): `gemini-3.8-flash` 10/11 rồi 8/11 ở lần chạy lại (2 câu do APIZ quá 30 giây,
+  nay đã nâng timeout lên 60 giây); `deepseek-v4.1-flash` 8/11. **Mọi câu bẫy, ngoài phạm vi và khẩn cấp đều đạt ở cả ba lần.**
+  Câu trượt chủ yếu: hỏi xuất khẩu thuốc gây nghiện, truy hồi ra Customs Act thay vì Customs (Prohibited Exports) Regulations
+  nên model tự báo thiếu dữ liệu. Ngưỡng 0,4/0,3 được chọn theo chính 11 câu này nên cần bộ câu độc lập để kiểm chứng.
+
+### Tăng tốc và ổn định AI qua APIZ (20/10/2026)
+
+- `QUERY_REWRITE_MODEL`: model riêng cho bước tạo từ khoá. Cache từ khoá theo câu hỏi (collection `querykeywordcaches`,
+  TTL 30 ngày): hỏi lại cùng câu không gọi LLM tạo từ khoá, ra cùng đoạn luật nên trúng cache câu trả lời. `LLM_MAX_OUTPUT_TOKENS`
+  (1500) và prompt yêu cầu "việc nên làm"/"điều cần tránh" tối đa 3 ý.
+- **Chọn model** (đo thật qua APIZ, 11 câu `au.live.json`): `glm-5.3-flash` 10/11, `gpt-6-luna` 9/11, `deepseek-v4.1-flash` 9/11;
+  tạo từ khoá: GLM 3,2s, Luna 3,6s, DeepSeek 4,8s (trung vị). `gemini-3.8-flash` qua APIZ lúc đo bị quá 60 giây 5/6 lần nên loại.
+  Chốt **`glm-5.3-flash` cho cả hai bước** (rẻ nhất: 1.170/3.900 đồng mỗi triệu token, điểm cao nhất). Phương án nhanh hơn:
+  `gpt-6-luna` cho câu trả lời (khoảng 4 giây) nhưng kém 1 câu.
+- **Emulator** (luồng thật, chuyến đi tạm sang Úc rồi đã xoá): câu luật mới 9-23 giây (trước 25-36 giây, có lần 80 giây lỗi),
+  hỏi lại cùng câu 0,2-3,5 giây và ra **cùng câu trả lời**. Câu bẫy phạt tốc độ, ngoài phạm vi, khẩn cấp (gọi 000) đều đúng.
+  Còn trượt: "mang thuốc kê đơn vào Úc" báo thiếu dữ liệu dù đã index Therapeutic Goods Act.
+
+### G6 Câu trả lời đã duyệt cho câu hỏi lặp lại (20/10/2026, xong)
+
+- Backend: `approvedfaqs` (MongoDB thường), `ai_events` thêm `keywordTerms`/`messageId`/`answerSource`/`faqId`, API
+  `/api/admin/faq/*` (đề xuất, duyệt nguyên văn, bỏ qua, gỡ / kích hoạt lại), chat tra FAQ trước khi gọi AI (chỉ luồng
+  legal, không regenerate, không focusArticleId), kiểm nguồn mỗi lần phát và tự chuyển `needs_review` khi luật đổi.
+  Admin: trang "Câu hỏi thường gặp" (Đề xuất / Đã duyệt). Mobile: nhãn "Đã được Be.Travel duyệt".
+- Kiểm thử tự động: backend 369/369 (8 test mới G6), admin 22/22 + build, mobile tsc/lint sạch, jest 247 (6 test UI
+  không liên quan quá thời gian khi chạy song song với emulator, chạy riêng đạt hết).
+- **Chạy thật** (emulator + API admin, dữ liệu thử đã dọn): hỏi 3 lần --> 1 đề xuất; duyệt --> hỏi lại cùng câu trả FAQ
+  trong **0,2 giây** kèm nhãn trên thẻ (đã chụp màn hình); gỡ FAQ --> lại do AI trả lời. Câu diễn đạt khác: độ giống
+  từ khoá 0,75 / 0,50 / 0,40 (câu hỏi riêng về trẻ em) nên **chưa khớp** ngưỡng 0,85 --> AI trả lời bình thường.
+  Muốn FAQ bắt được nhiều cách hỏi hơn thì hạ `FAQ_MATCH_MIN_SIMILARITY` (vd 0,7), đổi lại tăng rủi ro khớp nhầm.
+- Admin UI chưa được người nhìn trên trình duyệt; tôi chỉ kiểm qua chính các API trang đó gọi.
+- **Bổ sung cùng ngày (người dùng chốt):** nhóm đề xuất do **AI chấm mức trùng lặp nội dung**, tối thiểu 85% mới đưa
+  lên admin (lọc sơ bộ bằng từ khoá chung, điểm AI được cache 30 ngày, AI lỗi thì nhóm không hiện). Chạy thật với
+  `glm-5.3-flash`: 3 cách hỏi "ai được miễn PMC" được chấm 95-100% và gom thành 1 đề xuất; câu "trẻ em có phải đóng
+  PMC" chấm 40-65% nên tách riêng; câu hỏi mức phí chấm 10-30%. Sửa 2 lỗi phát hiện khi chạy thật: lọc sơ bộ tách
+  nhầm các cách hỏi (nay nối nhóm theo bất kỳ câu nào), và nhóm 1 câu từng lọt lên đề xuất.
+- **Còn hở:** lúc phát FAQ cho người dùng vẫn so bằng từ khoá (ngưỡng 0,85), nên câu đã được AI xếp cùng nhóm nhưng
+  khác từ khoá (vd "Ai được miễn PMC" so với FAQ "Những ai không phải đóng PMC", độ giống từ khoá 0,5) vẫn do AI trả lời.
+
+### Đánh giá độc lập luật Úc (21/10/2026)
+
+- Bộ `test/golden/au.holdout.json` (30 câu) soạn TRƯỚC khi chạy, không dùng để chỉnh ngưỡng/prompt. Cùng lúc đổi ví dụ
+  trong prompt tạo từ khoá sang thuật ngữ pháp lý chung (bỏ ví dụ theo chủ đề), tăng `REWRITE_PROMPT_VERSION`.
+  [!] Người soạn bộ câu cũng là người xây hệ thống, nên chưa độc lập hoàn toàn.
+- Kết quả `glm-5.3-flash` qua APIZ: **25/30 (83%)**: fact 10/13, scenario 5/6, câu bẫy 6/6, ngoài phạm vi 3/3, khẩn cấp 1/2.
+  Bộ cũ `au.live.json` chạy lại 10/11 (câu ma tuý trích Customs Act thay vì Prohibited Imports Regulations).
+- Đọc nội dung các câu trả lời được: đúng điều luật, có trích dẫn (vd Passports Act mục 11 về đồng ý của cha mẹ, mục 32
+  cho mượn hộ chiếu, PMC mục 5 khách quá cảnh). Lỗi chữ do model: "Sếu hải quan". Thời gian 12-34 giây mỗi câu.
+- Câu trượt và nguyên nhân (đã chẩn đoán, CHƯA sửa):
+  - `h-emergency-lost-child` ("con bị lạc ... gọi số nào"): **không được nhận là khẩn cấp** nên không đưa số 000. Lỗi an
+    toàn, do danh sách từ khoá khẩn cấp trong `rag/scope.js` thiếu "bị lạc".
+  - `h-guardian`: từ khoá "guardian" không khớp "guardianship" (bộ tách đuôi từ quá đơn giản).
+  - `h-weapons-import` (điểm 0,40), `h-food-biosecurity` (0,35): dưới ngưỡng truy hồi.
+  - `h-customs-declare`: tìm ra Customs Act mục 64/71A (báo cáo hàng hoá của hãng vận chuyển), model tự báo thiếu dữ liệu;
+    quy định khai báo của hành khách có lẽ nằm trong văn bản dưới luật chưa index.
+- **Sửa theo đề xuất (cùng ngày):** thêm từ khoá khẩn cấp ("bị lạc", "đuối nước", "cháy rừng"...) và đưa các dạng từ
+  pháp lý về chung gốc (guardian/guardianship, declare/declaration, permit/permission). Chạy lại: **22/30** --
+  khẩn cấp 2/2 (câu con bị lạc nay có số 000, đã thử trên emulator với Hàn Quốc ra 112/119), câu bẫy 6/6, ngoài phạm vi 3/3.
+  Hai câu hộ chiếu trượt vì APIZ quá 60 giây; hai câu thuốc (steroid, thuốc chữa bệnh) trượt vì model tự báo thiếu dữ liệu
+  dù tìm đúng luật (lần đầu cùng câu đó trả lời được).
+- **So riêng tầng tìm kiếm** (cùng từ khoá, không gọi model trả lời): trước và sau khi sửa cách cắt đuôi từ đều **16/19** câu
+  tìm đúng luật. Tức là đổi cắt đuôi từ **không cải thiện** trên bộ này; "guardian" nay khớp được nhưng điều luật giám hộ
+  vẫn xếp sau các đoạn khác. Phần dao động còn lại đến từ model trả lời (cùng đoạn luật, lúc trả lời lúc từ chối) và độ trễ
+  APIZ. [!] 2 câu `h-emergency-lost-child`, `h-guardian` không còn là phép đo độc lập sau lần sửa này.
+
+### Chưa làm / đang vướng (AI)
+
+- Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí
+  100 lượt/phút nên mỗi luật lớn mất vài chục phút. Cần người quyết định phạm vi index thật.
+- Chưa có bài Hàn Quốc đã duyệt nên chat KR vẫn từ chối gần hết; TH/SG/MY chờ PR #47 và người duyệt.
+- Hạn mức **ngày** của `gemini-3.5-flash-lite` chưa đo được (đã đo giới hạn phút, xem trên).
+- Chưa nghiệm thu máy thật; emulator không gõ được chữ có dấu nên câu hỏi thử dùng chữ không dấu.
+
 ## Khôi phục bố cục auth trước căn giữa — 20/10/2026
 
 Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
@@ -129,7 +281,7 @@ nhận email thật/điện thoại người dùng. Không push, không sửa d�
 Kiểm tra cuối: backend 296/296, mobile 236/236, admin 18/18 — tổng 550.
 Lint/format backend, lint/typecheck mobile/admin và admin build đạt.
 
-## Giao diện Be.Travel AI theo mẫu — 19/10/2026 (cập nhật mới nhất)
+## Giao diện Be.Travel AI theo mẫu — 19/10/2026
 
 Theo yêu cầu người dùng, thiết kế lại màn chat AI theo mẫu (chỉ giao diện, không đổi contract `ChatAnswer`).
 

@@ -461,7 +461,13 @@ test("H-06.b so tien dang ky hieu dung truoc van phai khop nguon duoc dan", () =
 });
 
 test("H-06.c so khong phai phap ly khong bi ha cap nham", () => {
-  const retrieved = new Map([["S1", { marker: "S1", text: "..." }]]);
+  // So dien thoai AI nhac phai nam trong chinh nguon duoc trich (xem H-06.d).
+  const retrieved = new Map([
+    [
+      "S1",
+      { marker: "S1", text: "Goi 112 de bao canh sat. Tong dai 1345 ho tro nguoi nuoc ngoai." },
+    ],
+  ]);
   for (const answer of [
     "Hãy gọi 112 để báo cảnh sát.",
     "Tổng đài 1345 hỗ trợ người nước ngoài.",
@@ -537,4 +543,22 @@ test("INV-07.5 feedback: note qua 1000 ky tu bi 400", async () => {
       note: "x".repeat(1001),
     });
   assert.equal(res.status, 400);
+});
+
+test("H-06.d so dien thoai AI nhac ma nguon khong co bi chan, so khan cap quoc gia thi duoc", () => {
+  const retrieved = new Map([["S1", { marker: "S1", text: "Tong dai ho tro: 1345." }]]);
+  const invented = guard.guardAnswer(
+    { answer: "Hãy gọi 119 để được hỗ trợ [S1].", usedSources: ["S1"] },
+    retrieved,
+  );
+  assert.equal(invented.fallbackReason, "GUARD_REJECTED");
+  assert.ok(invented.violations.includes("UNSUPPORTED_PHONE_NUMBER"));
+
+  const allowed = guard.guardAnswer(
+    { answer: "Hãy gọi 119 để được hỗ trợ [S1].", usedSources: ["S1"] },
+    retrieved,
+    undefined,
+    { allowedNumbers: ["119"] },
+  );
+  assert.equal(allowed.fallbackReason, null);
 });

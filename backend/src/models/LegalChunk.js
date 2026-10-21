@@ -11,16 +11,33 @@ import mongoose from "mongoose";
  * sao co the cu. retrieval.js LUON $lookup lai legal_articles de xac minh
  * status THAT truoc khi dua chunk vao ngu canh cho LLM (CLAUDE.md muc 7).
  */
+function isArticleChunk() {
+  return this.sourceType !== "au_legislation";
+}
+
 const legalChunkSchema = new mongoose.Schema(
   {
+    // Chunk luật gốc (sourceType 'au_legislation') không thuộc legal_articles nên không có 3 trường này.
     articleId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "LegalArticle",
-      required: true,
+      required: isArticleChunk,
       index: true,
     },
-    articleSlug: { type: String, required: true },
-    articleVersion: { type: Number, required: true },
+    articleSlug: { type: String, required: isArticleChunk },
+    articleVersion: { type: Number, required: isArticleChunk },
+
+    // 'article': bài Be.Travel đã duyệt (xác minh qua legal_articles). 'au_legislation': điều luật liên
+    // bang Úc lấy từ Federal Register of Legislation, CHƯA được Be.Travel kiểm chứng; xác minh bằng
+    // danh sách luật tuyển chọn + registerId hiện hành (rag/retrieval.js#verifyAuChunks).
+    sourceType: { type: String, enum: ["article", "au_legislation"], default: "article" },
+    titleId: { type: String },
+    registerId: { type: String },
+    lawName: { type: String },
+    sectionRef: { type: String },
+    partHeading: { type: String },
+    officialUrl: { type: String },
+    effectiveFrom: { type: Date },
 
     // Ban sao tu article luc chunk -- CHI dung de loc so bo, xem canh bao tren.
     countryCode: { type: String, required: true, uppercase: true },
@@ -49,5 +66,6 @@ const legalChunkSchema = new mongoose.Schema(
 
 legalChunkSchema.index({ articleId: 1, articleVersion: 1, order: 1 });
 legalChunkSchema.index({ countryCode: 1, status: 1, topicSlug: 1 });
+legalChunkSchema.index({ sourceType: 1, titleId: 1 }, { sparse: true });
 
 export default mongoose.model("LegalChunk", legalChunkSchema);

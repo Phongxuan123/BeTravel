@@ -1,11 +1,25 @@
 import { env } from "../core/env.js";
 import { ContentStatus, FallbackReason } from "../core/constants.js";
 import { normalizeVi } from "../utils/textNormalize.js";
-import { getEmbeddingProvider } from "./embedding/index.js";
+import { getEmbeddingProvider, isLexicalMode } from "./embedding/index.js";
+import { getQuestionKeywords } from "./queryRewrite.js";
+import { uniqueTerms } from "./lexical.js";
 import { getSearchDriver } from "./search/index.js";
 import LegalChunk from "../models/LegalChunk.js";
 import LegalArticle from "../models/LegalArticle.js";
+import { isCuratedTitle } from "../core/auLawTopics.js";
+import { getCurrentRegisterId } from "../services/australiaLegislation.service.js";
 import { rrf } from "./rrf.js";
+
+const AU_SOURCE_TYPE = "au_legislation";
+const AU_AUTHORITY = "Federal Register of Legislation (Úc)";
+const isAuChunk = (chunk) => chunk.sourceType === AU_SOURCE_TYPE;
+
+// Tra mã bản biên soạn hiện hành của luật Úc; thay được trong test để không gọi mạng.
+let currentRegisterLookup = getCurrentRegisterId;
+export const __setAuRegisterLookupForTest = (lookup) => {
+  currentRegisterLookup = lookup ?? getCurrentRegisterId;
+};
 
 const FOCUS_ARTICLE_WEIGHT = 0.5;
 const VECTOR_WEIGHT = 0.7;
@@ -65,7 +79,69 @@ async function verifyAgainstArticles(chunks, countryCode) {
   return { verifiedChunks, articleById };
 }
 
+/*
+ * Chunk luật gốc Úc KHÔNG thuộc legal_articles nên xác minh bằng cách khác, cùng tinh thần
+ * "không tin bản sao trên chunk": (1) luật còn nằm trong danh sách tuyển chọn, (2) registerId
+ * của chunk đúng là bản biên soạn HIỆN HÀNH tra từ nguồn. Không tra được thì loại chunk
+ * (fail-closed), vì không chứng minh được còn hiệu lực.
+ */
+async function verifyAuChunks(chunks) {
+  const titleIds = [...new Set(chunks.map((chunk) => chunk.titleId))].filter(isCuratedTitle);
+  const currentByTitle = new Map(
+    await Promise.all(
+      titleIds.map(async (titleId) => {
+        try {
+          return [titleId, await currentRegisterLookup(titleId)];
+        } catch {
+          return [titleId, null];
+        }
+      }),
+    ),
+  );
+  return chunks.filter((chunk) => {
+    const current = currentByTitle.get(chunk.titleId);
+    return Boolean(current) && current === chunk.registerId;
+  });
+}
+
+// Xác minh theo loại nguồn của từng chunk; giữ nguyên thứ tự đầu vào.
+async function verifyChunks(chunks, countryCode) {
+  const [articleResult, verifiedAuChunks] = await Promise.all([
+    verifyAgainstArticles(
+      chunks.filter((chunk) => !isAuChunk(chunk)),
+      countryCode,
+    ),
+    verifyAuChunks(chunks.filter(isAuChunk)),
+  ]);
+  const verifiedIds = new Set(
+    [...articleResult.verifiedChunks, ...verifiedAuChunks].map((chunk) => String(chunk._id)),
+  );
+  return {
+    verifiedChunks: chunks.filter((chunk) => verifiedIds.has(String(chunk._id))),
+    articleById: articleResult.articleById,
+  };
+}
+
+function toAuCitation(chunk, marker) {
+  return {
+    marker,
+    chunkId: String(chunk._id),
+    articleId: null,
+    articleSlug: "",
+    title: chunk.lawName,
+    heading: chunk.heading,
+    text: chunk.text,
+    kind: chunk.kind,
+    authority: AU_AUTHORITY,
+    effectiveFrom: chunk.effectiveFrom ?? null,
+    updatedAt: chunk.effectiveFrom ?? null,
+    sourceType: AU_SOURCE_TYPE,
+    officialUrl: chunk.officialUrl ?? "",
+  };
+}
+
 function toCitation(chunk, article, marker) {
+  if (isAuChunk(chunk)) return toAuCitation(chunk, marker);
   const primarySource = article.sources?.[0];
   return {
     marker,
@@ -79,6 +155,7 @@ function toCitation(chunk, article, marker) {
     authority: primarySource?.authority ?? "",
     effectiveFrom: article.effectiveFrom ?? null,
     updatedAt: article.updatedAt,
+    sourceType: "article",
   };
 }
 
@@ -90,7 +167,113 @@ function toCitation(chunk, article, marker) {
  * @returns {{passed:boolean, reason:string|null, topScore:number,
  *   chunks:Array, retrievedMap:Map<string,object>}}
  */
-export async function retrieve({ question, countryCode, topicSlug, focusArticleId }) {
+/*
+ * Kiểm một danh sách nguồn đã ghi phiên bản (FAQ đã duyệt, G6) còn hiệu lực không, theo đúng tinh thần
+ * lớp phòng thủ thứ hai: bài phải THẬT SỰ published + isCurrent và đúng version; luật Úc phải còn trong
+ * danh sách tuyển chọn và registerId vẫn là bản hiện hành. Tra cứu lỗi --> coi như hết hiệu lực.
+ */
+export async function areSourcesCurrent(sources) {
+  if (sources.length === 0) return false;
+  const articleSources = sources.filter((source) => source.sourceType !== AU_SOURCE_TYPE);
+  const auSources = sources.filter((source) => source.sourceType === AU_SOURCE_TYPE);
+
+  const articles = await LegalArticle.find({
+    _id: { $in: articleSources.map((source) => source.articleId) },
+    status: ContentStatus.PUBLISHED,
+    isCurrent: true,
+  })
+    .select("version")
+    .lean();
+  const versionById = new Map(articles.map((article) => [String(article._id), article.version]));
+  const articlesCurrent = articleSources.every(
+    (source) => versionById.get(String(source.articleId)) === source.articleVersion,
+  );
+  if (!articlesCurrent) return false;
+
+  const auChecks = await Promise.all(
+    auSources.map(async (source) => {
+      if (!isCuratedTitle(source.titleId)) return false;
+      try {
+        return (await currentRegisterLookup(source.titleId)) === source.registerId;
+      } catch {
+        return false;
+      }
+    }),
+  );
+  return auChecks.every(Boolean);
+}
+
+export async function retrieve(params) {
+  return isLexicalMode() ? retrieveLexical(params) : retrieveHybrid(params);
+}
+
+const notEnoughEvidence = (topScore) => ({
+  passed: false,
+  reason: FallbackReason.INSUFFICIENT_EVIDENCE,
+  topScore,
+  chunks: [],
+  retrievedMap: new Map(),
+});
+
+// Xác minh lần cuối + gán marker S1..Sn; dùng chung cho hai chế độ.
+async function buildRetrievalResult(fusedChunks, countryCode, topScore) {
+  const { verifiedChunks, articleById } = await verifyChunks(fusedChunks, countryCode);
+  if (verifiedChunks.length === 0) return notEnoughEvidence(topScore);
+
+  const retrievedMap = new Map();
+  const chunks = verifiedChunks.map((chunk, index) => {
+    const marker = `S${index + 1}`;
+    const citation = toCitation(chunk, articleById.get(chunk.articleId), marker);
+    retrievedMap.set(marker, citation);
+    return citation;
+  });
+  return { passed: true, reason: null, topScore, chunks, retrievedMap };
+}
+
+/*
+ * RETRIEVAL_MODE=lexical: không có embedding. LLM chuyển câu hỏi thành từ khoá (tiếng Việt + Anh),
+ * tìm theo độ phủ từ khoá có trọng số, rồi áp NGƯỠNG TRƯỚC khi gọi LLM trả lời như chế độ hybrid và
+ * vẫn qua lớp xác minh nguồn thật. Điểm lexical lỏng hơn cosine: chống trả lời sai dựa nhiều hơn
+ * vào guard (marker, số liệu) và cờ answerable của model, không riêng ngưỡng này.
+ */
+export async function retrieveLexical({
+  question,
+  countryCode,
+  topicSlug,
+  focusArticleId,
+  keywords,
+}) {
+  // chat.service đã lấy từ khoá (để so FAQ) thì dùng lại, khỏi tra cache lần nữa.
+  const { vi, en } = keywords ?? (await getQuestionKeywords(question));
+  const driver = getSearchDriver();
+  const searches = [uniqueTerms(vi), uniqueTerms(en)].map((terms) =>
+    driver.lexicalSearch({ countryCode, topicSlug, terms, k: env.RAG_TOP_K }),
+  );
+  // Một chunk khớp danh sách tiếng Việt hoặc tiếng Anh: giữ điểm cao hơn của hai lần tìm.
+  const bestById = new Map();
+  for (const hit of (await Promise.all(searches)).flat()) {
+    const previous = bestById.get(hit._id);
+    if (!previous || hit.score > previous.score) bestById.set(hit._id, hit);
+  }
+  const hits = [...bestById.values()].sort((a, b) => b.score - a.score).slice(0, env.RAG_TOP_K);
+
+  const { verifiedChunks: verifiedHits } = await verifyChunks(hits, countryCode);
+  const topScore = verifiedHits[0]?.score ?? 0;
+  const countAboveSoft = verifiedHits.filter(
+    (hit) => hit.score >= env.RAG_MIN_KEYWORD_SOFT_SCORE,
+  ).length;
+  const passed = topScore >= env.RAG_MIN_KEYWORD_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
+  if (!passed) return notEnoughEvidence(topScore);
+
+  const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
+  const fused = rrf([
+    { items: verifiedHits, weight: 1 },
+    ...(focusChunks.length ? [{ items: focusChunks, weight: FOCUS_ARTICLE_WEIGHT }] : []),
+  ]).slice(0, env.RAG_TOP_K);
+  return buildRetrievalResult(fused, countryCode, topScore);
+}
+
+async function retrieveHybrid({ question, countryCode, topicSlug, focusArticleId }) {
   const embeddingProvider = getEmbeddingProvider();
   const [queryVector] = await embeddingProvider.embedBatch([question]);
   // Lech so chieu = cau hinh sai (EMBEDDING_DIMS/model) -- bao loi ro (caller
@@ -112,23 +295,12 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
   // [!] Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
   // (fusedScore chi co y nghia tuong doi giua cac chunk, khong tuyet doi).
   // Chunk bị gỡ không được góp điểm giúp tập bằng chứng vượt ngưỡng.
-  const { verifiedChunks: verifiedVectorHits } = await verifyAgainstArticles(
-    vectorHits,
-    countryCode,
-  );
+  const { verifiedChunks: verifiedVectorHits } = await verifyChunks(vectorHits, countryCode);
   const topScore = verifiedVectorHits[0]?.score ?? 0;
   const countAboveSoft = verifiedVectorHits.filter((h) => h.score >= env.RAG_MIN_SOFT_SCORE).length;
   const passed = topScore >= env.RAG_MIN_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
 
-  if (!passed) {
-    return {
-      passed: false,
-      reason: FallbackReason.INSUFFICIENT_EVIDENCE,
-      topScore,
-      chunks: [],
-      retrievedMap: new Map(),
-    };
-  }
+  if (!passed) return notEnoughEvidence(topScore);
 
   const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
   const fusedLists = [
@@ -137,26 +309,5 @@ export async function retrieve({ question, countryCode, topicSlug, focusArticleI
     ...(focusChunks.length ? [{ items: focusChunks, weight: FOCUS_ARTICLE_WEIGHT }] : []),
   ];
   const fused = rrf(fusedLists).slice(0, env.RAG_TOP_K);
-
-  const { verifiedChunks, articleById } = await verifyAgainstArticles(fused, countryCode);
-
-  if (verifiedChunks.length === 0) {
-    return {
-      passed: false,
-      reason: FallbackReason.INSUFFICIENT_EVIDENCE,
-      topScore,
-      chunks: [],
-      retrievedMap: new Map(),
-    };
-  }
-
-  const retrievedMap = new Map();
-  const chunks = verifiedChunks.map((chunk, index) => {
-    const marker = `S${index + 1}`;
-    const citation = toCitation(chunk, articleById.get(chunk.articleId), marker);
-    retrievedMap.set(marker, citation);
-    return citation;
-  });
-
-  return { passed: true, reason: null, topScore, chunks, retrievedMap };
+  return buildRetrievalResult(fused, countryCode, topScore);
 }
