@@ -1,5 +1,25 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Lịch sử cập nhật — 21/10/2026: bộ offline đóng gói
+
+- Sửa đường dịch offline bỏ qua phrasebook: tra nội dung tích hợp trước native.
+  Index từ điển dựng một lần, không gọi network/model cho kết quả bundled.
+  Sổ câu hiển thị 8 câu/lượt, tìm/lọc tại máy; không render 25 nghìn mục từ thành UI.
+- Không ghép âm tiết/từ để dịch câu, không bỏ câu chưa biết. Engine và sourceTerms
+  đi cùng câu lưu để tránh gắn nhãn Google sai. Câu cũ vẫn đọc được.
+- Sửa hồi quy UX xác nhận mật khẩu: validate khi gửi; lỗi cũ xóa khi sửa.
+  Shared Logo dùng static asset, không fetch ảnh và không đổi layout auth.
+- Dependency patch: follow-redirects 1.16.1, Vite 8.3.4 (lockfiles); đã kiểm lại.
+- Audit còn mobile 59 (braces/node-forge/sprintf-js cùng chuỗi phụ thuộc), backend
+  dev 3 (braces/chokidar/nodemon), admin 0 và backend production 0. Không áp dụng
+  npm audit fix --force vì gợi ý bao gồm đổi SDK/major/hạ phiên bản không tương thích.
+  Đây là nợ kỹ thuật đang mở, không đánh dấu hết warning. Nguồn advisories:
+  https://github.com/advisories/GHSA-vfj7-8cjw-p6xm
+  https://github.com/advisories/GHSA-86w9-cpqp-85rv
+  https://github.com/advisories/GHSA-hp3w-g68c-fv3c
+- Áp dụng DRY, xử lý lỗi rõ, phân biệt nguồn dữ liệu, không thay contract/migration.
+  Chi tiết kết quả và giới hạn thực tế tại ACCEPTANCE/TRANSLATION.
+
 ## Khôi phục bố cục auth trước căn giữa — 20/10/2026
 
 Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ

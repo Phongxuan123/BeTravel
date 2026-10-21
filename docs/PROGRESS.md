@@ -1,5 +1,35 @@
 # TIEN DO BE.TRAVEL
 
+## Bộ dịch tích hợp, logo và xác nhận mật khẩu — 21/10/2026 (hiện hành)
+
+Tiến độ `[###-] 3/4`: triển khai, kiểm tự động/export và tài liệu xong; nghiệm thu
+điện thoại ở chế độ máy bay còn mở. Không đồng nghĩa đã hết mọi lỗi trên máy.
+
+- Offline: 25.473 cặp từ/nghĩa, 13.688 mục từ Việt khác nhau, 868.586 byte JSON
+  Wiktionary/Kaikki CC BY-SA 4.0; 42 từ du lịch cốt lõi và 88 câu BeTravel theo 6 nhóm + 10 câu Tatoeba cũ.
+  Gói nằm trong bundle, không có bước tải cho bộ Việt–Anh. Tra hai chiều và đoạn
+  gồm toàn câu có sẵn; không ghép từ hoặc trả đoạn thiếu câu. Câu tự do ngoài bộ
+  vẫn cần ML Kit có model hoặc online do người dùng chủ động chọn.
+- Giữ ML Kit là mở rộng tùy chọn; ghi engine/nguồn đúng, giữ câu lưu cũ, không đổi
+  API/quota/auth/backend. Thư viện câu có tìm kiếm không dấu, lọc nhóm, xem thêm.
+- Logo gốc assets/logo.jpg đã nối Logo dùng chung (auth, welcome) và trang chủ.
+  Đã xem logo trang chủ BlueStacks. Công cụ bấm Dịch nhanh không chuyển màn,
+  chưa xác nhận trực quan luồng dịch/mật khẩu trên thiết bị; không dùng unit test
+  để khẳng định UI/micro/TTS hoặc chất lượng mọi nghĩa trong corpus.
+- Xác nhận mật khẩu chỉ kiểm khi gửi; sai không gọi API, sửa ô xóa lỗi cũ;
+  giữ OTP và chỉ logout sau thành công. Không thay bố cục auth đã khôi phục.
+- Vá follow-redirects 1.16.0 → 1.16.1 (backend test dependency), Vite 8.3.0 →
+  8.3.4 và dependency tương ứng (admin), không đổi major/SDK.
+- Kiểm: mobile 244/244 (56 suites), backend 296/296, admin 18/18; lint/typecheck,
+  backend format, admin build đạt. Export Hermes Android/iOS đạt, có logo 98 KB.
+  Backend/admin đã kiểm lại sau bản vá. Expo install --check: xem kết quả ở ACCEPTANCE.
+- Audit: admin 0; backend còn 3 high ở nodemon/chokidar/braces (production 0);
+  mobile còn 59 (54 high, 5 moderate), gốc braces/node-forge/sprintf-js. Chưa có
+  bản vá tương thích theo audit hiện tại; không dùng --force đổi major hoặc hạ Expo.
+- Chi tiết phương pháp, nguồn, giấy phép, script tái lập và kịch bản máy thật:
+  [TRANSLATION.md](TRANSLATION.md), [ACCEPTANCE.md](ACCEPTANCE.md).
+- Không push Git, không gửi OTP thật/đổi mật khẩu thật, không sửa dữ liệu DB.
+
 ## Khôi phục bố cục auth trước căn giữa — 20/10/2026
 
 Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ

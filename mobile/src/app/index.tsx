@@ -1,6 +1,7 @@
 import { ScrollView, View, Text, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import { Logo } from '@/components/brand/Logo';
 import { TopInsetView } from '@/components/common/screenTopInset';
 import {
   Bell,
@@ -100,6 +101,7 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: bottomPadding, paddingHorizontal: 18 }}
       >
         <TopInsetView extra={16} />
+        <View className="mb-4"><Logo size={36} textSize={20} /></View>
         {(tripsQuery.isError || (articlesQuery.isError && !articlesDisabled)) && (
           <View className="mb-3 rounded-md bg-danger-tint p-3">
             <Text className="text-center text-sm text-danger">Không tải được một số dữ liệu. Kiểm tra kết nối mạng.</Text>

@@ -1,5 +1,27 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Bộ offline tích hợp / logo / mật khẩu — 21/10/2026
+
+- [v] Mobile 244/244 tests (56 suites); typecheck/lint đạt. Bao gồm cài mới không
+  native module, tra từ hai chiều, phủ định, đoạn dài đủ câu, từ chối đoạn có câu
+  lạ/số, hủy, không gọi online, engine/ghi công đúng, chọn/tìm câu và OTP submit.
+- [v] Backend 296/296; lint/format đạt. Admin 18/18; lint/typecheck/build đạt.
+  Chạy lại backend/admin sau cập nhật follow-redirects và Vite.
+- [v] Expo install --check khớp dependency map cục bộ SDK 57; môi trường chặn
+  networking nên chưa đối chiếu endpoint versions online (CLI cảnh báo giới hạn này).
+- [v] Export bundle Hermes Android/iOS thành công; logo.jpg có trong asset list.
+  Export không thay thế build APK/IPA, cài mới hoặc chạy airplane-mode trên máy thật.
+- [v] Quan sát logo mới trên trang chủ BlueStacks. Chưa quan sát màn dịch vì
+  thao tác công cụ không chuyển khỏi trang chủ; không sửa navigation dựa trên suy đoán.
+- [!] Cần nghiệm thu Samsung/iOS: cài mới không model, máy bay, tra hộ chiếu và câu
+  phủ định, câu ngoài bộ, đảo chiều, lưu/mở lại, text lớn/keyboard, nghe TTS/thu micro.
+  Câu và nghĩa cộng đồng cần reviewer ngôn ngữ; test không chứng minh mọi bản dịch đúng.
+- [!] OTP thật không gửi/thay mật khẩu trong đợt này. Unit tests xác nhận sai mật
+  khẩu chỉ báo khi submit, không gọi reset/logout; đúng mới đi tiếp luồng hiện có.
+- [!] Audit còn mobile 59 và backend dev 3; admin và backend production 0.
+  Giới hạn model/native được ghi rõ trong TRANSLATION; không hứa dịch mọi câu
+  tự do chỉ bằng từ điển. Không push.
+
 ## Khôi phục bố cục auth trước căn giữa — 20/10/2026
 
 Theo yêu cầu mới, khôi phục JSX bố cục login/register/forgot-password từ
