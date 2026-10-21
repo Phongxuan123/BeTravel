@@ -95,6 +95,7 @@ function wrapper() {
 
 test('tải danh sách không tự xin GPS; tìm tên không dấu và địa chỉ', async () => {
   const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await fireEvent.press(screen.getByLabelText('Mở danh sách địa điểm'));
   await waitFor(() => expect(screen.getByText(point.name)).toBeTruthy());
   expect(requestLocationDetailed).not.toHaveBeenCalled();
   await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'don Gangnam');
@@ -115,6 +116,7 @@ test('GPS mới cập nhật camera và query; bán kính truyền đúng backen
 test('GPS từ chối vẫn dùng danh sách; đổi quốc gia bỏ sheet cũ', async () => {
   (requestLocationDetailed as jest.Mock).mockResolvedValue({ coords: null, failure: 'unavailable' });
   const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  await fireEvent.press(screen.getByLabelText('Mở danh sách địa điểm'));
   await waitFor(() => expect(screen.getByText(point.name)).toBeTruthy());
   await fireEvent.press(screen.getByLabelText('Lấy vị trí hiện tại'));
   await waitFor(() => expect(screen.getByText('GPS không khả dụng')).toBeTruthy());
@@ -129,6 +131,9 @@ test('GPS từ chối vẫn dùng danh sách; đổi quốc gia bỏ sheet cũ',
 test('API lỗi có nút thử lại; thiếu quốc gia hiện hướng dẫn', async () => {
   (fetchSupportLocations as jest.Mock).mockRejectedValue(new Error('offline'));
   const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+  // Lỗi tải hiện ngay trên viên thuốc để người dùng biết mà mở danh sách thử lại.
+  await waitFor(() => expect(screen.getByText(/Không tải được danh sách/)).toBeTruthy());
+  await fireEvent.press(screen.getByLabelText('Mở danh sách địa điểm'));
   await waitFor(() => expect(screen.getByLabelText('Thử tải lại địa điểm')).toBeTruthy());
   (fetchSupportLocations as jest.Mock).mockResolvedValue({ ok: true, data: [] });
   await fireEvent.press(screen.getByLabelText('Thử tải lại địa điểm'));
@@ -221,4 +226,31 @@ test('chữ tìm quá ngắn không gọi tìm địa điểm; nguồn lỗi có
   (searchPlaces as jest.Mock).mockRejectedValueOnce(new Error('upstream'));
   await fireEvent.changeText(screen.getByLabelText('Tìm địa điểm hỗ trợ'), 'Seoul');
   await waitFor(() => expect(screen.getByLabelText('Thử tìm lại địa điểm')).toBeTruthy(), { timeout: 3000 });
+});
+
+// Lỗi thực tế: thanh danh sách luôn chiếm màn hình và không đóng được dù chưa chọn gì.
+test('danh sách chỉ hiện khi chọn loại, đóng được, và mở lại bằng viên thuốc', async () => {
+  const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
+
+  // Mặc định chỉ có bản đồ và viên thuốc nhỏ, không có thanh danh sách.
+  expect(screen.queryByLabelText('Đóng danh sách địa điểm')).toBeNull();
+  await waitFor(() => expect(screen.getByText(/1 địa điểm đã xác minh · Xem danh sách/)).toBeTruthy());
+
+  // Chọn loại "Đại sứ quán" thì danh sách mới hiện.
+  await fireEvent.press(screen.getByText('Đại sứ quán'));
+  await waitFor(() => expect(screen.getByLabelText('Đóng danh sách địa điểm')).toBeTruthy());
+  expect(screen.queryByLabelText('Mở danh sách địa điểm')).toBeNull();
+
+  // Đóng bằng nút X rồi mở lại bằng viên thuốc.
+  await fireEvent.press(screen.getByLabelText('Đóng danh sách địa điểm'));
+  expect(screen.queryByLabelText('Đóng danh sách địa điểm')).toBeNull();
+  await fireEvent.press(screen.getByLabelText('Mở danh sách địa điểm'));
+  expect(screen.getByLabelText('Đóng danh sách địa điểm')).toBeTruthy();
+
+  // Chạm thanh kéo cũng đóng; chọn "Tất cả" quay về chỉ xem bản đồ.
+  await fireEvent.press(screen.getByLabelText('Đóng danh sách'));
+  expect(screen.queryByLabelText('Đóng danh sách địa điểm')).toBeNull();
+  await fireEvent.press(screen.getByLabelText('Mở danh sách địa điểm'));
+  await fireEvent.press(screen.getByText('Tất cả'));
+  expect(screen.queryByLabelText('Đóng danh sách địa điểm')).toBeNull();
 });

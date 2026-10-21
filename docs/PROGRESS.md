@@ -12,6 +12,10 @@ Theo yêu cầu người dùng. Nguyên nhân gốc tìm được bằng chạy 
   báo đúng lý do, nút "Mở Cài đặt" khi bị chặn quyền/tắt GPS, chính sách vị trí dễ hơn riêng cho bản đồ (10 phút / 30 phút,
   ghi giờ đo khi cũ), nút định vị nổi luôn có, và giữ lâu trên bản đồ để chọn vị trí khi máy không có GPS (LDPlayer).
 
+- Danh sách địa điểm phía dưới bản đồ không còn luôn chiếm màn hình: mặc định chỉ có bản đồ và một viên thuốc nhỏ
+  "N địa điểm đã xác minh · Xem danh sách"; danh sách chỉ mở khi người dùng chọn loại (Đại sứ quán, Bệnh viện...), tìm địa điểm,
+  định vị hoặc đi từ CTA có sẵn loại (`?type=`); đóng bằng nút X hoặc chạm thanh kéo; chọn "Tất cả" quay về chỉ xem bản đồ.
+  Buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ, thiếu quốc gia).
 - Backend: `GET /api/places/search` (Nominatim, cache 24 giờ, giãn cách 1 yêu cầu/giây, trần theo ngày). Contract mục 14c.
 - Mobile: bảng kết quả tìm địa điểm, chip "Đang xem quanh: ...", `useDebouncedValue`, ghim "đã chọn" trong Leaflet.
 

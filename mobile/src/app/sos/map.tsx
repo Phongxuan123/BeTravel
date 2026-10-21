@@ -111,7 +111,10 @@ function useInitialFilter(): (typeof FILTERS)[number]['key'] {
 export default function SosMapScreen() {
   const insets = useSafeAreaInsets();
   const { country } = useCountry();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(useInitialFilter());
+  const initialFilter = useInitialFilter();
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(initialFilter);
+  // Danh sách phía dưới chỉ hiện khi người dùng chủ động (chọn bộ lọc, tìm địa điểm, định vị); mở từ CTA có sẵn loại (?type=) thì mở luôn.
+  const [sheetOpen, setSheetOpen] = useState(initialFilter !== 'all');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsFailure, setGpsFailure] = useState<LocationFailure | null>(null);
   const [measuredAt, setMeasuredAt] = useState<number | null>(null);
@@ -137,6 +140,8 @@ export default function SosMapScreen() {
   const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
   // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
   const canRenderMap = osmTiles || runtime.available;
+  // Bắt buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ) hoặc có lỗi cần người dùng thấy (thiếu quốc gia).
+  const showSheet = sheetOpen || listOnly || !canRenderMap || !country;
 
   useEffect(() => {
     if (!canRenderMap || listOnly || mapReady || mapTimedOut) return;
@@ -168,6 +173,8 @@ export default function SosMapScreen() {
     if (locatingRef.current) return;
     locatingRef.current = true;
     setLocating(true);
+    // Kết quả (hoặc lý do GPS thất bại) hiện trong danh sách nên mở ngay.
+    setSheetOpen(true);
     try {
       const result = await requestLocationDetailed(MAP_LOCATION_POLICY);
       if (!mounted.current) return;
@@ -206,6 +213,7 @@ export default function SosMapScreen() {
   const pickPoint = (point: { lat: number; lng: number; label: string }, delta = PLACE_FOCUS_DELTA) => {
     if (!validCoordinates(point.lat, point.lng)) return;
     setPicked(point);
+    setSheetOpen(true);
     setDetail(null);
     mapRef.current?.animateToRegion({ latitude: point.lat, longitude: point.lng,
       latitudeDelta: delta, longitudeDelta: delta }, 400);
@@ -454,7 +462,7 @@ export default function SosMapScreen() {
               return (
                 <Pressable
                   key={f.key}
-                  onPress={() => setFilter(f.key)}
+                  onPress={() => { setFilter(f.key); setSheetOpen(f.key !== 'all'); }}
                   className={`h-9 items-center justify-center rounded-full px-3.5 ${active ? 'bg-primary' : 'bg-surface'}`}
                   style={{ shadowColor: '#102A43', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2 }}
                 >
@@ -530,21 +538,47 @@ export default function SosMapScreen() {
           disabled={locating}
           onPress={onLocatePress}
           className="absolute right-[18px] h-14 w-14 items-center justify-center rounded-lg bg-surface"
-          style={{ bottom: 300, shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
+          style={{ bottom: showSheet ? 300 : insets.bottom + 84, shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
         >
           <LocateFixed size={22} color={locating ? colors.subtle : colors.primary} />
         </Pressable>
       )}
 
-      <View className="absolute inset-x-0 bottom-0 rounded-t-[28px] bg-surface" style={{ maxHeight: 320, paddingBottom: insets.bottom + 16 }}>
-        <View className="items-center py-2.5">
-          <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+      {!showSheet && (
+        <View pointerEvents="box-none" className="absolute inset-x-0 items-center" style={{ bottom: insets.bottom + 16 }}>
+          <Pressable accessibilityLabel="Mở danh sách địa điểm" onPress={() => setSheetOpen(true)}
+            className="rounded-full bg-surface px-4 py-3"
+            style={{ shadowColor: '#102A43', shadowOpacity: 0.15, shadowRadius: 10, elevation: 4 }}>
+            <Text className={`text-sm font-body-bold ${activeQuery.isError ? 'text-danger' : 'text-ink'}`}>
+              {activeQuery.isError ? 'Không tải được danh sách. Chạm để mở'
+                : activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh · Xem danh sách`}
+            </Text>
+          </Pressable>
         </View>
+      )}
+
+      {showSheet && <View className="absolute inset-x-0 bottom-0 rounded-t-[28px] bg-surface" style={{ maxHeight: 320, paddingBottom: insets.bottom + 16 }}>
+        {listOnly ? (
+          <View className="items-center py-2.5">
+            <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+          </View>
+        ) : (
+          // Chạm vào thanh kéo cũng đóng được danh sách (người dùng không có thao tác vuốt xuống).
+          <Pressable accessibilityLabel="Đóng danh sách" onPress={() => setSheetOpen(false)} className="items-center py-3">
+            <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+          </Pressable>
+        )}
         <View className="flex-row items-center justify-between px-[18px]">
           <Text className="text-xl font-body-bold text-ink">
             {activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh`}
           </Text>
           <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsFailure ? 'GPS không khả dụng' : country?.name}</Text>
+          {!listOnly && (
+            <Pressable accessibilityLabel="Đóng danh sách địa điểm" hitSlop={10} onPress={() => setSheetOpen(false)}
+              className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">
+              <X size={18} color={colors.ink} />
+            </Pressable>
+          )}
         </View>
         {showExternal && canQueryExternal && !externalQuery.isLoading && !externalQuery.isError && (
           <Text className="px-[18px] text-sm text-warning-strong">+ {externalPlaces.length} gợi ý thêm (chưa xác minh)</Text>
@@ -662,7 +696,7 @@ export default function SosMapScreen() {
             </View>
           )}
         </ScrollView>
-      </View>
+      </View>}
 
       <SimpleSheet visible={!!detail} onClose={() => setDetail(null)} title={detail?.name ?? ''}>
         {detail && (
