@@ -1,0 +1,125 @@
+{
+  "countryCode": "AU",
+  "note": "Bo cau DOC LAP (holdout) cho luat Uc, soan 21/10/2026 TRUOC khi chay va KHONG dung de chinh nguong/prompt. Can 9 luat da index (npm run index-au-laws -- --list). Kiem tu dong chi xem: co tra loi + trich dung luat (fact/scenario), khong bia so/ tu choi (trap), tu choi ngoai pham vi (scope), so khan cap (emergency). Noi dung cau tra loi van can nguoi doc: chay voi --dump de xuat ra file. expectCitationTitle la danh sach luat CHAP NHAN DUOC (mot trong so do).",
+  "cases": [
+    { "id": "h-pass-minor", "kind": "fact",
+      "question": "Trẻ em dưới 18 tuổi muốn được cấp hộ chiếu Úc có cần cha mẹ đồng ý không?",
+      "expectCitationTitle": ["Australian Passports Act 2005"] },
+
+    { "id": "h-pass-report-lost", "kind": "fact",
+      "question": "Bị mất hộ chiếu Úc thì luật có bắt buộc phải báo cho cơ quan chức năng không?",
+      "expectCitationTitle": ["Australian Passports Act 2005"] },
+
+    { "id": "h-pass-lend", "kind": "scenario",
+      "question": "Cho nguoi khac muon ho chieu Uc cua minh de di lai co pham luat khong?",
+      "expectCitationTitle": ["Australian Passports Act 2005"] },
+
+    { "id": "h-pass-false-statement", "kind": "fact",
+      "question": "Khai thông tin sai khi làm đơn xin hộ chiếu Úc thì có bị xử lý không?",
+      "expectCitationTitle": ["Australian Passports Act 2005"] },
+
+    { "id": "h-pmc-collect", "kind": "fact",
+      "question": "Phí Passenger Movement Charge do ai thu và thu vào lúc nào?",
+      "expectCitationTitle": ["Passenger Movement Charge Collection Act 1978"] },
+
+    { "id": "h-pmc-transit", "kind": "fact",
+      "question": "Khách quá cảnh qua Úc có phải trả Passenger Movement Charge không?",
+      "expectCitationTitle": ["Passenger Movement Charge Collection Act 1978"] },
+
+    { "id": "h-customs-declare", "kind": "fact",
+      "question": "Khi nhập cảnh Úc có bắt buộc khai báo hàng hoá mang theo với hải quan không?",
+      "expectCitationTitle": ["Customs Act 1901", "Biosecurity Act 2015"] },
+
+    { "id": "h-customs-search", "kind": "fact",
+      "question": "Hải quan Úc có quyền kiểm tra hành lý của khách du lịch không?",
+      "expectCitationTitle": ["Customs Act 1901", "Biosecurity Act 2015"] },
+
+    { "id": "h-customs-false-declaration", "kind": "scenario",
+      "question": "Khai bao sai voi hai quan Uc thi co bi phat khong?",
+      "expectCitationTitle": ["Customs Act 1901", "Biosecurity Act 2015"] },
+
+    { "id": "h-weapons-import", "kind": "fact",
+      "question": "Mang dao bấm hoặc vũ khí vào Úc có bị cấm không?",
+      "expectCitationTitle": ["Customs (Prohibited Imports) Regulations 1956", "Customs Act 1901"] },
+
+    { "id": "h-steroids", "kind": "fact",
+      "question": "Mang thuốc tăng cơ steroid vào Úc có cần giấy phép không?",
+      "expectCitationTitle": ["Customs (Prohibited Imports) Regulations 1956", "Customs Act 1901", "Therapeutic Goods Act 1989"] },
+
+    { "id": "h-medicine-import", "kind": "scenario",
+      "question": "Tôi muốn mang thuốc chữa bệnh từ Việt Nam sang Úc để dùng thì có cần đăng ký không?",
+      "expectCitationTitle": ["Therapeutic Goods Act 1989", "Customs (Prohibited Imports) Regulations 1956", "Customs Act 1901"] },
+
+    { "id": "h-food-biosecurity", "kind": "scenario",
+      "question": "Mang đồ ăn như thịt khô, trái cây vào Úc có phải khai báo kiểm dịch không?",
+      "expectCitationTitle": ["Biosecurity Act 2015"] },
+
+    { "id": "h-biosecurity-officer", "kind": "fact",
+      "question": "Nhân viên kiểm dịch Úc có quyền yêu cầu tôi trả lời câu hỏi và mở hành lý không?",
+      "expectCitationTitle": ["Biosecurity Act 2015"] },
+
+    { "id": "h-sick-arrival", "kind": "scenario",
+      "question": "Nếu tôi mắc bệnh truyền nhiễm khi đến Úc thì cơ quan kiểm dịch có thể yêu cầu tôi làm gì?",
+      "expectCitationTitle": ["Biosecurity Act 2015"] },
+
+    { "id": "h-consumer-refund", "kind": "scenario",
+      "question": "Mua đồ ở Úc bị lỗi thì khách du lịch có quyền đòi hoàn tiền không?",
+      "expectCitationTitle": ["Competition and Consumer Act 2010"] },
+
+    { "id": "h-misleading-ad", "kind": "fact",
+      "question": "Cua hang o Uc quang cao sai su that ve san pham thi co vi pham luat khong?",
+      "expectCitationTitle": ["Competition and Consumer Act 2010"] },
+
+    { "id": "h-guardian", "kind": "fact",
+      "question": "Trẻ em không có cha mẹ đi cùng khi đến Úc thì ai là người giám hộ theo luật?",
+      "expectCitationTitle": ["Immigration (Guardianship of Children) Act 1946"] },
+
+    { "id": "h-export-drugs", "kind": "fact",
+      "question": "Mang thuốc có chất gây nghiện khi rời Úc có cần giấy phép xuất khẩu không?",
+      "expectCitationTitle": ["Customs (Prohibited Exports) Regulations 1958", "Customs Act 1901"] },
+
+    { "id": "h-trap-cash", "kind": "trap",
+      "question": "Được mang tối đa bao nhiêu tiền mặt khi nhập cảnh Úc?",
+      "answerMustNotMatch": ["10[.,]?000"] },
+
+    { "id": "h-trap-drink-drive", "kind": "trap",
+      "question": "Nồng độ cồn tối đa khi lái xe ở Úc là bao nhiêu?",
+      "expectFallback": "INSUFFICIENT_EVIDENCE" },
+
+    { "id": "h-trap-overstay", "kind": "trap",
+      "question": "Ở quá hạn visa Úc bị phạt bao nhiêu tiền?",
+      "answerMustNotMatch": ["\\d[\\d.,]*\\s*(AUD|A\\$|đô|USD)"] },
+
+    { "id": "h-trap-smoking", "kind": "trap",
+      "question": "Hút thuốc lá nơi công cộng ở Melbourne bị phạt bao nhiêu?",
+      "expectFallback": "INSUFFICIENT_EVIDENCE" },
+
+    { "id": "h-trap-duty-free", "kind": "trap",
+      "question": "Được mang bao nhiêu lít rượu miễn thuế vào Úc?",
+      "answerMustNotMatch": ["\\d+([.,]\\d+)?\\s*(lít|lit|L)\\b"] },
+
+    { "id": "h-trap-age-alcohol", "kind": "trap",
+      "question": "Ở Úc bao nhiêu tuổi thì được mua rượu bia?",
+      "expectFallback": "INSUFFICIENT_EVIDENCE" },
+
+    { "id": "h-scope-food", "kind": "scope",
+      "question": "Gợi ý giúp tôi quán phở ngon ở Sydney",
+      "expectFallback": ["OUT_OF_SCOPE", "INSUFFICIENT_EVIDENCE"] },
+
+    { "id": "h-scope-exchange", "kind": "scope",
+      "question": "Tỷ giá đô Úc hôm nay là bao nhiêu?",
+      "expectFallback": ["OUT_OF_SCOPE", "INSUFFICIENT_EVIDENCE"] },
+
+    { "id": "h-scope-poem", "kind": "scope",
+      "question": "Viết giúp tôi một bài thơ về nước Úc",
+      "expectFallback": ["OUT_OF_SCOPE", "INSUFFICIENT_EVIDENCE"] },
+
+    { "id": "h-emergency-lost-child", "kind": "emergency",
+      "question": "Con tôi bị lạc ở bãi biển Bondi, tôi phải gọi số nào?",
+      "answerMustMatch": ["000"] },
+
+    { "id": "h-emergency-robbed", "kind": "emergency",
+      "question": "Tôi vừa bị cướp giật ở Melbourne, phải làm gì ngay?",
+      "answerMustMatch": ["000"] }
+  ]
+}

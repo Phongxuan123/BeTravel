@@ -1,6 +1,7 @@
 import { env } from "../../core/env.js";
 
-const API_URL = "https://api.openai.com/v1/chat/completions";
+// Dung chung cho moi dich vu tuong thich OpenAI (OpenAI, APIZ...): chi doi OPENAI_BASE_URL.
+const chatUrl = () => `${env.OPENAI_BASE_URL.replace(/\/+$/, "")}/chat/completions`;
 
 // Provider du phong (master plan B.6) -- dung khi Gemini het quota/tam ngung.
 export function createOpenAiLlmProvider({ apiKey, model }) {
@@ -11,15 +12,18 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
   return {
     provider: "openai",
     model,
-    async complete({ systemPrompt, userPrompt }) {
-      const res = await fetch(API_URL, {
+    async complete({ systemPrompt, userPrompt, maxOutputTokens }) {
+      const res = await fetch(chatUrl(), {
         method: "POST",
         signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           model,
           temperature: 0.2,
-          response_format: { type: "json_object" },
+          // Chỉ chat/rewrite đặt trần; dịch văn bản dài không bị cắt.
+          ...(maxOutputTokens && { max_tokens: maxOutputTokens }),
+          // Mot so dich vu tuong thich khong ho tro json_object; prompt da yeu cau JSON, parseLlmJson kiem lai.
+          ...(env.OPENAI_JSON_MODE && { response_format: { type: "json_object" } }),
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: userPrompt },

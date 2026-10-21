@@ -5,7 +5,7 @@ import { openUrl } from '@/lib/openExternal';
 import { OSM_MAX_ZOOM, OSM_REFERER, OSM_TILE_URL } from './mapRuntime';
 import { buildOsmMapHtml, zoomForDelta } from './osmMapHtml';
 
-export type OsmMarker = { id: string; lat: number; lng: number; color: string; kind: 'me' | 'place' | 'external' };
+export type OsmMarker = { id: string; lat: number; lng: number; color: string; kind: 'me' | 'picked' | 'place' | 'external' };
 
 // Cùng chữ ký với phần MapView native để màn hình dùng chung một ref cho cả hai chế độ.
 export type MapHandle = Pick<MapView, 'animateToRegion' | 'fitToCoordinates'>;
@@ -16,6 +16,8 @@ type Props = {
   markers: OsmMarker[];
   onReady: () => void;
   onMarkerPress: (id: string) => void;
+  // Người dùng giữ lâu trên bản đồ để chọn một vị trí.
+  onLongPress?: (point: { lat: number; lng: number }) => void;
 };
 
 const FIT_PADDING_PX = 48;
@@ -24,7 +26,7 @@ const FIT_PADDING_PX = 48;
 // Google Maps SDK không vẽ nổi ô (Expo Go Android). Trang chỉ nhận lệnh vẽ ghim/bay tới; mọi dữ liệu ghim
 // do app gửi vào, trang không tự gọi API của Be.Travel.
 export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
-  { center, delta, markers, onReady, onMarkerPress },
+  { center, delta, markers, onReady, onMarkerPress, onLongPress },
   ref,
 ) {
   const webRef = useRef<WebView>(null);
@@ -60,12 +62,14 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
 
   const onMessage = (event: WebViewMessageEvent) => {
     try {
-      const message = JSON.parse(event.nativeEvent.data) as { type?: string; id?: unknown };
+      const message = JSON.parse(event.nativeEvent.data) as { type?: string; id?: unknown; lat?: unknown; lng?: unknown };
       if (message.type === 'ready') {
         setReady(true);
         onReady();
       } else if (message.type === 'marker' && typeof message.id === 'string') {
         onMarkerPress(message.id);
+      } else if (message.type === 'longpress' && typeof message.lat === 'number' && typeof message.lng === 'number') {
+        onLongPress?.({ lat: message.lat, lng: message.lng });
       }
     } catch {
       // Thông điệp chỉ do trang HTML của chính app gửi; bỏ qua nếu hỏng thay vì làm sập màn hình.

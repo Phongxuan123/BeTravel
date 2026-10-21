@@ -44,17 +44,24 @@ export function buildOsmMapHtml({ lat, lng, zoom, tileUrl, maxZoom }: OsmMapOpti
   var layer = L.layerGroup().addTo(map);
 
   // items: [{ id, lat, lng, color, kind }] -- chỉ dữ liệu cần để vẽ ghim, nhấn ghim gửi id về app.
+  // kind: me (vị trí GPS), picked (điểm người dùng chọn), place (điểm đã xác minh), external (gợi ý chưa xác minh).
   window.setMarkers = function (items) {
     layer.clearLayers();
     items.forEach(function (item) {
+      var isStatic = item.kind === 'me' || item.kind === 'picked';
       var marker = L.circleMarker([item.lat, item.lng], {
-        radius: item.kind === 'me' ? 9 : 12, color: '#FFFFFF', weight: 3,
+        radius: item.kind === 'me' ? 9 : item.kind === 'picked' ? 14 : 12, color: '#FFFFFF',
+        weight: item.kind === 'picked' ? 4 : 3,
         fillColor: item.color, fillOpacity: 1, dashArray: item.kind === 'external' ? '3 3' : null
       });
-      if (item.kind !== 'me') marker.on('click', function () { post({ type: 'marker', id: item.id }); });
+      if (!isStatic) marker.on('click', function () { post({ type: 'marker', id: item.id }); });
       marker.addTo(layer);
     });
   };
+  // Giữ lâu trên bản đồ (chạm giữ trên điện thoại) để chọn vị trí khi máy không có GPS.
+  map.on('contextmenu', function (event) {
+    post({ type: 'longpress', lat: event.latlng.lat, lng: event.latlng.lng });
+  });
   window.flyTo = function (lat, lng, zoom) { map.flyTo([lat, lng], zoom, { duration: 0.4 }); };
   window.fitPoints = function (points, padding) {
     if (points.length) map.fitBounds(points, { padding: [padding, padding], maxZoom: 16 });

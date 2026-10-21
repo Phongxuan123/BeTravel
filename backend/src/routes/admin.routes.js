@@ -1,7 +1,7 @@
 import express from "express";
 
 import { authenticateToken, requireRole } from "../middleware/auth.middleware.js";
-import { validateBody, validateQuery } from "../middleware/validate.middleware.js";
+import { validateBody, validateQuery, validateParams } from "../middleware/validate.middleware.js";
 import { UserRole } from "../core/constants.js";
 
 import { countriesController } from "../controllers/adminCountries.controller.js";
@@ -16,6 +16,7 @@ import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
 import * as ragController from "../controllers/adminRag.controller.js";
 import * as feedbackController from "../controllers/adminFeedback.controller.js";
+import * as faqController from "../controllers/adminFaq.controller.js";
 import * as analyticsController from "../controllers/adminAnalytics.controller.js";
 import { incidentsController } from "../controllers/adminIncidents.controller.js";
 import { quickPhrasesController } from "../controllers/adminQuickPhrases.controller.js";
@@ -40,6 +41,13 @@ import {
   auditListQuerySchema,
   ragReindexCountrySchema,
   ragStatusQuerySchema,
+  ragAuLawIndexSchema,
+  ragAuLawParamSchema,
+  faqCandidatesQuerySchema,
+  faqListQuerySchema,
+  faqDecisionSchema,
+  faqStatusUpdateSchema,
+  faqParamSchema,
   feedbackListQuerySchema,
   feedbackStatusUpdateSchema,
   analyticsOverviewQuerySchema,
@@ -103,6 +111,23 @@ router.post(
   ragController.reindexCountry,
 );
 router.get("/rag/status", validateQuery(ragStatusQuerySchema), ragController.status);
+router.get("/rag/au-laws", ragController.listAuLaws);
+router.post("/rag/au-laws/index", validateBody(ragAuLawIndexSchema), ragController.indexAuLaws);
+router.delete(
+  "/rag/au-laws/:titleId",
+  validateParams(ragAuLawParamSchema),
+  ragController.removeAuLaw,
+);
+
+router.get("/faq/candidates", validateQuery(faqCandidatesQuerySchema), faqController.candidates);
+router.get("/faq", validateQuery(faqListQuerySchema), faqController.list);
+router.post("/faq", validateBody(faqDecisionSchema), faqController.decide);
+router.patch(
+  "/faq/:id",
+  validateParams(faqParamSchema),
+  validateBody(faqStatusUpdateSchema),
+  faqController.updateStatus,
+);
 
 router.get("/feedback", validateQuery(feedbackListQuerySchema), feedbackController.list);
 router.get("/feedback/:id", feedbackController.get);

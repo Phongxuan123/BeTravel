@@ -33,6 +33,7 @@ import LegalArticle from "../src/models/LegalArticle.js";
 import User from "../src/models/User.js";
 import IncidentType from "../src/models/IncidentType.js";
 import QuickPhrase from "../src/models/QuickPhrase.js";
+import { AU_EMBASSY } from "./data/auVietnamMissions.js";
 import {
   CountryStatus,
   ContentStatus,
@@ -100,7 +101,9 @@ export const COUNTRIES = [
     // 000 là số khẩn cấp quốc gia của Úc (cảnh sát, cứu thương, cứu hỏa). Không có số hàng hải
     // riêng đã kiểm chứng nên để trống. Chưa có nguồn cho thông tin Đại sứ quán nên để trống.
     emergencyNumbers: { police: "000", ambulance: "000", fire: "000", marine: "" },
-    embassy: {},
+    // Đại sứ quán Canberra đã đối chiếu DFAT + website + OSM (scripts/data/auVietnamMissions.js); các TLSQ nạp bằng
+    // `npm run seed:au-missions` vào support_locations.
+    embassy: AU_EMBASSY,
     majorCities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
   },
 ];

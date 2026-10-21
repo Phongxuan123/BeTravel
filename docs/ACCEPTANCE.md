@@ -1,5 +1,22 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Kiểm tra sau merge main 4f54f16 — 21/10/2026
+
+- [v] Có backup `backup/offline-before-main-20261021-90fdaae` trước merge.
+- [v] Hợp nhất tài liệu xung đột bằng cách giữ cả hai phía; code dịch/auth/logo
+  không khác mốc 90fdaae. Nhận nguyên cập nhật AI/bản đồ và hợp đồng API từ main.
+- [v] Backend lint, format và 384 tests đạt. Lần đầu sandbox chặn cổng MongoDB
+  test (EPERM); chạy lại có quyền mở cổng đạt, dùng DB tạm và provider mock.
+- [v] Mobile typecheck/lint và 262 tests đạt; admin lint/typecheck, 22 tests và
+  production build đạt sau sửa đồng bộ kiểm thử AuLawsRagPanel.
+- [v] Export Hermes Android/iOS đạt. Lệnh export all đầu tiên không chạy vì
+  workspace chưa cài react-native-web; chuyển đúng hai nền tảng mobile,
+  không thêm dependency web ngoài phạm vi. Không phải build APK/IPA.
+- [ ] Chưa chạy lại hành trình trên thiết bị thật hoặc dịch vụ Atlas/AI/SMTP/
+  geocode thật. Kết quả tự động không bảo đảm các dịch vụ ngoài luôn sẵn sàng.
+- [ ] Cảnh báo Expo đối chiếu dependency offline và NO_COLOR/FORCE_COLOR của
+  môi trường còn; không chặn export. Các cảnh báo audit ở mục trước chưa đổi.
+
 ## Bộ offline tích hợp / logo / mật khẩu — 21/10/2026
 
 - [v] Mobile 244/244 tests (56 suites); typecheck/lint đạt. Bao gồm cài mới không

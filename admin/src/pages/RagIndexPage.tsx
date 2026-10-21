@@ -9,6 +9,7 @@ import { Button } from '../components/ui/Button';
 import { Table, Thead, Th, Tbody, Td } from '../components/ui/Table';
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/Feedback';
 import { Badge } from '../components/ui/Badge';
+import { AuLawsRagPanel } from '../components/AuLawsRagPanel';
 import type { RagIndexState } from '../lib/types';
 
 const STATUS_TONE: Record<RagIndexState['status'], 'brand' | 'warn' | 'danger' | 'neutral'> = {
@@ -134,6 +135,8 @@ export default function RagIndexPage() {
           </Tbody>
         </Table>
       )}
+
+      <AuLawsRagPanel />
     </div>
   );
 }

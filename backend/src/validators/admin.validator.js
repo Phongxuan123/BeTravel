@@ -240,6 +240,33 @@ export const ragStatusQuerySchema = z.object({
   countryCode: countryCodeSchema.optional(),
 });
 
+// Mã luật trên Federal Register of Legislation dạng C2004A01918 / F1996B03551.
+const auTitleIdSchema = z.string().regex(/^[A-Z]\d{4}[A-Z]\d{5}$/, "Mã luật không hợp lệ");
+
+export const ragAuLawIndexSchema = z.object({
+  titleIds: z.array(auTitleIdSchema).min(1).max(40),
+});
+
+export const ragAuLawParamSchema = z.object({ titleId: auTitleIdSchema });
+
+// ── FAQ đã duyệt (G6) ──────────────────────────────────────────────────
+const objectIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/, "ID không hợp lệ");
+
+export const faqCandidatesQuerySchema = z.object({ countryCode: countryCodeSchema.optional() });
+
+export const faqListQuerySchema = z.object({
+  status: z.enum(["active", "needs_review", "retired", "dismissed"]).optional(),
+});
+
+export const faqDecisionSchema = z.object({
+  sourceMessageId: objectIdSchema,
+  decision: z.enum(["approve", "dismiss"]),
+});
+
+export const faqStatusUpdateSchema = z.object({ status: z.enum(["active", "retired"]) });
+
+export const faqParamSchema = z.object({ id: objectIdSchema });
+
 // ── Feedback queue (B5, A08) ────────────────────────────────────────────
 export const feedbackListQuerySchema = paginationQuerySchema.extend({
   rating: z.enum(Object.values(FeedbackRating)).optional(),

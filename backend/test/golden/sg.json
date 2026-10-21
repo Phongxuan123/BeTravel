@@ -1,0 +1,332 @@
+{
+  "countryCode": "SG",
+  "note": "Chuyển từ evaluation.json của gói BeAI (Thành Đạt). Runner test/golden.test.js hiện chỉ đọc kr.json; answerMustMatch là khoá mới, runner cần bổ sung khi nối. Dữ liệu tương ứng: seed/knowledge/sg.json",
+  "cases": [
+    {
+      "id": "sg-sgac",
+      "origin": "fact",
+      "group": 1,
+      "question": "Đi Singapore thì SG Arrival Card nộp trước mấy ngày, có mất phí không và có thay visa không?",
+      "type": "must_answer",
+      "expectArticleSlug": "nhap-canh-sg-arrival-card-va-thoi-han-luu-tru",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "3|ba",
+          "miễn phí|không.*phí",
+          "không.*visa"
+        ]
+      }
+    },
+    {
+      "id": "sg-passport-stay",
+      "origin": "fact",
+      "group": 1,
+      "question": "Hộ chiếu cần còn hạn bao lâu để vào Singapore? Visa có quyết định số ngày được ở và được đi làm bằng Short-Term Visit Pass không?",
+      "type": "must_answer",
+      "expectArticleSlug": "nhap-canh-sg-arrival-card-va-thoi-han-luu-tru",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "6|sáu",
+          "Visit Pass",
+          "không.*(làm|việc|kinh doanh)"
+        ]
+      }
+    },
+    {
+      "id": "sg-vape",
+      "origin": "fact",
+      "group": 2,
+      "question": "Du lịch Singapore mang vape để dùng cá nhân hoặc để cai thuốc có được không?",
+      "type": "must_answer",
+      "expectArticleSlug": "vape-thuoc-la-dien-tu-va-tuoi-su-dung-thuoc-la",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không|cấm",
+          "cai thuốc",
+          "sở hữu|sử dụng"
+        ]
+      }
+    },
+    {
+      "id": "sg-gum",
+      "origin": "fact",
+      "group": 2,
+      "question": "Có mang kẹo cao su vào Singapore được không? Có ngoại lệ và có phải mọi việc nhai gum đều phạm luật không?",
+      "type": "must_answer",
+      "expectArticleSlug": "hang-cam-nhap-keo-cao-su-va-hang-kiem-soat",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "HSA",
+          "nha khoa|dược|y tế",
+          "nhập",
+          "không.*(mọi|nhai)"
+        ]
+      }
+    },
+    {
+      "id": "sg-medications",
+      "origin": "fact",
+      "group": 2,
+      "question": "Đi Singapore mang thuốc kê đơn cần giấy tờ gì, mang lượng dùng bao lâu và xin HSA trước bao lâu nếu có hoạt chất kiểm soát?",
+      "type": "must_answer",
+      "expectArticleSlug": "mang-thuoc-ca-nhan-don-thuoc-va-xin-chap-thuan-hsa",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "3.*tháng|ba.*tháng",
+          "2.*tuần|hai.*tuần",
+          "đơn thuốc|thư bác sĩ",
+          "hoạt chất"
+        ]
+      }
+    },
+    {
+      "id": "sg-tobacco-tax",
+      "origin": "fact",
+      "group": 2,
+      "question": "Mang một bao thuốc lá mua duty-free vào Singapore có được miễn thuế không?",
+      "type": "must_answer",
+      "expectArticleSlug": "mien-thue-ruou-thuoc-la-va-gst-hanh-ly-du-khach",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không",
+          "GST",
+          "thuế"
+        ]
+      }
+    },
+    {
+      "id": "sg-liquor-customs",
+      "origin": "fact",
+      "group": 2,
+      "question": "Tôi bay từ Malaysia sang Singapore thì có được miễn thuế hai lít rượu không? Điều kiện miễn thuế rượu thông thường là gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "mien-thue-ruou-thuoc-la-va-gst-hanh-ly-du-khach",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không",
+          "Malaysia",
+          "18",
+          "48"
+        ]
+      }
+    },
+    {
+      "id": "sg-public-alcohol",
+      "origin": "fact",
+      "group": 3,
+      "question": "Ở Singapore, 23 giờ uống bia ngoài công viên được không? Quán bar có giấy phép có bị cấm giống vậy không?",
+      "type": "must_answer",
+      "expectArticleSlug": "gio-cam-uong-ruou-bia-noi-cong-cong-va-liquor-control-zone",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "22[:.]30|22 giờ 30|10[:.]30|10 giờ 30",
+          "7|07",
+          "giấy phép",
+          "giờ"
+        ]
+      }
+    },
+    {
+      "id": "sg-smoking",
+      "origin": "fact",
+      "group": 3,
+      "question": "Ở Singapore hút thuốc ngoài trời sát trạm xe buýt có được không?",
+      "type": "must_answer",
+      "expectArticleSlug": "noi-cam-hut-thuoc-va-khu-hut-thuoc-duoc-chi-dinh",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không|cấm",
+          "5.*m|năm.*m"
+        ]
+      }
+    },
+    {
+      "id": "sg-litter",
+      "origin": "fact",
+      "group": 3,
+      "question": "Singapore xử lý xả rác lần đầu như thế nào, du khách nên làm gì với rác?",
+      "type": "must_answer",
+      "expectArticleSlug": "khong-xa-rac-va-ve-sinh-noi-cong-cong",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "300",
+          "thùng rác"
+        ]
+      }
+    },
+    {
+      "id": "sg-cash",
+      "origin": "fact",
+      "group": 2,
+      "question": "Mang 25.000 SGD tiền mặt vào hoặc ra Singapore cần làm gì? Có bị cấm mang không?",
+      "type": "must_answer",
+      "expectArticleSlug": "khai-bao-tien-mat-tren-20-000-sgd-khi-nhap-hoac-xuat-canh",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "20[.,]?000|20 nghìn",
+          "72",
+          "NP727|727",
+          "không.*cấm"
+        ]
+      }
+    },
+    {
+      "id": "sg-missing-evidence",
+      "origin": "trap",
+      "group": 5,
+      "question": "Singapore có mức phạt chính xác bao nhiêu cho việc quay phim riêng trong phòng khách sạn rồi đăng TikTok?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(SGD|S\\$|đô la Singapore)"
+        ]
+      }
+    },
+    {
+      "id": "sg-drone",
+      "origin": "fact",
+      "group": 5,
+      "question": "Mang flycam 600 g sang Singapore bay chơi gần sân bay Changi thì cần đăng ký hay giấy phép gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "flycam-drone-dang-ky-giay-phep-va-khu-vuc-cam-bay",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "250",
+          "đăng ký",
+          "5 ?km",
+          "Class 2|giấy phép"
+        ]
+      }
+    },
+    {
+      "id": "sg-idp",
+      "origin": "fact",
+      "group": 6,
+      "question": "Du khách từ nước ASEAN sang Singapore chơi 1 tuần có cần bằng lái quốc tế IDP để lái xe không?",
+      "type": "must_answer",
+      "expectArticleSlug": "lai-xe-bang-bang-lai-nuoc-ngoai-va-idp",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "ASEAN",
+          "không cần|không phải",
+          "còn hiệu lực"
+        ]
+      }
+    },
+    {
+      "id": "sg-mosque-dress",
+      "origin": "fact",
+      "group": 4,
+      "question": "Đi tham quan Sultan Mosque ở Singapore mặc quần short được không, có phải cởi giày không?",
+      "type": "must_answer",
+      "expectArticleSlug": "trang-phuc-va-ung-xu-khi-tham-quan-sultan-mosque",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "short|ngắn",
+          "giày|dép",
+          "áo choàng|cover"
+        ]
+      }
+    },
+    {
+      "id": "sg-embassy",
+      "origin": "fact",
+      "group": 7,
+      "question": "Địa chỉ và số điện thoại Đại sứ quán Việt Nam tại Singapore là gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "lien-he-dai-su-quan-viet-nam-tai-singapore",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "Leedon",
+          "6462 ?5994"
+        ]
+      }
+    },
+    {
+      "id": "sg-scenario-theft",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Tôi bị móc túi mất ví ở Orchard, Singapore, không nguy hiểm tới tính mạng. Tôi báo cảnh sát thế nào, còn khẩn cấp thì gọi số nào?",
+      "type": "must_answer",
+      "expectArticleSlug": "bao-canh-sat-so-khan-cap-999-va-bao-mat-trom-lua-dao",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "999",
+          "trực tuyến|online|Lodge Police Report"
+        ]
+      }
+    },
+    {
+      "id": "sg-scenario-scam-call",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Ở Singapore có người gọi xưng là cảnh sát bảo tôi chuyển tiền để xác minh tài khoản. Tôi nên làm gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "nhan-dien-lua-dao-va-duong-day-scamshield-1799",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "1799",
+          "không bao giờ|không yêu cầu|KHÔNG"
+        ]
+      }
+    },
+    {
+      "id": "sg-scenario-overcharge",
+      "origin": "scenario",
+      "group": 9,
+      "question": "Tôi là du khách bị một cửa hàng ở Singapore chặt chém, tính giá sai. Tôi khiếu nại ở đâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "kenh-khieu-nai-nguoi-ban-cua-du-khach-stb-case-ccs",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "STB|Singapore Tourism Board",
+          "CASE|6277"
+        ]
+      }
+    },
+    {
+      "id": "sg-citizen-hotline",
+      "origin": "fact",
+      "group": 7,
+      "question": "Công dân Việt Nam gặp nạn ở Singapore có số tổng đài bảo hộ công dân nào không?",
+      "type": "must_answer",
+      "expectArticleSlug": "tong-dai-bao-ho-cong-dan-viet-nam",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "981[ .]?84[ .]?84[ .]?84"
+        ]
+      }
+    },
+    {
+      "id": "sg-trap-arrest-bail",
+      "origin": "trap",
+      "group": 8,
+      "question": "Nếu bị bắt tạm giam ở Singapore vì đánh nhau thì tiền bảo lãnh tại ngoại là bao nhiêu SGD?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(SGD|S\\$|đô la Singapore)"
+        ]
+      }
+    }
+  ]
+}

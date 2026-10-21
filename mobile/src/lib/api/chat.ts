@@ -12,7 +12,16 @@ import type { ChatAnswer } from '@/mocks/client';
 
 export type ChatSession = { _id: string; countryCode: string; title: string; updatedAt: string };
 
-type ApiCitation = { marker: string; articleId: string; articleSlug: string; title: string; heading: string };
+type ApiCitation = {
+  marker: string;
+  articleId?: string;
+  articleSlug?: string;
+  title: string;
+  heading: string;
+  // 'au_legislation': van ban luat goc chua duoc Be.Travel kiem chung, mo bang officialUrl.
+  sourceType?: 'article' | 'au_legislation';
+  officialUrl?: string;
+};
 type ApiChatMessage = {
   _id: string;
   sessionId: string;
@@ -23,6 +32,9 @@ type ApiChatMessage = {
   fallbackReason: string | null;
   confidence: 'high' | 'medium' | 'low' | null;
   needsOfficialHelp?: boolean;
+  route?: 'legal' | 'emergency' | 'personal_advice' | 'out_of_scope' | 'greeting';
+  // 'approved_faq': câu trả lời admin đã duyệt cho câu hỏi hay gặp (G6), không do AI viết lúc này.
+  answerSource?: 'ai' | 'approved_faq';
   feedback: 'up' | 'down' | null;
   createdAt: string;
 };
@@ -54,7 +66,50 @@ const INSUFFICIENT_EVIDENCE_SUGGESTIONS = [
   'Nếu cần hỗ trợ khẩn cấp, mở mục SOS hoặc liên hệ Đại sứ quán/Tổng lãnh sự quán Việt Nam.',
 ];
 
+function adaptSource(c: ApiCitation, countryCode: string): Extract<ChatAnswer, { status: 'answered' }>['sources'][number] {
+  const name = c.heading ? `${c.title} — ${c.heading}` : c.title;
+  if (c.sourceType === 'au_legislation') {
+    return { name, url: c.officialUrl ?? '', marker: c.marker, verified: false };
+  }
+  return { name, url: '', marker: c.marker, articleSlug: c.articleSlug, countryCode };
+}
+
+type AnswerSource = Extract<ChatAnswer, { status: 'answered' }>['sources'][number];
+
+// Một điều luật gốc dài được chia thành nhiều chunk cùng tiêu đề: gộp thành một dòng nguồn, giữ các marker.
+function mergeSameSections(sources: AnswerSource[]): AnswerSource[] {
+  const merged: AnswerSource[] = [];
+  for (const source of sources) {
+    const same = source.verified === false ? merged.find((m) => m.verified === false && m.name === source.name) : undefined;
+    if (same) same.marker = `${same.marker}, ${source.marker}`;
+    else merged.push({ ...source });
+  }
+  return merged;
+}
+
+const PROVIDER_ERROR_SUGGESTIONS = [
+  'Thử lại sau ít phút, bấm nút Tạo lại ở câu trả lời này.',
+  'Nếu việc gấp, mở mục SOS hoặc liên hệ Đại sứ quán Việt Nam.',
+];
+
 export function adaptMessage(message: ApiChatMessage, countryCode: string): ChatAnswer {
+  if (message.fallbackReason === 'OUT_OF_SCOPE') {
+    return {
+      status: 'out_of_scope',
+      message: stripTrailingDisclaimer(message.text),
+      greeting: message.route === 'greeting',
+    };
+  }
+  if (message.fallbackReason === 'PROVIDER_ERROR') {
+    // AI quá tải / hết lượt: không phải thiếu dữ liệu, nên không dùng nhãn "Chưa đủ dữ liệu".
+    return {
+      status: 'insufficient_evidence',
+      badge: 'AI đang bận',
+      title: 'Chưa thể trả lời lúc này.',
+      reason: stripTrailingDisclaimer(message.text),
+      suggestions: PROVIDER_ERROR_SUGGESTIONS,
+    };
+  }
   if (message.fallbackReason) {
     return { status: 'insufficient_evidence', reason: message.text, suggestions: INSUFFICIENT_EVIDENCE_SUGGESTIONS };
   }
@@ -63,13 +118,8 @@ export function adaptMessage(message: ApiChatMessage, countryCode: string): Chat
     updatedAt: formatUpdatedAt(message.createdAt),
     content: stripTrailingDisclaimer(message.text),
     needsOfficialHelp: message.needsOfficialHelp === true,
-    sources: message.citations.map((c) => ({
-      name: c.heading ? `${c.title} — ${c.heading}` : c.title,
-      url: '',
-      marker: c.marker,
-      articleSlug: c.articleSlug,
-      countryCode,
-    })),
+    approved: message.answerSource === 'approved_faq',
+    sources: mergeSameSections(message.citations.map((c) => adaptSource(c, countryCode))),
   };
 }
 
@@ -114,7 +164,7 @@ export function setActiveSession(sessionId: string, countryCode: string): void {
 
 export async function askLegalAssistant(
   question: string,
-  opts?: { countryCode?: string; focusArticleId?: string },
+  opts?: { countryCode?: string; focusArticleId?: string; regenerate?: boolean },
 ): Promise<ChatAnswer> {
   const countryCode = opts?.countryCode;
   if (!countryCode) {
@@ -123,7 +173,7 @@ export async function askLegalAssistant(
   const sessionId = await ensureSession(countryCode);
   const res = await apiRequest<{ sessionId: string; message: ApiChatMessage }>(`/chat/sessions/${sessionId}/messages`, {
     method: 'POST',
-    body: { question, focusArticleId: opts?.focusArticleId },
+    body: { question, focusArticleId: opts?.focusArticleId, regenerate: opts?.regenerate },
   });
   lastMessageId = res.message._id;
   return adaptMessage(res.message, countryCode);

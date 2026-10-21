@@ -1,0 +1,305 @@
+{
+  "countryCode": "TH",
+  "note": "Chuyển từ evaluation.json của gói BeAI (Thành Đạt). Runner test/golden.test.js hiện chỉ đọc kr.json; answerMustMatch là khoá mới, runner cần bổ sung khi nối. Dữ liệu tương ứng: seed/knowledge/th.json",
+  "cases": [
+    {
+      "id": "th-visa",
+      "origin": "fact",
+      "group": 1,
+      "question": "Người Việt cầm hộ chiếu phổ thông đi du lịch Thái Lan được miễn visa bao nhiêu ngày?",
+      "type": "must_answer",
+      "expectArticleSlug": "mien-thi-thuc-cho-ho-chieu-pho-thong-viet-nam",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "30",
+          "miễn"
+        ]
+      }
+    },
+    {
+      "id": "th-tdac",
+      "origin": "fact",
+      "group": 1,
+      "question": "Đi Thái Lan có bắt buộc khai TDAC không và phải khai trước mấy ngày?",
+      "type": "must_answer",
+      "expectArticleSlug": "thailand-digital-arrival-card-tdac-luu-tru-qua-90-ngay-lam-v",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "TDAC|Digital Arrival Card",
+          "3|ba"
+        ]
+      }
+    },
+    {
+      "id": "th-overstay",
+      "origin": "fact",
+      "group": 1,
+      "question": "Nếu tôi ở Thái Lan quá hạn 1 tuần thì bị phạt bao nhiêu tiền?",
+      "type": "must_answer",
+      "expectArticleSlug": "o-qua-han-visa-overstay-va-muc-phat",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "500",
+          "3[.,]?500"
+        ]
+      }
+    },
+    {
+      "id": "th-duty-free",
+      "origin": "fact",
+      "group": 2,
+      "question": "Mang bao nhiêu thuốc lá và rượu vào Thái Lan thì được miễn thuế? Mang dư thì sao?",
+      "type": "must_answer",
+      "expectArticleSlug": "han-muc-mien-thue-thuoc-la-ruou-va-luong-hai-quan-xanh-do",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "200",
+          "1\\s*lít|một lít",
+          "thùng|truy tố"
+        ]
+      }
+    },
+    {
+      "id": "th-medication",
+      "origin": "fact",
+      "group": 2,
+      "question": "Tôi đang uống thuốc hướng thần theo đơn bác sĩ, mang đủ dùng 2 tháng sang Thái Lan có cần xin phép không, và phải xin trước bao nhiêu ngày?",
+      "type": "must_answer",
+      "expectArticleSlug": "mang-thuoc-ca-nhan-chua-chat-gay-nghien-huong-than",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "30|31",
+          "giấy phép|xin phép",
+          "15"
+        ]
+      }
+    },
+    {
+      "id": "th-cash",
+      "origin": "fact",
+      "group": 2,
+      "question": "Mang 25.000 USD tiền mặt vào Thái Lan có phải khai báo hải quan không?",
+      "type": "must_answer",
+      "expectArticleSlug": "khai-bao-ngoai-te-tren-20-000-usd-va-tien-baht-mang-ra",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "20[.,]?000",
+          "khai"
+        ]
+      }
+    },
+    {
+      "id": "th-vape",
+      "origin": "fact",
+      "group": 3,
+      "question": "Mang vape hoặc thuốc lá điện tử vào Thái Lan để dùng cá nhân bị phạt thế nào, mức phạt tù hoặc phạt tiền tối đa là bao nhiêu?",
+      "type": "must_answer",
+      "expectArticleSlug": "thuoc-la-dien-tu-vape-bi-cam-va-muc-phat",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "cấm|bất hợp pháp|vi phạm",
+          "10 năm|5 lần|5 năm|4 lần"
+        ]
+      }
+    },
+    {
+      "id": "th-alcohol",
+      "origin": "fact",
+      "group": 3,
+      "question": "Ở Thái Lan mấy giờ thì được mua bia rượu? Uống bia trong chùa hoặc công viên công cộng có được không?",
+      "type": "must_answer",
+      "expectArticleSlug": "gio-ban-ruou-bia-tuoi-uong-ruou-va-noi-cam-uong",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "11",
+          "24|12 giờ đêm|nửa đêm",
+          "chùa|công viên"
+        ]
+      }
+    },
+    {
+      "id": "th-palace-dress",
+      "origin": "fact",
+      "group": 4,
+      "question": "Đi tham quan Hoàng cung Bangkok mặc quần short và áo sát nách có được vào không?",
+      "type": "must_answer",
+      "expectArticleSlug": "hoang-cung-bangkok-grand-palace-trang-phuc-cam-drone-ve",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không",
+          "short|sát nách"
+        ]
+      }
+    },
+    {
+      "id": "th-monk",
+      "origin": "fact",
+      "group": 4,
+      "question": "Phụ nữ khi đi chùa ở Thái Lan có được trao đồ trực tiếp cho nhà sư không? Cần lưu ý gì khi vào chùa?",
+      "type": "must_answer",
+      "expectArticleSlug": "phong-tuc-ung-xu-o-chua-voi-nha-su-va-hoang-gia",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không",
+          "nhà sư|sư",
+          "giày"
+        ]
+      }
+    },
+    {
+      "id": "th-drone",
+      "origin": "scenario",
+      "group": 5,
+      "question": "Tôi muốn mang flycam sang Thái Lan quay phim du lịch thì cần đăng ký gì trước?",
+      "type": "must_answer",
+      "expectArticleSlug": "dang-ky-flycam-drone-cho-du-khach-nuoc-ngoai",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "đăng ký",
+          "CAAT|caat",
+          "bảo hiểm"
+        ]
+      }
+    },
+    {
+      "id": "th-driving",
+      "origin": "scenario",
+      "group": 6,
+      "question": "Tôi định thuê xe máy tự lái ở Phuket, cần mang bằng lái gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "lai-xe-xe-may-va-bang-lai-quoc-te",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "quốc tế",
+          "hộ chiếu"
+        ]
+      }
+    },
+    {
+      "id": "th-embassy",
+      "origin": "fact",
+      "group": 7,
+      "question": "Số đường dây nóng bảo hộ công dân của Đại sứ quán Việt Nam tại Bangkok là bao nhiêu, địa chỉ ở đâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "dai-su-quan-viet-nam-tai-bangkok-lien-he-duong-day-nong-bao",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "89\\s?896\\s?6653",
+          "Wireless"
+        ]
+      }
+    },
+    {
+      "id": "th-lost-passport",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Tôi bị mất hộ chiếu ở Bangkok, phải làm gì để về Việt Nam?",
+      "type": "must_answer",
+      "expectArticleSlug": "mat-ho-chieu-viet-nam-o-nuoc-ngoai-trinh-bao-va-xin-thong-ha",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "cảnh sát|công an",
+          "thông hành",
+          "Cơ quan Đại diện|Đại sứ quán"
+        ]
+      }
+    },
+    {
+      "id": "th-arrest",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Người thân tôi bị cảnh sát Thái Lan bắt giữ, phía Việt Nam có thể hỗ trợ những gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "bi-bat-tam-giu-o-nuoc-ngoai-co-quan-dai-dien-viet-nam-giup-g",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "lãnh sự",
+          "luật sư"
+        ]
+      }
+    },
+    {
+      "id": "th-scam",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Bị móc túi hoặc bị lừa đảo khi du lịch Thái Lan thì báo cho ai, số điện thoại nào?",
+      "type": "must_answer",
+      "expectArticleSlug": "bao-trom-cap-moc-tui-hanh-hung-lua-dao-tourist-police",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "1155",
+          "Tourist Police|cảnh sát du lịch"
+        ]
+      }
+    },
+    {
+      "id": "th-overcharge",
+      "origin": "scenario",
+      "group": 9,
+      "question": "Bị nhà hàng ở Pattaya tính tiền quá đắt so với thực đơn thì tôi khiếu nại ở đâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "khieu-nai-hang-hoa-dich-vu-nha-hang-office-of-the-consumer-p",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "OCPB|Consumer Protection|bảo vệ người tiêu dùng",
+          "1166"
+        ]
+      }
+    },
+    {
+      "id": "th-taxi",
+      "origin": "scenario",
+      "group": 9,
+      "question": "Taxi ở Bangkok không bật đồng hồ và đòi giá cao, tôi gọi số nào để khiếu nại?",
+      "type": "must_answer",
+      "expectArticleSlug": "khieu-nai-taxi-tuk-tuk-xe-may-xe-buyt-department-of-land-tra",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "1584"
+        ]
+      }
+    },
+    {
+      "id": "th-trap-helmet",
+      "origin": "trap",
+      "group": 6,
+      "question": "Ở Thái Lan, không đội mũ bảo hiểm khi đi xe máy bị phạt chính xác bao nhiêu Baht?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(THB|baht|bạt)"
+        ]
+      }
+    },
+    {
+      "id": "th-trap-drone-fee",
+      "origin": "trap",
+      "group": 5,
+      "question": "Lệ phí đăng ký flycam với CAAT Thái Lan là bao nhiêu tiền?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(THB|baht|bạt)"
+        ]
+      }
+    }
+  ]
+}

@@ -27,7 +27,11 @@ function mockTranslate({ text, to }) {
   return JSON.stringify({ translated: `[${to}] ${text}`, phonetic: "" });
 }
 
-export function createMockLlmProvider() {
+/**
+ * @param {{sections?: boolean}} options sections=true: tra them `actions`/`avoid` tu chunk thu 2, 3
+ *   de test duoc luong 3 phan; mac dinh giu dang cu (chi `answer`).
+ */
+export function createMockLlmProvider({ sections = false } = {}) {
   return {
     provider: "mock",
     model: "mock-llm",
@@ -49,8 +53,16 @@ export function createMockLlmProvider() {
       const sentences = used.map((c) => `${c.text.trim()} [${c.marker}]`);
       const needsOfficialHelp = URGENT_KEYWORDS.some((kw) => question.toLowerCase().includes(kw));
 
+      const [first, second, third] = used;
       return JSON.stringify({
-        answer: sentences.join(" "),
+        inScope: true,
+        answer: sections ? `${first.text.trim()} [${first.marker}]` : sentences.join(" "),
+        ...(sections
+          ? {
+              actions: second ? [`${second.text.trim()} [${second.marker}]`] : [],
+              avoid: third ? [`${third.text.trim()} [${third.marker}]`] : [],
+            }
+          : {}),
         usedSources: used.map((c) => c.marker),
         confidence: "high",
         needsOfficialHelp,

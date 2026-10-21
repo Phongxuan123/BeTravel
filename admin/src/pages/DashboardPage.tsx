@@ -31,6 +31,14 @@ function StatCard({ icon: Icon, label, value, tone = 'brand' }: { icon: typeof F
   );
 }
 
+const ROUTE_LABEL: Record<string, string> = {
+  legal: 'Pháp lý',
+  emergency: 'Khẩn cấp',
+  personal_advice: 'Xin tư vấn cá nhân',
+  out_of_scope: 'Ngoài phạm vi',
+  greeting: 'Chào hỏi',
+};
+
 export default function DashboardPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['admin', 'dashboard'],
@@ -101,6 +109,22 @@ export default function DashboardPage() {
                     />
                   </Link>
                 </div>
+
+                {Object.keys(analytics.data.routeCounts ?? {}).length > 0 && (
+                  <div className="rounded-lg border border-line bg-white p-4" data-testid="route-counts">
+                    <h3 className="mb-1 text-sm font-semibold text-ink">Phân loại câu hỏi</h3>
+                    <p className="mb-3 text-xs text-muted">
+                      Câu ngoài phạm vi và chào hỏi do hệ thống tự trả lời, không tính vào tỉ lệ fallback.
+                    </p>
+                    <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                      {Object.entries(analytics.data.routeCounts).map(([route, count]) => (
+                        <span key={route} className="text-muted">
+                          {ROUTE_LABEL[route] ?? route}: <span className="font-medium text-ink">{count}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {analytics.data.topFallbackQuestions.length > 0 && (
                   <div className="rounded-lg border border-line bg-white p-4">

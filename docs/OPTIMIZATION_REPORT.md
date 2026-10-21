@@ -1,5 +1,17 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Lịch sử cập nhật — 21/10/2026: hợp nhất main 4f54f16
+
+- Giữ toàn bộ hai nhánh nội dung khi giải quyết hai xung đột tài liệu; không
+  ghi đè triển khai offline/logo/auth cục bộ, không đổi contract đã nhận từ main.
+- Sửa một lỗi kiểm thử admin: assertion chạy trước mutation notification của
+  React Query. Chờ điều kiện có timeout thay sleep cố định; dọn root/query cache
+  và spy sau test. Không đổi logic index luật để chiều theo test.
+- 668 tests đạt, lint/typecheck/format tương ứng đạt, admin build và export
+  Hermes Android/iOS đạt. Không cài dependency mới; nợ audit trước giữ nguyên.
+- Giới hạn: kiểm thử backend dùng DB tạm/mock; chưa kiểm dịch vụ ngoài và UI
+  thiết bị thật. Không chạy seed, không sửa dữ liệu người dùng, không push.
+
 ## Lịch sử cập nhật — 21/10/2026: bộ offline đóng gói
 
 - Sửa đường dịch offline bỏ qua phrasebook: tra nội dung tích hợp trước native.
@@ -19,6 +31,27 @@
   https://github.com/advisories/GHSA-hp3w-g68c-fv3c
 - Áp dụng DRY, xử lý lỗi rõ, phân biệt nguồn dữ liệu, không thay contract/migration.
   Chi tiết kết quả và giới hạn thực tế tại ACCEPTANCE/TRANSLATION.
+
+## Sửa GPS và tìm kiếm bản đồ — 21/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 10: xóa hằng/hàm thử lại Overpass cũ (thay bằng nhiều máy chủ); `requestLocationWithExplanation` vẫn dùng ở màn khác nên giữ.
+- Rule 6: mọi ngưỡng mới (debounce, số ký tự tối thiểu, tuổi vị trí, giãn cách Nominatim, trần ngày) là hằng số có tên hoặc biến `GEOCODE_*`.
+- Rule 13A: W5 không phát sinh (q/country qua Zod, URL dựng bằng URLSearchParams; không log câu tìm kiếm). W3: lint `react-hooks/purity`
+  buộc tách `Date.now()` khỏi thân component (đã tách thành hàm ngoài).
+- Còn tồn: xem mục "Đang vướng (bản đồ)" trong PROGRESS.md.
+
+## Hoàn thiện Be.Travel AI — 20/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 2/3: tách `sendMessage` thành `replyWithoutLlm`, `generateGuardedAnswer`, `completeOrNull`; gom ba khối trả lời
+  không gọi LLM (khác quốc gia, thiếu bằng chứng, ngoài phạm vi) về một hàm, bỏ lặp.
+- Rule 6: ngưỡng và hằng số mới (`ANSWER_CACHE_VERSION`, chờ 429 của embedding, độ dài chunk luật Úc) đặt thành hằng
+  có tên; model chat mặc định đổi qua `env.js`, không hard-code nơi khác.
+- Rule 7: hết quota hoặc lỗi LLM không còn bị nuốt im lặng (`completeOrNull` ghi log ngắn, không kèm key); log tên vi
+  phạm guard.
+- Rule 11: comment tiếng Việt cho `scope.js`, `guard.js`, `auLawChunking.js`, `auLawIndex.service.js`, `retrieval.js`.
+- Rule 13A: không phát sinh warning mới (lint sạch; Prettier sạch trên các file đã sửa). Test cũ H-06.c được cập
+  nhật vì quy tắc số điện thoại thay đổi có chủ đích (số điện thoại phải có trong nguồn).
+- Vấn đề còn tồn đọng: xem mục "Chưa làm / đang vướng (AI)" ở PROGRESS.md.
 
 ## Khôi phục bố cục auth trước căn giữa — 20/10/2026
 
@@ -195,6 +228,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 20/10/2026: hoàn thiện Be.Travel AI (phân luồng, 3 phần, luật Úc vào RAG, guard số điện thoại); backend 344, mobile 243, admin 18 tests đạt; chạy thật 9/9 trên 3 luật Úc.
 
 - 17/10/2026 (lần 2): khôi phục map e6361c3 theo yêu cầu, sửa embassy theo nước; 531 tests đạt, upstream OSM còn timeout.
 

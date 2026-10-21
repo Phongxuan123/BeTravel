@@ -79,3 +79,9 @@ export const lawsTranslateRateLimit = buildRateLimit({
   limit: 40,
   message: "Bạn đang dịch quá nhanh. Vui lòng chờ một chút rồi thử lại.",
 });
+
+// Tìm địa điểm theo chữ: người dùng gõ nhiều lần (client đã debounce) nhưng mỗi lượt có thể thành một lần gọi Nominatim.
+export const placeSearchRateLimit = buildRateLimit({
+  limit: 90,
+  message: "Bạn đang tìm địa điểm quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});

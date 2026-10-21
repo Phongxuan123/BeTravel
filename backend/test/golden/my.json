@@ -1,0 +1,295 @@
+{
+  "countryCode": "MY",
+  "note": "Chuyển từ evaluation.json của gói BeAI (Thành Đạt). Runner test/golden.test.js hiện chỉ đọc kr.json; answerMustMatch là khoá mới, runner cần bổ sung khi nối. Dữ liệu tương ứng: seed/knowledge/my.json",
+  "cases": [
+    {
+      "id": "my-mdac",
+      "origin": "fact",
+      "group": 1,
+      "question": "Người Việt đi Malaysia có phải khai MDAC không, khai trước mấy ngày và hộ chiếu cần còn hạn bao lâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "mdac-va-hieu-luc-ho-chieu-khi-nhap-canh",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "MDAC|Digital Arrival Card",
+          "3 ngày|ba ngày|3 days",
+          "6 tháng|sáu tháng|6 months"
+        ]
+      }
+    },
+    {
+      "id": "my-visa-asean",
+      "origin": "fact",
+      "group": 1,
+      "question": "Công dân Việt Nam đi du lịch Malaysia 2 tuần có cần xin visa không? Nếu ở quá 1 tháng thì sao?",
+      "type": "must_answer",
+      "expectArticleSlug": "mien-visa-cho-cong-dan-asean-luu-tru-duoi-1-thang",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "dưới (1|một) tháng|1 tháng|một tháng",
+          "miễn.*visa|không cần.*visa",
+          "(vượt|quá).*(1|một) tháng.*visa|cần.*visa"
+        ]
+      }
+    },
+    {
+      "id": "my-duty-free-air",
+      "origin": "fact",
+      "group": 2,
+      "question": "Bay vào Malaysia tôi được miễn thuế bao nhiêu lít rượu và tổng giá trị hàng hóa khác tối đa bao nhiêu?",
+      "type": "must_answer",
+      "expectArticleSlug": "muc-mien-thue-hanh-ly-cho-du-khach",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "1 lít|một lít|1 litre",
+          "1[.,]?000"
+        ]
+      }
+    },
+    {
+      "id": "my-cash",
+      "origin": "fact",
+      "group": 2,
+      "question": "Mang 12.000 USD tiền mặt vào Malaysia có phải khai báo không? Không khai thì bị phạt thế nào?",
+      "type": "must_answer",
+      "expectArticleSlug": "muc-mien-thue-hanh-ly-cho-du-khach",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "10[.,]?000",
+          "Form No\\.? ?7|Form 7|mẫu (số )?7",
+          "3 triệu|RM ?3",
+          "5 năm"
+        ]
+      }
+    },
+    {
+      "id": "my-medicine",
+      "origin": "fact",
+      "group": 2,
+      "question": "Tôi mang thuốc kê đơn điều trị lâu dài khi đi Malaysia thì được mang bao nhiêu và cần giấy tờ gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "mang-thuoc-ca-nhan-khi-nhap-canh",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "1 tháng|một tháng",
+          "đơn thuốc|thư (của )?bác sĩ",
+          "tiếng Anh|bản dịch"
+        ]
+      }
+    },
+    {
+      "id": "my-drugs",
+      "origin": "fact",
+      "group": 3,
+      "question": "Mang cần sa hoặc ma túy vào Malaysia thì bị xử lý thế nào?",
+      "type": "must_answer",
+      "expectArticleSlug": "muc-mien-thue-hanh-ly-cho-du-khach",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "cấm",
+          "cần sa|ma túy"
+        ]
+      }
+    },
+    {
+      "id": "my-smoking",
+      "origin": "fact",
+      "group": 3,
+      "question": "Ở Malaysia có được hút thuốc trong quán ăn hay ở sân bay không? Nếu bị phạt kompaun thì có bao lâu để nộp?",
+      "type": "must_answer",
+      "expectArticleSlug": "28-khu-vuc-cam-hut-thuoc-theo-akta-852",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "không|cấm",
+          "30 ngày",
+          "852"
+        ]
+      }
+    },
+    {
+      "id": "my-mosque",
+      "origin": "fact",
+      "group": 4,
+      "question": "Đi tham quan Masjid Wilayah ở Kuala Lumpur thì có được phát khăn trùm đầu, áo choàng không và nên chuẩn bị gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "tham-quan-nha-tho-hoi-giao-masjid-wilayah-persekutuan",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "áo choàng|robe",
+          "khăn|headscar",
+          "tất"
+        ]
+      }
+    },
+    {
+      "id": "my-drone-permit",
+      "origin": "fact",
+      "group": 5,
+      "question": "Mang flycam sang Malaysia quay phim du lịch có cần xin phép không? Phải nộp đơn trước bao lâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "quy-dinh-bay-flycam-drone-va-khu-vuc-cam",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "CAAM|Civil Aviation",
+          "14"
+        ]
+      }
+    },
+    {
+      "id": "my-drone-crowd",
+      "origin": "fact",
+      "group": 5,
+      "question": "Ở Malaysia tôi có được bay drone chụp ảnh trên đám đông lễ hội ngoài trời hay gần khu vực cấm của nhà nước không?",
+      "type": "must_answer",
+      "expectArticleSlug": "quy-dinh-bay-flycam-drone-va-khu-vuc-cam",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "1[.,]?000",
+          "CGSO|Kawasan Larangan|khu vực.*cấm|địa điểm cấm"
+        ]
+      }
+    },
+    {
+      "id": "my-vep",
+      "origin": "fact",
+      "group": 6,
+      "question": "Tôi lái ô tô biển số Singapore vào Malaysia thì cần giấy phép gì và mỗi lần vào trả phí bao nhiêu?",
+      "type": "must_answer",
+      "expectArticleSlug": "giay-phep-vep-va-phi-duong-bo-cho-xe-nuoc-ngoai",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "VEP|Vehicle Entry Permit",
+          "RM ?20|20 ?RM"
+        ]
+      }
+    },
+    {
+      "id": "my-embassy",
+      "origin": "fact",
+      "group": 7,
+      "question": "Số điện thoại, địa chỉ và giờ làm việc lãnh sự của Đại sứ quán Việt Nam tại Malaysia là gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "lien-he-dai-su-quan-viet-nam-tai-kuala-lumpur",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "2148[- ]?4534",
+          "Persiaran Stonor",
+          "thứ Hai"
+        ]
+      }
+    },
+    {
+      "id": "my-lost-passport",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Tôi bị mất hộ chiếu ở Kuala Lumpur và sắp bay về Việt Nam, giờ phải làm gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "mat-ho-chieu-o-nuoc-ngoai-huong-dan-cua-cuc-lanh-su",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "cảnh sát",
+          "[Tt]hông hành",
+          "4x6|4 x 6|ảnh",
+          "5 ngày"
+        ]
+      }
+    },
+    {
+      "id": "my-arrested",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Người thân tôi bị cảnh sát Malaysia bắt vì ở quá hạn visa, Đại sứ quán Việt Nam có thể giúp gì?",
+      "type": "must_answer",
+      "expectArticleSlug": "bi-bat-tam-giu-o-nuoc-ngoai-co-quan-dai-dien-giup-gi",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "Cơ quan Đại diện|lãnh sự|Đại sứ quán",
+          "luật sư",
+          "gia đình|thân nhân"
+        ]
+      }
+    },
+    {
+      "id": "my-scam",
+      "origin": "scenario",
+      "group": 8,
+      "question": "Tôi bị lừa chuyển tiền qua mạng khi đang du lịch Malaysia, nên gọi số nào và trong thời hạn bao lâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "bi-lua-dao-tai-chinh-goi-nsrc-997",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "997",
+          "24 giờ",
+          "ngân hàng|cảnh sát|police"
+        ]
+      }
+    },
+    {
+      "id": "my-consumer-claim",
+      "origin": "scenario",
+      "group": 9,
+      "question": "Một cửa hàng ở Malaysia bán cho tôi hàng lỗi và không chịu hoàn tiền, tôi có thể khiếu nại ở đâu, số tiền tối đa là bao nhiêu và phải nộp trong thời hạn bao lâu?",
+      "type": "must_answer",
+      "expectArticleSlug": "khieu-nai-mua-hang-dich-vu-tai-tribunal-for-consumer-claims",
+      "assert": {
+        "minCitations": 1,
+        "answerMustMatch": [
+          "Tribunal|TTPM",
+          "50[.,]?000",
+          "3 năm|ba năm"
+        ]
+      }
+    },
+    {
+      "id": "my-trap-taxi-fine",
+      "origin": "trap",
+      "group": 9,
+      "question": "Ở Malaysia tài xế taxi chặt chém du khách thì bị phạt chính xác bao nhiêu tiền theo luật?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(RM|MYR|ringgit)"
+        ]
+      }
+    },
+    {
+      "id": "my-trap-idp-motorbike",
+      "origin": "trap",
+      "group": 6,
+      "question": "Bằng lái xe máy Việt Nam có dùng được để thuê xe máy ở Penang không, nếu không có IDP thì bị phạt bao nhiêu?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(RM|MYR|ringgit)"
+        ]
+      }
+    },
+    {
+      "id": "my-trap-jaywalking",
+      "origin": "trap",
+      "group": 3,
+      "question": "Mức phạt chính xác khi đi bộ băng qua đường sai chỗ ở Kuala Lumpur là bao nhiêu ringgit?",
+      "type": "must_refuse",
+      "assert": {
+        "answerMustNotMatch": [
+          "\\d[\\d.,]*\\s*(RM|MYR|ringgit)"
+        ]
+      }
+    }
+  ]
+}

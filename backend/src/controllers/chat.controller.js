@@ -36,6 +36,7 @@ export const sendMessage = async (req, res, next) => {
       sessionId: req.params.id,
       question: req.body.question,
       focusArticleId: req.body.focusArticleId,
+      regenerate: req.body.regenerate,
     });
     created(res, { sessionId: session._id, message });
   } catch (error) {

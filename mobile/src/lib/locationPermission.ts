@@ -1,12 +1,27 @@
 import { Alert } from 'react-native';
 import * as Location from 'expo-location';
 import { validCoordinates } from '@/features/sos/mapHelpers';
-import { isFreshLocation } from '@/features/sos/locationShare';
+import { MAX_LOCATION_AGE_MS } from '@/features/sos/locationShare';
 
 const GPS_TIMEOUT_MS = 15_000;
 // Vị trí máy đã biết gần đây vẫn đủ để tìm điểm hỗ trợ quanh đó (không dùng cho chia sẻ vị trí,
 // màn đó có ngưỡng 60 giây riêng).
 const LAST_KNOWN_MAX_AGE_MS = 5 * 60_000;
+const CLOCK_SKEW_TOLERANCE_MS = 5_000;
+const MAP_LAST_KNOWN_MAX_AGE_MS = 30 * 60_000;
+
+// Độ "cũ" tối đa của vị trí được chấp nhận. Mặc định nghiêm (SOS Hub, chia sẻ vị trí); bản đồ dùng chính sách
+// dễ hơn vì tìm điểm hỗ trợ trong bán kính 5-50 km không cần vị trí mới từng giây, và máy ảo/máy trong nhà
+// hay chỉ có một vị trí cũ (báo "không khả dụng" khi vẫn có vị trí gần đúng là lỗi thực tế đã gặp).
+export type LocationPolicy = { maxFixAgeMs: number; maxLastKnownAgeMs: number };
+export const STRICT_LOCATION_POLICY: LocationPolicy = {
+  maxFixAgeMs: MAX_LOCATION_AGE_MS,
+  maxLastKnownAgeMs: LAST_KNOWN_MAX_AGE_MS,
+};
+export const MAP_LOCATION_POLICY: LocationPolicy = {
+  maxFixAgeMs: 10 * 60_000,
+  maxLastKnownAgeMs: MAP_LAST_KNOWN_MAX_AGE_MS,
+};
 
 export type LocationFailure = 'declined' | 'denied' | 'services-off' | 'unavailable';
 
@@ -16,8 +31,9 @@ export const LOCATION_FAILURE_MESSAGES: Record<Exclude<LocationFailure, 'decline
   unavailable: 'GPS chưa trả vị trí sau 15 giây. Hãy ra nơi thoáng hơn rồi thử lại.',
 };
 
+// measuredAt: thời điểm máy đo vị trí (ms), để màn hình ghi rõ "đo lúc ..." khi vị trí không còn mới.
 export type LocationResult =
-  | { coords: Location.LocationObjectCoords; failure: null }
+  | { coords: Location.LocationObjectCoords; measuredAt: number; failure: null }
   | { coords: null; failure: LocationFailure };
 
 const failed = (failure: LocationFailure): LocationResult => ({ coords: null, failure });
@@ -35,29 +51,31 @@ async function readFreshPosition(): Promise<Location.LocationObject> {
   } finally { if (timer) clearTimeout(timer); }
 }
 
-function freshCoords(position: Location.LocationObject) {
-  const { latitude, longitude } = position.coords;
-  const fresh = isFreshLocation({ ...position.coords, timestamp: position.timestamp });
-  return validCoordinates(latitude, longitude) && fresh ? position.coords : null;
-}
+type Fix = { coords: Location.LocationObjectCoords; measuredAt: number };
 
-function recentCoords(position: Location.LocationObject | null) {
+function acceptableFix(position: Location.LocationObject | null, maxAgeMs: number): Fix | null {
   if (!position) return null;
   const { latitude, longitude } = position.coords;
-  const recent = Date.now() - position.timestamp <= LAST_KNOWN_MAX_AGE_MS;
-  return validCoordinates(latitude, longitude) && recent ? position.coords : null;
+  const age = Date.now() - position.timestamp;
+  const withinAge = Number.isFinite(position.timestamp) && age >= -CLOCK_SKEW_TOLERANCE_MS && age <= maxAgeMs;
+  return validCoordinates(latitude, longitude) && withinAge
+    ? { coords: position.coords, measuredAt: position.timestamp }
+    : null;
 }
 
 // Trong nhà GPS hay không trả kịp: dùng vị trí máy đã biết gần đây thay vì báo thất bại ngay.
-async function readPositionWithFallback(): Promise<Location.LocationObjectCoords | null> {
+async function readPositionWithFallback(policy: LocationPolicy): Promise<Fix | null> {
   try {
-    const coords = freshCoords(await readFreshPosition());
-    if (coords) return coords;
+    const fix = acceptableFix(await readFreshPosition(), policy.maxFixAgeMs);
+    if (fix) return fix;
   } catch {
     // Hết giờ hoặc lỗi native: thử vị trí đã biết ngay bên dưới.
   }
   try {
-    return recentCoords(await Location.getLastKnownPositionAsync({ maxAge: LAST_KNOWN_MAX_AGE_MS }));
+    return acceptableFix(
+      await Location.getLastKnownPositionAsync({ maxAge: policy.maxLastKnownAgeMs }),
+      policy.maxLastKnownAgeMs,
+    );
   } catch {
     return null;
   }
@@ -82,7 +100,7 @@ function explainBeforeAsking(): Promise<boolean> {
  * không xin ngay lúc vào màn hình), rồi đọc vị trí. Trả về lý do thất bại để màn hình báo
  * đúng cho người dùng thay vì im lặng (lỗi B07).
  */
-export async function requestLocationDetailed(): Promise<LocationResult> {
+export async function requestLocationDetailed(policy: LocationPolicy = STRICT_LOCATION_POLICY): Promise<LocationResult> {
   try {
     const existing = await Location.getForegroundPermissionsAsync();
     const granted = existing.status === 'granted';
@@ -93,8 +111,8 @@ export async function requestLocationDetailed(): Promise<LocationResult> {
     if (status !== 'granted') return failed('denied');
     if (!await Location.hasServicesEnabledAsync()) return failed('services-off');
 
-    const coords = await readPositionWithFallback();
-    return coords ? { coords, failure: null } : failed('unavailable');
+    const fix = await readPositionWithFallback(policy);
+    return fix ? { ...fix, failure: null } : failed('unavailable');
   } catch {
     return failed('unavailable');
   }
