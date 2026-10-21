@@ -61,6 +61,22 @@ test("phan luong: khan cap thang ngoai pham vi; cau co tu khoa luat thi khong bi
   assert.equal(routeOf("Luật thời tiết xấu cho phép huỷ chuyến bay không?"), QuestionRoute.LEGAL);
 });
 
+test("phan luong: nguoi than bi lac, duoi nuoc, chay rung la khan cap (co dau va khong dau)", () => {
+  for (const question of [
+    "Con tôi bị lạc ở bãi biển Bondi, tôi phải gọi số nào?",
+    "Con toi bi lac o bai bien, phai goi so nao?",
+    "Có người bị đuối nước ở biển Gold Coast",
+    "Gần chỗ tôi ở đang có cháy rừng",
+  ]) {
+    assert.equal(classifyQuestion(question).route, QuestionRoute.EMERGENCY, question);
+  }
+  // "liên lạc" chứa chữ "lạc" nhưng không phải khẩn cấp.
+  assert.notEqual(
+    classifyQuestion("Làm sao liên lạc với Đại sứ quán Việt Nam ở Úc?").route,
+    QuestionRoute.EMERGENCY,
+  );
+});
+
 test("phan luong: chao hoi ngan, xin tu van ca nhan", () => {
   assert.equal(routeOf("Xin chào"), QuestionRoute.GREETING);
   assert.equal(routeOf("Bạn là ai?"), QuestionRoute.GREETING);

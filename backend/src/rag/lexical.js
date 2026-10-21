@@ -14,10 +14,26 @@ const STOP_WORDS = new Set([
   "la", "va", "cua", "co", "khong", "cho", "toi", "bi", "duoc", "nhu", "nao", "nay",
 ]);
 
-// Bỏ đuôi số nhiều/quá khứ đơn giản để "narcotics"/"narcotic", "imported"/"import" khớp nhau.
+const MIN_STEM_LENGTH = 4;
+// Đưa các dạng của cùng một từ tiếng Anh pháp lý về chung một gốc, để "guardian"/"guardianship",
+// "declare"/"declaration", "permit"/"permission", "exempt"/"exemption" khớp nhau. Áp dụng giống hệt cho
+// câu hỏi và cho văn bản luật nên gốc không cần là từ thật. Mỗi luật bỏ đuôi chỉ chạy khi phần còn lại đủ dài.
+const SUFFIX_RULES = [
+  [/ies$/, "y"],
+  [/ships?$/, ""],
+  [/issions?$/, "it"],
+  [/(ations?|ions?)$/, ""],
+  [/ments?$/, ""],
+  [/(ings?|ed|es|s)$/, ""],
+  [/e$/, ""],
+];
+
 const stem = (token) => {
   if (token.length < MIN_STEMMABLE_LENGTH) return token;
-  return token.replace(/(ing|ed|es|s)$/, "");
+  return SUFFIX_RULES.reduce((current, [suffix, replacement]) => {
+    const stripped = current.replace(suffix, replacement);
+    return stripped.length >= MIN_STEM_LENGTH ? stripped : current;
+  }, token);
 };
 
 export const tokenize = (text) =>

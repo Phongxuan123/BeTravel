@@ -82,6 +82,17 @@ test("tokenize: bỏ dấu, bỏ từ dừng, gộp số nhiều/quá khứ", ()
   assert.deepEqual(lexical.tokenize("Hộ chiếu bị từ chối"), ["ho", "chieu", "tu", "choi"]);
 });
 
+test("tokenize: các dạng của cùng một từ pháp lý về chung một gốc (câu hỏi và văn bản luật)", () => {
+  const sameStem = (left, right) => assert.deepEqual(lexical.tokenize(left), lexical.tokenize(right));
+  sameStem("guardian", "guardianship");
+  sameStem("declare", "declaration");
+  sameStem("declared", "declaration");
+  sameStem("permit", "permission");
+  sameStem("exempt", "exemption");
+  sameStem("cancelled", "cancellation");
+  sameStem("weapon", "weapons");
+});
+
 test("parseRewriteJson: chịu chữ thừa quanh JSON, loại phần tử không phải chuỗi", () => {
   assert.deepEqual(queryRewrite.parseRewriteJson('Kết quả: {"vi":["thị thực",3],"en":["visa"]} xong'), {
     vi: ["thị thực"],
