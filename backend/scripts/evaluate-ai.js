@@ -32,6 +32,9 @@ if (!goldenPath) {
   process.exit(2);
 }
 const pauseMs = Number(flagValue("--pause-ms", 3000));
+// --dump <file>: ghi câu hỏi + câu trả lời đầy đủ để người đọc kiểm nội dung (regex chỉ kiểm sơ bộ).
+const dumpPath = flagValue("--dump", null);
+const dumped = [];
 const model = flagValue("--model", null);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const { countryCode, cases } = JSON.parse(fs.readFileSync(path.resolve(goldenPath), "utf8"));
@@ -40,22 +43,24 @@ const { countryCode, cases } = JSON.parse(fs.readFileSync(path.resolve(goldenPat
 function judge(testCase, message) {
   const failures = [];
   const text = message.text ?? "";
-  const expectedFallback = testCase.expectFallback ?? null;
+  // expectFallback / expectCitationTitle nhận một giá trị hoặc danh sách giá trị chấp nhận được.
+  const expectedFallbacks = [testCase.expectFallback ?? []].flat();
+  const expectedTitles = [testCase.expectCitationTitle ?? []].flat();
   if (testCase.expectRoute && message.route !== testCase.expectRoute) {
     failures.push(`route=${message.route}, mong ${testCase.expectRoute}`);
   }
-  if (expectedFallback && message.fallbackReason !== expectedFallback) {
-    failures.push(`fallback=${message.fallbackReason}, mong ${expectedFallback}`);
+  if (expectedFallbacks.length && !expectedFallbacks.includes(message.fallbackReason)) {
+    failures.push(`fallback=${message.fallbackReason}, mong ${expectedFallbacks.join("|")}`);
   }
   if (ANSWER_KINDS.has(testCase.kind)) {
     if (message.fallbackReason) failures.push(`bị fallback ${message.fallbackReason}`);
     if (message.citations.length === 0) failures.push("không có trích dẫn");
   }
-  if (testCase.expectCitationTitle) {
+  if (expectedTitles.length) {
     const titles = message.citations.map((citation) => citation.title);
-    if (!titles.includes(testCase.expectCitationTitle)) {
+    if (!titles.some((title) => expectedTitles.includes(title))) {
       failures.push(
-        `thiếu trích dẫn "${testCase.expectCitationTitle}" (có: ${titles.join("; ") || "không"})`,
+        `thiếu trích dẫn "${expectedTitles.join(" | ")}" (có: ${[...new Set(titles)].join("; ") || "không"})`,
       );
     }
   }
@@ -99,6 +104,14 @@ try {
         question: testCase.question,
       });
       failures = judge(testCase, message);
+      dumped.push({
+        id: testCase.id,
+        question: testCase.question,
+        fallbackReason: message.fallbackReason,
+        answerSource: message.answerSource,
+        citations: message.citations.map((c) => `${c.title} / ${c.heading}`),
+        text: message.text,
+      });
     } catch (error) {
       failures = [`lỗi: ${String(error?.message).slice(0, 100)}`];
     }
@@ -116,7 +129,11 @@ try {
   await mongoose.disconnect();
 }
 
+if (dumpPath) fs.writeFileSync(path.resolve(dumpPath), JSON.stringify(dumped, null, 2));
 const passed = results.filter((result) => result.failures.length === 0).length;
+const byKind = Object.entries(Object.groupBy(results, (result) => result.kind)).map(
+  ([kind, items]) => `${kind} ${items.filter((r) => r.failures.length === 0).length}/${items.length}`,
+);
 const strictFailed = results.filter(
   (result) => STRICT_KINDS.has(result.kind) && result.failures.length > 0,
 );
@@ -124,6 +141,7 @@ const rate = passed / results.length;
 console.log(
   `\nĐạt ${passed}/${results.length} (${Math.round(rate * 100)}%), model ${model ?? env.LLM_MODEL}`,
 );
+console.log(`Theo loại: ${byKind.join(", ")}`);
 if (strictFailed.length) {
   console.log(`Câu bẫy/phạm vi/khẩn cấp không đạt: ${strictFailed.map((r) => r.id).join(", ")}`);
 }

@@ -118,6 +118,23 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
 - **Còn hở:** lúc phát FAQ cho người dùng vẫn so bằng từ khoá (ngưỡng 0,85), nên câu đã được AI xếp cùng nhóm nhưng
   khác từ khoá (vd "Ai được miễn PMC" so với FAQ "Những ai không phải đóng PMC", độ giống từ khoá 0,5) vẫn do AI trả lời.
 
+### Đánh giá độc lập luật Úc (21/10/2026)
+
+- Bộ `test/golden/au.holdout.json` (30 câu) soạn TRƯỚC khi chạy, không dùng để chỉnh ngưỡng/prompt. Cùng lúc đổi ví dụ
+  trong prompt tạo từ khoá sang thuật ngữ pháp lý chung (bỏ ví dụ theo chủ đề), tăng `REWRITE_PROMPT_VERSION`.
+  [!] Người soạn bộ câu cũng là người xây hệ thống, nên chưa độc lập hoàn toàn.
+- Kết quả `glm-5.3-flash` qua APIZ: **25/30 (83%)**: fact 10/13, scenario 5/6, câu bẫy 6/6, ngoài phạm vi 3/3, khẩn cấp 1/2.
+  Bộ cũ `au.live.json` chạy lại 10/11 (câu ma tuý trích Customs Act thay vì Prohibited Imports Regulations).
+- Đọc nội dung các câu trả lời được: đúng điều luật, có trích dẫn (vd Passports Act mục 11 về đồng ý của cha mẹ, mục 32
+  cho mượn hộ chiếu, PMC mục 5 khách quá cảnh). Lỗi chữ do model: "Sếu hải quan". Thời gian 12-34 giây mỗi câu.
+- Câu trượt và nguyên nhân (đã chẩn đoán, CHƯA sửa):
+  - `h-emergency-lost-child` ("con bị lạc ... gọi số nào"): **không được nhận là khẩn cấp** nên không đưa số 000. Lỗi an
+    toàn, do danh sách từ khoá khẩn cấp trong `rag/scope.js` thiếu "bị lạc".
+  - `h-guardian`: từ khoá "guardian" không khớp "guardianship" (bộ tách đuôi từ quá đơn giản).
+  - `h-weapons-import` (điểm 0,40), `h-food-biosecurity` (0,35): dưới ngưỡng truy hồi.
+  - `h-customs-declare`: tìm ra Customs Act mục 64/71A (báo cáo hàng hoá của hãng vận chuyển), model tự báo thiếu dữ liệu;
+    quy định khai báo của hành khách có lẽ nằm trong văn bản dưới luật chưa index.
+
 ### Chưa làm / đang vướng (AI)
 
 - Chưa index đủ 31 luật Úc (đã thử 3 luật). Index Migration Act và Regulations tốn nhiều chunk; gói embedding miễn phí
