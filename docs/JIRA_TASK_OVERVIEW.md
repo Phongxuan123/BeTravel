@@ -1,9 +1,10 @@
 # TONG HOP TASK DE SOAN JIRA — BE.TRAVEL
 
-Cập nhật: 19/10/2026 · Code: `main` @ `fb15068` · 17/09/2026 -> 19/10/2026, 42 PR đã merge, 0 PR mở.
+Cập nhật: 19/10/2026 (chiều) · Code: `main` @ `7e0ab29` · 17/09/2026 -> 19/10/2026, 45 PR đã merge, 0 PR mở.
 Thay đổi so với bản 13/10: thêm PR #38 của Phú Long (giao diện theo PDF 23 màn, bản đồ OpenStreetMap, địa điểm bổ sung chưa xác minh); cập nhật E4-09, E4-10, E7-07, E7-08 và thêm E4-12.
 Thay đổi so với bản 15/10: thêm PR #40 của Thanh Đạt (dịch offline bằng ML Kit, mở màn Dịch cho khách, sửa micro, tìm Đại sứ quán theo quốc gia); thêm E4-13, E5-07; cập nhật E4-10, E5-03, E5-04; số test mới.
 Thay đổi so với bản 17/10: thêm PR #42 (luật liên bang Úc) thành E2-12.
+Thay đổi so với bản sáng 19/10: PR #44 (tên luật Úc tiếng Việt) vào E2-12; PR #45 (thiết kế lại màn Be.Travel AI, Phú Long) thành E7-11; số test mới.
 
 Tài liệu này gom mọi việc đã làm / đang làm / chưa làm của dự án thành một danh sách có cấu trúc
 Epic -> Task, để dán sang Jira. Nó **không thay** các sổ gốc; mỗi dòng có cột "Nguồn" chỉ tới file
@@ -46,12 +47,12 @@ emulator, chưa thử điện thoại thật; việc thử máy thật được 
 | Kiến trúc | 3 dự án npm độc lập: `backend` (Express 5, Mongoose 9), `mobile` (Expo 57, TypeScript), `admin` (Vite, React) |
 | Hạ tầng đang dùng | MongoDB Atlas M0 (DB tên `test`); chạy dev trên máy; **chưa deploy** Render / Vercel / EAS |
 | Thị trường | Chỉ Hàn Quốc (KR) mở; Nhật Bản, Thái Lan, Singapore "Sắp ra mắt" |
-| Kiểm tra tự động | backend 283 test (gồm 26 ca golden RAG), mobile 230 test, admin 18 test; CI GitHub chạy 3 phần, đang xanh |
+| Kiểm tra tự động | backend 295 test (gồm 26 ca golden RAG), mobile 235 test, admin 18 test; CI GitHub chạy 3 phần, đang xanh |
 | Kiểm thử thực tế | Có chạy thật trên Android emulator (Android 16) với backend thật nối Atlas (gồm dịch offline ở chế độ máy bay, 17/10); **chưa thử trên điện thoại thật** |
 | Dữ liệu hiện có trên Atlas (11/10) | 8 bài luật KR **đều ở nháp, 0 bài xuất bản**; 0 điểm hỗ trợ; 0 cảnh báo vị trí; 5 hướng dẫn sự cố và 25 câu dịch đang hiển thị |
 | Tính năng khoá có chủ đích | Be.Travel AI (chat pháp lý) khoá bằng cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` |
 
-Tổng số dòng task ở mục 3: **84** = 36 Xong · 10 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 10 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
+Tổng số dòng task ở mục 3: **85** = 36 Xong · 11 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 11 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
 
 Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 1. **Nội dung pháp lý chưa được người duyệt** -> không xuất bản được bài -> Cẩm nang trống, AI không có gì để trả lời.
@@ -86,7 +87,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 | E2-09 | Thêm trạng thái hiển thị (ẩn / hiện) cho câu dịch khẩn cấp | Task | Chưa làm | To Do | P3 | Chỉ cần nếu E2-08 quyết định gỡ. Đối chiếu 13/10: `QuickPhrase` chưa có trường trạng thái |
 | E2-10 | Mở thêm quốc gia (Nhật Bản, Thái Lan hoặc Singapore): nội dung + nguồn | Epic | Chưa làm | To Do | P4 | Form C4. Cần người cung cấp nội dung. Code đã country-driven, không sửa logic |
 | E2-11 | Kiểm Admin: xuất bản bài + job index, nhập điểm hỗ trợ hàng loạt, xử lý feedback | Task | Chưa làm | To Do | P2 | Chưa kiểm vì tránh đổi dữ liệu nội dung thật; làm sau khi có bài để thử |
-| E2-12 | Tra cứu luật liên bang Úc (Federal Register of Legislation): quốc gia Úc, phân loại 5 mục (31 luật tuyển chọn), tóm lược, dịch tiếng Việt theo yêu cầu, màn Luật trên app | Story | Đang làm | In Progress | P3 | PR #42 (18/10, ngoài lộ trình B1-B9). Chỉ đọc, không ghi `legal_articles`, không vào RAG, `verifiedByBeTravel:false`; contract mục 24. **Còn thiếu:** tóm tắt từng Phần Migration Act mới 5/37 (bị 429), dịch đủ 31 luật cần API trả phí, chưa thử giao diện trên điện thoại, chưa có Đại sứ quán Úc/số hàng hải (chưa có nguồn), chưa có test màn hình mobile/admin |
+| E2-12 | Tra cứu luật liên bang Úc (Federal Register of Legislation): quốc gia Úc, phân loại 5 mục (31 luật tuyển chọn), tóm lược, dịch tiếng Việt theo yêu cầu, màn Luật trên app | Story | Đang làm | In Progress | P3 | PR #42 (18/10, ngoài lộ trình B1-B9). Chỉ đọc, không ghi `legal_articles`, không vào RAG, `verifiedByBeTravel:false`; contract mục 24. PR #44 (Phú Long, 19/10): tên 31 luật tuyển chọn viết sẵn tiếng Việt, luật khác do AI dịch tên. **Còn thiếu:** tóm tắt từng Phần Migration Act mới 5/37 (bị 429), dịch đủ 31 luật cần API trả phí, chưa thử giao diện trên điện thoại, chưa có Đại sứ quán Úc/số hàng hải (chưa có nguồn), chưa có test màn hình mobile/admin |
 
 ### E3. AI pháp lý (RAG) (batch B4, B5)
 
@@ -158,6 +159,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 | E7-08 | Cập nhật app theo giao diện mới (theo từng đợt, mỗi đợt một PR) | Epic | Đang làm | In Progress | P2 | Phụ thuộc E7-07. Có điểm cần nhóm chốt trước: nhãn 3 hay 4 mức cảnh báo; khung 5 bước sự cố; cỡ chữ 13-14px của spec so với 15-17px hiện tại. Cập nhật 15/10 (PR #38): đợt đầu đã merge (chỉ giao diện, chưa kiểm bằng mắt trên emulator) |
 | E7-09 | Các tính năng có trong spec nhưng app chưa có: mục "Đọc tiếp" có % tiến độ, lọc "Mới cập nhật / đã xác minh", gợi ý từ khoá khi không có kết quả, 5 nhóm cảnh báo, sửa hồ sơ, 6 chỉ số KPI + lịch sử phiên bản + xem trước điện thoại ở Admin | Story | Chưa làm | To Do | P3 | Chỉ là kết quả tra từ khoá, **cần soát lại** trong E7-07 trước khi tạo ticket chi tiết |
 | E7-10 | Không làm: Users + "Hội đồng Luật sư", Settings cấu hình Gemini, mức an toàn quốc gia, 8 quốc gia, emoji | Spike | Không làm | Won't Do | - | Trái quy tắc dự án (luật sư và sửa system prompt ngoài MVP, không bịa dữ liệu, Rule 12). Nên ghi chú vào spec |
+| E7-11 | Thiết kế lại màn Be.Travel AI theo mẫu: header trạng thái + quốc gia, màn chào 4 thẻ hành động nhanh, câu trả lời có bước đánh số, nguồn dạng hàng, thẻ "Thông tin liên hệ" lấy từ hồ sơ Đại sứ quán | Story | Đang làm | In Progress | P3 | PR #45 (Phú Long, 19/10). Không đổi contract `ChatAnswer`; test đã cập nhật. Màn chat vẫn khoá bởi `EXPO_PUBLIC_AI_CHAT_ENABLED=false` nên **chưa nhìn trên emulator/máy thật**; nghiệm thu cùng E3-05 |
 
 ### E8. Hạ tầng, phát hành và bảo mật (batch B9)
 
@@ -191,7 +193,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 
 ## 3b. Danh sách rút gọn theo trạng thái Jira (để tạo hàng loạt)
 
-### In Progress (10)
+### In Progress (11)
 
 - `E1-04` Quên mật khẩu bằng OTP email: xác minh thư tới hộp thư thật và bước đặt lại
 - `E2-12` Tra cứu luật liên bang Úc (quốc gia Úc, phân loại, tóm lược, dịch)
@@ -203,6 +205,7 @@ Hai điểm nghẽn chính của cả dự án đều **không phải code**:
 - `E5-07` Dịch offline bằng ML Kit, mở màn Dịch cho khách, sửa micro
 - `E7-07` Đối chiếu từng màn hình mobile + Admin với giao diện mới, lập bảng khớp/lệch
 - `E7-08` Cập nhật app theo giao diện mới (theo từng đợt, mỗi đợt một PR)
+- `E7-11` Thiết kế lại màn Be.Travel AI theo mẫu
 
 ### To Do, gắn cờ Blocked (chờ người) (18)
 
