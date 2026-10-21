@@ -1,0 +1,538 @@
+{
+  "countryCode": "SG",
+  "countryName": "Singapore",
+  "provenance": {
+    "origin": "Gói BeAI của Thành Đạt, nhận 19/10/2026 (thư mục Betravel/, không commit)",
+    "retrievedAt": "2026-10-05T06:20:00Z",
+    "reviewedAt": "2026-10-05T06:34:00Z",
+    "reviewedBy": "Codex: Firecrawl official-source snapshot and Vietnamese summary checked; not legal counsel",
+    "method": "Firecrawl search and fresh main-content scrape; translated factual summaries with source-specific attribution. Not fine-tuning. Raw cache in .firecrawl/; evidenceExcerpt is an abbreviated original quotation, not the whole page."
+  },
+  "reviewStatus": "ai_checked_needs_human_review",
+  "importRule": "Chỉ nhập ở trạng thái draft. Thiếu publishedAt và effectiveFrom nên chưa xuất bản được.",
+  "topicGroups": {
+    "1": {
+      "label": "Nhập cảnh, visa, thẻ khai báo",
+      "suggestedTopicSlug": "nhap-canh"
+    },
+    "2": {
+      "label": "Hải quan, tiền mặt, thuốc mang theo",
+      "suggestedTopicSlug": "hai-quan"
+    },
+    "3": {
+      "label": "Ứng xử nơi công cộng: rượu, thuốc lá, xả rác",
+      "suggestedTopicSlug": "hinh-su"
+    },
+    "4": {
+      "label": "Tôn giáo, trang phục, phong tục",
+      "suggestedTopicSlug": null
+    },
+    "5": {
+      "label": "Flycam, chụp ảnh",
+      "suggestedTopicSlug": null
+    },
+    "6": {
+      "label": "Giao thông, bằng lái",
+      "suggestedTopicSlug": "giao-thong"
+    },
+    "7": {
+      "label": "Đại sứ quán, bảo hộ công dân",
+      "suggestedTopicSlug": "khan-cap"
+    },
+    "8": {
+      "label": "Sự cố: mất hộ chiếu, bị bắt, lừa đảo",
+      "suggestedTopicSlug": "khan-cap"
+    },
+    "9": {
+      "label": "Khiếu nại, cảnh sát du lịch",
+      "suggestedTopicSlug": "khan-cap"
+    }
+  },
+  "gaps": [
+    {
+      "group": 3,
+      "reason": "Đã có xả rác, hút thuốc, rượu bia nơi công cộng; chưa thu thập trang chính thức về các lỗi khác (ví dụ băng qua đường sai chỗ)."
+    },
+    {
+      "group": 6,
+      "reason": "Chưa có trang chính thức về mức phạt giao thông cụ thể và thuê xe máy cho du khách."
+    },
+    {
+      "group": 8,
+      "reason": "Chưa có trang chính thức về thủ tục khi bị bắt/tạm giữ, và thủ tục cấp lại giấy tờ khi công dân Việt Nam mất hộ chiếu ở Singapore."
+    }
+  ],
+  "articles": [
+    {
+      "slug": "nhap-canh-sg-arrival-card-va-thoi-han-luu-tru",
+      "title": "nhập cảnh, SG Arrival Card và thời hạn lưu trú",
+      "topicGroups": [
+        1
+      ],
+      "suggestedTopicSlug": "nhap-canh",
+      "keywords": "entry, SGAC, passport, visa, stay, work",
+      "summaryVi": "Singapore — điều kiện nhập cảnh và SG Arrival Card (SGAC), theo ICA. Hộ chiếu không phải Singapore phải còn hiệu lực ít nhất 6 tháng. Cần visa nếu quốc tịch/hộ chiếu thuộc danh sách ICA yêu cầu visa; visa không bảo đảm được nhập cảnh. Nộp SG Arrival Card trong vòng 3 ngày trước khi đến, tính cả ngày đến. SGAC miễn phí qua dịch vụ chính thức ICA hoặc MyICA, không phải visa. Ngoại lệ SGAC: quá cảnh không làm thủ tục nhập cảnh; công dân Singapore, thường trú nhân và người có Long-Term Pass nhập cảnh bằng cửa khẩu đường bộ. Du khách ngắn hạn cần đủ tiền và vé đi tiếp/khứ hồi. Thời gian được ở Singapore ghi trên Visit Pass điện tử, không phải thời hạn visa; kiểm tra ngày cuối được lưu trú. Muốn ở lâu hơn phải xin gia hạn và được chấp thuận, không tự động được thêm ngày. Người có Short-Term Visit Pass không được tham gia hoạt động kinh doanh, nghề nghiệp hoặc việc làm có trả công khi ở Singapore. Ở quá hạn có thể bị xử phạt. Những điều kiện này không xác nhận quyền nhập cảnh hay thời hạn cụ thể của một cá nhân.",
+      "source": {
+        "title": "Singapore: nhập cảnh, SG Arrival Card và thời hạn lưu trú",
+        "url": "https://www.ica.gov.sg/enter-transit-depart/entering-singapore",
+        "authority": "Immigration & Checkpoints Authority (ICA)",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/ica.gov.sg-enter-transit-depart-entering-singapore.md",
+        "excerpt": "All travellers are required to submit the SG Arrival Card within three (3) days (including the day of arrival) before arriving in Singapore, except: ... Submission of SGAC is Free",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "hang-cam-nhap-keo-cao-su-va-hang-kiem-soat",
+      "title": "hàng cấm nhập, kẹo cao su và hàng kiểm soát",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "customs, prohibited goods, chewing gum, vape, drugs",
+      "summaryVi": "Singapore Customs — hàng cấm nhập vào Singapore. Chewing gum/kẹo cao su nằm trong danh sách cấm nhập, ngoại trừ kẹo cao su nha khoa và dược liệu đã được Health Sciences Authority (HSA) chấp thuận. Đây là quy định về nhập khẩu, không phải bằng chứng rằng mọi hành vi nhai kẹo cao su đều bất hợp pháp. Danh sách cấm nhập còn có thuốc lá điện tử/e-cigarette/vape/vaporiser và linh kiện, shisha, thuốc lá nhai, thuốc lá không khói, nicotine hoặc thuốc lá dạng hòa tan, dung dịch/chất chứa thuốc lá hoặc nicotine dùng cho thiết bị vaporiser. Thuốc/chất kiểm soát thuộc Schedule 4 của Misuse of Drugs Regulations cũng bị cấm nhập. Một số hàng khác là hàng kiểm soát, cần thông báo trước, giấy phép hoặc chứng nhận/chấp thuận của cơ quan có thẩm quyền trước khi nhập. Không coi mọi loại thuốc cá nhân đều bị cấm; kiểm tra thành phần và quy định riêng của HSA. Danh sách trên là ví dụ ưu tiên cho du khách, không phải toàn bộ hàng cấm hoặc ngoại lệ.",
+      "source": {
+        "title": "Singapore: hàng cấm nhập, kẹo cao su và hàng kiểm soát",
+        "url": "https://www.customs.gov.sg/doing-business/import-operations/import-procedures/controlled-and-prohibited-goods-for-imports/",
+        "authority": "Singapore Customs",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/customs.gov.sg-doing-business-import-operations-import-procedures-controlled-and-prohibited-goods-for-imports.md",
+        "excerpt": "Chewing gum (excluding Health Sciences Authority approved oral dental and medicinal chewing gum) ... Imitation tobacco products (electronic cigarettes, vaporisers) and components of imitation tobacco products",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "vape-thuoc-la-dien-tu-va-tuoi-su-dung-thuoc-la",
+      "title": "vape, thuốc lá điện tử và tuổi sử dụng thuốc lá",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "vape, tobacco, minimum age, personal tobacco",
+      "summaryVi": "Singapore — HSA, quy định thuốc lá và vaporiser/vape/thuốc lá điện tử. Không được mang vape, thuốc lá điện tử và sản phẩm bắt chước thuốc lá vào Singapore; việc mua, sử dụng hoặc sở hữu các sản phẩm này cũng là hành vi vi phạm. Viện lý do dùng vape để cai thuốc không làm sản phẩm được phép; HSA nêu miếng dán nicotine từ nhà thuốc hợp pháp là lựa chọn khác. Độ tuổi tối thiểu hợp pháp để mua, sử dụng, sở hữu và bán thuốc lá thông thường là 21 tuổi từ 1/1/2021. HSA cho phép du khách nhập không quá 400 g thuốc lá thông thường để dùng cá nhân, không để bán hoặc cung ứng cho người khác, với điều kiện tuân thủ bao bì tiêu chuẩn: không có logo/hình quảng bá, có cảnh báo sức khỏe bằng hình và bao bì màu nâu theo quy định. Mức 400 g là điều kiện HSA về thuốc lá cá nhân, không phải miễn thuế hải quan và không cho phép vape. Danh sách sản phẩm cấm còn gồm shisha, thuốc lá nhai và một số sản phẩm nicotine không khói/hòa tan. Không suy diễn mức tiền phạt vape từ quy định thuốc lá khác.",
+      "source": {
+        "title": "Singapore: vape, thuốc lá điện tử và tuổi sử dụng thuốc lá",
+        "url": "https://www.hsa.gov.sg/tobacco-regulation/overview/",
+        "authority": "Health Sciences Authority (HSA)",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/hsa.gov.sg-tobacco-regulation-overview.md",
+        "excerpt": "You cannot bring in or sell the tobacco products listed below. You are also not allowed to buy, use or have them in your possession:",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mang-thuoc-ca-nhan-don-thuoc-va-xin-chap-thuan-hsa",
+      "title": "mang thuốc cá nhân, đơn thuốc và xin chấp thuận HSA",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "medication, prescription, controlled ingredients, HSA approval",
+      "summaryVi": "Singapore — mang thuốc cá nhân theo HSA. Kiểm tra hoạt chất trước chuyến đi: một số thuốc cần HSA chấp thuận trước, một số bị cấm. Có thể mang tối đa lượng dùng 3 tháng nếu thuốc không bị cấm và đáp ứng điều kiện; không được mang hơn 3 tháng. Mang đơn thuốc hợp lệ hoặc thư bác sĩ, để thuốc trong bao bì gốc có nhãn tên bệnh nhân, tên thuốc và lượng thuốc. Chỉ mang thuốc kê cho chính mình hoặc thành viên gia đình gần gũi (immediate family members) theo HSA; không tự suy ra mọi người thân/bạn bè đều thuộc nhóm này. Thuốc chứa hoạt chất kiểm soát thuộc Appendix A cần xin chấp thuận; đơn đăng ký phải điền bằng tiếng Anh, kèm giấy tờ và ảnh bao bì theo HSA, gửi ít nhất 2 tuần trước ngày đến Singapore. Nộp muộn hơn có thể không xử lý kịp. Chấp thuận gắn với ngày đến, đổi kế hoạch phải xin lại. Thuốc chứa cannabis/cần sa hoặc chiết xuất cần sa, chất thuộc Schedule 4, thuốc dạng kẹo cao su và sản phẩm tế bào/mô/gen CTGTP thuộc nhóm không được mang vào theo trang HSA này. Quá cảnh không qua nhập cảnh không cần xin chấp thuận thuốc cá nhân, nhưng hàng cấm vẫn không được mang. Thuốc đã được HSA chấp thuận không cần khai báo hải quan; luôn giữ thư chấp thuận và giấy tờ để xuất trình khi kiểm tra. Không thể xác nhận thuốc an toàn chỉ bằng tên thương mại; cần hoạt chất, liều/lượng và tra HSA.",
+      "source": {
+        "title": "Singapore: mang thuốc cá nhân, đơn thuốc và xin chấp thuận HSA",
+        "url": "https://www.hsa.gov.sg/travelling-with-medication-and-medical-devices/personal-medications/",
+        "authority": "Health Sciences Authority (HSA)",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/hsa.gov.sg-travelling-with-medication-and-medical-devices-personal-medications.md",
+        "excerpt": "Please note that imports of quantities exceeding 3 months’ supply are not allowed. ... Submit your application at least 2 weeks before your arrival in Singapore to ensure adequate processing time.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khong-xa-rac-va-ve-sinh-noi-cong-cong",
+      "title": "không xả rác và vệ sinh nơi công cộng",
+      "topicGroups": [
+        3
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "littering, public cleanliness",
+      "summaryVi": "Singapore — NEA, giữ vệ sinh nơi công cộng và không xả rác. Giữ rác cho đến khi có thùng rác và bỏ đúng nơi; không vứt giấy, bao bì hoặc rác xuống đường. NEA thực thi nghiêm các quy định chống xả rác. Người vi phạm xả rác lần đầu được áp dụng composition fine 300 SGD; đây là mức xử lý composition được trang NEA nêu, không phải trần tiền phạt tòa án cho mọi trường hợp. Xả rác từ tầng cao là hành vi nghiêm trọng và có chế tài riêng, có thể kèm Corrective Work Order; không gộp các mức đó với xả rác thông thường. Quy định này không phải căn cứ để tự suy ra tiền phạt cho nhai gum, hút thuốc hay mọi hành vi vệ sinh khác.",
+      "source": {
+        "title": "Singapore: không xả rác và vệ sinh nơi công cộng",
+        "url": "https://www.nea.gov.sg/our-services/public-cleanliness/overview",
+        "authority": "National Environment Agency (NEA)",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/nea.gov.sg-our-services-public-cleanliness-overview.md",
+        "excerpt": "NEA maintains strict enforcement against public health offences, including littering. Litterbugs will be subjected to a composition amount of $300 for a first offence.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "mien-thue-ruou-thuoc-la-va-gst-hanh-ly-du-khach",
+      "title": "miễn thuế rượu, thuốc lá và GST hành lý du khách",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "duty free, liquor, tobacco, GST, Malaysia",
+      "summaryVi": "Singapore Customs — miễn thuế khi du khách nhập cảnh. Thuốc lá/cigarettes và các sản phẩm thuốc lá KHÔNG có miễn thuế nhập khẩu hoặc GST, kể cả thuốc lá đã đóng thuế Singapore mang trở lại. Đừng coi số lượng nhỏ, một bao hoặc mua duty-free ở nước ngoài là được miễn tại Singapore. Miễn thuế rượu chỉ khi đáp ứng đủ: từ 18 tuổi, ở ngoài Singapore ít nhất 48 giờ, không đến từ Malaysia, rượu dùng cá nhân và không bị cấm. Các lựa chọn là 1 lít spirits + 1 lít wine; 1 lít spirits + 1 lít beer; 1 lít wine + 1 lít beer; 2 lít wine; hoặc 2 lít beer. Không phải được miễn tùy ý 2 lít spirits. Nếu đã làm nhập cảnh ở Malaysia thì được coi là đến từ Malaysia, không có ưu đãi này. Phần vượt định mức phải đóng duty/GST; trên 10 lít rượu cần Customs permit. Hàng mới, quà, đồ lưu niệm dùng cá nhân được GST import relief tối đa 500 SGD nếu ở ngoài Singapore ít nhất 48 giờ, hoặc 100 SGD nếu dưới 48 giờ; trả GST phần vượt. Người có work permit, employment pass, student pass, dependant/long-term pass do Singapore cấp và thành viên tổ bay/thủy thủ không thuộc diện GST relief này. Rượu, thuốc lá và hàng thương mại không được GST relief hàng mới. Giữ hóa đơn, khai và thanh toán qua Customs@SG hoặc tại cửa khẩu khi cần; mua miễn thuế ở nơi xuất phát không tự miễn thuế Singapore.",
+      "source": {
+        "title": "Singapore: miễn thuế rượu, thuốc lá và GST hành lý du khách",
+        "url": "https://www.customs.gov.sg/at-customs/arriving-in-singapore/duty-free-concession-gst-relief/",
+        "authority": "Singapore Customs",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/customs.gov.sg-at-customs-arriving-in-singapore-duty-free-concession-gst-relief.md",
+        "excerpt": "There is no duty-free concession or GST import relief for cigarettes and tobacco products.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "noi-cam-hut-thuoc-va-khu-hut-thuoc-duoc-chi-dinh",
+      "title": "nơi cấm hút thuốc và khu hút thuốc được chỉ định",
+      "topicGroups": [
+        3
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "smoking, bus stop, public places, designated areas",
+      "summaryVi": "Singapore — NEA, quy định cấm hút thuốc. Hút thuốc bị cấm tại nhiều nơi, không chỉ trong phòng kín: tòa nhà và phương tiện dịch vụ công cộng theo quy định, hành lang/thang máy/cầu thang chung khu nhà ở, bệnh viện, trường học, lối đi có mái, nhà vệ sinh công cộng, sân chơi, công viên và những bãi biển được liệt kê. Trạm xe buýt, mái che và cột trạm xe buýt, kể cả phạm vi bán kính 5 mét, là khu vực cấm hút thuốc. Trong 5 mét từ cửa sổ/lỗ thông gió/lối vào ra của tòa nhà nơi cấm hút thuốc cũng có hạn chế theo NEA. Orchard Road có No Smoking Zone; các khu hút thuốc được chỉ định/chấp thuận là ngoại lệ phù hợp. Kiểm tra biển báo và chỉ dùng khu hút thuốc được phép, không suy rằng ở ngoài trời thì luôn được hút, cũng không khẳng định mọi nơi ngoài trời đều bị cấm. Quy định vị trí hút thuốc này không hợp pháp hóa thuốc lá điện tử/vape, vốn thuộc quy định cấm riêng của HSA.",
+      "source": {
+        "title": "Singapore: nơi cấm hút thuốc và khu hút thuốc được chỉ định",
+        "url": "https://www.nea.gov.sg/our-services/smoking-prohibition/overview",
+        "authority": "National Environment Agency (NEA)",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/nea.gov.sg-our-services-smoking-prohibition-overview.md",
+        "excerpt": "Bus stops, bus shelters, and bus poles, including any area within a five metre radius ... Orchard Road No Smoking Zone",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "khai-bao-tien-mat-tren-20-000-sgd-khi-nhap-hoac-xuat-canh",
+      "title": "khai báo tiền mặt trên 20.000 SGD khi nhập hoặc xuất cảnh",
+      "topicGroups": [
+        2
+      ],
+      "suggestedTopicSlug": "hai-quan",
+      "keywords": "cash declaration, CBNI, NP727, 20000 SGD",
+      "summaryVi": "Singapore — ICA, khai báo Physical Currency and Bearer Negotiable Instruments (CBNI). Khi nhập cảnh HOẶC xuất cảnh Singapore mang tổng tiền mặt và công cụ chuyển nhượng vô danh vượt 20.000 SGD hoặc giá trị ngoại tệ tương đương, phải gửi báo cáo đầy đủ, chính xác NP727 cho Singapore Police Force. Tính tổng loại tiền và công cụ, cả tiền mang cho mình hoặc người khác, đi một mình hoặc theo nhóm. Ngưỡng là VƯỢT 20.000 SGD, không phải 20.000 trở lên. Mang hơn ngưỡng không tự động bị cấm, nhưng phải khai báo. Gửi điện tử trong vòng 72 giờ trước lúc nhập/xuất cảnh bằng e-727, MyICA hoặc liên kết khai tiền trên SG Arrival Card; báo cáo arrival/departure tương ứng. Nếu ngày hoặc thông tin chuyến đi thay đổi, hủy báo cáo cũ rồi nộp lại. Không khai hoặc khai không đúng là vi phạm; không nên chia tiền để né nghĩa vụ khai báo.",
+      "source": {
+        "title": "Singapore: khai báo tiền mặt trên 20.000 SGD khi nhập hoặc xuất cảnh",
+        "url": "https://www.ica.gov.sg/enter-transit-depart/at-our-checkpoints/for-travellers/CBNI",
+        "authority": "Immigration & Checkpoints Authority (ICA)",
+        "kind": "gov",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/ica.gov.sg-enter-transit-depart-at-our-checkpoints-for-travellers-CBNI.md",
+        "excerpt": "If you are entering or leaving Singapore carrying a total value of Physical Currency and Bearer Negotiable Instruments (CBNI)1 exceeding S$20,000 (or its equivalent in a foreign currency), you are required by law to make a CBNI declaration (Form NP 727) by submitting a full and accurate report to the Singapore Police Force.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "gio-cam-uong-ruou-bia-noi-cong-cong-va-liquor-control-zone",
+      "title": "giờ cấm uống rượu bia nơi công cộng và Liquor Control Zone",
+      "topicGroups": [
+        3
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "alcohol, public drinking, 2230, liquor control zone",
+      "summaryVi": "Singapore — Liquor Control (Supply and Consumption) (Restrictions on Consumption) Regulations 2015, điều 2, bản hiện hành hiển thị ngày 05/10/2026. Tại nơi công cộng không thuộc Liquor Control Zone, thời gian cấm uống rượu/bia là 22:30 đến ngay trước 07:00 hôm sau hằng ngày. Vì vậy uống bia ngoài công viên hoặc trên đường lúc 23:00 thường thuộc giờ cấm nơi công cộng. Liquor Control Zone có hạn chế nghiêm hơn: thứ Hai–thứ Năm không phải ngày trước lễ từ 22:30 đến trước 07:00 hôm sau; thứ Sáu không phải ngày trước lễ từ 22:30 đến trước 07:00 thứ Hai; ngày trước lễ rơi vào thứ Hai–thứ Sáu bắt đầu 19:00 và kéo dài theo lịch lễ, có trường hợp đến thứ Hai. Không áp dụng mốc 22:30–07:00 như toàn bộ quy tắc duy nhất của Liquor Control Zone. Đây là giờ uống tại nơi công cộng, không phải quy định bán rượu và không kết luận mọi quán bar đều phải dừng uống 22:30; ngoại lệ được quy định riêng trong điều 12 của đạo luật.",
+      "source": {
+        "title": "Singapore: giờ cấm uống rượu bia nơi công cộng và Liquor Control Zone",
+        "url": "https://sso.agc.gov.sg/SL/LCSCA2015-S184-2015?DocDate=20200730",
+        "authority": "Singapore Statutes Online / Attorney-General's Chambers",
+        "kind": "legal_text",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/sg-liquor-current.md",
+        "excerpt": "where the public place is not in a Liquor Control Zone, beginning at 10.30 p.m. of one day and ending immediately before 7 a.m. of the next day",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "ngoai-le-uong-ruou-tai-quan-co-giay-phep-va-consumption-perm",
+      "title": "ngoại lệ uống rượu tại quán có giấy phép và consumption permit",
+      "topicGroups": [
+        3
+      ],
+      "suggestedTopicSlug": "hinh-su",
+      "keywords": "alcohol, licensed premises, bar, consumption permit",
+      "summaryVi": "Singapore — Liquor Control (Supply and Consumption) Act 2015, điều 12, bản hiện hành. Điều 12(1) cấm uống rượu tại nơi công cộng trong no-public drinking period áp dụng cho nơi đó. Theo điều 12(3)(a), ngoại lệ là uống tại cơ sở có liquor licence cho phép uống tại chỗ, và việc uống diễn ra trong trading hours được phép của chính cơ sở. Vì vậy không đúng nếu nói mọi quán bar/nhà hàng ở Singapore đều cấm uống sau 22:30: phải kiểm tra giấy phép và giờ hoạt động hợp lệ của quán. Điều 12(3)(b) còn cho phép uống tại nơi công cộng theo điều kiện của consumption permit đang có hiệu lực cho nơi đó. Không tự coi có sự kiện là đã có permit. Các ngoại lệ khác gồm địa điểm được quy định với điều kiện tương ứng, tình huống khẩn cấp bảo toàn tính mạng/tránh tổn thương và nghi thức tôn giáo hợp pháp tại nơi thờ tự. Điều 12(4), subject to section 16, nêu vi phạm có thể bị phạt tối đa 1.000 SGD; tái phạm tối đa 2.000 SGD hoặc tù đến 3 tháng hoặc cả hai. Các Liquor Control Zone có chế tài riêng theo điều 16 nên không dùng mức này làm mức phạt mọi trường hợp.",
+      "source": {
+        "title": "Singapore: ngoại lệ uống rượu tại quán có giấy phép và consumption permit",
+        "url": "https://sso.agc.gov.sg/Act/LCSCA2015?ProvIds=pr12-",
+        "authority": "Singapore Statutes Online / Attorney-General's Chambers",
+        "kind": "legal_text",
+        "accessedAt": "2026-10-05T06:20:00Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/sg-liquor-act-section12.md",
+        "excerpt": "Subsection (1) does not apply ... consumption of liquor at any licensed premises where ... the liquor licence ... allows the consumption ... and ... the consumption is during the trading hours applicable to the licensed premises",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "flycam-drone-dang-ky-giay-phep-va-khu-vuc-cam-bay",
+      "title": "flycam/drone, đăng ký, giấy phép và khu vực cấm bay",
+      "topicGroups": [
+        5
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "drone, unmanned aircraft, registration, permit, protected areas, photography",
+      "summaryVi": "Singapore — flycam/drone (unmanned aircraft, UA), theo Civil Aviation Authority of Singapore (CAAS). Yêu cầu áp dụng cho mọi người bay UA ở Singapore, kể cả người không cư trú (non-residents). Bay giải trí: phải đăng ký UA nếu tổng trọng lượng trên 250 g; bay ngoài trời với UA trên 250 g phải gắn Broadcast Remote Identification. Bay ngoài trời: UA trên 1,5 kg đến 7 kg cần UA Basic Training Certificate hoặc UA Pilot Licence; trên 7 kg cần UA Pilot Licence. Cần Class 2 Activity Permit (UA không quá 25 kg) nếu bay cao hơn 200 feet so với mực nước biển trung bình, trong khu vực hạn chế/nguy hiểm, hoặc trong phạm vi 5 km quanh sân bay hay căn cứ không quân quân sự. Cần Operator Permit và Class 1 Activity Permit nếu UA trên 25 kg hoặc bay ngoài tầm nhìn (beyond visual line-of-sight). Bay trong khu vực được bảo vệ (protected areas) phải có giấy phép của Singapore Police Force; theo CAAS, không được bay UA trong khu vực cấm (prohibited areas) vào bất kỳ lúc nào. CAAS xử lý người không tuân thủ; mức phạt nằm trong Air Navigation (101 Unmanned Aircraft Operations) Regulations, trang này không nêu con số.",
+      "source": {
+        "title": "Singapore: flycam/drone, đăng ký, giấy phép và khu vực cấm bay",
+        "url": "https://www.caas.gov.sg/unmanned-aircraft/requirements-for-flying-ua/",
+        "authority": "Civil Aviation Authority of Singapore (CAAS)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:51:08Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/caas.gov.sg-unmanned-aircraft-requirements-for-flying-ua.md",
+        "excerpt": "These requirements apply to anyone flying a UA in Singapore, including Singapore Citizens, Singapore Permanent Residents, and non-residents.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "lai-xe-bang-bang-lai-nuoc-ngoai-va-idp",
+      "title": "lái xe bằng bằng lái nước ngoài và IDP",
+      "topicGroups": [
+        6
+      ],
+      "suggestedTopicSlug": "giao-thong",
+      "keywords": "driving licence, international driving permit, IDP, ASEAN, foreigners",
+      "summaryVi": "Singapore — lái xe bằng bằng lái nước ngoài và International Driving Permit (IDP), theo Singapore Police Force (SPF, Traffic Police). Người nước ngoài cư trú ở Singapore dưới 12 tháng có bằng lái nước ngoài còn hiệu lực thì không cần đổi bằng, và phải có bằng lái nước ngoài kèm IDP do cơ quan được ủy quyền ở nước mình cấp, hoặc bản dịch chính thức bằng tiếng Anh nếu không có IDP. Theo SPF, người nước ngoài đến từ một nước thành viên ASEAN không cần IDP, chỉ cần mang bằng lái nước ngoài còn hiệu lực. Bản dịch có thể lấy từ Đại sứ quán/Cao ủy liên quan, hoặc công ty dịch thuật đã đăng ký tại Singapore nếu Đại sứ quán không cung cấp dịch vụ này. Người nước ngoài cư trú ở Singapore trên 12 tháng phải đổi sang bằng lái Singapore. Trang này không nêu mức phạt giao thông hay quy định thuê xe máy.",
+      "source": {
+        "title": "Singapore: lái xe bằng bằng lái nước ngoài và IDP",
+        "url": "https://www.police.gov.sg/Knowledge-Hub/Traffic/Traffic-Matters/Singapore-Driving-Licence",
+        "authority": "Singapore Police Force (SPF) — Traffic Police",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:51:13Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/police.gov.sg-Knowledge-Hub-Traffic-Singapore-Driving-Licence.md",
+        "excerpt": "However, if you are a foreigner from an ASEAN member state, you do not need an IDP. Please ensure you have a valid foreign driving licence.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "bao-canh-sat-so-khan-cap-999-va-bao-mat-trom-lua-dao",
+      "title": "báo cảnh sát, số khẩn cấp 999 và báo mất trộm/lừa đảo",
+      "topicGroups": [
+        8,
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "police report, emergency 999, theft, scam, traffic accident",
+      "summaryVi": "Singapore — báo cảnh sát và tình huống khẩn cấp, theo Singapore Police Force (SPF). Khẩn cấp: gọi 999 hoặc nhắn SMS 70999. Dịch vụ trực tuyến Lodge Police Report dùng để báo các vụ phạm tội không cần cảnh sát can thiệp ngay, như trộm cắp hoặc lừa đảo (scam); khi báo lừa đảo, SPF hướng dẫn xem thông tin cần cung cấp trên ScamShield Website. Tai nạn giao thông: lập Traffic Accident Report thay vì báo cáo thông thường. Người mất tích: gọi 999 hoặc đến Neighbourhood Police Centre. Khi báo mất đồ cần số serial và ảnh món đồ (nếu có) cùng giấy tờ hỗ trợ. SPF ghi rằng mất NRIC hoặc hộ chiếu Singapore thì không cần báo cảnh sát; trang này không nói về hộ chiếu nước ngoài.",
+      "source": {
+        "title": "Singapore: báo cảnh sát, số khẩn cấp 999 và báo mất trộm/lừa đảo",
+        "url": "https://www.police.gov.sg/e-services/lodge-police-report",
+        "authority": "Singapore Police Force (SPF)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:18Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/police.gov.sg-e-services-lodge-police-report.md",
+        "excerpt": "**Emergency** – call 999 or SMS 70999",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "nhan-dien-lua-dao-va-duong-day-scamshield-1799",
+      "title": "nhận diện lừa đảo và đường dây ScamShield 1799",
+      "topicGroups": [
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "scam, impersonation, ScamShield helpline 1799",
+      "summaryVi": "Singapore — lừa đảo (scam) và mạo danh quan chức, theo Singapore Police Force (SPF). Quan chức chính phủ sẽ KHÔNG BAO GIỜ qua cuộc gọi điện thoại: yêu cầu bạn chuyển tiền; yêu cầu tiết lộ thông tin đăng nhập ngân hàng; yêu cầu cài ứng dụng từ kho ứng dụng không chính thức; chuyển cuộc gọi của bạn sang cảnh sát. Tin nhắn SMS của chính phủ phải gửi từ Sender ID gov.sg. Kẻ lừa đảo có thể nêu thông tin cá nhân của bạn để tỏ ra hợp pháp; đừng tin chỉ vì họ biết thông tin đó. Nếu không chắc có phải lừa đảo không, gọi ScamShield Helpline 1799 (24/7). Thông tin thêm tại www.scamshield.gov.sg.",
+      "source": {
+        "title": "Singapore: nhận diện lừa đảo và đường dây ScamShield 1799",
+        "url": "https://www.police.gov.sg/Advisories/Scams",
+        "authority": "Singapore Police Force (SPF)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:51:15Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/police.gov.sg-Advisories-Scams.md",
+        "excerpt": "Call the 24/7 ScamShield Helpline at 1799 to check if you are unsure if something is a scam.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "kenh-khieu-nai-nguoi-ban-cua-du-khach-stb-case-ccs",
+      "title": "kênh khiếu nại người bán của du khách (STB, CASE, CCS)",
+      "topicGroups": [
+        9
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "consumer complaint, tourists, STB, CASE, CPFTA, overcharging, dispute",
+      "summaryVi": "Singapore — khiếu nại người bán và tranh chấp tiêu dùng, theo Competition and Consumer Commission of Singapore (CCS). CCS quản lý Consumer Protection (Fair Trading) Act (CPFTA) nhưng không hỗ trợ người tiêu dùng trong tranh chấp với nhà cung cấp hay đòi bồi hoàn. Theo CPFTA, Consumers Association of Singapore (CASE) là đầu mối đầu tiên cho người tiêu dùng trong nước, còn Singapore Tourism Board (STB) là đầu mối đầu tiên tiếp nhận khiếu nại của du khách. CASE hỗ trợ người tiêu dùng đòi bồi hoàn, có trường hợp được bồi thường, qua thương lượng và/hoặc hòa giải; liên hệ CASE theo số 6277 5100 hoặc www.case.org.sg. CCS không tư vấn pháp lý và không đưa ý kiến về tình huống giả định. Theo CCS, vấn đề thực phẩm thuộc Singapore Food Agency (SFA); xe cộ và thiết bị di chuyển cá nhân như e-scooter thuộc Land Transport Authority (LTA), số 1800 2255 582.",
+      "source": {
+        "title": "Singapore: kênh khiếu nại người bán của du khách (STB, CASE, CCS)",
+        "url": "https://www.ccs.gov.sg/get-in-touch/for-consumers/make-a-complaint/",
+        "authority": "Competition and Consumer Commission of Singapore (CCS)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:51:20Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/ccs.gov.sg-get-in-touch-for-consumers-make-a-complaint.md",
+        "excerpt": "remain the first points of contact for local consumers and tourists respectively to handle complaints",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "lien-he-dai-su-quan-viet-nam-tai-singapore",
+      "title": "liên hệ Đại sứ quán Việt Nam tại Singapore",
+      "topicGroups": [
+        7,
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "Vietnam embassy Singapore, address, phone, email, consular protection",
+      "summaryVi": "Singapore — Đại sứ quán Việt Nam tại Singapore (cơ quan bảo hộ công dân Việt Nam tại Singapore), theo trang Liên hệ chính thức của Đại sứ quán nước Cộng hòa xã hội chủ nghĩa Việt Nam tại Singapore. Địa chỉ: 10 Leedon Park, Singapore 267887. Điện thoại: (+65) 64625994. Fax: (+65) 64625936. Email: vnemb.sg@mofa.gov.vn. Trang Liên hệ cũng có biểu mẫu gửi câu hỏi (họ tên, email, tiêu đề, nội dung). Trang này không nêu giờ làm việc hay thủ tục cụ thể khi mất hộ chiếu.",
+      "source": {
+        "title": "Singapore: liên hệ Đại sứ quán Việt Nam tại Singapore",
+        "url": "https://vnembassy-singapore.mofa.gov.vn/lien-he",
+        "authority": "Đại sứ quán Việt Nam tại Singapore (Bộ Ngoại giao Việt Nam)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:53:35Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/vnembassy-singapore.mofa.gov.vn-lien-he.md",
+        "excerpt": "10 Leedon Park, Singapore 267887",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "tong-dai-bao-ho-cong-dan-viet-nam",
+      "title": "Tổng đài Bảo hộ công dân Việt Nam",
+      "topicGroups": [
+        7,
+        8
+      ],
+      "suggestedTopicSlug": "khan-cap",
+      "keywords": "Vietnam citizen protection hotline, consular protection",
+      "summaryVi": "Singapore — đường dây Bảo hộ công dân Việt Nam, theo trang chủ Đại sứ quán Việt Nam tại Singapore. Trang chủ Đại sứ quán ghi: \"Bảo hộ công dân: (+84) 981.84.84.84\" và có chuyên mục BẢO HỘ CÔNG DÂN. Số điện thoại, địa chỉ và email riêng của Đại sứ quán tại Singapore nằm ở trang Liên hệ của Đại sứ quán.",
+      "source": {
+        "title": "Singapore: Tổng đài Bảo hộ công dân Việt Nam",
+        "url": "https://vnembassy-singapore.mofa.gov.vn/",
+        "authority": "Đại sứ quán Việt Nam tại Singapore (Bộ Ngoại giao Việt Nam)",
+        "kind": "embassy",
+        "accessedAt": "2026-10-18T08:51:32Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/vnembassy-singapore.mofa.gov.vn-home.md",
+        "excerpt": "Bảo hộ công dân: (+84) 981.84.84.84",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    },
+    {
+      "slug": "trang-phuc-va-ung-xu-khi-tham-quan-sultan-mosque",
+      "title": "trang phục và ứng xử khi tham quan Sultan Mosque",
+      "topicGroups": [
+        4
+      ],
+      "suggestedTopicSlug": null,
+      "keywords": "mosque etiquette, dress code, shoes, cover-ups, places of worship",
+      "summaryVi": "Singapore — trang phục và ứng xử khi tham quan nhà thờ Hồi giáo Sultan Mosque (Masjid Sultan, khu Kampong Gelam), theo Singapore Tourism Board (VisitSingapore). Mặc trang phục phù hợp để thể hiện sự tôn trọng: không để hở lưng, không trễ vai, không mặc quần short hay váy ngắn. Có áo choàng che (cover-ups) ở lối vào. Phải cởi giày dép trước khi vào. Địa chỉ: 3 Muscat Street, Singapore 198833. Ga MRT gần nhất: Bugis (DT14/EW12). Đây là hướng dẫn của STB cho một nhà thờ Hồi giáo cụ thể, không phải điều luật chung cho mọi nơi thờ tự ở Singapore.",
+      "source": {
+        "title": "Singapore: trang phục và ứng xử khi tham quan Sultan Mosque",
+        "url": "https://www.visitsingapore.com/neighbourhood/featured-neighbourhood/kampong-gelam/sultan-mosque/",
+        "authority": "Singapore Tourism Board (VisitSingapore)",
+        "kind": "gov",
+        "accessedAt": "2026-10-18T08:54:28Z",
+        "publishedAt": null
+      },
+      "evidence": {
+        "file": "evidence/sg/visitsingapore.com-kampong-gelam-sultan-mosque.md",
+        "excerpt": "No bare backs, off-shoulders, shorts or mini-skirts.",
+        "excerptFoundInFile": true
+      },
+      "checks": {
+        "officialHost": true
+      }
+    }
+  ]
+}

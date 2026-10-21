@@ -85,6 +85,7 @@ Không hard-code quốc gia vào business logic — mọi thứ đi qua dữ li�
 - [`docs/TRANSLATION.md`](docs/TRANSLATION.md) — dịch online, giọng nói, dịch offline ML Kit.
 - [`docs/FEATURE_GUIDES.md`](docs/FEATURE_GUIDES.md) — chia sẻ vị trí và lịch trình nhiều nước.
 - [`docs/MAPS_SETUP.md`](docs/MAPS_SETUP.md) — cấu hình và vận hành bản đồ.
+- [`docs/AI_KNOWLEDGE_BASE.md`](docs/AI_KNOWLEDGE_BASE.md) — kho tri thức TH/SG/MY chờ duyệt và bộ câu đánh giá cho AI.
 
 ## Tiến độ
 
