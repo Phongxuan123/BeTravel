@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+// Nap bien moi truong test truoc (CI khong co .env); gemini.embedding.js doc env luc import.
+import "./setup.js";
+
 import {
   createGeminiEmbeddingProvider,
   parseRetryDelayMs,
