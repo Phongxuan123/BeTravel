@@ -161,6 +161,8 @@ const envSchema = z.object({
   // Van ban Act dai co file HTML 3-4 MB nen can timeout rieng, dai hon truy van metadata.
   AU_LEGISLATION_CONTENT_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   AU_LEGISLATION_CACHE_TTL_MINUTES: numeric(60),
+  // RAG: mã bản hiện hành tra thành công gần đây còn được dùng khi nguồn chập chờn (xem retrieval.js).
+  AU_REGISTER_MAX_STALE_HOURS: numeric(24),
   // true = tự sinh tóm tắt từng Phần (nhiều lượt gọi AI) khi có người mở luật lần đầu. Mặc định tắt để
   // không âm thầm đốt hạn mức AI; sinh chủ động bằng `npm run summarize-au-laws`.
   AU_LAW_DEEP_SUMMARY_AUTOGEN: booleanish(false),

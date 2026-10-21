@@ -1,5 +1,5 @@
 /*
- * Tên tiếng Việt cho 31 luật liên bang Úc đã tuyển chọn (auLawTopics.js), khóa theo mã văn bản của nguồn.
+ * Tên tiếng Việt cho 32 luật liên bang Úc đã tuyển chọn (auLawTopics.js), khóa theo mã văn bản của nguồn.
  * Đây là BẢN DỊCH THAM KHẢO do Be.Travel đặt, không phải tên chính thức: tên chính thức chỉ có tiếng Anh
  * và luôn được hiển thị kèm. Quy ước: Act = Đạo luật, Regulations = Quy định, năm giữ nguyên.
  * Luật ngoài danh sách này được AI dịch tên khi hiển thị (australiaLawTitleTranslation.service.js).
@@ -27,6 +27,7 @@ export const AU_LAW_NAMES_VI = Object.freeze({
   C2004A04997: "Đạo luật Biểu thuế Hải quan 1995",
   C2015A00061: "Đạo luật An ninh Sinh học 2015",
   F1996B03651: "Quy định Hải quan (Hàng Cấm Nhập khẩu) 1956",
+  F2015L00375: "Quy định Hải quan 2015",
   F1996B03403: "Quy định Hải quan (Hàng Cấm Xuất khẩu) 1958",
   C2004A03952: "Đạo luật Hàng hóa Trị liệu 1989",
   // Quyền lợi và khiếu nại

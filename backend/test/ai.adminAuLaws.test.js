@@ -96,7 +96,7 @@ test("RBAC: người dùng thường không gọi được API luật Úc của 
   assert.equal(noToken.status, 401);
 });
 
-test("GET au-laws: liệt kê 31 luật tuyển chọn, luật đã index kèm số chunk và job gần nhất", async () => {
+test("GET au-laws: liệt kê 32 luật tuyển chọn, luật đã index kèm số chunk và job gần nhất", async () => {
   await seedIndexedLaw();
   await Job.create({ name: "index_au_law", payload: { titleId: TITLE_ID }, status: "done" });
 
@@ -105,7 +105,7 @@ test("GET au-laws: liệt kê 31 luật tuyển chọn, luật đã index kèm s
     .set("Authorization", auth(adminToken));
   assert.equal(res.status, 200);
   const rows = res.body.data;
-  assert.equal(rows.length, 31);
+  assert.equal(rows.length, 32);
   const indexed = rows.find((row) => row.titleId === TITLE_ID);
   assert.deepEqual(indexed.index, {
     chunks: 3,

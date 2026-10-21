@@ -59,6 +59,7 @@ export const AU_LAW_TOPICS = Object.freeze([
       "C2015A00061", // Biosecurity Act 2015
       "F1996B03651", // Customs (Prohibited Imports) Regulations 1956
       "F1996B03403", // Customs (Prohibited Exports) Regulations 1958
+      "F2015L00375", // Customs Regulation 2015 (bổ sung 21/10/2026)
       "C2004A03952", // Therapeutic Goods Act 1989
       "C2015A00040", // Australian Border Force Act 2015
     ],

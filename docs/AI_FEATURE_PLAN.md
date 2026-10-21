@@ -45,7 +45,7 @@ cần đo hạn mức thật trước khi mở khoá (G0).
 - Guard hậu kiểm: xoá marker `[Sn]` bịa, chặn con số / mức phạt không có marker, đối chiếu số tiền với nguồn, luôn gắn disclaimer.
 - Mỗi câu hỏi là một lượt độc lập (không dùng lịch sử hội thoại); có cache câu trả lời, quota lưu DB, ghi `ai_events`.
 - `fallbackReason` hiện có: `INSUFFICIENT_EVIDENCE`, `GUARD_REJECTED`, `PROVIDER_ERROR`.
-- Màn chat (PR #45) đã có giao diện mới, vẫn khoá bằng `EXPO_PUBLIC_AI_CHAT_ENABLED=false`.
+- Màn chat (PR #45) đã có giao diện mới; mở mặc định từ 22/10/2026 (`EXPO_PUBLIC_AI_CHAT_ENABLED=false` để khoá nhanh).
 
 **Dữ liệu:** KR có 8 bài, **0 bài xuất bản**. TH/SG/MY có 53 bài chờ duyệt (PR #47, chưa merge). Úc: 31 luật nguyên văn.
 

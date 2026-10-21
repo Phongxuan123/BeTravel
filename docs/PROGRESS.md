@@ -1,5 +1,26 @@
 # TIEN DO BE.TRAVEL
 
+## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng ("AI tạm thời thỏa mãn để kích hoạt lại").
+
+- **Mở chat AI:** màn chat mở mặc định; `EXPO_PUBLIC_AI_CHAT_ENABLED=false` vẫn khoá nhanh (màn chờ) khi sự cố.
+- **Thêm luật:** Customs Regulation 2015 (F2015L00375, 261 chunk; quy định hành lý hành khách, cửa hàng miễn thuế).
+  Danh sách tuyển chọn còn 32 luật. Biosecurity (Conditionally Non-prohibited Goods) Determination 2021 (F2021L00258,
+  điều kiện nhập thực phẩm) đã đối chiếu mã nhưng bản hiện hành (1/10/2026) **chỉ có PDF/Word**, không đọc được qua
+  API, nên chưa index. Biosecurity Regulation 2016 đã hết hiệu lực 1/10/2026; chưa tìm được mã bản 2026 thay thế.
+- **Sửa lỗi phát hiện khi chạy thật:** nguồn Federal Register chập chờn (timeout, lỗi pool phía họ) khiến mọi câu hỏi
+  luật Úc chờ 15-25 giây rồi trả `INSUFFICIENT_EVIDENCE`. `retrieval.js` nay nhớ mã bản hiện hành tra THÀNH CÔNG gần nhất
+  (tối đa `AU_REGISTER_MAX_STALE_HOURS`, mặc định 24) và tra lại ở nền; chưa từng tra được thì vẫn fail-closed như cũ.
+- **Dữ liệu:** đã chạy `seed:au-missions`, `seed:asia-missions`, `seed:au-places` lên Atlas (3 cơ quan đại diện ở Úc,
+  3 Đại sứ quán ở JP/TH/SG, 8 bệnh viện và 5 đồn cảnh sát ở Úc).
+- **Đánh giá:** bộ độc lập `au.holdout.json` 26/30 (trap 6/6, scope 3/3, emergency 2/2). Còn trượt: vũ khí (điểm 0.39),
+  thực phẩm/kiểm dịch (0.38, thiếu văn bản Determination), giám hộ trẻ em (xếp hạng thấp).
+- **Emulator (Android, backend thật, Metro không đặt cờ):** chat mở; hỏi mất hộ chiếu (18.6s, trích Passports Act s41),
+  steroid (14.7s, trích Prohibited Imports reg 5), trẻ đi lạc ở Sydney (8.9s, khối khẩn cấp 000 + số Đại sứ quán mới seed).
+  Câu "khai báo hải quan" (gõ không dấu) bị model từ chối vì đoạn tìm được chỉ nói về cửa hàng miễn thuế: đúng hành vi
+  không suy đoán. Bàn phím ảo emulator không gõ được chữ có dấu qua adb; nên tự thử câu có dấu trên máy.
+
 ## Sửa GPS và tìm kiếm trên bản đồ SOS — 21/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng. Nguyên nhân gốc tìm được bằng chạy thật (API thật, DB thật), không đoán:

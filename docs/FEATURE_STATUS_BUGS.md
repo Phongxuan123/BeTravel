@@ -64,7 +64,7 @@ Màu, font, bo góc đã khớp; đối chiếu chi tiết từng màn hình cò
 | Cẩm nang | Chia sẻ bài | Đã hoàn thiện | Mở bảng chia sẻ Android, kèm link nguồn |
 | Cẩm nang | Nội dung quốc gia khác KR | Chưa hoàn thiện | JP/SG/TH "Sắp ra mắt"; có báo trống rõ |
 | Tìm kiếm | Tìm bài (có dấu, không dấu) | Đã hoàn thiện | B16 |
-| AI pháp lý | Chat trên app | Chưa hoàn thiện | Khoá có chủ đích (`EXPO_PUBLIC_AI_CHAT_ENABLED`); xem B04 |
+| AI pháp lý | Chat trên app | Đã mở (22/10) | Luật Úc trả lời có trích dẫn; khoá nhanh bằng `EXPO_PUBLIC_AI_CHAT_ENABLED=false` |
 | AI pháp lý | Lịch sử hỏi AI | Chưa hoàn thiện | Dẫn tới màn AI đang khoá |
 | Dịch | Dịch văn bản Việt-Anh, Việt-Hàn | Đã hoàn thiện | Gọi backend thật, có phiên âm, hiểu câu gõ không dấu |
 | Dịch | Câu mẫu, lưu câu, phóng to toàn màn, sao chép | Đã hoàn thiện | |

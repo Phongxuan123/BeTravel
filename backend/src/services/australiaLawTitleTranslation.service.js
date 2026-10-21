@@ -9,7 +9,7 @@ import { hasSameNumbers } from "./australiaLawTranslation.service.js";
 
 /*
  * Gắn tên tiếng Việt cho danh sách luật Úc:
- *   curated: 31 luật tuyển chọn, tên viết sẵn (core/auLawNames.js), không tốn AI;
+ *   curated: 32 luật tuyển chọn, tên viết sẵn (core/auLawNames.js), không tốn AI;
  *   machine: luật khác được AI dịch tên theo lô (một lần gọi cho cả trang), cache DB theo mã văn bản.
  * Dịch tên KHÔNG được làm chậm hay làm hỏng danh sách: chờ tối đa TITLE_TRANSLATION_TIMEOUT_MS, quá hạn hoặc
  * lỗi thì trả nameVi = null (client hiện tên tiếng Anh) và việc dịch vẫn chạy nền để lần sau có sẵn.
