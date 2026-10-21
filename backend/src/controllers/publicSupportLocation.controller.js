@@ -2,6 +2,7 @@ import { ok } from "../core/envelope.js";
 import { toAppError } from "../core/domainErrors.js";
 import * as locationService from "../services/publicSupportLocation.service.js";
 import { searchExternalPlaces } from "../services/externalPlaces.service.js";
+import { searchPlacesByText } from "../services/geocode.service.js";
 
 // Query đã được Zod chuẩn hóa trước khi vào controller.
 export const nearby = async (req, res, next) => {
@@ -30,6 +31,16 @@ export const external = async (req, res, next) => {
   try {
     const places = await searchExternalPlaces(req.query);
     return ok(res, places);
+  } catch (error) {
+    next(toAppError(error));
+  }
+};
+
+// Tìm địa điểm theo chữ để bản đồ bay tới (chưa xác minh, khác hẳn danh sách điểm hỗ trợ).
+export const searchText = async (req, res, next) => {
+  try {
+    const { places, scope } = await searchPlacesByText(req.query);
+    return ok(res, places, { scope });
   } catch (error) {
     next(toAppError(error));
   }

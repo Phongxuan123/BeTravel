@@ -929,3 +929,17 @@ Moi item danh sach (`/laws/australia`, `/search`) va chi tiet (`/laws/australia/
   `machine`: AI dich ten theo lo (mot luot goi cho ca trang), cache DB, tat bang `AU_LAW_TITLE_TRANSLATION=false`.
 - Ten chinh thuc la tieng Anh (`name`) va PHAI luon hien thi kem. Ban dich bi loai neu them hoac bot con so (nam, so hieu).
 - Dich ten khong lam cham danh sach: cho toi da 8 giay, qua han hoac loi thi `nameVi:null` va viec dich van chay nen de lan sau co san.
+
+### 14c. Tim dia diem theo chu — `GET /api/places/search?q=&country=`
+
+Tim ten/dia chi/khu vuc de ban do bay toi dung cho (Nominatim cua OpenStreetMap, mien phi). Ket qua CHUA xac minh, chi
+dung de dinh huong ban do, khong thay the diem ho tro da xac minh. Cong khai, rate limit 90 luot/15 phut/IP.
+- Query: `q` (2-120 ky tu, bat buoc), `country` (ISO-2, tuy chon). Co `country` thi tim trong nuoc do truoc, khong co ket
+  qua thi tim toan cau; `meta.scope` = `"country"` | `"global"` de client gan nhan.
+- `data`: toi da 8 phan tu `{ placeId, name, address, category, location:{type:"Point",coordinates:[lng,lat]}, verified:false,
+  source:"openstreetmap" }`. `name` uu tien ten tieng Viet, roi tieng Anh, roi ten ban dia.
+- Loi: `VALIDATION_ERROR`, `RATE_LIMITED`, `QUOTA_EXCEEDED` (tran theo ngay `GEOCODE_DAILY_LIMIT`), `UPSTREAM_ERROR`.
+- Chinh sach Nominatim: User-Agent nhan dien (`PLACES_USER_AGENT`), toi da 1 yeu cau/giay (server tu gian cach), cache 24 gio.
+
+`GET /support-locations/external` (muc 14b): Overpass nay co may chu du phong (`PLACES_OVERPASS_FALLBACK_URLS`); neu TAT CA that
+bai thi dung Nominatim (khong co so dien thoai, gio mo cua) thay vi tra `UPSTREAM_ERROR`.

@@ -1,24 +1,31 @@
-import { useEffect, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard } from 'react-native';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe } from 'lucide-react-native';
+import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe, MapPin, X } from 'lucide-react-native';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { openPhone, openUrl } from '@/lib/openExternal';
-import { fetchExternalPlaces, fetchNearbyLocations, fetchSupportLocations } from '@/lib/data';
-import { requestLocationWithExplanation } from '@/lib/locationPermission';
-import type { SupportLocation } from '@/lib/data';
+import { fetchExternalPlaces, fetchNearbyLocations, fetchSupportLocations, searchPlaces } from '@/lib/data';
+import {
+  LOCATION_FAILURE_MESSAGES,
+  MAP_LOCATION_POLICY,
+  requestLocationDetailed,
+  type LocationFailure,
+} from '@/lib/locationPermission';
+import type { PlaceSearchResult, SupportLocation } from '@/lib/data';
 import { MAP_RADIUS_OPTIONS, MAP_LOCATION_LIMIT, searchLocations, validCoordinates, directionsUrl } from '@/features/sos/mapHelpers';
 import { mapRuntime, mapTiles, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
 import { OsmWebMap, type MapHandle, type OsmMarker } from '@/features/sos/OsmWebMap';
+import { useDebouncedValue } from '@/features/sos/useDebouncedValue';
+import { useSheetDrag } from '@/features/sos/useSheetDrag';
 
 const LIGHT_MAP_STYLE = [
   { elementType: 'geometry', stylers: [{ color: '#EAF4FF' }] },
@@ -56,6 +63,32 @@ const FILTERS: { key: 'all' | SupportLocation['type']; label: string }[] = [
   { key: 'other', label: 'Khác' },
 ];
 
+// Chỉ gọi tìm địa điểm khi đã gõ đủ ký tự và ngừng gõ một lúc (nhà cung cấp giới hạn 1 yêu cầu/giây).
+const PLACE_SEARCH_MIN_CHARS = 3;
+const PLACE_SEARCH_DEBOUNCE_MS = 500;
+const PLACE_SEARCH_STALE_MS = 10 * 60_000;
+const PLACE_FOCUS_DELTA = 0.02;
+const LONG_PRESS_FOCUS_DELTA = 0.05;
+// GPS đo cách đây quá lâu thì nút định vị đo lại thay vì chỉ đưa camera về chỗ cũ.
+const GPS_RECENT_MS = 30_000;
+// Quá ngưỡng này thì ghi rõ giờ đo trong chú thích để người dùng biết vị trí không còn mới.
+const GPS_STALE_NOTICE_MS = 2 * 60_000;
+const PICKED_COLOR = '#E11D48';
+
+const DECLINED_MESSAGE = 'Bạn đã chọn để sau. Bấm "Vị trí của tôi" khi muốn dùng GPS.';
+
+function formatMeasuredTime(timestamp: number): string {
+  const time = new Date(timestamp);
+  return `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+}
+
+const isRecentFix = (measuredAt: number | null): boolean =>
+  measuredAt !== null && Date.now() - measuredAt <= GPS_RECENT_MS;
+
+// Chú thích giờ đo chỉ khi vị trí đã cũ; vị trí mới đo thì không cần nhắc.
+const staleFixNotice = (measuredAt: number | null): string =>
+  measuredAt !== null && Date.now() - measuredAt > GPS_STALE_NOTICE_MS ? ` (đo lúc ${formatMeasuredTime(measuredAt)})` : '';
+
 function markerColor(type: SupportLocation['type']): string {
   return { police: colors.danger, hospital: colors.success, embassy: colors.primary, pharmacy: colors.success, other: colors.warning }[type];
 }
@@ -79,9 +112,19 @@ function useInitialFilter(): (typeof FILTERS)[number]['key'] {
 export default function SosMapScreen() {
   const insets = useSafeAreaInsets();
   const { country } = useCountry();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(useInitialFilter());
+  const initialFilter = useInitialFilter();
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]['key']>(initialFilter);
+  // Danh sách phía dưới chỉ hiện khi người dùng chủ động (chọn bộ lọc, tìm địa điểm, định vị); mở từ CTA có sẵn loại (?type=) thì mở luôn.
+  const [sheetOpen, setSheetOpen] = useState(initialFilter !== 'all');
+  // Vuốt lên để xem danh sách, vuốt xuống để ẩn; chạm vào thanh kéo vẫn đổi trạng thái.
+  const openSheet = useCallback(() => setSheetOpen(true), []);
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [gpsDenied, setGpsDenied] = useState(false);
+  const [gpsFailure, setGpsFailure] = useState<LocationFailure | null>(null);
+  const [measuredAt, setMeasuredAt] = useState<number | null>(null);
+  // Điểm do người dùng chọn (kết quả tìm kiếm hoặc giữ lâu trên bản đồ): thay GPS khi máy không có GPS.
+  const [picked, setPicked] = useState<{ lat: number; lng: number; label: string } | null>(null);
+  const [searchPanelOpen, setSearchPanelOpen] = useState(false);
   const [detail, setDetail] = useState<SupportLocation | null>(null);
   const [search, setSearch] = useState('');
   const [radiusKm, setRadiusKm] = useState<number>(20);
@@ -101,6 +144,9 @@ export default function SosMapScreen() {
   const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
   // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
   const canRenderMap = osmTiles || runtime.available;
+  // Bắt buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ) hoặc có lỗi cần người dùng thấy (thiếu quốc gia).
+  const showSheet = sheetOpen || listOnly || !canRenderMap || !country;
+  const { panHandlers: swipeHandlers, translateY: sheetOffset } = useSheetDrag(showSheet, openSheet, closeSheet);
 
   useEffect(() => {
     if (!canRenderMap || listOnly || mapReady || mapTimedOut) return;
@@ -132,47 +178,103 @@ export default function SosMapScreen() {
     if (locatingRef.current) return;
     locatingRef.current = true;
     setLocating(true);
+    // Kết quả (hoặc lý do GPS thất bại) hiện trong danh sách nên mở ngay.
+    setSheetOpen(true);
     try {
-      const result = await requestLocationWithExplanation();
+      const result = await requestLocationDetailed(MAP_LOCATION_POLICY);
       if (!mounted.current) return;
-      if (result && validCoordinates(result.latitude, result.longitude)) {
-        setCoords({ lat: result.latitude, lng: result.longitude });
-        setGpsDenied(false);
-        mapRef.current?.animateToRegion({ latitude: result.latitude, longitude: result.longitude,
+      if (result.coords && validCoordinates(result.coords.latitude, result.coords.longitude)) {
+        setCoords({ lat: result.coords.latitude, lng: result.coords.longitude });
+        setMeasuredAt(result.measuredAt);
+        setGpsFailure(null);
+        // Người dùng đã chọn dùng GPS: bỏ điểm chọn tay để kết quả tính theo vị trí thật.
+        setPicked(null);
+        mapRef.current?.animateToRegion({ latitude: result.coords.latitude, longitude: result.coords.longitude,
           latitudeDelta: 0.1, longitudeDelta: 0.1 }, 400);
       } else {
         setCoords(null);
-        setGpsDenied(true);
+        setMeasuredAt(null);
+        setGpsFailure(result.failure ?? 'unavailable');
       }
     } catch {
-      if (mounted.current) { setCoords(null); setGpsDenied(true); }
+      if (mounted.current) { setCoords(null); setMeasuredAt(null); setGpsFailure('unavailable'); }
     } finally {
       locatingRef.current = false;
       if (mounted.current) setLocating(false);
     }
   };
 
+  // Nút định vị nổi: chưa có vị trí hoặc vị trí đã cũ thì đo lại; còn mới thì chỉ đưa camera về chỗ người dùng.
+  const onLocatePress = () => {
+    if (coords && isRecentFix(measuredAt)) {
+      mapRef.current?.animateToRegion({ latitude: coords.lat, longitude: coords.lng,
+        latitudeDelta: 0.1, longitudeDelta: 0.1 }, 400);
+    } else {
+      void locate();
+    }
+  };
+
+  // Chọn vị trí: từ kết quả tìm kiếm hoặc giữ lâu trên bản đồ. Danh sách bên dưới tính quanh điểm này.
+  const pickPoint = (point: { lat: number; lng: number; label: string }, delta = PLACE_FOCUS_DELTA) => {
+    if (!validCoordinates(point.lat, point.lng)) return;
+    setPicked(point);
+    setSheetOpen(true);
+    setDetail(null);
+    mapRef.current?.animateToRegion({ latitude: point.lat, longitude: point.lng,
+      latitudeDelta: delta, longitudeDelta: delta }, 400);
+  };
+
+  const choosePlace = (place: PlaceSearchResult) => {
+    pickPoint({ lat: place.lat, lng: place.lng, label: place.name });
+    // Xóa chữ tìm để danh sách điểm hỗ trợ không bị lọc mất khi chuyển sang xem quanh nơi vừa chọn.
+    setSearch('');
+    setSearchPanelOpen(false);
+    Keyboard.dismiss();
+  };
+
+  const onSearchChange = (text: string) => {
+    setSearch(text);
+    setSearchPanelOpen(text.trim().length >= 2);
+  };
+
+  // Tâm tính khoảng cách: điểm người dùng chọn (tìm kiếm/giữ lâu) ưu tiên hơn GPS vì đó là nơi họ đang muốn xem.
+  const origin = picked ?? coords;
+
   const nearbyQuery = useQuery({
-    queryKey: ['support-locations', 'nearby', country?.code, coords?.lat, coords?.lng, filter, radiusKm],
-    queryFn: () => fetchNearbyLocations(coords!.lat, coords!.lng, { country: country?.code, type: filter === 'all' ? undefined : filter, radiusKm, limit: MAP_LOCATION_LIMIT }),
-    enabled: Boolean(coords && country?.code),
+    queryKey: ['support-locations', 'nearby', country?.code, origin?.lat, origin?.lng, filter, radiusKm],
+    queryFn: () => fetchNearbyLocations(origin!.lat, origin!.lng, { country: country?.code, type: filter === 'all' ? undefined : filter, radiusKm, limit: MAP_LOCATION_LIMIT }),
+    enabled: Boolean(origin && country?.code),
   });
 
   const listQuery = useQuery({
     queryKey: ['support-locations', 'list', country?.code, filter],
     queryFn: () => fetchSupportLocations({ country: country?.code, type: filter === 'all' ? undefined : filter }),
-    enabled: Boolean(!coords && country?.code),
+    enabled: Boolean(!origin && country?.code),
   });
 
-  const activeQuery = coords ? nearbyQuery : listQuery;
+  const activeQuery = origin ? nearbyQuery : listQuery;
   const allLocations = activeQuery.data?.data ?? [];
   const locations = searchLocations(allLocations, search);
   const isOffline = activeQuery.data?.fromCache === true;
 
+  // Tìm địa điểm theo chữ (OpenStreetMap): khác với ô lọc danh sách điểm hỗ trợ đã xác minh bên dưới.
+  const debouncedSearch = useDebouncedValue(search.trim(), PLACE_SEARCH_DEBOUNCE_MS);
+  const canSearchPlaces = searchPanelOpen && debouncedSearch.length >= PLACE_SEARCH_MIN_CHARS;
+  const placesQuery = useQuery({
+    queryKey: ['places', 'search', country?.code, debouncedSearch],
+    queryFn: () => searchPlaces(debouncedSearch, country?.code),
+    enabled: canSearchPlaces,
+    staleTime: PLACE_SEARCH_STALE_MS,
+    // Mỗi lần gọi tốn lượt của nhà cung cấp: người dùng bấm thử lại khi cần.
+    retry: false,
+  });
+  const isTypingPending = search.trim() !== debouncedSearch;
+  const foundPlaces = placesQuery.data?.data ?? [];
+
   const embassy = country?.embassy;
   const hasEmbassy = Boolean(embassy?.name && validCoordinates(embassy.lat, embassy.lng) &&
     (embassy.lat !== 0 || embassy.lng !== 0));
-  const center = coords ?? (hasEmbassy ? { lat: embassy!.lat, lng: embassy!.lng } :
+  const center = origin ?? (hasEmbassy ? { lat: embassy!.lat, lng: embassy!.lng } :
     allLocations[0] ? { lat: allLocations[0].lat, lng: allLocations[0].lng } : null);
   const latitude = center?.lat ?? 0;
   const longitude = center?.lng ?? 0;
@@ -200,6 +302,7 @@ export default function SosMapScreen() {
   // Ghim cho chế độ OSM (WebView): chỉ gửi dữ liệu tối thiểu, tên/chi tiết vẫn nằm ở app.
   const osmMarkers: OsmMarker[] = [
     ...(coords ? [{ id: 'me', lat: coords.lat, lng: coords.lng, color: colors.primary, kind: 'me' as const }] : []),
+    ...(picked ? [{ id: 'picked', lat: picked.lat, lng: picked.lng, color: PICKED_COLOR, kind: 'picked' as const }] : []),
     ...locations.map((loc) => ({ id: loc.id, lat: loc.lat, lng: loc.lng, color: markerColor(loc.type), kind: 'place' as const })),
     ...externalPlaces.map((place) => ({ id: place.id, lat: place.lat, lng: place.lng, color: colors.muted, kind: 'external' as const })),
   ];
@@ -247,13 +350,18 @@ export default function SosMapScreen() {
         {osmTiles ? (
           <OsmWebMap ref={mapRef} center={{ lat: latitude, lng: longitude }} delta={delta}
             markers={osmMarkers} onReady={() => setMapReady(true)}
+            onLongPress={(point) => pickPoint({ ...point, label: 'Vị trí đã chọn' }, LONG_PRESS_FOCUS_DELTA)}
             onMarkerPress={(id) => setDetail([...locations, ...externalPlaces].find((place) => place.id === id) ?? null)} />
         ) : (
           /* Google Maps khi native build có key; iOS chưa cấu hình dùng Apple Maps. */
           <MapView ref={mapRef as React.RefObject<MapView>} style={{ flex: 1 }} initialRegion={region}
             mapType={mapType} customMapStyle={mapType === 'standard' ? LIGHT_MAP_STYLE : []}
             provider={runtime.google ? PROVIDER_GOOGLE : undefined}
-            onMapReady={() => setMapReady(true)} showsMyLocationButton={false}>
+            onMapReady={() => setMapReady(true)} showsMyLocationButton={false}
+            onLongPress={(event) => pickPoint({ lat: event.nativeEvent.coordinate.latitude,
+              lng: event.nativeEvent.coordinate.longitude, label: 'Vị trí đã chọn' }, LONG_PRESS_FOCUS_DELTA)}>
+            {picked && <Marker coordinate={{ latitude: picked.lat, longitude: picked.lng }}
+              title={picked.label} pinColor={PICKED_COLOR} />}
             {coords && <Marker coordinate={{ latitude: coords.lat, longitude: coords.lng }}
               title="Vị trí của bạn tại lần đo gần nhất" pinColor={colors.primary} />}
             {locations.map((loc) => (
@@ -295,19 +403,71 @@ export default function SosMapScreen() {
             style={{ shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
           >
             <Search size={18} color={colors.subtle} />
-            <TextInput className="ml-2.5 flex-1 text-base text-ink" placeholder="Tìm tên, địa chỉ, khu vực"
-              accessibilityLabel="Tìm địa điểm hỗ trợ" value={search} onChangeText={setSearch}
+            <TextInput className="ml-2.5 flex-1 text-base text-ink" placeholder="Tìm địa điểm, địa chỉ, khu vực"
+              accessibilityLabel="Tìm địa điểm hỗ trợ" value={search} onChangeText={onSearchChange}
+              returnKeyType="search" onSubmitEditing={() => setSearchPanelOpen(search.trim().length >= 2)}
               maxLength={160} placeholderTextColor={colors.subtle} />
+            {search.length > 0 && (
+              <Pressable accessibilityLabel="Xóa chữ tìm kiếm" hitSlop={10}
+                onPress={() => { setSearch(''); setSearchPanelOpen(false); }}>
+                <X size={18} color={colors.subtle} />
+              </Pressable>
+            )}
           </View>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2.5">
+        {searchPanelOpen && (
+          <View testID="place-search-panel" className="mt-2 max-h-[300px] rounded-lg bg-surface py-1"
+            style={{ shadowColor: '#102A43', shadowOpacity: 0.12, shadowRadius: 10, elevation: 4 }}>
+            <View className="flex-row items-center justify-between px-4 py-2">
+              <Text className="text-xs font-body-bold uppercase tracking-wider text-muted">Địa điểm trên bản đồ</Text>
+              <Pressable accessibilityLabel="Đóng kết quả tìm kiếm" hitSlop={10} onPress={() => setSearchPanelOpen(false)}>
+                <X size={16} color={colors.muted} />
+              </Pressable>
+            </View>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {search.trim().length < PLACE_SEARCH_MIN_CHARS && (
+                <Text className="px-4 pb-3 text-sm text-muted">Gõ ít nhất {PLACE_SEARCH_MIN_CHARS} ký tự để tìm địa điểm.</Text>
+              )}
+              {canSearchPlaces && (isTypingPending || placesQuery.isLoading) && (
+                <Text className="px-4 pb-3 text-sm text-muted">Đang tìm địa điểm...</Text>
+              )}
+              {canSearchPlaces && !isTypingPending && placesQuery.isError && (
+                <Pressable accessibilityLabel="Thử tìm lại địa điểm" onPress={() => void placesQuery.refetch()}>
+                  <Text className="px-4 pb-3 text-sm text-danger">
+                    Chưa tìm được địa điểm lúc này. Chạm để thử lại, hoặc giữ lâu trên bản đồ để chọn vị trí.
+                  </Text>
+                </Pressable>
+              )}
+              {canSearchPlaces && !isTypingPending && !placesQuery.isLoading && !placesQuery.isError && foundPlaces.length === 0 && (
+                <Text className="px-4 pb-3 text-sm text-muted">Không tìm thấy địa điểm nào khớp.</Text>
+              )}
+              {!isTypingPending && placesQuery.data?.scope === 'global' && country?.name && foundPlaces.length > 0 && (
+                <Text className="px-4 pb-2 text-xs text-warning-strong">
+                  Không có kết quả trong {country.name}, đang hiện kết quả toàn cầu.
+                </Text>
+              )}
+              {!isTypingPending && foundPlaces.map((place) => (
+                <Pressable key={place.id} accessibilityLabel={`Đến ${place.name}`} onPress={() => choosePlace(place)}
+                  className="flex-row items-center px-4 py-2.5" style={{ gap: 10 }}>
+                  <MapPin size={18} color={colors.primary} />
+                  <View className="flex-1">
+                    <Text className="text-[15px] font-body-bold text-ink" numberOfLines={1}>{place.name}</Text>
+                    <Text className="text-xs text-muted" numberOfLines={1}>{place.address}</Text>
+                  </View>
+                </Pressable>
+              ))}
+              <Text className="px-4 pb-2 pt-1 text-[11px] text-subtle">Kết quả từ OpenStreetMap, chưa được Be.Travel xác minh.</Text>
+            </ScrollView>
+          </View>
+        )}
+        {!searchPanelOpen && <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2.5">
           <View className="flex-row" style={{ gap: 8 }}>
             {FILTERS.map((f) => {
               const active = filter === f.key;
               return (
                 <Pressable
                   key={f.key}
-                  onPress={() => setFilter(f.key)}
+                  onPress={() => { setFilter(f.key); setSheetOpen(f.key !== 'all'); }}
                   className={`h-9 items-center justify-center rounded-full px-3.5 ${active ? 'bg-primary' : 'bg-surface'}`}
                   style={{ shadowColor: '#102A43', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2 }}
                 >
@@ -318,8 +478,8 @@ export default function SosMapScreen() {
               );
             })}
           </View>
-        </ScrollView>
-        <View className="mt-2 flex-row flex-wrap" style={{ gap: 8 }}>
+        </ScrollView>}
+        {!searchPanelOpen && <View className="mt-2 flex-row flex-wrap" style={{ gap: 8 }}>
           <Pressable accessibilityLabel="Lấy vị trí hiện tại" disabled={locating} onPress={() => void locate()}
             className="rounded-full bg-surface px-3 py-2">
             <Text className="text-sm text-primary">{locating ? 'Đang định vị...' : 'Vị trí của tôi'}</Text>
@@ -349,12 +509,24 @@ export default function SosMapScreen() {
             className={`rounded-full px-3 py-2 ${showExternal ? 'bg-primary' : 'bg-surface'}`}>
             <Text className={showExternal ? 'text-sm text-white' : 'text-sm text-primary'}>Gợi ý thêm (chưa xác minh)</Text>
           </Pressable>}
-          {coords && MAP_RADIUS_OPTIONS.map((radius) => <Pressable key={radius}
+          {origin && MAP_RADIUS_OPTIONS.map((radius) => <Pressable key={radius}
             accessibilityLabel={`Bán kính ${radius} km`} accessibilityState={{ selected: radiusKm === radius }}
             onPress={() => setRadiusKm(radius)} className={`rounded-full px-3 py-2 ${radiusKm === radius ? 'bg-primary' : 'bg-surface'}`}>
             <Text className={`text-sm ${radiusKm === radius ? 'text-white' : 'text-primary'}`}>{radius} km</Text>
           </Pressable>)}
-        </View>
+        </View>}
+        {picked && !searchPanelOpen && (
+          <View testID="picked-point-chip" className="mt-2.5 flex-row items-center self-start rounded-full bg-surface px-3 py-1.5"
+            style={{ gap: 6, shadowColor: '#102A43', shadowOpacity: 0.08, shadowRadius: 6, elevation: 2 }}>
+            <MapPin size={14} color={PICKED_COLOR} />
+            <Text className="max-w-[220px] text-[13px] font-body-semibold text-ink" numberOfLines={1}>
+              Đang xem quanh: {picked.label}
+            </Text>
+            <Pressable accessibilityLabel="Bỏ điểm đã chọn" hitSlop={10} onPress={() => setPicked(null)}>
+              <X size={14} color={colors.muted} />
+            </Pressable>
+          </View>
+        )}
         {isOffline && (
           <View className="mt-2.5 flex-row items-center self-start rounded-full bg-amber-soft px-3 py-1.5" style={{ gap: 6 }}>
             <WifiOff size={14} color="#8A4B08" />
@@ -365,33 +537,87 @@ export default function SosMapScreen() {
         )}
       </View>
 
-      {coords && canRenderMap && !listOnly && (
+      {canRenderMap && !listOnly && (
         <Pressable
-          accessibilityLabel="Định vị lại"
-          onPress={() => mapRef.current?.animateToRegion(region, 400)}
+          accessibilityLabel={coords ? 'Định vị lại' : 'Định vị tôi'}
+          disabled={locating}
+          onPress={onLocatePress}
           className="absolute right-[18px] h-14 w-14 items-center justify-center rounded-lg bg-surface"
-          style={{ bottom: 300, shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
+          style={{ bottom: showSheet ? 300 : insets.bottom + 84, shadowColor: '#102A43', shadowOpacity: 0.1, shadowRadius: 8, elevation: 3 }}
         >
-          <LocateFixed size={22} color={colors.primary} />
+          <LocateFixed size={22} color={locating ? colors.subtle : colors.primary} />
         </Pressable>
       )}
 
-      <View className="absolute inset-x-0 bottom-0 rounded-t-[28px] bg-surface" style={{ maxHeight: 320, paddingBottom: insets.bottom + 16 }}>
-        <View className="items-center py-2.5">
-          <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
-        </View>
+      {!showSheet && (
+        <Animated.View {...swipeHandlers}
+          style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center', bottom: insets.bottom + 8, paddingTop: 16, transform: [{ translateY: sheetOffset }] }}>
+          <View className="mb-2 h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+          <Pressable accessibilityLabel="Mở danh sách địa điểm" onPress={openSheet}
+            className="rounded-full bg-surface px-4 py-3"
+            style={{ shadowColor: '#102A43', shadowOpacity: 0.15, shadowRadius: 10, elevation: 4 }}>
+            <Text className={`text-sm font-body-bold ${activeQuery.isError ? 'text-danger' : 'text-ink'}`}>
+              {activeQuery.isError ? 'Không tải được danh sách. Chạm để mở'
+                : activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh · Xem danh sách`}
+            </Text>
+          </Pressable>
+        </Animated.View>
+      )}
+
+      {showSheet && <Animated.View
+        style={{ position: 'absolute', left: 0, right: 0, bottom: 0, borderTopLeftRadius: 28, borderTopRightRadius: 28,
+          backgroundColor: colors.surface, maxHeight: 320, paddingBottom: insets.bottom + 16, transform: [{ translateY: sheetOffset }] }}>
+        <View {...(listOnly ? {} : swipeHandlers)}>
+        {listOnly ? (
+          <View className="items-center py-2.5">
+            <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+          </View>
+        ) : (
+          // Chạm vào thanh kéo cũng đóng được danh sách (người dùng không có thao tác vuốt xuống).
+          <Pressable accessibilityLabel="Đóng danh sách" onPress={closeSheet} className="items-center py-5">
+            <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
+          </Pressable>
+        )}
         <View className="flex-row items-center justify-between px-[18px]">
           <Text className="text-xl font-body-bold text-ink">
             {activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh`}
           </Text>
-          <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsDenied ? 'GPS không khả dụng' : country?.name}</Text>
+          <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsFailure ? 'GPS không khả dụng' : country?.name}</Text>
+          {!listOnly && (
+            <Pressable accessibilityLabel="Đóng danh sách địa điểm" hitSlop={10} onPress={closeSheet}
+              className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">
+              <X size={18} color={colors.ink} />
+            </Pressable>
+          )}
+        </View>
         </View>
         {showExternal && canQueryExternal && !externalQuery.isLoading && !externalQuery.isError && (
           <Text className="px-[18px] text-sm text-warning-strong">+ {externalPlaces.length} gợi ý thêm (chưa xác minh)</Text>
         )}
         {!country && <Text className="mt-2 px-[18px] text-sm text-muted">Chưa tải được quốc gia. Quay lại SOS để thử lại.</Text>}
-        {gpsDenied && <Text className="mt-2 px-[18px] text-sm text-muted">Xem theo quốc gia; gõ thành phố/khu vực để lọc. Kiểm tra quyền vị trí và GPS rồi thử lại.</Text>}
-        {coords && <Text className="mt-2 px-[18px] text-xs text-muted">Khoảng cách đường chim bay từ lần đo gần nhất. Không có điểm trong {radiusKm} km sẽ mở rộng toàn quốc. Bấm Vị trí của tôi để cập nhật.</Text>}
+        {gpsFailure && (
+          <View className="mt-2 px-[18px]" style={{ gap: 6 }}>
+            <Text className="text-sm text-muted">
+              {gpsFailure === 'declined' ? DECLINED_MESSAGE : LOCATION_FAILURE_MESSAGES[gpsFailure]}
+            </Text>
+            {(gpsFailure === 'denied' || gpsFailure === 'services-off') && (
+              <Pressable accessibilityLabel="Mở cài đặt vị trí" onPress={() => void Linking.openSettings()}>
+                <Text className="text-sm font-body-bold text-primary">Mở Cài đặt</Text>
+              </Pressable>
+            )}
+            <Text className="text-sm text-muted">
+              Bạn vẫn xem được theo quốc gia, gõ tên nơi cần tìm ở ô phía trên, hoặc giữ lâu trên bản đồ để chọn vị trí.
+            </Text>
+          </View>
+        )}
+        {origin && (
+          <Text className="mt-2 px-[18px] text-xs text-muted">
+            {picked ? `Khoảng cách đường chim bay từ ${picked.label}.` : 'Khoảng cách đường chim bay từ lần đo gần nhất'}
+            {picked ? '' : staleFixNotice(measuredAt)}
+            {` Không có điểm trong ${radiusKm} km sẽ mở rộng toàn quốc.`}
+            {picked ? '' : ' Bấm Vị trí của tôi để cập nhật.'}
+          </Text>
+        )}
         {activeQuery.isError && (
           <Pressable accessibilityLabel="Thử tải lại địa điểm" onPress={() => void activeQuery.refetch()}>
             <Text className="mt-2 px-[18px] text-sm text-danger">Không tải được danh sách. Chạm để thử lại.</Text>
@@ -481,7 +707,7 @@ export default function SosMapScreen() {
             </View>
           )}
         </ScrollView>
-      </View>
+      </Animated.View>}
 
       <SimpleSheet visible={!!detail} onClose={() => setDetail(null)} title={detail?.name ?? ''}>
         {detail && (

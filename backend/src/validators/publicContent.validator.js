@@ -80,6 +80,15 @@ export const externalPlacesQuerySchema = z
     { message: "Can lat va lng, hoac country voi type=embassy" },
   );
 
+const PLACE_SEARCH_MIN_LENGTH = 2;
+const PLACE_SEARCH_MAX_LENGTH = 120;
+
+// Tìm địa điểm theo chữ: q đi thẳng vào truy vấn của nhà cung cấp nên giới hạn độ dài; country chỉ 2 chữ cái.
+export const placeSearchQuerySchema = z.object({
+  q: z.string().trim().min(PLACE_SEARCH_MIN_LENGTH).max(PLACE_SEARCH_MAX_LENGTH),
+  country: countryCodeSchema.regex(/^[A-Z]{2}$/, "Ma quoc gia chi gom 2 chu cai").optional(),
+});
+
 export const supportLocationListQuerySchema = z.object({
   country: countryCodeSchema.optional(),
   type: locationTypeSchema.optional(),
