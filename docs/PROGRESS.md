@@ -134,6 +134,15 @@ nguồn, câu thời tiết (thẻ ngoài phạm vi), câu tai nạn (số khẩ
   - `h-weapons-import` (điểm 0,40), `h-food-biosecurity` (0,35): dưới ngưỡng truy hồi.
   - `h-customs-declare`: tìm ra Customs Act mục 64/71A (báo cáo hàng hoá của hãng vận chuyển), model tự báo thiếu dữ liệu;
     quy định khai báo của hành khách có lẽ nằm trong văn bản dưới luật chưa index.
+- **Sửa theo đề xuất (cùng ngày):** thêm từ khoá khẩn cấp ("bị lạc", "đuối nước", "cháy rừng"...) và đưa các dạng từ
+  pháp lý về chung gốc (guardian/guardianship, declare/declaration, permit/permission). Chạy lại: **22/30** --
+  khẩn cấp 2/2 (câu con bị lạc nay có số 000, đã thử trên emulator với Hàn Quốc ra 112/119), câu bẫy 6/6, ngoài phạm vi 3/3.
+  Hai câu hộ chiếu trượt vì APIZ quá 60 giây; hai câu thuốc (steroid, thuốc chữa bệnh) trượt vì model tự báo thiếu dữ liệu
+  dù tìm đúng luật (lần đầu cùng câu đó trả lời được).
+- **So riêng tầng tìm kiếm** (cùng từ khoá, không gọi model trả lời): trước và sau khi sửa cách cắt đuôi từ đều **16/19** câu
+  tìm đúng luật. Tức là đổi cắt đuôi từ **không cải thiện** trên bộ này; "guardian" nay khớp được nhưng điều luật giám hộ
+  vẫn xếp sau các đoạn khác. Phần dao động còn lại đến từ model trả lời (cùng đoạn luật, lúc trả lời lúc từ chối) và độ trễ
+  APIZ. [!] 2 câu `h-emergency-lost-child`, `h-guardian` không còn là phép đo độc lập sau lần sửa này.
 
 ### Chưa làm / đang vướng (AI)
 
