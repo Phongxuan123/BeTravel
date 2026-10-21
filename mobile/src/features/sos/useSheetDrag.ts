@@ -30,7 +30,8 @@ export function useSheetDrag(isOpen: boolean, onOpen: () => void, onClose: () =>
       });
 
     return PanResponder.create({
-      onMoveShouldSetPanResponder: (_event, gesture) =>
+      // Capture: nhận cử chỉ trước các nút con (thanh kéo là Pressable sẽ giữ cử chỉ nếu không chặn trước).
+      onMoveShouldSetPanResponderCapture: (_event, gesture) =>
         Math.abs(gesture.dy) > MOVE_START && Math.abs(gesture.dy) > Math.abs(gesture.dx),
       onPanResponderMove: (_event, gesture) => {
         // Mở: chỉ cho kéo xuống. Ẩn: chỉ cho kéo lên.

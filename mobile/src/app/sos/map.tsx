@@ -574,7 +574,7 @@ export default function SosMapScreen() {
           </View>
         ) : (
           // Chạm vào thanh kéo cũng đóng được danh sách (người dùng không có thao tác vuốt xuống).
-          <Pressable accessibilityLabel="Đóng danh sách" onPress={closeSheet} className="items-center py-3">
+          <Pressable accessibilityLabel="Đóng danh sách" onPress={closeSheet} className="items-center py-5">
             <View className="h-[5px] w-11 rounded-full bg-[#D6DEEA]" />
           </Pressable>
         )}
