@@ -67,3 +67,16 @@ test("GET /api/places/search: chay duoc o che do mock, tra GeoJSON va meta.scope
   assert.equal(place.location.type, "Point");
   assert.equal(place.location.coordinates.length, 2);
 });
+
+// Loi thuc te: dang chon Uc, go "Viet Nam" chi ra cac dia danh trung chu trong Uc, khong thay chinh nuoc Viet Nam.
+test("mergeCountrySearch: ten ca mot quoc gia len dau du dang chon nuoc khac", async () => {
+  const { mergeCountrySearch } = await import("../src/services/geocode.service.js");
+  const place = (id, name, addressType) => ({ placeId: `relation/${id}`, name, addressType });
+  const { places, scope } = mergeCountrySearch({
+    worldwide: [place(2, "Việt Nam", "country"), place(1, "Vietnam Veterans Museum", "tourism")],
+    inCountry: [place(1, "Vietnam Veterans Museum", "tourism")],
+  });
+  assert.deepEqual(places.map((p) => p.name), ["Việt Nam", "Vietnam Veterans Museum"]);
+  assert.equal(scope, "country");
+  assert.equal("addressType" in places[0], false);
+});

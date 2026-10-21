@@ -90,6 +90,8 @@ export const normalizeNominatimResults = (json) => {
         name,
         address,
         category: String(item.type ?? item.category ?? ""),
+        // Chỉ dùng nội bộ để nhận ra kết quả là cả một quốc gia; bị bỏ trước khi trả cho client.
+        addressType: String(item.addresstype ?? ""),
         location: { type: "Point", coordinates: [lng, lat] },
         verified: false,
         source: GEOCODE_SOURCE,
@@ -148,6 +150,18 @@ const MOCK_RESULTS = Object.freeze([
   },
 ]);
 
+const dedupeByPlaceId = (places) => [...new Map(places.map((place) => [place.placeId, place])).values()];
+
+const stripInternalFields = (places) => places.map(({ addressType: _addressType, ...place }) => place);
+
+// Gõ tên cả một quốc gia (ví dụ "Việt Nam" khi đang chọn Úc) thì quốc gia đó phải lên đầu,
+// nếu không người dùng chỉ thấy các địa danh trùng chữ nằm trong nước đang chọn.
+export const mergeCountrySearch = ({ worldwide, inCountry }) => {
+  const wholeCountries = worldwide.filter((place) => place.addressType === "country");
+  const places = dedupeByPlaceId([...wholeCountries, ...inCountry, ...worldwide]).slice(0, MAX_RESULTS);
+  return { places: stripInternalFields(places), scope: inCountry.length > 0 ? "country" : "global" };
+};
+
 /*
  * Ưu tiên tìm trong quốc gia đang chọn (người dùng thường tìm địa điểm ở nước mình đến); không có kết quả thì
  * tìm toàn cầu để không bắt người dùng đổi quốc gia chỉ vì gõ tên một nơi khác. `scope` cho client biết để gắn nhãn.
@@ -159,10 +173,10 @@ export const searchPlacesByText = async ({ q, country }) => {
   const query = q.trim().replace(/\s+/g, " ");
   const key = `${country ?? "-"}|${query.toLowerCase()}`;
   return cache.getOrLoad(key, async () => {
-    if (country) {
-      const inCountry = await searchNominatim(query, { country });
-      if (inCountry.length > 0) return { places: inCountry, scope: "country" };
-    }
-    return { places: await searchNominatim(query), scope: "global" };
+    const worldwide = await searchNominatim(query);
+    if (!country) return { places: stripInternalFields(worldwide), scope: "global" };
+
+    const inCountry = await searchNominatim(query, { country });
+    return mergeCountrySearch({ worldwide, inCountry });
   });
 };
