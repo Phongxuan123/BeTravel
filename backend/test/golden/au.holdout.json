@@ -28,7 +28,7 @@
 
     { "id": "h-customs-declare", "kind": "fact",
       "question": "Khi nhập cảnh Úc có bắt buộc khai báo hàng hoá mang theo với hải quan không?",
-      "expectCitationTitle": ["Customs Act 1901", "Biosecurity Act 2015"] },
+      "expectCitationTitle": ["Customs Act 1901", "Customs Regulation 2015", "Biosecurity Act 2015"] },
 
     { "id": "h-customs-search", "kind": "fact",
       "question": "Hải quan Úc có quyền kiểm tra hành lý của khách du lịch không?",

@@ -1,5 +1,23 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Hợp nhất main ngày 22/10/2026
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 385/385, mobile 262/262, admin 22/22 (tổng 669); lint/typecheck tương
+ứng, backend format và admin build đạt. Chưa nghiệm thu điện thoại hoặc
+AI/SMTP/Atlas thật trong lần này; backend test dùng DB tạm/provider mock.
+Không export/build native lại ở đợt này; không đổi native dependency.
+
+- Nhánh làm việc: `feature/offline-translation-20261012`; nhận main `d5f0535`
+  (PR #52, #53). Mốc dự phòng: `backup/offline-before-main-20261022-ca9f7f8`.
+- Nhận mở chat AI mặc định, luật hải quan Úc và cache xác minh nguồn từ main;
+  giữ dịch offline tích hợp, logo và luồng auth cục bộ.
+- Xung đột hai tài liệu được giữ nội dung cả hai phía. Kiểm thử AuLawsRagPanel
+  giữ helper chờ trong act và cleanup của nhánh; nhận timeout 2000 ms từ main.
+- `backend/.env.example` chưa commit đã cất stash trước merge, khôi phục đúng
+  từng byte bản người dùng và vẫn ngoài commit; giữ stash dự phòng, không xóa.
+- Không thay .env thật, không seed/ghi DB thật, không push hoặc merge vào main.
+
 ## Kiểm tra sau merge main 4f54f16 — 21/10/2026
 
 - [v] Có backup `backup/offline-before-main-20261021-90fdaae` trước merge.

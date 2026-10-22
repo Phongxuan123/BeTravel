@@ -1,5 +1,23 @@
 # TIEN DO BE.TRAVEL
 
+## Hợp nhất main ngày 22/10/2026
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 385/385, mobile 262/262, admin 22/22 (tổng 669); lint/typecheck tương
+ứng, backend format và admin build đạt. Chưa nghiệm thu điện thoại hoặc
+AI/SMTP/Atlas thật trong lần này; backend test dùng DB tạm/provider mock.
+Không export/build native lại ở đợt này; không đổi native dependency.
+
+- Nhánh làm việc: `feature/offline-translation-20261012`; nhận main `d5f0535`
+  (PR #52, #53). Mốc dự phòng: `backup/offline-before-main-20261022-ca9f7f8`.
+- Nhận mở chat AI mặc định, luật hải quan Úc và cache xác minh nguồn từ main;
+  giữ dịch offline tích hợp, logo và luồng auth cục bộ.
+- Xung đột hai tài liệu được giữ nội dung cả hai phía. Kiểm thử AuLawsRagPanel
+  giữ helper chờ trong act và cleanup của nhánh; nhận timeout 2000 ms từ main.
+- `backend/.env.example` chưa commit đã cất stash trước merge, khôi phục đúng
+  từng byte bản người dùng và vẫn ngoài commit; giữ stash dự phòng, không xóa.
+- Không thay .env thật, không seed/ghi DB thật, không push hoặc merge vào main.
+
 ## Hợp nhất main vào nhánh đang làm — 21/10/2026 (hiện hành)
 
 Tiến độ `[####] 4/4`: dự phòng, fetch/merge, xử lý xung đột, kiểm tự động xong.
@@ -50,6 +68,27 @@ Tiến độ `[###-] 3/4`: triển khai, kiểm tự động/export và tài li�
 - Chi tiết phương pháp, nguồn, giấy phép, script tái lập và kịch bản máy thật:
   [TRANSLATION.md](TRANSLATION.md), [ACCEPTANCE.md](ACCEPTANCE.md).
 - Không push Git, không gửi OTP thật/đổi mật khẩu thật, không sửa dữ liệu DB.
+
+## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng ("AI tạm thời thỏa mãn để kích hoạt lại").
+
+- **Mở chat AI:** màn chat mở mặc định; `EXPO_PUBLIC_AI_CHAT_ENABLED=false` vẫn khoá nhanh (màn chờ) khi sự cố.
+- **Thêm luật:** Customs Regulation 2015 (F2015L00375, 261 chunk; quy định hành lý hành khách, cửa hàng miễn thuế).
+  Danh sách tuyển chọn còn 32 luật. Biosecurity (Conditionally Non-prohibited Goods) Determination 2021 (F2021L00258,
+  điều kiện nhập thực phẩm) đã đối chiếu mã nhưng bản hiện hành (1/10/2026) **chỉ có PDF/Word**, không đọc được qua
+  API, nên chưa index. Biosecurity Regulation 2016 đã hết hiệu lực 1/10/2026; chưa tìm được mã bản 2026 thay thế.
+- **Sửa lỗi phát hiện khi chạy thật:** nguồn Federal Register chập chờn (timeout, lỗi pool phía họ) khiến mọi câu hỏi
+  luật Úc chờ 15-25 giây rồi trả `INSUFFICIENT_EVIDENCE`. `retrieval.js` nay nhớ mã bản hiện hành tra THÀNH CÔNG gần nhất
+  (tối đa `AU_REGISTER_MAX_STALE_HOURS`, mặc định 24) và tra lại ở nền; chưa từng tra được thì vẫn fail-closed như cũ.
+- **Dữ liệu:** đã chạy `seed:au-missions`, `seed:asia-missions`, `seed:au-places` lên Atlas (3 cơ quan đại diện ở Úc,
+  3 Đại sứ quán ở JP/TH/SG, 8 bệnh viện và 5 đồn cảnh sát ở Úc).
+- **Đánh giá:** bộ độc lập `au.holdout.json` 26/30 (trap 6/6, scope 3/3, emergency 2/2). Còn trượt: vũ khí (điểm 0.39),
+  thực phẩm/kiểm dịch (0.38, thiếu văn bản Determination), giám hộ trẻ em (xếp hạng thấp).
+- **Emulator (Android, backend thật, Metro không đặt cờ):** chat mở; hỏi mất hộ chiếu (18.6s, trích Passports Act s41),
+  steroid (14.7s, trích Prohibited Imports reg 5), trẻ đi lạc ở Sydney (8.9s, khối khẩn cấp 000 + số Đại sứ quán mới seed).
+  Câu "khai báo hải quan" (gõ không dấu) bị model từ chối vì đoạn tìm được chỉ nói về cửa hàng miễn thuế: đúng hành vi
+  không suy đoán. Bàn phím ảo emulator không gõ được chữ có dấu qua adb; nên tự thử câu có dấu trên máy.
 
 ## Sửa GPS và tìm kiếm trên bản đồ SOS — 21/10/2026 (cập nhật mới nhất)
 

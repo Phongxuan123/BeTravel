@@ -19,7 +19,36 @@ const isAuChunk = (chunk) => chunk.sourceType === AU_SOURCE_TYPE;
 let currentRegisterLookup = getCurrentRegisterId;
 export const __setAuRegisterLookupForTest = (lookup) => {
   currentRegisterLookup = lookup ?? getCurrentRegisterId;
+  lastVerifiedRegister.clear();
 };
+export const __swapAuRegisterLookupKeepMemoryForTest = (lookup) => {
+  currentRegisterLookup = lookup;
+};
+
+/*
+ * Nguồn luật Úc chập chờn (timeout, lỗi pool phía họ): nếu mỗi câu hỏi phải chờ nguồn trả lời thì
+ * AI chậm hàng chục giây rồi từ chối dù luật không đổi. Nên nhớ mã bản hiện hành đã tra THÀNH CÔNG
+ * gần nhất: còn trong AU_REGISTER_MAX_STALE_HOURS thì dùng ngay và tra lại ở nền (lần tra mới ghi đè
+ * kết quả cho câu sau). Chưa từng tra được, hoặc quá hạn, thì vẫn chờ nguồn và fail-closed như cũ.
+ */
+const MS_PER_HOUR = 3_600_000;
+const lastVerifiedRegister = new Map();
+
+const lookupLiveRegister = async (titleId) => {
+  const registerId = await currentRegisterLookup(titleId);
+  if (registerId) lastVerifiedRegister.set(titleId, { registerId, verifiedAt: Date.now() });
+  return registerId;
+};
+
+async function lookupCurrentRegister(titleId) {
+  const known = lastVerifiedRegister.get(titleId);
+  const knownIsFresh =
+    known && Date.now() - known.verifiedAt < env.AU_REGISTER_MAX_STALE_HOURS * MS_PER_HOUR;
+  if (!knownIsFresh) return lookupLiveRegister(titleId);
+  // Tra lại ở nền; lỗi nền không ảnh hưởng câu trả lời hiện tại.
+  lookupLiveRegister(titleId).catch(() => {});
+  return known.registerId;
+}
 
 const FOCUS_ARTICLE_WEIGHT = 0.5;
 const VECTOR_WEIGHT = 0.7;
@@ -82,8 +111,8 @@ async function verifyAgainstArticles(chunks, countryCode) {
 /*
  * Chunk luật gốc Úc KHÔNG thuộc legal_articles nên xác minh bằng cách khác, cùng tinh thần
  * "không tin bản sao trên chunk": (1) luật còn nằm trong danh sách tuyển chọn, (2) registerId
- * của chunk đúng là bản biên soạn HIỆN HÀNH tra từ nguồn. Không tra được thì loại chunk
- * (fail-closed), vì không chứng minh được còn hiệu lực.
+ * của chunk đúng là bản biên soạn HIỆN HÀNH tra từ nguồn (hoặc kết quả tra thành công gần đây,
+ * xem lookupCurrentRegister). Không tra được thì loại chunk (fail-closed).
  */
 async function verifyAuChunks(chunks) {
   const titleIds = [...new Set(chunks.map((chunk) => chunk.titleId))].filter(isCuratedTitle);
@@ -91,7 +120,7 @@ async function verifyAuChunks(chunks) {
     await Promise.all(
       titleIds.map(async (titleId) => {
         try {
-          return [titleId, await currentRegisterLookup(titleId)];
+          return [titleId, await lookupCurrentRegister(titleId)];
         } catch {
           return [titleId, null];
         }
@@ -194,7 +223,7 @@ export async function areSourcesCurrent(sources) {
     auSources.map(async (source) => {
       if (!isCuratedTitle(source.titleId)) return false;
       try {
-        return (await currentRegisterLookup(source.titleId)) === source.registerId;
+        return (await lookupCurrentRegister(source.titleId)) === source.registerId;
       } catch {
         return false;
       }

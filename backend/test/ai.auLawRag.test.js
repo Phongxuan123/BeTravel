@@ -239,6 +239,23 @@ test("chat Úc: bản biên soạn đã bị thay thế hoặc không tra đư�
   assert.equal(unreachable.fallbackReason, "INSUFFICIENT_EVIDENCE");
 });
 
+test("retrieval Úc: nguồn chập chờn sau một lần tra thành công vẫn dùng mã đã xác minh gần đây", async () => {
+  await seedAustralia();
+  const verified = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
+  assert.equal(verified.passed, true);
+
+  let liveCalls = 0;
+  const upstreamDown = async () => {
+    liveCalls += 1;
+    throw new Error("UPSTREAM_DOWN");
+  };
+  // Đổi hàm tra mà không xoá bộ nhớ (hàm test xoá), mô phỏng nguồn sập giữa chừng.
+  retrieval.__swapAuRegisterLookupKeepMemoryForTest(upstreamDown);
+  const whileDown = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
+  assert.equal(whileDown.passed, true);
+  assert.ok(liveCalls >= 1, "vẫn phải thử tra lại ở nền");
+});
+
 test("chat Úc: chunk của luật ngoài danh sách tuyển chọn bị loại dù nằm trong DB", async () => {
   const user = await seedAustralia();
   await LegalChunk.updateMany({ titleId: TITLE_ID }, { $set: { titleId: "C0000A00000" } });

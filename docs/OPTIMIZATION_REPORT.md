@@ -1,5 +1,23 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Hợp nhất main ngày 22/10/2026
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 385/385, mobile 262/262, admin 22/22 (tổng 669); lint/typecheck tương
+ứng, backend format và admin build đạt. Chưa nghiệm thu điện thoại hoặc
+AI/SMTP/Atlas thật trong lần này; backend test dùng DB tạm/provider mock.
+Không export/build native lại ở đợt này; không đổi native dependency.
+
+- Nhánh làm việc: `feature/offline-translation-20261012`; nhận main `d5f0535`
+  (PR #52, #53). Mốc dự phòng: `backup/offline-before-main-20261022-ca9f7f8`.
+- Nhận mở chat AI mặc định, luật hải quan Úc và cache xác minh nguồn từ main;
+  giữ dịch offline tích hợp, logo và luồng auth cục bộ.
+- Xung đột hai tài liệu được giữ nội dung cả hai phía. Kiểm thử AuLawsRagPanel
+  giữ helper chờ trong act và cleanup của nhánh; nhận timeout 2000 ms từ main.
+- `backend/.env.example` chưa commit đã cất stash trước merge, khôi phục đúng
+  từng byte bản người dùng và vẫn ngoài commit; giữ stash dự phòng, không xóa.
+- Không thay .env thật, không seed/ghi DB thật, không push hoặc merge vào main.
+
 ## Lịch sử cập nhật — 21/10/2026: hợp nhất main 4f54f16
 
 - Giữ toàn bộ hai nhánh nội dung khi giải quyết hai xung đột tài liệu; không
@@ -31,6 +49,13 @@
   https://github.com/advisories/GHSA-hp3w-g68c-fv3c
 - Áp dụng DRY, xử lý lỗi rõ, phân biệt nguồn dữ liệu, không thay contract/migration.
   Chi tiết kết quả và giới hạn thực tế tại ACCEPTANCE/TRANSLATION.
+
+## Mở lại AI + luật hải quan Úc — 22/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 6: thời hạn dùng mã bản hiện hành đã xác minh là biến `AU_REGISTER_MAX_STALE_HOURS`, không hard-code.
+- Rule 7: lỗi tra lại ở nền được bắt có chủ đích (không ảnh hưởng câu trả lời đã xác minh); lần đầu vẫn fail-closed.
+- Rule 11: comment tiếng Việt giải thích lý do ở `retrieval.js` (`lookupCurrentRegister`).
+- Rule 13A: không phát sinh warning mới. Bug runtime (nguồn luật chập chờn làm AI từ chối) đã có test hồi quy.
 
 ## Sửa GPS và tìm kiếm bản đồ — 21/10/2026 (Chế độ B, chỉ file đã động tới)
 
@@ -228,6 +253,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 22/10/2026: mở lại chat AI, thêm Customs Regulation 2015, nhớ mã bản luật Úc đã xác minh khi nguồn chập chờn; holdout 26/30.
 
 - 20/10/2026: hoàn thiện Be.Travel AI (phân luồng, 3 phần, luật Úc vào RAG, guard số điện thoại); backend 344, mobile 243, admin 18 tests đạt; chạy thật 9/9 trên 3 luật Úc.
 

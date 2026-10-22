@@ -49,7 +49,7 @@ async function waitForUi(assertion: () => void) {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
     assertion();
-  });
+  }, { timeout: 2000 });
 }
 
 async function mount() {
