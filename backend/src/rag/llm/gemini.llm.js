@@ -16,9 +16,9 @@ export function createGeminiLlmProvider({ apiKey, model, retryUnavailable = fals
   return {
     provider: "gemini",
     model,
-    async complete({ systemPrompt, userPrompt }) {
+    async complete({ systemPrompt, userPrompt, timeoutMs }) {
       const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`;
-      const signal = AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS);
+      const signal = AbortSignal.timeout(timeoutMs ?? env.AI_PROVIDER_TIMEOUT_MS);
       const options = {
         method: "POST",
         signal,

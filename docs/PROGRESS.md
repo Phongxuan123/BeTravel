@@ -1,5 +1,26 @@
 # TIEN DO BE.TRAVEL
 
+## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng (thử trên máy: câu luật giao thông chờ rất lâu rồi chỉ nhận "Chưa đủ dữ liệu").
+Đo bằng chạy thật: các lần chờ 40-80 giây đến từ (1) nạp lại toàn bộ ~8.900 chunk vào RAM mỗi 60 giây
+(15-25 giây/lần), (2) chờ nguồn luật Úc xác minh dù câu hỏi đã chắc chắn trượt ngưỡng, (3) bước tạo từ khoá
+chờ tới 60 giây.
+
+- **Nhanh:** kiểm ngưỡng điểm trước khi xác minh (trượt thì từ chối ngay); cache chunk 10 phút, hết hạn thì
+  nạp lại ở nền và vẫn dùng bản cũ (`MEMORY_SEARCH_CACHE_TTL_MS`); nạp chunk và xác minh trước 10 luật Úc khi
+  server khởi động; kết quả xác minh lưu DB (`au_register_checks`) giữ qua lần khởi động lại; chờ nguồn luật
+  tối đa `AU_REGISTER_LOOKUP_BUDGET_MS` (5 giây, quá thì fail-closed và tra tiếp ở nền); bước tạo từ khoá tối
+  đa `QUERY_REWRITE_TIMEOUT_MS` (15 giây).
+- **Có ích:** `core/aiCoverageGaps.js` liệt kê chủ đề kho chưa có. Giao thông đường bộ và thuê nhà (luật bang)
+  trả lời NGAY (dưới 1 giây, không tốn lượt AI): lý do + thông tin chung đã đối chiếu + link trang chính thức.
+  Thú cưng/thực phẩm vẫn để AI tìm trước; thiếu bằng chứng mới chỉ trang "Can you bring it in?" của ABF. Các
+  câu khác: lời từ chối chuẩn + danh sách chủ đề AI trả lời được. Ca khẩn cấp (tai nạn giao thông) không bị
+  rẽ nhánh này. Mobile hiển thị in đậm, gạch đầu dòng, link bấm được.
+- **Đo lại:** câu giao thông 0,6-0,9 giây (trước 8-78 giây); câu trượt ngưỡng khoảng 7 giây (chủ yếu là tạo từ
+  khoá); câu đi qua AI 8-27 giây (thời gian trả lời của model glm-5.3-flash qua APIZ).
+- Emulator: câu giao thông hiện đủ lý do, link Tourism Australia mở được Chrome; câu chó cưng hiện link ABF.
+
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng ("AI tạm thời thỏa mãn để kích hoạt lại").

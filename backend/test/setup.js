@@ -30,6 +30,8 @@ process.env.AUTH_TRANSPORT ??= "both";
 // không thể đổi nó giữa chừng -- đặt sẵn 1 giây để test "trong cửa sổ ân hạn"
 // chạy ngay lập tức và test "ngoài cửa sổ ân hạn" chỉ cần chờ hơn 1 giây.
 process.env.REFRESH_ROTATION_GRACE_SECONDS ??= "1";
+// Ngắn để test "nguồn luật Úc chậm" chạy nhanh (mặc định thật 5 giây).
+process.env.AU_REGISTER_LOOKUP_BUDGET_MS ??= "200";
 /*
  * B4: nguong RAG_MIN_TOP_SCORE/RAG_MIN_SOFT_SCORE mac dinh (0.62/0.55) duoc
  * hieu chinh cho hinh hoc cosine cua embedding THAT (Gemini). MockEmbedding

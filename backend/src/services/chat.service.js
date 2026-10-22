@@ -27,6 +27,7 @@ import {
 import { getLlmProvider } from "../rag/llm/index.js";
 import { retrievalModelLabel, isLexicalMode } from "../rag/embedding/index.js";
 import { getQuestionKeywords } from "../rag/queryRewrite.js";
+import { buildNoEvidenceAnswer, findCoverageGap } from "../rag/noEvidence.js";
 import { faqTermsFor, findServableFaq } from "./faq.service.js";
 import { normalizeVi } from "../utils/textNormalize.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
@@ -432,6 +433,35 @@ export const sendMessage = async ({
     });
   }
 
+  // Chủ đề kho chắc chắn chưa có (vd luật giao thông bang ở Úc): trả lời ngay lý do + nơi tra cứu
+  // chính thức, không tốn lượt AI, thay vì chạy truy hồi + LLM 10-80 giây rồi vẫn từ chối.
+  // Khẩn cấp không đi nhánh này: tai nạn giao thông vẫn phải nhận số khẩn cấp.
+  const coverageGap =
+    route === QuestionRoute.EMERGENCY
+      ? null
+      : findCoverageGap(question, countryCode, { beforeSearch: true });
+  if (coverageGap) {
+    await recordUserTurn(session, question);
+    return replyWithoutLlm({
+      session,
+      userId,
+      question,
+      startedAt,
+      embeddingModel: "none",
+      result: {
+        ...baseResult,
+        answer: buildNoEvidenceAnswer({
+          question,
+          countryCode,
+          countryName: currentCountry.name,
+        }),
+        confidence: "low",
+        needsOfficialHelp: false,
+        fallbackReason: FallbackReason.INSUFFICIENT_EVIDENCE,
+      },
+    });
+  }
+
   // Ca khẩn cấp vẫn phải nhận được số khẩn cấp khi người dùng hết lượt AI.
   try {
     await checkAndIncrementQuota(userId);
@@ -519,7 +549,14 @@ export const sendMessage = async ({
         ...(isEmergency
           ? emergencyOnlyResult(emergency, noEvidenceReason)
           : {
-              answer: FALLBACK_MESSAGE,
+              answer:
+                noEvidenceReason === FallbackReason.INSUFFICIENT_EVIDENCE
+                  ? buildNoEvidenceAnswer({
+                      question,
+                      countryCode,
+                      countryName: currentCountry.name,
+                    })
+                  : FALLBACK_MESSAGE,
               needsOfficialHelp: false,
               fallbackReason: noEvidenceReason,
             }),
@@ -560,7 +597,14 @@ export const sendMessage = async ({
             guarded.fallbackReason === FallbackReason.OUT_OF_SCOPE
               ? QuestionRoute.OUT_OF_SCOPE
               : route,
-          answer: withEmergencyNotice(route, emergency, guarded.answer),
+          // AI tự báo không đủ dữ liệu: dùng lời từ chối có hướng dẫn như nhánh truy hồi thất bại.
+          answer: withEmergencyNotice(
+            route,
+            emergency,
+            guarded.fallbackReason === FallbackReason.INSUFFICIENT_EVIDENCE
+              ? buildNoEvidenceAnswer({ question, countryCode, countryName: currentCountry.name })
+              : guarded.answer,
+          ),
           sections: guarded.sections ?? null,
           citations: guarded.citations,
           confidence,

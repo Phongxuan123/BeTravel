@@ -7,6 +7,7 @@ import { uniqueTerms } from "./lexical.js";
 import { getSearchDriver } from "./search/index.js";
 import LegalChunk from "../models/LegalChunk.js";
 import LegalArticle from "../models/LegalArticle.js";
+import AuRegisterCheck from "../models/AuRegisterCheck.js";
 import { isCuratedTitle } from "../core/auLawTopics.js";
 import { getCurrentRegisterId } from "../services/australiaLegislation.service.js";
 import { rrf } from "./rrf.js";
@@ -15,39 +16,93 @@ const AU_SOURCE_TYPE = "au_legislation";
 const AU_AUTHORITY = "Federal Register of Legislation (Úc)";
 const isAuChunk = (chunk) => chunk.sourceType === AU_SOURCE_TYPE;
 
+/*
+ * Nguồn luật Úc chập chờn (timeout, lỗi pool phía họ): nếu mỗi câu hỏi phải chờ nguồn trả lời thì
+ * AI chậm hàng chục giây rồi từ chối dù luật không đổi. Nên nhớ mã bản hiện hành đã tra THÀNH CÔNG
+ * gần nhất, cả trong RAM lẫn DB (giữ qua lần khởi động lại): còn trong AU_REGISTER_MAX_STALE_HOURS
+ * thì dùng ngay và tra lại ở nền (lần tra mới ghi đè kết quả cho câu sau). Chưa từng tra được, hoặc
+ * quá hạn, thì vẫn chờ nguồn và fail-closed như cũ.
+ */
+const MS_PER_HOUR = 3_600_000;
+const lastVerifiedRegister = new Map();
+
+const dbRegisterStore = {
+  load: (titleId) => AuRegisterCheck.findOne({ titleId }).lean(),
+  save: (titleId, registerId, verifiedAt) =>
+    AuRegisterCheck.updateOne({ titleId }, { $set: { registerId, verifiedAt } }, { upsert: true }),
+};
+// Test thay hàm tra nguồn thì mặc định không đọc/ghi DB, để kết quả không lọt sang test khác.
+const noRegisterStore = { load: async () => null, save: async () => {} };
+
 // Tra mã bản biên soạn hiện hành của luật Úc; thay được trong test để không gọi mạng.
 let currentRegisterLookup = getCurrentRegisterId;
-export const __setAuRegisterLookupForTest = (lookup) => {
+let registerStore = dbRegisterStore;
+export const __setAuRegisterLookupForTest = (lookup, { store } = {}) => {
   currentRegisterLookup = lookup ?? getCurrentRegisterId;
+  registerStore = lookup ? (store ?? noRegisterStore) : dbRegisterStore;
   lastVerifiedRegister.clear();
 };
 export const __swapAuRegisterLookupKeepMemoryForTest = (lookup) => {
   currentRegisterLookup = lookup;
 };
-
-/*
- * Nguồn luật Úc chập chờn (timeout, lỗi pool phía họ): nếu mỗi câu hỏi phải chờ nguồn trả lời thì
- * AI chậm hàng chục giây rồi từ chối dù luật không đổi. Nên nhớ mã bản hiện hành đã tra THÀNH CÔNG
- * gần nhất: còn trong AU_REGISTER_MAX_STALE_HOURS thì dùng ngay và tra lại ở nền (lần tra mới ghi đè
- * kết quả cho câu sau). Chưa từng tra được, hoặc quá hạn, thì vẫn chờ nguồn và fail-closed như cũ.
- */
-const MS_PER_HOUR = 3_600_000;
-const lastVerifiedRegister = new Map();
+// Mô phỏng khởi động lại: mất bộ nhớ RAM, còn DB.
+export const __forgetAuRegisterMemoryForTest = () => lastVerifiedRegister.clear();
 
 const lookupLiveRegister = async (titleId) => {
   const registerId = await currentRegisterLookup(titleId);
-  if (registerId) lastVerifiedRegister.set(titleId, { registerId, verifiedAt: Date.now() });
+  if (registerId) {
+    const verifiedAt = new Date();
+    lastVerifiedRegister.set(titleId, { registerId, verifiedAt });
+    await registerStore
+      .save(titleId, registerId, verifiedAt)
+      .catch((error) => console.error("[rag] không lưu được mã bản luật Úc:", error.message));
+  }
   return registerId;
 };
 
+async function knownRegister(titleId) {
+  const inMemory = lastVerifiedRegister.get(titleId);
+  if (inMemory) return inMemory;
+  const stored = await registerStore.load(titleId).catch(() => null);
+  if (stored) lastVerifiedRegister.set(titleId, stored);
+  return stored;
+}
+
+// Chưa có kết quả xác minh còn hạn: chờ nguồn tối đa AU_REGISTER_LOOKUP_BUDGET_MS. Quá hạn thì coi
+// như chưa xác minh được (loại chunk, fail-closed) nhưng vẫn để lần tra chạy tiếp ở nền, lần hỏi
+// sau dùng được kết quả. Không để một nguồn chậm giữ người dùng chờ cả phút.
+const waitForLiveRegister = (titleId) => {
+  const live = lookupLiveRegister(titleId);
+  live.catch(() => {});
+  const budgetExpired = new Promise((resolve) => {
+    setTimeout(() => resolve(null), env.AU_REGISTER_LOOKUP_BUDGET_MS).unref?.();
+  });
+  return Promise.race([live, budgetExpired]);
+};
+
 async function lookupCurrentRegister(titleId) {
-  const known = lastVerifiedRegister.get(titleId);
-  const knownIsFresh =
-    known && Date.now() - known.verifiedAt < env.AU_REGISTER_MAX_STALE_HOURS * MS_PER_HOUR;
-  if (!knownIsFresh) return lookupLiveRegister(titleId);
+  const known = await knownRegister(titleId);
+  const ageMs = known ? Date.now() - new Date(known.verifiedAt).getTime() : Infinity;
+  const knownIsFresh = ageMs < env.AU_REGISTER_MAX_STALE_HOURS * MS_PER_HOUR;
+  if (!knownIsFresh) return waitForLiveRegister(titleId);
   // Tra lại ở nền; lỗi nền không ảnh hưởng câu trả lời hiện tại.
   lookupLiveRegister(titleId).catch(() => {});
   return known.registerId;
+}
+
+/*
+ * Gọi khi server khởi động (không chờ): xác minh trước mọi luật Úc đã index, tuần tự để không dồn
+ * tải lên nguồn. Nhờ vậy câu hỏi đầu tiên sau khi server thức không phải đợi nguồn luật Úc.
+ */
+export async function warmAuRegisterChecks() {
+  const titleIds = (await LegalChunk.distinct("titleId", { sourceType: AU_SOURCE_TYPE })).filter(
+    isCuratedTitle,
+  );
+  let verified = 0;
+  for (const titleId of titleIds) {
+    if (await lookupCurrentRegister(titleId).catch(() => null)) verified += 1;
+  }
+  console.log(`[rag] xác minh trước luật Úc: ${verified}/${titleIds.length}`);
 }
 
 const FOCUS_ARTICLE_WEIGHT = 0.5;
@@ -236,6 +291,11 @@ export async function retrieve(params) {
   return isLexicalMode() ? retrieveLexical(params) : retrieveHybrid(params);
 }
 
+// Ngưỡng bằng chứng (hợp đồng chống ảo giác bước 3); hits xếp điểm giảm dần.
+const meetsThreshold = (hits, { top, soft }) =>
+  (hits[0]?.score ?? 0) >= top &&
+  hits.filter((hit) => hit.score >= soft).length >= env.RAG_MIN_CHUNKS;
+
 const notEnoughEvidence = (topScore) => ({
   passed: false,
   reason: FallbackReason.INSUFFICIENT_EVIDENCE,
@@ -285,14 +345,17 @@ export async function retrieveLexical({
     if (!previous || hit.score > previous.score) bestById.set(hit._id, hit);
   }
   const hits = [...bestById.values()].sort((a, b) => b.score - a.score).slice(0, env.RAG_TOP_K);
+  const keywordThresholds = {
+    top: env.RAG_MIN_KEYWORD_TOP_SCORE,
+    soft: env.RAG_MIN_KEYWORD_SOFT_SCORE,
+  };
+  // Xác minh chỉ loại bớt chunk: điểm thô chưa qua ngưỡng thì chắc chắn không qua, nên từ chối ngay,
+  // không chờ tra nguồn luật Úc (trước đây câu ngoài kho mất 15-80 giây chỉ để bị từ chối).
+  if (!meetsThreshold(hits, keywordThresholds)) return notEnoughEvidence(hits[0]?.score ?? 0);
 
   const { verifiedChunks: verifiedHits } = await verifyChunks(hits, countryCode);
   const topScore = verifiedHits[0]?.score ?? 0;
-  const countAboveSoft = verifiedHits.filter(
-    (hit) => hit.score >= env.RAG_MIN_KEYWORD_SOFT_SCORE,
-  ).length;
-  const passed = topScore >= env.RAG_MIN_KEYWORD_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
-  if (!passed) return notEnoughEvidence(topScore);
+  if (!meetsThreshold(verifiedHits, keywordThresholds)) return notEnoughEvidence(topScore);
 
   const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
   const fused = rrf([
@@ -324,12 +387,15 @@ async function retrieveHybrid({ question, countryCode, topicSlug, focusArticleId
   // [!] Nguong ap len score GOC cua vector search, KHONG ap len fusedScore
   // (fusedScore chi co y nghia tuong doi giua cac chunk, khong tuyet doi).
   // Chunk bị gỡ không được góp điểm giúp tập bằng chứng vượt ngưỡng.
+  const vectorThresholds = { top: env.RAG_MIN_TOP_SCORE, soft: env.RAG_MIN_SOFT_SCORE };
+  // Như nhánh lexical: điểm thô chưa qua ngưỡng thì từ chối ngay, không tra nguồn.
+  const rankedVectorHits = [...vectorHits].sort((a, b) => b.score - a.score);
+  if (!meetsThreshold(rankedVectorHits, vectorThresholds)) {
+    return notEnoughEvidence(rankedVectorHits[0]?.score ?? 0);
+  }
   const { verifiedChunks: verifiedVectorHits } = await verifyChunks(vectorHits, countryCode);
   const topScore = verifiedVectorHits[0]?.score ?? 0;
-  const countAboveSoft = verifiedVectorHits.filter((h) => h.score >= env.RAG_MIN_SOFT_SCORE).length;
-  const passed = topScore >= env.RAG_MIN_TOP_SCORE && countAboveSoft >= env.RAG_MIN_CHUNKS;
-
-  if (!passed) return notEnoughEvidence(topScore);
+  if (!meetsThreshold(verifiedVectorHits, vectorThresholds)) return notEnoughEvidence(topScore);
 
   const focusChunks = await fetchFocusArticleChunks(focusArticleId, countryCode);
   const fusedLists = [
