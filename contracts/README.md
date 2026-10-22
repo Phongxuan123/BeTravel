@@ -495,6 +495,9 @@ POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  2
                   "officialUrl": "" }],      // chi co voi au_legislation; bai noi bo mo trong app theo articleSlug
   "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
   "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR" | "OUT_OF_SCOPE"
+                           // INSUFFICIENT_EVIDENCE: text do CODE soan (rag/noEvidence.js), markdown: neu cau hoi
+                           // thuoc chu de kho chua co (core/aiCoverageGaps.js) thi neu ly do + link trang chinh thuc;
+                           // khong thi loi tu choi chuan + danh sach chu de AI tra loi duoc. Shape khong doi.
   "confidence": "medium",
   "needsOfficialHelp": false,
   "answerSource": "ai",    // hoac "approved_faq": tra tu cau tra loi admin da duyet (muc 10b), khong goi LLM

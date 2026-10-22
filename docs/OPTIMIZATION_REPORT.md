@@ -1,5 +1,13 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Hiệu năng (đo thật): bỏ nạp lại 8.900 chunk đồng bộ mỗi 60 giây; bỏ tra nguồn luật cho câu đã trượt ngưỡng.
+- Rule 2/3: gom điều kiện ngưỡng thành `meetsThreshold` dùng cho cả nhánh lexical và hybrid.
+- Rule 6: 3 biến mới `MEMORY_SEARCH_CACHE_TTL_MS`, `AU_REGISTER_LOOKUP_BUDGET_MS`, `QUERY_REWRITE_TIMEOUT_MS`.
+- Rule 7: lỗi nạp nền/xác minh nền đều ghi log ngắn, không nuốt im lặng; vẫn fail-closed khi chưa xác minh được.
+- Rule 13A: không phát sinh warning mới; thêm test hồi quy cho từ chối nhanh, ngân sách chờ, lưu xác minh, khẩn cấp.
+
 ## Mở lại AI + luật hải quan Úc — 22/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Rule 6: thời hạn dùng mã bản hiện hành đã xác minh là biến `AU_REGISTER_MAX_STALE_HOURS`, không hard-code.
@@ -203,6 +211,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 22/10/2026 (lần 2): AI từ chối nhanh (dưới 1 giây với chủ đề kho chưa có) và có hướng dẫn tra cứu chính thức; 396 test backend.
 
 - 22/10/2026: mở lại chat AI, thêm Customs Regulation 2015, nhớ mã bản luật Úc đã xác minh khi nguồn chập chờn; holdout 26/30.
 

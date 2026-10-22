@@ -12,10 +12,10 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
   return {
     provider: "openai",
     model,
-    async complete({ systemPrompt, userPrompt, maxOutputTokens }) {
+    async complete({ systemPrompt, userPrompt, maxOutputTokens, timeoutMs }) {
       const res = await fetch(chatUrl(), {
         method: "POST",
-        signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs ?? env.AI_PROVIDER_TIMEOUT_MS),
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           model,

@@ -9,10 +9,12 @@ import { colors } from '@/lib/theme';
 import type { ChatAnswer } from '@/lib/data';
 import { ContactCard, type ContactInfo } from './ContactCard';
 
-// Tách một dòng thành: **đậm**, marker nguồn [S1]..[Sn] bấm được (mở đúng bài luật), và chữ thường.
-const INLINE_RE = /(\*\*[^*]+\*\*|\[S\d+\])/g;
+// Tách một dòng thành: **đậm**, marker nguồn [S1]..[Sn] bấm được (mở đúng bài luật), đường dẫn
+// trang chính thức (mở trình duyệt) và chữ thường.
+const INLINE_RE = /(\*\*[^*]+\*\*|\[S\d+\]|https:\/\/[^\s)]+)/g;
 const BOLD_RE = /^\*\*([^*]+)\*\*$/;
 const MARKER_RE = /^\[S(\d+)\]$/;
+const URL_RE = /^https:\/\/[^\s)]+$/;
 const NUMBERED_RE = /^(\d+)[.)]\s+(.*)$/;
 const LINE_BREAK = String.fromCharCode(10);
 // Tiêu đề 3 phần do backend ghép (rag/guard.js#composeAnswerText); "Nguồn" là danh sách bên dưới thẻ.
@@ -29,6 +31,13 @@ function RichLine({ line, sources }: { line: string; sources: SourceRef[] }) {
           return (
             <Text key={i} className="font-body-bold">
               {boldMatch[1]}
+            </Text>
+          );
+        }
+        if (URL_RE.test(part)) {
+          return (
+            <Text key={i} className="text-primary underline" onPress={() => Linking.openURL(part)}>
+              {part}
             </Text>
           );
         }
@@ -142,9 +151,9 @@ export function AnswerCard({
           </Text>
         </View>
         <Text className="mt-3 text-[18px] font-body-bold text-ink">{answer.title ?? 'Chưa tìm thấy nguồn pháp lý phù hợp.'}</Text>
-        <Text className="mt-2 text-base leading-6" style={{ color: '#334E68' }}>
-          {answer.reason}
-        </Text>
+        <View className="mt-2">
+          <AnswerBody content={answer.reason} sources={[]} />
+        </View>
         <View className="mt-3 rounded-lg border border-cream-line bg-surface p-3.5">
           <Text className="text-[15px] font-body-bold" style={{ color: colors.warningStrong }}>
             Bạn nên làm
