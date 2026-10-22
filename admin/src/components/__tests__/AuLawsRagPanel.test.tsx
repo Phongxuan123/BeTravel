@@ -92,7 +92,8 @@ describe('AuLawsRagPanel', () => {
       buttonOf(container, 'Index', 2)?.click();
     });
     expect(ragApi.indexAuLaws).toHaveBeenCalledWith(['C2005A00005']);
-    expect(container.textContent).toContain('Đã xếp 1 luật vào hàng đợi');
+    // Mutation + refetch chạy bất đồng bộ; trên CI chậm 20 ms cố định không đủ nên chờ có hạn.
+    await vi.waitFor(() => expect(container.textContent).toContain('Đã xếp 1 luật vào hàng đợi'), { timeout: 2000 });
   });
 
   it('xoá luật phải xác nhận trước, huỷ xác nhận thì không gọi API', async () => {
