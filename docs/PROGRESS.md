@@ -1,5 +1,11 @@
 # TIEN DO BE.TRAVEL
 
+## Dịch luật bằng Gemini thay vì APIZ — 24/10/2026
+
+- APIZ (api.apiz.vn) không truy cập được từ 24/10 (máy chủ không phản hồi) nên việc dịch hàng loạt dừng ở 17,5%. Thêm
+  `TRANSLATION_PROVIDER` (`default` | `gemini`): `gemini` dịch luật bằng Gemini (`TRANSLATION_MODEL`, cần `GEMINI_API_KEY`) dù chat vẫn dùng APIZ.
+  Đã thử một lần gọi dịch thật qua Gemini: thành công. `backend/test/setup.js` ép `default` để test không phụ thuộc `.env` máy.
+
 ## Luật Úc hiện tiếng Việt ở cả Tóm tắt và Toàn văn — 24/10/2026
 
 - Tab "Nguyên bản" đổi thành "Toàn văn": hiện bản dịch tiếng Việt mặc định (kèm bản gốc nhỏ bên dưới), bỏ nút "Dịch sang tiếng Việt".

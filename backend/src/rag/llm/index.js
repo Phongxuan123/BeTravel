@@ -35,8 +35,10 @@ export function getRewriteProvider() {
 }
 
 // Dịch dùng model riêng, không thay đổi cấu hình AI pháp lý; quota dự án vẫn chung.
+// TRANSLATION_PROVIDER=gemini: dịch luôn chạy bằng Gemini (TRANSLATION_MODEL) dù chat dùng nhà cung cấp khác (APIZ);
+// mặc định dùng chung nhà cung cấp với chat.
 export function getTranslationProvider() {
-  if (env.LLM_PROVIDER === "gemini")
+  if (env.LLM_PROVIDER === "gemini" || env.TRANSLATION_PROVIDER === "gemini")
     return createGeminiLlmProvider({
       apiKey: env.GEMINI_API_KEY,
       model: env.TRANSLATION_MODEL,

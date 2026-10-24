@@ -85,6 +85,8 @@ const envSchema = z.object({
   OPENAI_JSON_MODE: booleanish(true),
   LLM_MODEL: z.string().default("gemini-3.5-flash-lite"),
   TRANSLATION_MODEL: z.string().default("gemini-3.5-flash-lite"),
+  // gemini: dịch luật Úc bằng Gemini (cần GEMINI_API_KEY) dù chat dùng nhà cung cấp khác; default: dùng chung với chat.
+  TRANSLATION_PROVIDER: z.enum(["default", "gemini"]).default("default"),
   // Model riêng cho bước chuyển câu hỏi thành từ khoá (RETRIEVAL_MODE=lexical): việc nhỏ, nên dùng
   // model nhanh/rẻ. Rỗng = dùng LLM_MODEL.
   QUERY_REWRITE_MODEL: z.string().optional().default(""),

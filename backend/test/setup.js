@@ -9,6 +9,7 @@ import mongoose from "mongoose";
 process.env.NODE_ENV = "test";
 // Cô lập test khỏi provider thật và dịch vụ ngoài, kể cả shell có sẵn env.
 process.env.LLM_PROVIDER = "mock";
+process.env.TRANSLATION_PROVIDER = "default";
 process.env.EMBEDDING_PROVIDER = "mock";
 process.env.SEARCH_DRIVER = "memory";
 // Test mac dinh chay che do hybrid (vector + tu khoa); che do lexical co test rieng goi thang ham.
