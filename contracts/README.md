@@ -904,6 +904,9 @@ Hai tang, tach bach nguon va AI:
    khong doc toan van. Hau kiem bang code: moi con so AI viet ra phai co trong dau vao, neu khong bo ca ban AI. Thu toi da 2 lan.
    Chi luat da tuyen chon (auLawTopics.js) moi goi AI; ket qua cache DB 30 ngay theo `registerId` (bat bien theo ban bien soan).
 
+Ban dich tieng Viet cua cac muc nguon: `purpose.textVi`, `outline[].textVi`, `deepSummary.parts[].headingVi` (chuoi hoac `null`).
+Chi doc tu cache ban dich da co (khong goi AI); `null` khi doan chua dich/khong qua hau kiem so lieu, client hien ban goc tieng Anh.
+
 `summaryViStatus`: `ready` | `not_eligible` (luat ngoai danh sach tuyen chon, hoac khong co tieu de/dan y) |
 `unavailable` (AI loi/vi pham hau kiem: van tra tang 1, `summaryVi = null`). `disclaimer` luon co mat va phai duoc hien thi.
 Loi: `NOT_FOUND` neu ma khong ton tai hoac van ban khong co ban doc duoc (kem `details.officialUrl`).

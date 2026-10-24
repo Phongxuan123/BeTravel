@@ -71,10 +71,12 @@ export type AuLawDetail = AuLawSummary & {
   canTranslate: boolean;
 };
 
-export type AuLawOutlineItem = { level: 'chapter' | 'part' | 'division'; text: string; citationId: string };
+// textVi: bản dịch tiếng Việt đã có sẵn trong cache (null nếu chưa dịch), client hiện bản gốc khi null.
+export type AuLawOutlineItem = { level: 'chapter' | 'part' | 'division'; text: string; textVi: string | null; citationId: string };
 
 export type AuLawDeepPart = {
   heading: string;
+  headingVi: string | null;
   citationId: string;
   summary: string;
   // partial: AI chỉ thấy các Điều đầu của phần quá dài
@@ -87,7 +89,7 @@ export type AuLawDeepSummary = { parts: AuLawDeepPart[]; skippedParts: number; t
 export type AuLawOverview = {
   deepStatus: 'ready' | 'generating' | 'not_generated' | 'not_eligible' | 'unavailable';
   deepSummary: AuLawDeepSummary | null;
-  purpose: { text: string; citationId: string } | null;
+  purpose: { text: string; textVi: string | null; citationId: string } | null;
   outline: AuLawOutlineItem[];
   outlineTruncated: boolean;
   // ready: có bản AI tiếng Việt · not_eligible: luật ngoài danh sách tuyển chọn · unavailable: AI lỗi, vẫn có phần nguồn

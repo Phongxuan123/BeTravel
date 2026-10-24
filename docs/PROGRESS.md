@@ -1,10 +1,17 @@
 # TIEN DO BE.TRAVEL
 
+## Luật Úc hiện tiếng Việt ở cả Tóm tắt và Toàn văn — 24/10/2026
+
+- Tab "Nguyên bản" đổi thành "Toàn văn": hiện bản dịch tiếng Việt mặc định (kèm bản gốc nhỏ bên dưới), bỏ nút "Dịch sang tiếng Việt".
+  Luật ngoài danh sách tuyển chọn (không dịch được) vẫn hiện tiếng Anh.
+- `GET /api/laws/australia/:id/summary` thêm `purpose.textVi`, `outline[].textVi`, `deepSummary.parts[].headingVi`, lấy từ cache bản
+  dịch sẵn (`lookupCachedTranslations`, không gọi AI). Chỉ hiện đủ tiếng Việt cho luật đã dịch xong (script đang chạy nền).
+
 ## Dịch sẵn 31 luật Úc sang tiếng Việt — 24/10/2026
 
 - `backend/scripts/translate-au-laws.js` (`npm run translate-au-laws [-- <mã luật>...]`) + `pretranslateTitle` trong
   `australiaLawTranslation.service.js`: dịch trước toàn bộ luật đã tuyển chọn, lưu cache theo cụm 25 đoạn (AiCache), chạy lại
-  chỉ dịch cụm còn thiếu, dừng sớm khi 3 luật liên tiếp lỗi. Biến `TRANSLATE_CONCURRENCY` (mặc định 2).
+  chỉ dịch cụm còn thiếu, dừng sớm khi 3 luật liên tiếp lỗi. Cờ `--concurrency=N` (mặc định 2).
 - Quy mô đo thật: 31 luật = 307.000 đoạn, ~19 triệu ký tự, ~12.300 lần gọi AI. Đo: concurrency 2 khoảng 12s/cụm, concurrency 8
   khoảng 0,2 cụm/giây (~17 giờ cho toàn bộ). "Toàn bộ luật Úc" (hàng nghìn văn bản) không khả thi, chỉ dịch 31 luật tuyển chọn.
 - Bản dịch vẫn qua hậu kiểm số liệu từng đoạn; đoạn không qua kiểm tra hiển thị bản gốc tiếng Anh.

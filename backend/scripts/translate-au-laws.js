@@ -6,15 +6,19 @@ import { pretranslateTitle } from "../src/services/australiaLawTranslation.servi
 
 /*
  * Dịch sẵn sang tiếng Việt các luật Úc đã tuyển chọn và lưu cache DB (AiCache), để người dùng đọc ngay không phải chờ.
- * Dùng: `npm run translate-au-laws` (tất cả) hoặc `npm run translate-au-laws -- C1971A00003 C1946A00045` (chỉ các mã đã nêu).
+ * Dùng: `npm run translate-au-laws` (tất cả) hoặc `npm run translate-au-laws -- C1971A00003 C1946A00045` (chỉ các mã đã nêu);
+ * thêm `--concurrency=8` để dịch song song nhiều cụm (mặc định 2).
  * Chạy lại an toàn và có thể ngắt giữa chừng: chỉ dịch các cụm còn thiếu. TỐN lượt gọi AI (mỗi cụm 25 đoạn một lần);
  * dừng sớm khi liên tiếp nhiều cụm lỗi (thường do hết hạn mức) để không đốt tiền vô ích.
  */
-const CONCURRENCY = Number(process.env.TRANSLATE_CONCURRENCY ?? 2);
+const DEFAULT_CONCURRENCY = 2;
 const MAX_CONSECUTIVE_FAILED_TITLES = 3;
 const PROGRESS_EVERY_CHUNKS = 50;
 
-const requestedIds = process.argv.slice(2);
+const args = process.argv.slice(2);
+const concurrencyArg = args.find((arg) => arg.startsWith("--concurrency="));
+const CONCURRENCY = Number(concurrencyArg?.split("=")[1]) || DEFAULT_CONCURRENCY;
+const requestedIds = args.filter((arg) => !arg.startsWith("--"));
 const curatedIds = [...new Set(AU_LAW_TOPICS.flatMap((topic) => topic.titleIds))];
 const targetIds = requestedIds.length > 0 ? requestedIds : curatedIds;
 

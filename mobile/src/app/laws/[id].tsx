@@ -23,9 +23,8 @@ type LawView = 'summary' | 'original';
 
 export default function AustraliaLawDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  // Mặc định đọc tóm tắt; người dùng bấm "Nguyên bản" khi muốn đọc toàn văn.
+  // Mặc định đọc tóm tắt; người dùng bấm "Toàn văn" khi muốn đọc toàn văn.
   const [view, setView] = useState<LawView>('summary');
-  const [translate, setTranslate] = useState(false);
   const lawQuery = useQuery({ queryKey: ['au-law', id], queryFn: () => fetchAuLaw(id), enabled: !!id, retry: false });
   const law = lawQuery.data;
 
@@ -69,20 +68,13 @@ export default function AustraliaLawDetailScreen() {
                 <SegmentedTabs<LawView>
                   options={[
                     { value: 'summary', label: 'Tóm tắt' },
-                    { value: 'original', label: 'Nguyên bản' },
+                    { value: 'original', label: 'Toàn văn' },
                   ]}
                   value={view}
                   onChange={setView}
                 />
                 {view === 'summary' && <LawSummaryBlock id={law.id} />}
-                {view === 'original' && law.canTranslate && (
-                  <Button
-                    label={translate ? 'Xem bản gốc tiếng Anh' : 'Dịch sang tiếng Việt'}
-                    variant="soft"
-                    onPress={() => setTranslate((value) => !value)}
-                  />
-                )}
-                {view === 'original' && <ContentViewer id={law.id} translate={translate} />}
+                {view === 'original' && <ContentViewer id={law.id} translate={law.canTranslate} />}
               </>
             ) : (
               <Text className="text-sm text-muted">

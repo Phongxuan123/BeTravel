@@ -74,7 +74,7 @@ export function LawSummaryBlock({ id }: { id: string }) {
                   className="flex-row items-center justify-between"
                   style={{ gap: 8 }}
                 >
-                  <Text className="flex-1 text-[16px] font-body-bold leading-6 text-ink">{part.heading}</Text>
+                  <Text className="flex-1 text-[16px] font-body-bold leading-6 text-ink">{part.headingVi ?? part.heading}</Text>
                   {isOpen ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
                 </Pressable>
                 {isOpen && (
@@ -100,13 +100,13 @@ export function LawSummaryBlock({ id }: { id: string }) {
             onPress={() => setShowSource((value) => !value)}
             className="flex-row items-center justify-between"
           >
-            <Text className="text-base font-body-bold text-primary">Mục đích và cấu trúc của luật (nguyên văn tiếng Anh)</Text>
+            <Text className="text-base font-body-bold text-primary">Mục đích và cấu trúc của luật</Text>
             {showSource ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
           </Pressable>
           {showSource && purpose && (
             <View style={{ gap: 4 }}>
               <Text className="text-sm font-body-bold text-ink">Mục đích</Text>
-              <Text className="text-[15px] leading-6 text-ink">{purpose.text}</Text>
+              <Text className="text-[15px] leading-6 text-ink">{purpose.textVi ?? purpose.text}</Text>
             </View>
           )}
           {showSource && outline.length > 0 && (
@@ -114,7 +114,7 @@ export function LawSummaryBlock({ id }: { id: string }) {
               <Text className="text-sm font-body-bold text-ink">Cấu trúc chính</Text>
               {visibleOutline.map((item) => (
                 <View key={item.citationId} className="flex-row items-center justify-between" style={{ gap: 8 }}>
-                  <Text className="flex-1 text-[15px] text-ink">{item.text}</Text>
+                  <Text className="flex-1 text-[15px] text-ink">{item.textVi ?? item.text}</Text>
                   <ChevronRight size={18} color={colors.primary} />
                 </View>
               ))}
@@ -131,13 +131,13 @@ export function LawSummaryBlock({ id }: { id: string }) {
       )}
 
       {!summaryVi && !purpose && outline.length === 0 && (
-        <Text className="text-sm text-muted">Văn bản này chưa có đủ dữ liệu để tóm tắt. Xem Nguyên bản.</Text>
+        <Text className="text-sm text-muted">Văn bản này chưa có đủ dữ liệu để tóm tắt. Xem Toàn văn.</Text>
       )}
 
       <Section title="Ghi chú">
         {(hasPartialPart || hasSkippedParts) && (
           <Text className="text-sm text-ink">
-            Một số phần chưa có tóm tắt (chưa qua kiểm tra nguồn hoặc quá dài). Xem Nguyên bản để biết đầy đủ.
+            Một số phần chưa có tóm tắt (chưa qua kiểm tra nguồn hoặc quá dài). Xem Toàn văn để biết đầy đủ.
           </Text>
         )}
         <Text className="text-sm text-muted">{disclaimer}</Text>

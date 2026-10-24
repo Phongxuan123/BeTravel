@@ -218,3 +218,32 @@ export const pretranslateTitle = async (titleId, { concurrency = 2, onProgress }
   await Promise.all(Array.from({ length: concurrency }, worker));
   return stats;
 };
+
+/*
+ * Tra bản dịch ĐÃ CÓ trong cache cho một số đoạn theo citationId (không gọi AI): dùng để hiện tiêu đề, mục đích và dàn ý
+ * của phần tóm tắt bằng tiếng Việt. Đoạn chưa dịch/không qua kiểm tra không có trong kết quả (client hiện bản gốc).
+ * @returns Map<citationId, textVi>
+ */
+export const lookupCachedTranslations = async (registerId, citationIds) => {
+  const indexOf = (citationId) => Number(String(citationId).split(":").pop());
+  const chunkStarts = new Set(
+    citationIds
+      .map(indexOf)
+      .filter(Number.isInteger)
+      .map((index) => Math.floor(index / TRANSLATION_CHUNK_SIZE) * TRANSLATION_CHUNK_SIZE),
+  );
+  const chunkByStart = new Map();
+  for (const chunkStart of chunkStarts) {
+    chunkByStart.set(chunkStart, await readCachedChunk(cacheKeyFor(registerId, chunkStart)));
+  }
+
+  const found = new Map();
+  for (const citationId of citationIds) {
+    const index = indexOf(citationId);
+    if (!Number.isInteger(index)) continue;
+    const chunkStart = Math.floor(index / TRANSLATION_CHUNK_SIZE) * TRANSLATION_CHUNK_SIZE;
+    const translated = chunkByStart.get(chunkStart)?.[index - chunkStart];
+    if (translated) found.set(citationId, translated);
+  }
+  return found;
+};
