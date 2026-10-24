@@ -6,6 +6,7 @@ import { ExternalLink } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { SegmentedTabs } from '@/components/ui/SegmentedTabs';
 import { colors } from '@/lib/theme';
 import { LawSummaryBlock } from '@/features/laws/LawSummaryBlock';
 import { openUrl } from '@/lib/openExternal';
@@ -18,9 +19,12 @@ import {
   type AuLawBlock,
 } from '@/lib/api/auLaws';
 
+type LawView = 'summary' | 'original';
+
 export default function AustraliaLawDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [showContent, setShowContent] = useState(false);
+  // Mặc định đọc tóm tắt; người dùng bấm "Nguyên bản" khi muốn đọc toàn văn.
+  const [view, setView] = useState<LawView>('summary');
   const [translate, setTranslate] = useState(false);
   const lawQuery = useQuery({ queryKey: ['au-law', id], queryFn: () => fetchAuLaw(id), enabled: !!id, retry: false });
   const law = lawQuery.data;
@@ -60,22 +64,31 @@ export default function AustraliaLawDetailScreen() {
               onPress={() => openUrl(law.officialUrl)}
             />
 
-            {law.hasReadableText && <LawSummaryBlock id={law.id} />}
-
-            {!law.hasReadableText && (
+            {law.hasReadableText ? (
+              <>
+                <SegmentedTabs<LawView>
+                  options={[
+                    { value: 'summary', label: 'Tóm tắt' },
+                    { value: 'original', label: 'Nguyên bản' },
+                  ]}
+                  value={view}
+                  onChange={setView}
+                />
+                {view === 'summary' && <LawSummaryBlock id={law.id} />}
+                {view === 'original' && law.canTranslate && (
+                  <Button
+                    label={translate ? 'Xem bản gốc tiếng Anh' : 'Dịch sang tiếng Việt'}
+                    variant="soft"
+                    onPress={() => setTranslate((value) => !value)}
+                  />
+                )}
+                {view === 'original' && <ContentViewer id={law.id} translate={translate} />}
+              </>
+            ) : (
               <Text className="text-sm text-muted">
                 Văn bản này chưa có bản đọc được qua API (chỉ PDF/Word). Xem bản chính thức theo liên kết ở trên.
               </Text>
             )}
-            {law.hasReadableText && !showContent && <Button label="Xem nội dung" onPress={() => setShowContent(true)} />}
-            {law.hasReadableText && showContent && law.canTranslate && (
-              <Button
-                label={translate ? 'Xem bản gốc tiếng Anh' : 'Dịch sang tiếng Việt'}
-                variant="soft"
-                onPress={() => setTranslate((value) => !value)}
-              />
-            )}
-            {law.hasReadableText && showContent && <ContentViewer id={law.id} translate={translate} />}
           </>
         )}
       </ScrollView>

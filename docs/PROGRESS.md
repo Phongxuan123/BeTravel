@@ -1,5 +1,11 @@
 # TIEN DO BE.TRAVEL
 
+## Màn chi tiết luật Úc: Tóm tắt / Nguyên bản — 24/10/2026
+
+- `mobile/src/app/laws/[id].tsx`: thêm hai tab "Tóm tắt" (mặc định, các ý chính của luật) và "Nguyên bản" (toàn văn, có nút
+  dịch sang tiếng Việt khi luật hỗ trợ). Trước đây tóm tắt luôn hiện và phải bấm "Xem nội dung" mới thấy toàn văn.
+  Thẻ "Tra cứu luật nhanh" ở trang chủ mở Cẩm nang pháp luật (`/explore`). Chưa thử trên thiết bị thật.
+
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng ("AI tạm thời thỏa mãn để kích hoạt lại").
