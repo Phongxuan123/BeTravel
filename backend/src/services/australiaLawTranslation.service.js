@@ -189,6 +189,18 @@ export const getTitleContentVi = async (titleId, { offset, limit }) => {
   };
 };
 
+// Cụm đã lưu nhưng còn đoạn null (AI dịch sai số ở lần đầu): dịch lại RIÊNG các đoạn đó rồi ghi đè cache.
+const repairChunk = async (key, cached, texts) => {
+  const missing = cached.map((item, position) => (item === null ? position : -1)).filter((position) => position >= 0);
+  if (cached.length !== texts.length || missing.length === 0) return cached;
+  const retried = await translateChunk(missing.map((position) => texts[position]));
+  const merged = cached.map((item, position) => item ?? retried[missing.indexOf(position)] ?? null);
+  if (merged.filter((item) => item !== null).length > cached.filter((item) => item !== null).length) {
+    await writeCachedChunk(key, merged);
+  }
+  return merged;
+};
+
 /*
  * Dịch sẵn TOÀN BỘ một luật (chạy từ script, không phải từ request người dùng) và lưu cache theo cụm, nên chạy lại
  * chỉ dịch các cụm còn thiếu. Một cụm "hỏng" (không đoạn nào qua kiểm tra số) không được lưu, lần chạy sau thử lại.
@@ -207,9 +219,10 @@ export const pretranslateTitle = async (titleId, { concurrency = 2, onProgress }
       const chunkStart = chunkStarts[next];
       next += 1;
       const texts = allBlocks.slice(chunkStart, chunkStart + TRANSLATION_CHUNK_SIZE).map((block) => block.text);
-      const wasCached = Boolean(await readCachedChunk(cacheKeyFor(rawVersion.registerId, chunkStart)));
-      const translations = await resolveChunk(rawVersion.registerId, chunkStart, texts);
-      if (wasCached) stats.cached += 1;
+      const key = cacheKeyFor(rawVersion.registerId, chunkStart);
+      const cached = await readCachedChunk(key);
+      const translations = cached ? await repairChunk(key, cached, texts) : await resolveChunk(rawVersion.registerId, chunkStart, texts);
+      if (cached) stats.cached += 1;
       else if (translations.some((item) => item !== null)) stats.translated += 1;
       else stats.failed += 1;
       onProgress?.(stats);
