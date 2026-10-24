@@ -4,6 +4,8 @@
 
 - APIZ (api.apiz.vn) không truy cập được từ 24/10 (máy chủ không phản hồi) nên việc dịch hàng loạt dừng ở 17,5%. Thêm
   `TRANSLATION_PROVIDER` (`default` | `gemini`): `gemini` dịch luật bằng Gemini (`TRANSLATION_MODEL`, cần `GEMINI_API_KEY`) dù chat vẫn dùng APIZ.
+  Gemini gói miễn phí hết hạn mức giữa chừng (các luật sau lỗi hết trong vài giây) nên thêm `TRANSLATION_PROVIDER=claude`
+  (`rag/llm/claude.llm.js`, Anthropic Messages API, cần `ANTHROPIC_API_KEY`, đặt `TRANSLATION_MODEL=claude-haiku-5-5`).
   Đã thử một lần gọi dịch thật qua Gemini: thành công. `backend/test/setup.js` ép `default` để test không phụ thuộc `.env` máy.
 
 ## Luật Úc hiện tiếng Việt ở cả Tóm tắt và Toàn văn — 24/10/2026
