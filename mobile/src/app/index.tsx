@@ -220,7 +220,7 @@ export default function HomeScreen() {
             title="Tra cứu luật nhanh"
             subtitle="Hộ chiếu, hải quan..."
             icon={<BookOpen size={18} color={colors.primary} />}
-            onPress={() => router.push('/search')}
+            onPress={() => router.push('/explore')}
           />
         </View>
 
