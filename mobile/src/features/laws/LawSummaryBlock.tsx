@@ -1,12 +1,14 @@
 import { useState, type ReactNode } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react-native';
 import { Badge } from '@/components/ui/Badge';
 import { colors } from '@/lib/theme';
 import { fetchAuLawSummary } from '@/lib/api/auLaws';
 
 const OUTLINE_PREVIEW_COUNT = 8;
+// Tóm tắt mở đầu chỉ giữ vài ý chính để đọc nhanh; chi tiết nằm ở các phần bấm để mở.
+const KEY_POINTS_PREVIEW = 4;
 const SUMMARY_STALE_TIME_MS = 24 * 60 * 60 * 1000;
 // Tóm tắt từng phần được sinh nền: hỏi lại định kỳ cho tới khi xong.
 const GENERATING_POLL_MS = 15_000;
@@ -21,6 +23,8 @@ const PENALTY_PATTERN = /phạt|(^|[\s,.;(])tù([\s,.;)]|$)|\bpenalt|imprison|\b
  */
 export function LawSummaryBlock({ id }: { id: string }) {
   const [showAllOutline, setShowAllOutline] = useState(false);
+  const [showSource, setShowSource] = useState(false);
+  const [openParts, setOpenParts] = useState<Record<string, boolean>>({});
   const summaryQuery = useQuery({
     queryKey: ['au-law-summary', id],
     queryFn: () => fetchAuLawSummary(id),
@@ -48,16 +52,9 @@ export function LawSummaryBlock({ id }: { id: string }) {
         <Section title="Tóm tắt">
           <Badge label="AI diễn giải bằng tiếng Việt" tone="info" />
           <Text className="text-[17px] leading-6 text-ink">{summaryVi.summary}</Text>
-          {summaryVi.keyPoints.map((point) => (
+          {summaryVi.keyPoints.slice(0, KEY_POINTS_PREVIEW).map((point) => (
             <Point key={point} text={point} />
           ))}
-        </Section>
-      )}
-
-      {purpose && (
-        <Section title="Mục đích của luật">
-          <Text className="text-[17px] leading-6 text-ink">{purpose.text}</Text>
-          <Text className="text-[11px] text-muted">Nguyên văn tiếng Anh từ văn bản chính thức</Text>
         </Section>
       )}
 
@@ -65,40 +62,72 @@ export function LawSummaryBlock({ id }: { id: string }) {
         <Text className="text-sm text-muted">Đang chuẩn bị tóm tắt chi tiết từng phần, vài phút nữa sẽ hiện tại đây…</Text>
       )}
       {parts.length > 0 && (
-        <Section title="Nội dung từng phần">
-          {parts.map((part, index) => (
-            <View key={part.citationId} style={{ gap: 6 }}>
-              {index > 0 && <View className="mb-2 h-px bg-line" />}
-              <Text className="text-[17px] font-body-bold leading-6 text-ink">{part.heading}</Text>
-              <Text className="text-[17px] leading-6 text-ink">{part.summary}</Text>
-              {part.keyPoints.map((point) => (
-                <Point key={point.text} text={point.text} />
-              ))}
-              <Text className="text-sm text-ink">Căn cứ trong luật:</Text>
-              <Text className="text-sm text-primary">{part.heading}</Text>
-              {part.partial && <Text className="text-[11px] text-muted">Phần này dài: tóm tắt dựa trên các điều đầu tiên.</Text>}
-            </View>
-          ))}
+        <Section title="Nội dung từng phần (chạm để mở)">
+          {parts.map((part) => {
+            const isOpen = Boolean(openParts[part.citationId]);
+            return (
+              <View key={part.citationId} className="rounded-xl bg-bg px-3 py-2" style={{ gap: 6 }}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ expanded: isOpen }}
+                  onPress={() => setOpenParts((prev) => ({ ...prev, [part.citationId]: !isOpen }))}
+                  className="flex-row items-center justify-between"
+                  style={{ gap: 8 }}
+                >
+                  <Text className="flex-1 text-[16px] font-body-bold leading-6 text-ink">{part.heading}</Text>
+                  {isOpen ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
+                </Pressable>
+                {isOpen && (
+                  <View style={{ gap: 6 }}>
+                    <Text className="text-[16px] leading-6 text-ink">{part.summary}</Text>
+                    {part.keyPoints.map((point) => (
+                      <Point key={point.text} text={point.text} />
+                    ))}
+                    {part.partial && <Text className="text-[11px] text-muted">Phần này dài: tóm tắt dựa trên các điều đầu tiên.</Text>}
+                  </View>
+                )}
+              </View>
+            );
+          })}
         </Section>
       )}
 
-      {outline.length > 0 && (
-        <Section title="Cấu trúc chính">
-          {visibleOutline.map((item) => (
-            <View key={item.citationId} className="flex-row items-center justify-between" style={{ gap: 8 }}>
-              <Text className="flex-1 text-[15px] text-ink">{item.text}</Text>
-              <ChevronRight size={18} color={colors.primary} />
+      {(purpose || outline.length > 0) && (
+        <View className="border-b border-line pb-4" style={{ gap: 8 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: showSource }}
+            onPress={() => setShowSource((value) => !value)}
+            className="flex-row items-center justify-between"
+          >
+            <Text className="text-base font-body-bold text-primary">Mục đích và cấu trúc của luật (nguyên văn tiếng Anh)</Text>
+            {showSource ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
+          </Pressable>
+          {showSource && purpose && (
+            <View style={{ gap: 4 }}>
+              <Text className="text-sm font-body-bold text-ink">Mục đích</Text>
+              <Text className="text-[15px] leading-6 text-ink">{purpose.text}</Text>
             </View>
-          ))}
-          {outline.length > OUTLINE_PREVIEW_COUNT && (
-            <Pressable accessibilityRole="button" onPress={() => setShowAllOutline((value) => !value)}>
-              <Text className="py-1 text-sm font-body-bold text-primary">
-                {showAllOutline ? 'Thu gọn' : `Xem tất cả ${outline.length}${outlineTruncated ? '+' : ''} mục`}
-              </Text>
-            </Pressable>
           )}
-          <Text className="text-[11px] text-muted">Nguyên văn tiếng Anh từ văn bản chính thức</Text>
-        </Section>
+          {showSource && outline.length > 0 && (
+            <View style={{ gap: 6 }}>
+              <Text className="text-sm font-body-bold text-ink">Cấu trúc chính</Text>
+              {visibleOutline.map((item) => (
+                <View key={item.citationId} className="flex-row items-center justify-between" style={{ gap: 8 }}>
+                  <Text className="flex-1 text-[15px] text-ink">{item.text}</Text>
+                  <ChevronRight size={18} color={colors.primary} />
+                </View>
+              ))}
+              {outline.length > OUTLINE_PREVIEW_COUNT && (
+                <Pressable accessibilityRole="button" onPress={() => setShowAllOutline((value) => !value)}>
+                  <Text className="py-1 text-sm font-body-bold text-primary">
+                    {showAllOutline ? 'Thu gọn' : `Xem tất cả ${outline.length}${outlineTruncated ? '+' : ''} mục`}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+        </View>
       )}
 
       {!summaryVi && !purpose && outline.length === 0 && (

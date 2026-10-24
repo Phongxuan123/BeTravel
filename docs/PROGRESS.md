@@ -7,6 +7,8 @@
   Thẻ "Tra cứu luật nhanh" ở trang chủ mở Cẩm nang pháp luật (`/explore`). Chưa thử trên thiết bị thật.
 - Tab Tóm tắt trình bày theo mục có tiêu đề (Tóm tắt, Mục đích, Nội dung từng phần kèm căn cứ trong luật, Cấu trúc chính, Ghi chú),
   chữ lớn; ý chính nói về mức phạt/án tù được in đậm đỏ (chỉ đổi kiểu hiển thị). Mẫu tham khảo: màn tra cứu mức phạt giao thông.
+- Rút gọn tab Tóm tắt theo tầng: luôn hiện đoạn tóm tắt + tối đa 4 ý chính; "Nội dung từng phần" chỉ hiện tiêu đề, chạm để mở từng phần;
+  mục đích và cấu trúc (nguyên văn tiếng Anh) thu gọn sau một nút. Không đổi nội dung, chỉ đổi cách hiển thị.
 
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 
