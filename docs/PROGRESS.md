@@ -5,6 +5,8 @@
 - `mobile/src/app/laws/[id].tsx`: thêm hai tab "Tóm tắt" (mặc định, các ý chính của luật) và "Nguyên bản" (toàn văn, có nút
   dịch sang tiếng Việt khi luật hỗ trợ). Trước đây tóm tắt luôn hiện và phải bấm "Xem nội dung" mới thấy toàn văn.
   Thẻ "Tra cứu luật nhanh" ở trang chủ mở Cẩm nang pháp luật (`/explore`). Chưa thử trên thiết bị thật.
+- Tab Tóm tắt trình bày theo mục có tiêu đề (Tóm tắt, Mục đích, Nội dung từng phần kèm căn cứ trong luật, Cấu trúc chính, Ghi chú),
+  chữ lớn; ý chính nói về mức phạt/án tù được in đậm đỏ (chỉ đổi kiểu hiển thị). Mẫu tham khảo: màn tra cứu mức phạt giao thông.
 
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 
