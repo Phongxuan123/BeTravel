@@ -1,5 +1,11 @@
 # TIEN DO BE.TRAVEL
 
+## Khoá lại chat AI trên app — 24/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng: màn Trợ lý AI trở lại mặc định khoá (màn chờ "Trợ lý AI sắp ra mắt"), đảo lại thay đổi mở
+mặc định ngày 22/10. Chỉ đổi phía mobile: cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` mặc định `false`, bật bằng `true`.
+Backend (lexical, APIZ, từ chối nhanh, luật hải quan) giữ nguyên và API chat vẫn hoạt động; chỉ app không gọi tới.
+
 ## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng (thử trên máy: câu luật giao thông chờ rất lâu rồi chỉ nhận "Chưa đủ dữ liệu").
