@@ -1,5 +1,24 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Hợp nhất main ngày 25/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 396/396, mobile 262/262 (57 suites): tổng 658 tests chạy lần này đạt.
+Backend lint/format và mobile typecheck/lint đạt. Backend dùng DB tạm, provider
+mock; kết quả này không phải nghiệm thu UI hay dịch vụ bên ngoài trên máy thật.
+
+- Nhận main `0a94efc` (PR #54, #55) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261025-42d4cc6`.
+- Nhận phản hồi AI khi thiếu nguồn, cache xác minh luật và khóa chat AI mặc định
+  theo main. Giữ nguyên dịch offline, logo, auth và các bản vá dependency cục bộ.
+- Chỉ xung đột PROGRESS/OPTIMIZATION_REPORT; giữ cả hai phía tài liệu. Không
+  phát sinh xung đột mã nguồn. Thay đổi chưa commit trong backend/.env.example
+  được stash, khôi phục và giữ ngoài commit; mọi dòng cũ còn nguyên theo thứ tự,
+  cộng thêm biến mới của main. Giữ stash dự phòng, không sửa .env thật.
+- Admin không đổi so với lần đạt 22 tests/build ngày 22/10, không chạy lại.
+  Chưa kiểm thiết bị/dịch vụ thật, không build native lại; không seed dữ liệu,
+  không push và không merge ngược vào main. Nợ audit trước đó vẫn còn hiệu lực.
+
 ## Hợp nhất main ngày 22/10/2026
 
 Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.

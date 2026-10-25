@@ -1,5 +1,24 @@
 # TIEN DO BE.TRAVEL
 
+## Hợp nhất main ngày 25/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 396/396, mobile 262/262 (57 suites): tổng 658 tests chạy lần này đạt.
+Backend lint/format và mobile typecheck/lint đạt. Backend dùng DB tạm, provider
+mock; kết quả này không phải nghiệm thu UI hay dịch vụ bên ngoài trên máy thật.
+
+- Nhận main `0a94efc` (PR #54, #55) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261025-42d4cc6`.
+- Nhận phản hồi AI khi thiếu nguồn, cache xác minh luật và khóa chat AI mặc định
+  theo main. Giữ nguyên dịch offline, logo, auth và các bản vá dependency cục bộ.
+- Chỉ xung đột PROGRESS/OPTIMIZATION_REPORT; giữ cả hai phía tài liệu. Không
+  phát sinh xung đột mã nguồn. Thay đổi chưa commit trong backend/.env.example
+  được stash, khôi phục và giữ ngoài commit; mọi dòng cũ còn nguyên theo thứ tự,
+  cộng thêm biến mới của main. Giữ stash dự phòng, không sửa .env thật.
+- Admin không đổi so với lần đạt 22 tests/build ngày 22/10, không chạy lại.
+  Chưa kiểm thiết bị/dịch vụ thật, không build native lại; không seed dữ liệu,
+  không push và không merge ngược vào main. Nợ audit trước đó vẫn còn hiệu lực.
+
 ## Hợp nhất main ngày 22/10/2026
 
 Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
@@ -68,6 +87,33 @@ Tiến độ `[###-] 3/4`: triển khai, kiểm tự động/export và tài li�
 - Chi tiết phương pháp, nguồn, giấy phép, script tái lập và kịch bản máy thật:
   [TRANSLATION.md](TRANSLATION.md), [ACCEPTANCE.md](ACCEPTANCE.md).
 - Không push Git, không gửi OTP thật/đổi mật khẩu thật, không sửa dữ liệu DB.
+
+## Khoá lại chat AI trên app — 24/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng: màn Trợ lý AI trở lại mặc định khoá (màn chờ "Trợ lý AI sắp ra mắt"), đảo lại thay đổi mở
+mặc định ngày 22/10. Chỉ đổi phía mobile: cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` mặc định `false`, bật bằng `true`.
+Backend (lexical, APIZ, từ chối nhanh, luật hải quan) giữ nguyên và API chat vẫn hoạt động; chỉ app không gọi tới.
+
+## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng (thử trên máy: câu luật giao thông chờ rất lâu rồi chỉ nhận "Chưa đủ dữ liệu").
+Đo bằng chạy thật: các lần chờ 40-80 giây đến từ (1) nạp lại toàn bộ ~8.900 chunk vào RAM mỗi 60 giây
+(15-25 giây/lần), (2) chờ nguồn luật Úc xác minh dù câu hỏi đã chắc chắn trượt ngưỡng, (3) bước tạo từ khoá
+chờ tới 60 giây.
+
+- **Nhanh:** kiểm ngưỡng điểm trước khi xác minh (trượt thì từ chối ngay); cache chunk 10 phút, hết hạn thì
+  nạp lại ở nền và vẫn dùng bản cũ (`MEMORY_SEARCH_CACHE_TTL_MS`); nạp chunk và xác minh trước 10 luật Úc khi
+  server khởi động; kết quả xác minh lưu DB (`au_register_checks`) giữ qua lần khởi động lại; chờ nguồn luật
+  tối đa `AU_REGISTER_LOOKUP_BUDGET_MS` (5 giây, quá thì fail-closed và tra tiếp ở nền); bước tạo từ khoá tối
+  đa `QUERY_REWRITE_TIMEOUT_MS` (15 giây).
+- **Có ích:** `core/aiCoverageGaps.js` liệt kê chủ đề kho chưa có. Giao thông đường bộ và thuê nhà (luật bang)
+  trả lời NGAY (dưới 1 giây, không tốn lượt AI): lý do + thông tin chung đã đối chiếu + link trang chính thức.
+  Thú cưng/thực phẩm vẫn để AI tìm trước; thiếu bằng chứng mới chỉ trang "Can you bring it in?" của ABF. Các
+  câu khác: lời từ chối chuẩn + danh sách chủ đề AI trả lời được. Ca khẩn cấp (tai nạn giao thông) không bị
+  rẽ nhánh này. Mobile hiển thị in đậm, gạch đầu dòng, link bấm được.
+- **Đo lại:** câu giao thông 0,6-0,9 giây (trước 8-78 giây); câu trượt ngưỡng khoảng 7 giây (chủ yếu là tạo từ
+  khoá); câu đi qua AI 8-27 giây (thời gian trả lời của model glm-5.3-flash qua APIZ).
+- Emulator: câu giao thông hiện đủ lý do, link Tourism Australia mở được Chrome; câu chó cưng hiện link ABF.
 
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 

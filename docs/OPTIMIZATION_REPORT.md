@@ -1,5 +1,24 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Hợp nhất main ngày 25/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 396/396, mobile 262/262 (57 suites): tổng 658 tests chạy lần này đạt.
+Backend lint/format và mobile typecheck/lint đạt. Backend dùng DB tạm, provider
+mock; kết quả này không phải nghiệm thu UI hay dịch vụ bên ngoài trên máy thật.
+
+- Nhận main `0a94efc` (PR #54, #55) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261025-42d4cc6`.
+- Nhận phản hồi AI khi thiếu nguồn, cache xác minh luật và khóa chat AI mặc định
+  theo main. Giữ nguyên dịch offline, logo, auth và các bản vá dependency cục bộ.
+- Chỉ xung đột PROGRESS/OPTIMIZATION_REPORT; giữ cả hai phía tài liệu. Không
+  phát sinh xung đột mã nguồn. Thay đổi chưa commit trong backend/.env.example
+  được stash, khôi phục và giữ ngoài commit; mọi dòng cũ còn nguyên theo thứ tự,
+  cộng thêm biến mới của main. Giữ stash dự phòng, không sửa .env thật.
+- Admin không đổi so với lần đạt 22 tests/build ngày 22/10, không chạy lại.
+  Chưa kiểm thiết bị/dịch vụ thật, không build native lại; không seed dữ liệu,
+  không push và không merge ngược vào main. Nợ audit trước đó vẫn còn hiệu lực.
+
 ## Hợp nhất main ngày 22/10/2026
 
 Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
@@ -49,6 +68,14 @@ Không export/build native lại ở đợt này; không đổi native dependenc
   https://github.com/advisories/GHSA-hp3w-g68c-fv3c
 - Áp dụng DRY, xử lý lỗi rõ, phân biệt nguồn dữ liệu, không thay contract/migration.
   Chi tiết kết quả và giới hạn thực tế tại ACCEPTANCE/TRANSLATION.
+
+## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Hiệu năng (đo thật): bỏ nạp lại 8.900 chunk đồng bộ mỗi 60 giây; bỏ tra nguồn luật cho câu đã trượt ngưỡng.
+- Rule 2/3: gom điều kiện ngưỡng thành `meetsThreshold` dùng cho cả nhánh lexical và hybrid.
+- Rule 6: 3 biến mới `MEMORY_SEARCH_CACHE_TTL_MS`, `AU_REGISTER_LOOKUP_BUDGET_MS`, `QUERY_REWRITE_TIMEOUT_MS`.
+- Rule 7: lỗi nạp nền/xác minh nền đều ghi log ngắn, không nuốt im lặng; vẫn fail-closed khi chưa xác minh được.
+- Rule 13A: không phát sinh warning mới; thêm test hồi quy cho từ chối nhanh, ngân sách chờ, lưu xác minh, khẩn cấp.
 
 ## Mở lại AI + luật hải quan Úc — 22/10/2026 (Chế độ B, chỉ file đã động tới)
 
@@ -253,6 +280,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 22/10/2026 (lần 2): AI từ chối nhanh (dưới 1 giây với chủ đề kho chưa có) và có hướng dẫn tra cứu chính thức; 396 test backend.
 
 - 22/10/2026: mở lại chat AI, thêm Customs Regulation 2015, nhớ mã bản luật Úc đã xác minh khi nguồn chập chờn; holdout 26/30.
 

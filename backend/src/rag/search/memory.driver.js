@@ -7,30 +7,55 @@ import { tokenize, inverseDocumentFrequency } from "../lexical.js";
 /*
  * MemorySearchDriver -- phuong an du phong khi Atlas Search truc trac hoac
  * chua tao index (docs/00_..., B.5). Nap TOAN BO chunk vao RAM, cosine
- * similarity cho vector + so khop tu (textNorm) cho tu khoa. Cache TTL 60s,
- * invalidate ngay sau khi re-index de khong doc du lieu cu.
+ * similarity cho vector + so khop tu (textNorm) cho tu khoa. Cache TTL
+ * MEMORY_SEARCH_CACHE_TTL_MS, invalidate ngay sau khi re-index trong cung tien trinh.
+ *
+ * Nap lai ~10 nghin chunk luat Uc mat 15-25 giay, nen het han thi van tra ban cu va nap lai O NEN
+ * (chi mot lan nap cung luc); chi lan nap dau hoac sau invalidate moi phai cho. Ban cu van an toan:
+ * retrieval.js xac minh lai tung chunk voi DB/nguon luat truoc khi dung.
  *
  * Loc status:'published' o day la LOP 1 (giong filter cua $vectorSearch tren
  * Atlas that) -- van la ban sao co the cu. retrieval.js lam LOP 2 ($lookup
  * that ve legal_articles) doc lap voi driver nao dang chay.
  */
-const TTL_MS = 60_000;
 let cache = null;
+let reloading = null;
+
+function reloadPublishedChunks() {
+  if (!reloading) {
+    // Chế độ lexical không dùng vector nên khỏi nạp 768 số mỗi chunk vào RAM.
+    const query = LegalChunk.find({ status: ContentStatus.PUBLISHED });
+    const startedFor = cache;
+    reloading = (env.RETRIEVAL_MODE === "lexical" ? query : query.select("+embedding"))
+      .lean()
+      .then((chunks) => {
+        // Bị invalidate giữa chừng thì bản vừa nạp có thể đã cũ: không ghi đè.
+        if (cache === startedFor) cache = { loadedAt: Date.now(), chunks };
+        return chunks;
+      })
+      .finally(() => {
+        reloading = null;
+      });
+  }
+  return reloading;
+}
 
 async function loadPublishedChunks() {
-  if (cache && Date.now() - cache.loadedAt < TTL_MS) return cache.chunks;
-
-  // Chế độ lexical không dùng vector nên khỏi nạp 768 số mỗi chunk vào RAM.
-  const query = LegalChunk.find({ status: ContentStatus.PUBLISHED });
-  const chunks = await (
-    env.RETRIEVAL_MODE === "lexical" ? query : query.select("+embedding")
-  ).lean();
-  cache = { loadedAt: Date.now(), chunks };
-  return chunks;
+  if (!cache) return reloadPublishedChunks();
+  if (Date.now() - cache.loadedAt >= env.MEMORY_SEARCH_CACHE_TTL_MS) {
+    reloadPublishedChunks().catch((error) =>
+      console.error("[search] nạp lại chunk thất bại, dùng bản cũ:", error.message),
+    );
+  }
+  return cache.chunks;
 }
+
+// Gọi khi server khởi động để câu hỏi đầu tiên không phải chờ nạp chunk.
+export const warmMemorySearchCache = () => loadPublishedChunks().then((chunks) => chunks.length);
 
 export function invalidateMemorySearchCache() {
   cache = null;
+  reloading = null;
 }
 
 function cosineSimilarity(a, b) {

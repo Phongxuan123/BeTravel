@@ -10,6 +10,8 @@ import app from "./app.js";
 import connectDB from "./config/db.js";
 import { startJobWorker } from "./services/job.service.js";
 import { registerRagJobHandlers } from "./rag/jobs/index.js";
+import { warmAuRegisterChecks } from "./rag/retrieval.js";
+import { warmMemorySearchCache } from "./rag/search/memory.driver.js";
 
 const startServer = async () => {
   try {
@@ -20,6 +22,15 @@ const startServer = async () => {
     // poll, tranh mot job den truoc khi handler kip dang ky.
     registerRagJobHandlers();
     startJobWorker();
+    // Không chờ: nạp chunk và nguồn luật Úc chậm không được làm server khởi động chậm.
+    if (env.SEARCH_DRIVER === "memory") {
+      warmMemorySearchCache()
+        .then((count) => console.log(`[search] đã nạp ${count} chunk vào RAM`))
+        .catch((error) => console.error("[search] nạp chunk thất bại:", error.message));
+    }
+    warmAuRegisterChecks().catch((error) =>
+      console.error("[rag] xác minh trước luật Úc thất bại:", error.message),
+    );
 
     app.listen(env.PORT, () => {
       console.log(`BeTravel server running at http://localhost:${env.PORT}`);

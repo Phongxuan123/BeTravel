@@ -41,6 +41,7 @@ const BLOCKS = [
 
 let LegalChunk;
 let Country;
+let AiEvent;
 let User;
 let chat;
 let indexService;
@@ -55,6 +56,7 @@ before(async () => {
   await startTestDb();
   LegalChunk = (await import("../src/models/LegalChunk.js")).default;
   Country = (await import("../src/models/Country.js")).default;
+  AiEvent = (await import("../src/models/AiEvent.js")).default;
   User = (await import("../src/models/User.js")).default;
   chat = await import("../src/services/chat.service.js");
   indexService = await import("../src/services/auLawIndex.service.js");
@@ -254,6 +256,66 @@ test("retrieval Úc: nguồn chập chờn sau một lần tra thành công vẫ
   const whileDown = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
   assert.equal(whileDown.passed, true);
   assert.ok(liveCalls >= 1, "vẫn phải thử tra lại ở nền");
+});
+
+test("retrieval Úc: mã đã xác minh lưu DB, khởi động lại khi nguồn sập vẫn dùng được", async () => {
+  await seedAustralia();
+  const saved = new Map();
+  const store = {
+    load: async (titleId) => saved.get(titleId) ?? null,
+    save: async (titleId, registerId, verifiedAt) => saved.set(titleId, { registerId, verifiedAt }),
+  };
+  retrieval.__setAuRegisterLookupForTest(async () => "REGISTER-1", { store });
+  assert.equal((await retrieval.retrieve({ question: QUESTION, countryCode: "AU" })).passed, true);
+
+  retrieval.__forgetAuRegisterMemoryForTest();
+  retrieval.__swapAuRegisterLookupKeepMemoryForTest(async () => {
+    throw new Error("UPSTREAM_DOWN");
+  });
+  assert.equal((await retrieval.retrieve({ question: QUESTION, countryCode: "AU" })).passed, true);
+});
+
+test("retrieval Úc: nguồn chậm quá ngân sách thì không giữ người dùng chờ (fail-closed)", async () => {
+  await seedAustralia();
+  retrieval.__setAuRegisterLookupForTest(
+    () => new Promise((resolve) => setTimeout(() => resolve("REGISTER-1"), 1500)),
+  );
+  const startedAt = Date.now();
+  const result = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
+  assert.equal(result.passed, false);
+  assert.ok(Date.now() - startedAt < 1000, "phải trả về sau khoảng AU_REGISTER_LOOKUP_BUDGET_MS");
+});
+
+test("retrieval Úc: câu không đủ điểm bị từ chối ngay, không chờ tra nguồn luật", async () => {
+  await seedAustralia();
+  let lookups = 0;
+  retrieval.__setAuRegisterLookupForTest(async () => {
+    lookups += 1;
+    return "REGISTER-1";
+  });
+  const result = await retrieval.retrieve({
+    question: "Quán phở nào ngon nhất ở Melbourne?",
+    countryCode: "AU",
+  });
+  assert.equal(result.passed, false);
+  assert.equal(lookups, 0);
+});
+
+test("chat Úc: câu luật giao thông bang trả lời ngay lời từ chối có hướng dẫn, không gọi AI", async () => {
+  const user = await seedAustralia();
+  const message = await askAu(user, "Lái xe ở Sydney đi sai làn thì bị phạt thế nào?");
+  assert.equal(message.fallbackReason, "INSUFFICIENT_EVIDENCE");
+  assert.match(message.text, /từng bang/);
+  assert.match(message.text, /https:\/\/www\.nsw\.gov\.au\//);
+  const event = await AiEvent.findOne({ messageId: message._id }).lean();
+  assert.equal(event.model, "none");
+});
+
+test("chat Úc: tai nạn khi lái xe là ca khẩn cấp, vẫn nhận số khẩn cấp", async () => {
+  const user = await seedAustralia();
+  const message = await askAu(user, "Tôi bị tai nạn khi lái xe ở Sydney, phải làm gì?");
+  assert.equal(message.route, "emergency");
+  assert.match(message.text, /000/);
 });
 
 test("chat Úc: chunk của luật ngoài danh sách tuyển chọn bị loại dù nằm trong DB", async () => {

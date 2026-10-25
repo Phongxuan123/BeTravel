@@ -10,6 +10,8 @@ export const AU_LAW_TOPICS = Object.freeze([
   {
     slug: "giao-thong",
     label: "Giao thông",
+    // Gợi ý ngắn trong lời từ chối của AI (rag/noEvidence.js), tránh hiểu nhầm là có luật đường bộ.
+    aiScopeHint: "tiêu chuẩn phương tiện, hàng không, hàng hải; không gồm luật đường bộ của bang",
     note:
       "Quy tắc giao thông đường bộ (tốc độ, bằng lái, mức phạt) do từng bang và vùng lãnh thổ " +
       "ban hành nên KHÔNG có trong nguồn liên bang. Mục này gồm luật liên bang về phương tiện, " +
@@ -25,6 +27,7 @@ export const AU_LAW_TOPICS = Object.freeze([
   {
     slug: "cu-tru",
     label: "Cư trú",
+    aiScopeHint: "visa, quốc tịch, du học; không gồm luật thuê nhà của bang",
     note:
       "Visa, thường trú, quốc tịch và du học. Luật thuê nhà ở do từng bang quy định, " +
       "không có trong nguồn liên bang.",

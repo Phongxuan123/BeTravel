@@ -15,15 +15,15 @@ afterEach(() => {
   process.env.EXPO_PUBLIC_AI_CHAT_ENABLED = originalFlag;
 });
 
-test('dat co EXPO_PUBLIC_AI_CHAT_ENABLED=false thi khoa AI: hien man cho', async () => {
-  process.env.EXPO_PUBLIC_AI_CHAT_ENABLED = 'false';
+test('mac dinh khoa AI: hien man cho, khong render ChatScreen', async () => {
+  delete process.env.EXPO_PUBLIC_AI_CHAT_ENABLED;
   const screen = await render(<ChatRoute />);
   expect(screen.getByText('Trợ lý AI sắp ra mắt')).toBeTruthy();
   expect(screen.queryByText('CHAT_SCREEN')).toBeNull();
 });
 
-test('mac dinh (khong dat co) mo ChatScreen', async () => {
-  delete process.env.EXPO_PUBLIC_AI_CHAT_ENABLED;
+test('bat co EXPO_PUBLIC_AI_CHAT_ENABLED=true thi mo lai ChatScreen', async () => {
+  process.env.EXPO_PUBLIC_AI_CHAT_ENABLED = 'true';
   const screen = await render(<ChatRoute />);
   expect(screen.getByText('CHAT_SCREEN')).toBeTruthy();
 });
