@@ -119,10 +119,16 @@ export function buildWebSourceMap(declaredSources, { allowedDomains, seenUrls })
     const marker = /^S\d+$/.test(source?.marker ?? "") ? source.marker : null;
     const url = typeof source?.url === "string" ? source.url.trim() : "";
     const wasSeen = seen.size === 0 || seen.has(canonicalUrl(url));
-    if (!marker || sourceMap.has(marker) || !isAllowedOfficialUrl(url, allowedDomains) || !wasSeen) {
+    if (
+      !marker ||
+      sourceMap.has(marker) ||
+      !isAllowedOfficialUrl(url, allowedDomains) ||
+      !wasSeen
+    ) {
       continue;
     }
-    const title = typeof source.title === "string" && source.title.trim() ? source.title.trim() : "";
+    const title =
+      typeof source.title === "string" && source.title.trim() ? source.title.trim() : "";
     sourceMap.set(marker, {
       marker,
       title: (title || new URL(url).hostname).slice(0, MAX_TITLE_LENGTH),

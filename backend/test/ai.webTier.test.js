@@ -48,7 +48,8 @@ after(async () => {
   await stopTestDb();
 });
 
-const NSW_URL = "https://www.nsw.gov.au/driving-boating-and-transport/demerits-penalties-and-offences";
+const NSW_URL =
+  "https://www.nsw.gov.au/driving-boating-and-transport/demerits-penalties-and-offences";
 const TRAFFIC_QUESTION = "Ở Sydney vượt đèn đỏ thì bị xử lý thế nào?";
 
 const webJson = (overrides = {}) =>
@@ -136,7 +137,11 @@ test("nguồn web: chỉ giữ URL https thuộc tên miền chính phủ VÀ đ
   ];
   const map = webAnswer.buildWebSourceMap(sources, {
     allowedDomains: ["gov.au"],
-    seenUrls: new Set([`${NSW_URL}/#bang`, "https://www.example.com/nsw-fines", "https://fakegov.au/x"]),
+    seenUrls: new Set([
+      `${NSW_URL}/#bang`,
+      "https://www.example.com/nsw-fines",
+      "https://fakegov.au/x",
+    ]),
   });
   assert.deepEqual([...map.keys()], ["S1"]);
   assert.equal(map.get("S1").sourceType, "official_web");

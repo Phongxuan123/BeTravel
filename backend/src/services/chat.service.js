@@ -428,7 +428,13 @@ const webTierConfigured = (country) =>
  * câu hỏi thuộc chủ đề (rag/webTopicGate.js). Trả về kết quả chat; tra web không ra câu trả lời
  * dùng được thì vẫn là lời từ chối có hướng dẫn tra cứu chính thức như trước.
  */
-async function noEvidenceOrWebResult({ userId, question, currentCountry, allowedNumbers, baseResult }) {
+async function noEvidenceOrWebResult({
+  userId,
+  question,
+  currentCountry,
+  allowedNumbers,
+  baseResult,
+}) {
   const refusal = {
     ...baseResult,
     answer: buildNoEvidenceAnswer({
@@ -461,7 +467,12 @@ async function noEvidenceOrWebResult({ userId, question, currentCountry, allowed
   if (fallbackReason) {
     const outOfScope = fallbackReason === FallbackReason.OUT_OF_SCOPE;
     const result = outOfScope
-      ? { ...refusal, answer: web.guarded.answer, fallbackReason, route: QuestionRoute.OUT_OF_SCOPE }
+      ? {
+          ...refusal,
+          answer: web.guarded.answer,
+          fallbackReason,
+          route: QuestionRoute.OUT_OF_SCOPE,
+        }
       : refusal;
     return { result: { ...result, ...spent }, model: web.model };
   }
@@ -485,7 +496,14 @@ async function noEvidenceOrWebResult({ userId, question, currentCountry, allowed
 const isRepeatable = ({ route, regenerate, focusArticleId }) =>
   route === QuestionRoute.LEGAL && !regenerate && !focusArticleId;
 
-async function rememberIfReusable({ canRepeat, countryCode, question, keywordTerms, result, model }) {
+async function rememberIfReusable({
+  canRepeat,
+  countryCode,
+  question,
+  keywordTerms,
+  result,
+  model,
+}) {
   const reusable =
     canRepeat && !result.fallbackReason && result.answerSource !== AnswerSource.APPROVED_FAQ;
   if (reusable) await rememberAnswer({ countryCode, question, keywordTerms, result, model });
@@ -656,7 +674,14 @@ export const sendMessage = async ({
     // Token của lượt AI đọc kho (nếu có) cộng với lượt tra web: cả hai đều đã tốn tiền.
     const result = { ...webOrRefusal, usage: addUsage(priorUsage, webOrRefusal.usage) };
     const usedModel = model === "none" ? (fallbackModel ?? "none") : model;
-    await rememberIfReusable({ canRepeat, countryCode, question, keywordTerms, result, model: usedModel });
+    await rememberIfReusable({
+      canRepeat,
+      countryCode,
+      question,
+      keywordTerms,
+      result,
+      model: usedModel,
+    });
     return replyWithoutLlm({
       session,
       userId,
@@ -815,7 +840,14 @@ export const sendMessage = async ({
           usage,
         };
 
-  await rememberIfReusable({ canRepeat, countryCode, question, keywordTerms, result, model: llm.model });
+  await rememberIfReusable({
+    canRepeat,
+    countryCode,
+    question,
+    keywordTerms,
+    result,
+    model: llm.model,
+  });
   const message = await persistAssistantMessage({
     sessionId: session._id,
     result,

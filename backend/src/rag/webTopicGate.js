@@ -12,7 +12,7 @@ const GATE_MAX_OUTPUT_TOKENS = 60;
 
 const gateSystemPrompt = (countryName) =>
   [
-    "Bạn phân loại câu hỏi gửi tới trợ lý pháp lý du lịch. Chỉ trả JSON {\"travelLegal\": true|false}.",
+    'Bạn phân loại câu hỏi gửi tới trợ lý pháp lý du lịch. Chỉ trả JSON {"travelLegal": true|false}.',
     `true: câu hỏi về luật, quy định, thủ tục hành chính, giấy tờ, mức phạt, quyền lợi người tiêu dùng,`,
     `thuê nhà, giao thông, xuất nhập cảnh, hải quan, kiểm dịch hoặc an toàn của người Việt đi du lịch,`,
     `học tập hay lưu trú tại ${countryName}.`,
