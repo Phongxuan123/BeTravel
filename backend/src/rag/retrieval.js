@@ -256,6 +256,27 @@ function toCitation(chunk, article, marker) {
  * lớp phòng thủ thứ hai: bài phải THẬT SỰ published + isCurrent và đúng version; luật Úc phải còn trong
  * danh sách tuyển chọn và registerId vẫn là bản hiện hành. Tra cứu lỗi --> coi như hết hiệu lực.
  */
+/**
+ * Ghi lại phiên bản của từng chunk được trích (bài: articleVersion; luật Úc: registerId) để lần
+ * dùng lại sau kiểm bằng areSourcesCurrent. Chunk đã bị xoá/reindex --> null (không lưu được).
+ */
+export async function snapshotChunkSources(chunkIds) {
+  const uniqueIds = [...new Set(chunkIds.map(String))];
+  if (uniqueIds.length === 0) return null;
+  const chunks = await LegalChunk.find({ _id: { $in: uniqueIds } })
+    .select("sourceType articleId articleVersion titleId registerId")
+    .lean();
+  if (chunks.length !== uniqueIds.length) return null;
+  return chunks.map((chunk) => ({
+    chunkId: chunk._id,
+    sourceType: chunk.sourceType ?? "article",
+    articleId: chunk.articleId ?? null,
+    articleVersion: chunk.articleVersion ?? null,
+    titleId: chunk.titleId ?? null,
+    registerId: chunk.registerId ?? null,
+  }));
+}
+
 export async function areSourcesCurrent(sources) {
   if (sources.length === 0) return false;
   const articleSources = sources.filter((source) => source.sourceType !== AU_SOURCE_TYPE);

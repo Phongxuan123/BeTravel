@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { ChatRole } from "../core/constants.js";
+import { AnswerSource, ChatRole } from "../core/constants.js";
 
 const citationSchema = new mongoose.Schema(
   {
@@ -10,9 +10,14 @@ const citationSchema = new mongoose.Schema(
     articleSlug: { type: String, default: "" },
     title: { type: String, required: true },
     heading: { type: String, default: "" },
-    // 'article' = bài Be.Travel đã duyệt; 'au_legislation' = văn bản luật gốc chưa kiểm chứng.
-    sourceType: { type: String, enum: ["article", "au_legislation"], default: "article" },
-    // URL chính thức của điều luật, chỉ có với luật gốc (bài nội bộ mở trong app).
+    // 'article' = bài Be.Travel đã duyệt; 'au_legislation' = văn bản luật gốc chưa kiểm chứng;
+    // 'official_web' = trang web chính phủ AI đã đọc khi tra web (chưa kiểm chứng).
+    sourceType: {
+      type: String,
+      enum: ["article", "au_legislation", "official_web"],
+      default: "article",
+    },
+    // URL chính thức: điều luật gốc hoặc trang web chính phủ (bài nội bộ mở trong app).
     officialUrl: { type: String, default: "" },
   },
   { _id: false },
@@ -69,7 +74,14 @@ const chatMessageSchema = new mongoose.Schema(
     feedback: { type: String, enum: ["up", "down", null], default: null },
 
     // "approved_faq": câu trả lời lấy nguyên văn từ FAQ admin đã duyệt (G6), không gọi LLM.
-    answerSource: { type: String, enum: ["ai", "approved_faq"], default: "ai" },
+    // "official_web": AI tra trang web chính phủ khi kho không đủ dữ liệu (chưa kiểm chứng).
+    answerSource: {
+      type: String,
+      enum: Object.values(AnswerSource),
+      default: AnswerSource.AI,
+    },
+    // true = câu trả lời dùng lại từ bộ nhớ câu hỏi lặp lại (services/answerMemory.service.js).
+    repeated: { type: Boolean, default: false },
     faqId: { type: mongoose.Schema.Types.ObjectId, ref: "ApprovedFaq", default: null, index: true },
   },
   { timestamps: true },

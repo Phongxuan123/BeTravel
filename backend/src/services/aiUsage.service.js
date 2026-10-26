@@ -26,6 +26,40 @@ async function reserveGlobalQuota(today) {
   if (!reserved) throw new Error("QUOTA_EXCEEDED_GLOBAL");
 }
 
+/*
+ * Tra web có trần riêng (theo người + ngân sách ngày), đếm thẳng từ ai_events của ngày hôm nay.
+ * Không nguyên tử như quota chat: hai câu cùng lúc có thể vượt trần một lượt, chấp nhận được vì
+ * ngân sách chỉ là chốt mềm; trần cứng vẫn là AI_DAILY_QUOTA_* và số dư tài khoản nhà cung cấp.
+ */
+export async function hasWebSearchAllowance(userId) {
+  const webToday = {
+    webSearch: true,
+    createdAt: { $gte: new Date(new Date().toISOString().slice(0, 10)) },
+  };
+  const [userCount, spent] = await Promise.all([
+    AiEvent.countDocuments({ ...webToday, userId }),
+    AiEvent.aggregate([
+      { $match: webToday },
+      { $group: { _id: null, total: { $sum: "$costEstimateVnd" } } },
+    ]),
+  ]);
+  const withinUserLimit = userCount < env.WEB_SEARCH_DAILY_LIMIT_USER;
+  const withinBudget = (spent[0]?.total ?? 0) < env.WEB_SEARCH_DAILY_BUDGET_VND;
+  return withinUserLimit && withinBudget;
+}
+
+// Trả lại lượt đã cấp khi câu hỏi hoá ra được trả từ bộ nhớ câu hỏi lặp lại (không tốn tiền).
+export async function releaseQuota(userId) {
+  const today = new Date().toISOString().slice(0, 10);
+  await Promise.all([
+    AiQuota.updateOne({ _id: today, count: { $gt: 0 } }, { $inc: { count: -1 } }),
+    User.updateOne(
+      { _id: userId, "aiUsage.date": today, "aiUsage.count": { $gt: 0 } },
+      { $inc: { "aiUsage.count": -1 } },
+    ),
+  ]);
+}
+
 // Cấp lượt nguyên tử tại DB. Lỗi provider vẫn tính lượt vì đã phát sinh chi phí.
 export async function checkAndIncrementQuota(userId) {
   const today = new Date().toISOString().slice(0, 10);

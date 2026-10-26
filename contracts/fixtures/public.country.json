@@ -28,6 +28,7 @@
         "Gwangju",
         "Jeju"
       ],
+      "officialWebDomains": [],
       "createdAt": "2026-09-20T10:00:00.000Z",
       "updatedAt": "2026-09-22T08:30:00.000Z",
       "articleCount": 8,
@@ -53,6 +54,7 @@
       },
       "status": "coming_soon",
       "majorCities": [],
+      "officialWebDomains": [],
       "createdAt": "2026-09-20T10:00:00.000Z",
       "updatedAt": "2026-09-20T10:00:00.000Z",
       "articleCount": 0,

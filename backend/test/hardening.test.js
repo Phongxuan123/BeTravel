@@ -13,6 +13,7 @@ import LegalArticle from "../src/models/LegalArticle.js";
 import LegalChunk from "../src/models/LegalChunk.js";
 import AiQuota from "../src/models/AiQuota.js";
 import AiCache from "../src/models/AiCache.js";
+import AnswerMemory from "../src/models/AnswerMemory.js";
 import Job from "../src/models/Job.js";
 import RefreshToken from "../src/models/RefreshToken.js";
 import { env } from "../src/core/env.js";
@@ -237,7 +238,9 @@ test("cache hết hạn không dùng lại; giữ metadata AI và chunkId thật
   );
   await sendMessage(input);
   assert.equal(calls, 1);
+  // Hết hạn ở cả hai lớp dùng lại (cache theo nguồn và bộ nhớ câu hỏi lặp lại).
   await AiCache.updateMany({}, { $set: { expiresAt: new Date(0) } });
+  await AnswerMemory.updateMany({}, { $set: { expiresAt: new Date(0) } });
   await sendMessage(input);
   assert.equal(calls, 2);
 });

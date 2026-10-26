@@ -84,6 +84,14 @@ export const FallbackReason = Object.freeze({
   OUT_OF_SCOPE: "OUT_OF_SCOPE",
 });
 
+// Nguồn của câu trả lời chat: AI từ kho, FAQ admin đã duyệt, hoặc AI tra trang web chính phủ
+// (chưa kiểm chứng, rag/webAnswer.js).
+export const AnswerSource = Object.freeze({
+  AI: "ai",
+  APPROVED_FAQ: "approved_faq",
+  OFFICIAL_WEB: "official_web",
+});
+
 export const ChatRole = Object.freeze({
   USER: "user",
   ASSISTANT: "assistant",

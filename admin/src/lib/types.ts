@@ -18,6 +18,8 @@ export type Country = {
   emergencyNumbers?: { police?: string; ambulance?: string; fire?: string; marine?: string };
   embassy?: { name?: string; address?: string; phone?: string; lat?: number; lng?: number };
   majorCities?: string[];
+  // Tên miền chính phủ cho tầng tra web của AI; rỗng = không tra web.
+  officialWebDomains?: string[];
   status: CountryStatus;
   createdAt: string;
   updatedAt: string;

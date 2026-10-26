@@ -1,6 +1,30 @@
 # TIEN DO BE.TRAVEL
 
-## Khoá lại chat AI trên app — 24/10/2026 (cập nhật mới nhất)
+## Tầng tra web trang chính phủ + trả lời lặp lại — 26/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng: đổi model chat sang `gpt-6.1-sol` (APIZ), thêm tầng tra web khi kho thiếu dữ liệu, chặn
+câu lạc đề trước khi tốn tiền, và dùng lại câu trả lời cho câu hỏi trùng lặp trong 5 ngày.
+
+- **Tra web** (`rag/webAnswer.js`, `WEB_SEARCH_ENABLED`): chỉ chạy khi kho không đủ bằng chứng (dưới ngưỡng, AI báo
+  không đủ, hoặc chủ đề kho chưa có như giao thông/thuê nhà bang). Gọi Responses API + `web_search` (đã đo:
+  `/chat/completions` của APIZ không tra web được), giới hạn tên miền `Country.officialWebDomains` (Úc: `gov.au`).
+  Code chỉ giữ nguồn https thuộc tên miền đó VÀ thật sự nằm trong trang công cụ tìm kiếm trả về; model không tìm
+  lần nào thì bỏ; số liệu không có marker nguồn thì bỏ/hạ cấp; bỏ link công cụ chèn giữa câu; nhãn "chưa kiểm chứng".
+- **Chặn trước khi tốn tiền:** trần 5 câu tra web/người/ngày và ngân sách 2.000 ₫/ngày (ước tính theo
+  `LLM_PRICE_*`), rồi model nhỏ (`QUERY_REWRITE_MODEL`) chấm "có thuộc chủ đề pháp lý du lịch" (`rag/webTopicGate.js`).
+- **Trả lời lặp lại** (`services/answerMemory.service.js`, `AI_CACHE_TTL_HOURS=120`): trùng chính xác (bỏ hoa/thường,
+  dấu, dấu câu) trả ngay trước cả bước tạo từ khoá; khác chữ cùng từ khoá (Jaccard >= 0,9) trả sau bước tạo từ khoá.
+  Không gọi AI, không trừ lượt. Nguồn kho phải còn đúng phiên bản và `updatedAt`, không thì xoá và trả lời lại.
+- **Telemetry:** `ai_events` ghi token thật, `costEstimateVnd`, `webSearch` (trước đây token luôn 0 với APIZ).
+- **Chạy thật** (API + emulator, đã dọn bản ghi thử): câu thuê nhà Queensland tra web 23,7 giây (~69 ₫, nguồn
+  rta.qld.gov.au); hỏi lại 0,4 giây, 0 ₫. Câu lạc đề "đội bóng rổ Melbourne" bị chặn, không tra web. Emulator: câu mất
+  hộ chiếu trả từ kho 10,2 giây (Passports Act điều 41), hỏi lại 0,3 giây; dao bấm, mũ bảo hiểm xe đạp Victoria,
+  huỷ visa du lịch đều ra bằng tra web 22-28 giây (60-79 ₫), nguồn abf/transport.vic/homeaffairs.gov.au.
+- Test: backend 409, mobile 256, admin 22 đạt; typecheck/lint/build xanh.
+- Ghi chú: trên emulator 2/3 câu dự kiến "từ kho" (dao bấm, huỷ visa) lại đi tra web vì kho không đủ đoạn khớp
+  (câu gõ không dấu qua adb). Chat trên app vẫn KHOÁ mặc định; chỉ mở tạm trong buổi test.
+
+## Khoá lại chat AI trên app — 24/10/2026
 
 Theo yêu cầu người dùng: màn Trợ lý AI trở lại mặc định khoá (màn chờ "Trợ lý AI sắp ra mắt"), đảo lại thay đổi mở
 mặc định ngày 22/10. Chỉ đổi phía mobile: cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` mặc định `false`, bật bằng `true`.
