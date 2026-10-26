@@ -1,5 +1,11 @@
 # TIEN DO BE.TRAVEL
 
+## Mở khoá chat AI trên app — 26/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng (nhóm tự thử bằng env được cấp, dự án chưa deploy): màn Trợ lý AI MỞ mặc định; chỉ khoá
+khi đặt `EXPO_PUBLIC_AI_CHAT_ENABLED=false`. `backend/.env.example` bật sẵn tầng tra web (`WEB_SEARCH_ENABLED=true`)
+và model `gpt-6.1-sol` để env mẫu khớp cấu hình đang dùng. Đảo lại quyết định khoá ngày 24/10.
+
 ## Tầng tra web trang chính phủ + trả lời lặp lại — 26/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng: đổi model chat sang `gpt-6.1-sol` (APIZ), thêm tầng tra web khi kho thiếu dữ liệu, chặn
