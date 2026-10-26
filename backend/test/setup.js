@@ -30,6 +30,9 @@ process.env.AUTH_TRANSPORT ??= "both";
 // không thể đổi nó giữa chừng -- đặt sẵn 1 giây để test "trong cửa sổ ân hạn"
 // chạy ngay lập tức và test "ngoài cửa sổ ân hạn" chỉ cần chờ hơn 1 giây.
 process.env.REFRESH_ROTATION_GRACE_SECONDS ??= "1";
+// Bật tầng tra web để test được luồng; vẫn không gọi mạng vì LLM_PROVIDER=mock cho provider tra web
+// = null, chỉ test nào tự gắn provider giả (__setWebSearchProviderForTest) mới đi vào tầng này.
+process.env.WEB_SEARCH_ENABLED = "true";
 // Ngắn để test "nguồn luật Úc chậm" chạy nhanh (mặc định thật 5 giây).
 process.env.AU_REGISTER_LOOKUP_BUDGET_MS ??= "200";
 /*

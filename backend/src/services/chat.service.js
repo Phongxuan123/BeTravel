@@ -24,14 +24,23 @@ import {
   PERSONAL_ADVICE_NOTICE,
   EMERGENCY_NO_EVIDENCE_NOTE,
 } from "../rag/scope.js";
-import { getLlmProvider } from "../rag/llm/index.js";
+import { getLlmProvider, getWebSearchProvider } from "../rag/llm/index.js";
+import { estimateCostVnd } from "../rag/llm/cost.js";
 import { retrievalModelLabel, isLexicalMode } from "../rag/embedding/index.js";
 import { getQuestionKeywords } from "../rag/queryRewrite.js";
 import { buildNoEvidenceAnswer, findCoverageGap } from "../rag/noEvidence.js";
+import { answerFromOfficialWeb } from "../rag/webAnswer.js";
+import { isTravelLegalQuestion } from "../rag/webTopicGate.js";
 import { faqTermsFor, findServableFaq } from "./faq.service.js";
+import {
+  findExactRepeat,
+  findSimilarRepeat,
+  rememberAnswer,
+  repeatResult,
+} from "./answerMemory.service.js";
 import { normalizeVi } from "../utils/textNormalize.js";
-import { checkAndIncrementQuota } from "./aiUsage.service.js";
-import { FallbackReason, ChatRole } from "../core/constants.js";
+import { checkAndIncrementQuota, hasWebSearchAllowance, releaseQuota } from "./aiUsage.service.js";
+import { AnswerSource, FallbackReason, ChatRole } from "../core/constants.js";
 import { env } from "../core/env.js";
 import { AppError, ErrorCode } from "../core/errors.js";
 
@@ -129,7 +138,10 @@ const NO_AI_ROUTES = new Set([QuestionRoute.OUT_OF_SCOPE, QuestionRoute.GREETING
 
 async function persistAssistantMessage({ sessionId, result, model, latencyMs }) {
   return ChatMessage.create({
-    answerSource: result.answerSource ?? "ai",
+    answerSource: result.answerSource ?? AnswerSource.AI,
+    repeated: result.repeated ?? false,
+    promptTokens: result.usage?.inputTokens ?? 0,
+    completionTokens: result.usage?.outputTokens ?? 0,
     faqId: result.faqId ?? null,
     sessionId,
     role: ChatRole.ASSISTANT,
@@ -162,7 +174,11 @@ async function logAiEvent({
   await AiEvent.create({
     messageId,
     keywordTerms,
-    answerSource: result.answerSource ?? "ai",
+    answerSource: result.answerSource ?? AnswerSource.AI,
+    promptTokens: result.usage?.inputTokens ?? 0,
+    completionTokens: result.usage?.outputTokens ?? 0,
+    costEstimateVnd: result.usage ? estimateCostVnd(result.usage) : 0,
+    webSearch: result.webSearch ?? false,
     faqId: result.faqId ?? null,
     userId,
     sessionId,
@@ -204,6 +220,7 @@ async function replyWithoutLlm({
   embeddingModel,
   model = "none",
   keywordTerms = [],
+  cacheHit = false,
 }) {
   const latencyMs = Date.now() - startedAt;
   const message = await persistAssistantMessage({
@@ -221,7 +238,7 @@ async function replyWithoutLlm({
     model,
     embeddingModel,
     latencyMs,
-    cacheHit: false,
+    cacheHit,
     messageId: message._id,
     keywordTerms,
   });
@@ -325,12 +342,16 @@ async function generateGuardedAnswer({
   });
   const userPrompt = buildUserPrompt({ chunks: retrieval.chunks, question });
 
+  let usage = null;
   const rawText = await completeOrNull(llm, {
     systemPrompt,
     userPrompt,
     chunks: retrieval.chunks,
     question,
     maxOutputTokens: env.LLM_MAX_OUTPUT_TOKENS,
+    onUsage: (reported) => {
+      usage = reported;
+    },
   });
   const rawJson = rawText === null ? null : parseLlmJson(rawText);
   if (rawText !== null && rawJson === null) {
@@ -349,6 +370,7 @@ async function generateGuardedAnswer({
       confidence: "low",
       needsOfficialHelp: false,
       cacheHit: false,
+      usage,
     };
   }
 
@@ -384,7 +406,107 @@ async function generateGuardedAnswer({
       if (error.code !== 11000) throw error;
     }
   }
-  return { guarded, confidence, needsOfficialHelp, cacheHit: false };
+  return { guarded, confidence, needsOfficialHelp, cacheHit: false, usage };
+}
+
+const addUsage = (left, right) =>
+  left || right
+    ? {
+        inputTokens: (left?.inputTokens ?? 0) + (right?.inputTokens ?? 0),
+        outputTokens: (left?.outputTokens ?? 0) + (right?.outputTokens ?? 0),
+      }
+    : null;
+
+const webTierConfigured = (country) =>
+  env.WEB_SEARCH_ENABLED &&
+  (country.officialWebDomains ?? []).length > 0 &&
+  getWebSearchProvider() !== null;
+
+/*
+ * Kho không đủ bằng chứng: thử tra web trên trang chính phủ (rag/webAnswer.js) trước khi từ chối.
+ * Thứ tự chặn trước khi tốn tiền: đã cấu hình --> còn trần tra web hôm nay --> model nhỏ xác nhận
+ * câu hỏi thuộc chủ đề (rag/webTopicGate.js). Trả về kết quả chat; tra web không ra câu trả lời
+ * dùng được thì vẫn là lời từ chối có hướng dẫn tra cứu chính thức như trước.
+ */
+async function noEvidenceOrWebResult({
+  userId,
+  question,
+  currentCountry,
+  allowedNumbers,
+  baseResult,
+}) {
+  const refusal = {
+    ...baseResult,
+    answer: buildNoEvidenceAnswer({
+      question,
+      countryCode: currentCountry.code,
+      countryName: currentCountry.name,
+    }),
+    confidence: "low",
+    needsOfficialHelp: false,
+    fallbackReason: FallbackReason.INSUFFICIENT_EVIDENCE,
+  };
+  const canSearch =
+    webTierConfigured(currentCountry) &&
+    (await hasWebSearchAllowance(userId)) &&
+    (await isTravelLegalQuestion(question, currentCountry.name));
+  if (!canSearch) return { result: refusal, model: "none" };
+
+  const provider = getWebSearchProvider();
+  const web = await answerFromOfficialWeb({
+    provider,
+    question,
+    country: currentCountry,
+    allowedNumbers,
+  });
+  if (!web) return { result: refusal, model: provider.model };
+
+  const spent = { usage: web.usage, webSearch: true };
+  // guarded=null: model trả JSON hỏng (đã tốn tiền) --> xử lý như lỗi provider.
+  const fallbackReason = web.guarded ? web.guarded.fallbackReason : FallbackReason.PROVIDER_ERROR;
+  if (fallbackReason) {
+    const outOfScope = fallbackReason === FallbackReason.OUT_OF_SCOPE;
+    const result = outOfScope
+      ? {
+          ...refusal,
+          answer: web.guarded.answer,
+          fallbackReason,
+          route: QuestionRoute.OUT_OF_SCOPE,
+        }
+      : refusal;
+    return { result: { ...result, ...spent }, model: web.model };
+  }
+  return {
+    model: web.model,
+    result: {
+      ...baseResult,
+      ...spent,
+      answer: web.guarded.answer,
+      sections: web.guarded.sections,
+      citations: web.guarded.citations,
+      confidence: web.confidence,
+      needsOfficialHelp: web.needsOfficialHelp,
+      fallbackReason: null,
+      answerSource: AnswerSource.OFFICIAL_WEB,
+    },
+  };
+}
+
+// Chỉ câu pháp lý thường mới dùng lại/được ghi nhớ; "Tạo lại" và câu hỏi về một bài cụ thể luôn chạy AI.
+const isRepeatable = ({ route, regenerate, focusArticleId }) =>
+  route === QuestionRoute.LEGAL && !regenerate && !focusArticleId;
+
+async function rememberIfReusable({
+  canRepeat,
+  countryCode,
+  question,
+  keywordTerms,
+  result,
+  model,
+}) {
+  const reusable =
+    canRepeat && !result.fallbackReason && result.answerSource !== AnswerSource.APPROVED_FAQ;
+  if (reusable) await rememberAnswer({ countryCode, question, keywordTerms, result, model });
 }
 
 /*
@@ -433,14 +555,43 @@ export const sendMessage = async ({
     });
   }
 
-  // Chủ đề kho chắc chắn chưa có (vd luật giao thông bang ở Úc): trả lời ngay lý do + nơi tra cứu
-  // chính thức, không tốn lượt AI, thay vì chạy truy hồi + LLM 10-80 giây rồi vẫn từ chối.
-  // Khẩn cấp không đi nhánh này: tai nạn giao thông vẫn phải nhận số khẩn cấp.
+  // Câu hỏi đã được trả lời trong AI_CACHE_TTL_HOURS: dùng lại ngay, không tốn lượt AI.
+  const canRepeat = isRepeatable({ route, regenerate, focusArticleId });
+  const exactRepeat = canRepeat ? await findExactRepeat({ countryCode, question }) : null;
+  // FAQ admin đã duyệt sau lần trả lời trước thì ưu tiên FAQ (luồng bình thường sẽ phát nó).
+  const approvedFaqExists =
+    exactRepeat && (await findFaqOrNull(countryCode, exactRepeat.keywordTerms)) !== null;
+  if (exactRepeat && !approvedFaqExists) {
+    await recordUserTurn(session, question);
+    return replyWithoutLlm({
+      session,
+      userId,
+      question,
+      startedAt,
+      embeddingModel: "none",
+      model: exactRepeat.model,
+      cacheHit: true,
+      keywordTerms: exactRepeat.keywordTerms,
+      result: repeatResult(exactRepeat, route),
+    });
+  }
+
+  // Chủ đề kho chắc chắn chưa có (vd luật giao thông bang ở Úc): không chạy truy hồi. Có tầng tra
+  // web thì đi thẳng tới đó (sau quota); không có thì trả lời ngay lý do + nơi tra cứu chính thức,
+  // không tốn lượt AI. Khẩn cấp không đi nhánh này: tai nạn giao thông vẫn phải nhận số khẩn cấp.
   const coverageGap =
     route === QuestionRoute.EMERGENCY
       ? null
       : findCoverageGap(question, countryCode, { beforeSearch: true });
-  if (coverageGap) {
+  // Tra web chỉ cho câu pháp lý thường: prompt tra web không có quy tắc riêng của ca khẩn cấp
+  // (số khẩn cấp đứng đầu) hay ca xin tư vấn cá nhân.
+  const webAllowedRoute = route === QuestionRoute.LEGAL;
+  const gapGoesToWeb =
+    Boolean(coverageGap) &&
+    webAllowedRoute &&
+    webTierConfigured(currentCountry) &&
+    (await hasWebSearchAllowance(userId));
+  if (coverageGap && !gapGoesToWeb) {
     await recordUserTurn(session, question);
     return replyWithoutLlm({
       session,
@@ -506,13 +657,51 @@ export const sendMessage = async ({
     });
   }
 
+  // Tra web (thay cho truy hồi + LLM trên kho) rồi lưu tin nhắn; ghi nhớ nếu trả lời được.
+  const replyFromWebOrRefusal = async ({
+    keywordTerms = [],
+    retrievalMeta,
+    fallbackModel,
+    priorUsage,
+  }) => {
+    const { result: webOrRefusal, model } = await noEvidenceOrWebResult({
+      userId,
+      question,
+      currentCountry,
+      allowedNumbers: emergency.numbers,
+      baseResult: { ...baseResult, retrieval: retrievalMeta ?? baseResult.retrieval },
+    });
+    // Token của lượt AI đọc kho (nếu có) cộng với lượt tra web: cả hai đều đã tốn tiền.
+    const result = { ...webOrRefusal, usage: addUsage(priorUsage, webOrRefusal.usage) };
+    const usedModel = model === "none" ? (fallbackModel ?? "none") : model;
+    await rememberIfReusable({
+      canRepeat,
+      countryCode,
+      question,
+      keywordTerms,
+      result,
+      model: usedModel,
+    });
+    return replyWithoutLlm({
+      session,
+      userId,
+      question,
+      startedAt,
+      embeddingModel: retrievalModelLabel(),
+      model: usedModel,
+      keywordTerms,
+      result,
+    });
+  };
+
+  if (gapGoesToWeb) return replyFromWebOrRefusal({});
+
   // Từ khoá dùng chung cho FAQ, truy hồi lexical và gom nhóm đề xuất FAQ (ai_events.keywordTerms).
   const keywords = isLexicalMode() ? await getQuestionKeywords(question) : null;
   const keywordTerms = faqTermsFor({ question, keywords });
 
   // Chỉ câu pháp lý thông thường mới dùng FAQ; "Tạo lại" và câu hỏi về một bài cụ thể luôn chạy AI.
-  const canUseFaq = route === QuestionRoute.LEGAL && !regenerate && !focusArticleId;
-  const faq = canUseFaq ? await findFaqOrNull(countryCode, keywordTerms) : null;
+  const faq = canRepeat ? await findFaqOrNull(countryCode, keywordTerms) : null;
   if (faq) {
     return replyWithoutLlm({
       session,
@@ -526,6 +715,25 @@ export const sendMessage = async ({
     });
   }
 
+  // Cùng ý nhưng khác chữ với câu đã trả lời: dùng lại và trả lượt quota vừa cấp (không tốn tiền).
+  const similarRepeat = canRepeat ? await findSimilarRepeat({ countryCode, keywordTerms }) : null;
+  if (similarRepeat) {
+    await releaseQuota(userId).catch((error) =>
+      console.error("[chat] không trả lại được lượt quota:", error.message),
+    );
+    return replyWithoutLlm({
+      session,
+      userId,
+      question,
+      startedAt,
+      embeddingModel: retrievalModelLabel(),
+      model: similarRepeat.model,
+      cacheHit: true,
+      keywordTerms,
+      result: repeatResult(similarRepeat, route),
+    });
+  }
+
   let retrieval;
   try {
     retrieval = await retrieve({ question, countryCode, focusArticleId, keywords });
@@ -534,9 +742,15 @@ export const sendMessage = async ({
     retrieval = { passed: false, reason: FallbackReason.PROVIDER_ERROR, topScore: 0, chunks: [] };
   }
 
+  const isEmergency = route === QuestionRoute.EMERGENCY;
   if (!retrieval.passed) {
-    const isEmergency = route === QuestionRoute.EMERGENCY;
     const noEvidenceReason = retrieval.reason ?? FallbackReason.INSUFFICIENT_EVIDENCE;
+    if (webAllowedRoute && noEvidenceReason === FallbackReason.INSUFFICIENT_EVIDENCE) {
+      return replyFromWebOrRefusal({
+        keywordTerms,
+        retrievalMeta: emptyRetrieval(retrieval.topScore),
+      });
+    }
     return replyWithoutLlm({
       session,
       userId,
@@ -567,7 +781,7 @@ export const sendMessage = async ({
   }
 
   const llm = getLlmProvider();
-  const { guarded, confidence, needsOfficialHelp, cacheHit } = await generateGuardedAnswer({
+  const { guarded, confidence, needsOfficialHelp, cacheHit, usage } = await generateGuardedAnswer({
     llm,
     retrieval,
     question,
@@ -577,12 +791,23 @@ export const sendMessage = async ({
     regenerate,
   });
 
-  const latencyMs = Date.now() - startedAt;
   const retrievalMeta = {
     topScore: retrieval.topScore,
     chunkIds: retrieval.chunks.map((c) => c.chunkId),
     passed: true,
   };
+  // AI đọc các đoạn truy hồi rồi tự báo không đủ dữ liệu: thử tra web như nhánh truy hồi thất bại.
+  const modelFoundNothing = guarded.fallbackReason === FallbackReason.INSUFFICIENT_EVIDENCE;
+  if (webAllowedRoute && modelFoundNothing) {
+    return replyFromWebOrRefusal({
+      keywordTerms,
+      retrievalMeta: { ...retrievalMeta, passed: false },
+      fallbackModel: llm.model,
+      priorUsage: usage,
+    });
+  }
+
+  const latencyMs = Date.now() - startedAt;
   // Ca khẩn cấp mà AI/guard không cho ra câu trả lời dùng được: giữ số khẩn cấp, bỏ lời fallback.
   const result =
     route === QuestionRoute.EMERGENCY && guarded.fallbackReason
@@ -591,6 +816,7 @@ export const sendMessage = async ({
           ...emergencyOnlyResult(emergency, guarded.fallbackReason),
           confidence: "high",
           retrieval: retrievalMeta,
+          usage,
         }
       : {
           route:
@@ -611,8 +837,17 @@ export const sendMessage = async ({
           needsOfficialHelp: needsOfficialHelp || route === QuestionRoute.EMERGENCY,
           fallbackReason: guarded.fallbackReason,
           retrieval: retrievalMeta,
+          usage,
         };
 
+  await rememberIfReusable({
+    canRepeat,
+    countryCode,
+    question,
+    keywordTerms,
+    result,
+    model: llm.model,
+  });
   const message = await persistAssistantMessage({
     sessionId: session._id,
     result,

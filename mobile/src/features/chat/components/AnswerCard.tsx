@@ -187,6 +187,11 @@ export function AnswerCard({
           <Badge label="Đã được Be.Travel duyệt" tone="info" dot />
         </View>
       )}
+      {answer.webSearched && (
+        <View testID="answer-card-web" className="mb-3">
+          <Badge label="Từ trang chính phủ, chưa kiểm chứng" tone="warning" dot />
+        </View>
+      )}
       <AnswerBody content={answer.content} sources={answer.sources} />
       {answer.needsOfficialHelp && (
         <View testID="answer-card-official-help" className="mt-3">
@@ -223,7 +228,9 @@ export function AnswerCard({
                   <Text className="text-sm font-body-semibold text-ink">{s.name}</Text>
                   {s.verified === false ? (
                     <Text className="text-[11px]" style={{ color: colors.warningStrong }}>
-                      Văn bản luật gốc, chưa được Be.Travel kiểm chứng
+                      {s.kind === 'web'
+                        ? 'Trang web chính phủ, chưa được Be.Travel kiểm chứng'
+                        : 'Văn bản luật gốc, chưa được Be.Travel kiểm chứng'}
                     </Text>
                   ) : null}
                 </View>
@@ -235,7 +242,9 @@ export function AnswerCard({
       )}
       {answer.sources.length > 0 && (
         <View className="mt-3 flex-row items-center" style={{ gap: 8 }}>
-          {answer.sources.some((s) => s.verified === false) ? (
+          {answer.webSearched ? (
+            <Badge label="Nguồn: trang chính phủ" tone="warning" dot />
+          ) : answer.sources.some((s) => s.verified === false) ? (
             <Badge label="Gồm luật gốc chưa kiểm chứng" tone="warning" dot />
           ) : (
             <Badge label="Có nguồn pháp lý" tone="success" dot />

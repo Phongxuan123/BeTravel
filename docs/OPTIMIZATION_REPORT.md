@@ -1,5 +1,24 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Hợp nhất main ngày 26/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 409/409, mobile 263/263 (57 suites), admin 22/22: tổng 694 tests đạt.
+Lint/typecheck tương ứng, backend format và admin production build đạt.
+Mobile lần đầu báo thoát chậm nhưng exit 0; chạy lại với --detectOpenHandles
+đạt 263 tests, exit 0, không báo handle còn mở. Không build native lại lần này.
+
+- Nhận main `0805c46` (PR #56, #57) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261026-1d8c0b1`.
+- Nhận tầng tra web nguồn chính phủ, bộ nhớ câu trả lời và mở lại chat AI mặc
+  định từ main; giữ nguyên dịch offline, logo và luồng auth đang làm cục bộ.
+- Hai xung đột tài liệu được giải quyết bằng cách giữ nội dung cả hai phía.
+  Mã nguồn hợp nhất tự động. Thay đổi chưa commit backend/.env.example được
+  stash/khôi phục, diff cục bộ sau merge khớp trước merge; giữ ngoài commit.
+- Không sửa .env thật, không chạy seed/index hoặc gọi AI trả phí. Không push,
+  không merge ngược vào main. Chưa nghiệm thu điện thoại hoặc dịch vụ thật;
+  bộ kiểm thử backend dùng DB tạm và provider mock. Nợ audit trước vẫn còn.
+
 ## Hợp nhất main ngày 25/10/2026 (hiện hành)
 
 Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
@@ -68,6 +87,16 @@ Không export/build native lại ở đợt này; không đổi native dependenc
   https://github.com/advisories/GHSA-hp3w-g68c-fv3c
 - Áp dụng DRY, xử lý lỗi rõ, phân biệt nguồn dữ liệu, không thay contract/migration.
   Chi tiết kết quả và giới hạn thực tế tại ACCEPTANCE/TRANSLATION.
+
+## Tầng tra web + trả lời lặp lại — 26/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 3: tách `snapshotChunkSources` (retrieval.js) và `citedChunkIds` (faq.service.js) dùng chung cho FAQ và bộ
+  nhớ câu hỏi lặp lại; `estimateCostVnd` một chỗ (`rag/llm/cost.js`). Bỏ import `LegalChunk` thừa ở faq.service.js.
+- Rule 6: biến mới `ANSWER_REPEAT_MIN_SIMILARITY`, `WEB_SEARCH_*`, `WEB_TOPIC_GATE_TIMEOUT_MS`, `LLM_PRICE_*`;
+  `AI_CACHE_TTL_HOURS` mặc định 120. Tên miền tra web nằm trong DB (`Country.officialWebDomains`), không viết cứng.
+- Rule 7: tra web/chấm chủ đề/bộ nhớ lỗi đều ghi log ngắn rồi rơi về lời từ chối hoặc luồng thường, không nuốt im.
+- Rule 13B: sửa lỗi `null ?? PROVIDER_ERROR` làm câu trả lời web hợp lệ bị coi là lỗi (test bắt được trước khi chạy thật).
+- Rule 13A: không phát sinh warning mới; lint backend/mobile sạch.
 
 ## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (Chế độ B, chỉ file đã động tới)
 
@@ -280,6 +309,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 26/10/2026: tầng tra web trang chính phủ (gov.au) khi kho thiếu dữ liệu, chặn câu lạc đề trước khi tra, trả lời lặp lại 5 ngày; backend 409, mobile 256, admin 22 tests.
 
 - 22/10/2026 (lần 2): AI từ chối nhanh (dưới 1 giây với chủ đề kho chưa có) và có hướng dẫn tra cứu chính thức; 396 test backend.
 

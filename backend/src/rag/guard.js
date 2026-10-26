@@ -109,7 +109,7 @@ function hasUnsupportedPhone(prose, sourceText, allowedDigits) {
  * luong thi so tien phai nam trong CHINH nguon duoc viện dẫn, so dien thoai cung vay.
  * Marker hop le o dau cau tra loi khong bao chung cho con so o phan sau.
  */
-function findBlockViolation(text, retrieved, allowedDigits) {
+function findBlockViolation(text, retrieved, allowedDigits, amountsInSourceText) {
   const blocks = text.match(/[^]*?\[S\d+\](?:\s*\[S\d+\])*|[^]+$/g) ?? [];
   for (const block of blocks) {
     const prose = block.replace(MARKER, "");
@@ -126,7 +126,9 @@ function findBlockViolation(text, retrieved, allowedDigits) {
       const sourceNumbers = new Set(
         [...sourceText.matchAll(/\d[\d.,]*/g)].map(([number]) => number.replace(/[.,]/g, "")),
       );
-      if (!markers.length || amounts.some((amount) => !sourceNumbers.has(amount))) {
+      const amountMissingInSource =
+        amountsInSourceText && amounts.some((amount) => !sourceNumbers.has(amount));
+      if (!markers.length || amountMissingInSource) {
         return "UNSUPPORTED_QUANTITATIVE_CLAIM";
       }
     }
@@ -140,10 +142,10 @@ function findBlockViolation(text, retrieved, allowedDigits) {
  * `markersInPart`: so marker hop le con lai -- tuyen bo dinh luong ma khong co marker nao
  * thi bo han (khong phai chi xoa), vi LLM da bia so lieu.
  */
-function findPartViolation(text, markersInPart, retrieved, allowedDigits) {
+function findPartViolation(text, markersInPart, retrieved, allowedDigits, amountsInSourceText) {
   const prose = text.replace(MARKER, "");
   if (QUANTITATIVE_CLAIM.test(prose) && markersInPart === 0) return "UNSOURCED_QUANTITATIVE_CLAIM";
-  return findBlockViolation(text, retrieved, allowedDigits);
+  return findBlockViolation(text, retrieved, allowedDigits, amountsInSourceText);
 }
 
 const asStringList = (value) =>
@@ -168,12 +170,16 @@ export function composeAnswerText({ answer, actions, avoid }) {
  * @param {{answer:string, actions?:string[], avoid?:string[], usedSources:string[], confidence:string, inScope?:boolean}} raw JSON LLM đã trả (đã parse)
  * @param {Map<string, object>} retrieved  key 'S1'..'Sn' -> citation (từ retrieval.js)
  * @param {string} disclaimer
- * @param {{allowedNumbers?: string[]}} options so khẩn cấp hợp lệ của quốc gia (AI được nhắc lại)
+ * @param {{allowedNumbers?: string[], amountsInSourceText?: boolean}} options
+ *   allowedNumbers: so khẩn cấp hợp lệ của quốc gia (AI được nhắc lại).
+ *   amountsInSourceText=false: nguồn là trang web chính phủ (rag/webAnswer.js), code không có văn bản
+ *   gốc để đối chiếu số tiền nên chỉ bắt buộc mỗi khối định lượng có marker nguồn hợp lệ.
  * @returns {{answer:string, sections:object|null, citations:object[], fallbackReason:string|null, violations:string[]}}
  */
 export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER, options = {}) {
   const violations = [];
   const allowedDigits = (options.allowedNumbers ?? []).map(digitsOf).filter(Boolean);
+  const amountsInSourceText = options.amountsInSourceText ?? true;
 
   // AI tu danh gia cau hoi nam ngoai pham vi: khong hien noi dung AI viet, dung loi tu choi cua code.
   if (raw.inScope === false) {
@@ -213,6 +219,7 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER, opt
     answerPart.count,
     retrieved,
     allowedDigits,
+    amountsInSourceText,
   );
   if (answerViolation) {
     violations.push(answerViolation);
@@ -227,7 +234,13 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER, opt
   const keepValidItems = (items) =>
     asStringList(items).flatMap((item) => {
       const part = stripFakeMarkers(item);
-      const violation = findPartViolation(part.text, part.count, retrieved, allowedDigits);
+      const violation = findPartViolation(
+        part.text,
+        part.count,
+        retrieved,
+        allowedDigits,
+        amountsInSourceText,
+      );
       if (violation) {
         violations.push(`DROPPED_ITEM:${violation}`);
         return [];

@@ -19,7 +19,8 @@ type ApiCitation = {
   title: string;
   heading: string;
   // 'au_legislation': van ban luat goc chua duoc Be.Travel kiem chung, mo bang officialUrl.
-  sourceType?: 'article' | 'au_legislation';
+  // 'official_web': trang web chinh phu AI da doc khi tra web (chua kiem chung), mo bang officialUrl.
+  sourceType?: 'article' | 'au_legislation' | 'official_web';
   officialUrl?: string;
 };
 type ApiChatMessage = {
@@ -34,7 +35,10 @@ type ApiChatMessage = {
   needsOfficialHelp?: boolean;
   route?: 'legal' | 'emergency' | 'personal_advice' | 'out_of_scope' | 'greeting';
   // 'approved_faq': câu trả lời admin đã duyệt cho câu hỏi hay gặp (G6), không do AI viết lúc này.
-  answerSource?: 'ai' | 'approved_faq';
+  // 'official_web': kho chưa có dữ liệu, AI tra trang web chính phủ (chưa kiểm chứng).
+  answerSource?: 'ai' | 'approved_faq' | 'official_web';
+  // true: dùng lại câu trả lời của câu hỏi trùng lặp trước đó (không gọi AI).
+  repeated?: boolean;
   feedback: 'up' | 'down' | null;
   createdAt: string;
 };
@@ -69,7 +73,10 @@ const INSUFFICIENT_EVIDENCE_SUGGESTIONS = [
 function adaptSource(c: ApiCitation, countryCode: string): Extract<ChatAnswer, { status: 'answered' }>['sources'][number] {
   const name = c.heading ? `${c.title} — ${c.heading}` : c.title;
   if (c.sourceType === 'au_legislation') {
-    return { name, url: c.officialUrl ?? '', marker: c.marker, verified: false };
+    return { name, url: c.officialUrl ?? '', marker: c.marker, verified: false, kind: 'law' };
+  }
+  if (c.sourceType === 'official_web') {
+    return { name, url: c.officialUrl ?? '', marker: c.marker, verified: false, kind: 'web' };
   }
   return { name, url: '', marker: c.marker, articleSlug: c.articleSlug, countryCode };
 }
@@ -119,6 +126,7 @@ export function adaptMessage(message: ApiChatMessage, countryCode: string): Chat
     content: stripTrailingDisclaimer(message.text),
     needsOfficialHelp: message.needsOfficialHelp === true,
     approved: message.answerSource === 'approved_faq',
+    webSearched: message.answerSource === 'official_web',
     sources: mergeSameSections(message.citations.map((c) => adaptSource(c, countryCode))),
   };
 }

@@ -8,8 +8,9 @@
  *     (21/10/2026), KHÔNG có mức phạt hay con số; không phải tư vấn pháp lý.
  *   - Có dữ liệu luật thật cho chủ đề nào thì xoá mục đó khỏi đây.
  * `triggers` viết có dấu; câu hỏi gõ không dấu vẫn khớp (utils/textNormalize.js#containsPhrase).
- * [!] `answerBeforeSearch: true`: khớp trigger thì chat trả lời NGAY lời từ chối, không chạy truy hồi
- *     (services/chat.service.js), nên chỉ dùng cụm từ chắc chắn thuộc chủ đề. Tránh từ chung như "ô tô"
+ * [!] `answerBeforeSearch: true`: khớp trigger thì chat KHÔNG chạy truy hồi (services/chat.service.js):
+ *     có tầng tra web (WEB_SEARCH_ENABLED + Country.officialWebDomains) thì tra web trang chính phủ,
+ *     không có thì trả lời NGAY lời từ chối. Chỉ dùng cụm từ chắc chắn thuộc chủ đề. Tránh từ chung như "ô tô"
  *     ("mang ô tô vào Úc" là câu hải quan, kho có dữ liệu). `false`: kho có dữ liệu một phần, vẫn
  *     tìm và để AI trả lời; chỉ khi không đủ bằng chứng mới dùng lời từ chối của mục này.
  */
