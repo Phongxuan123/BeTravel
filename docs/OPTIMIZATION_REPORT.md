@@ -1,5 +1,15 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Tầng tra web + trả lời lặp lại — 26/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 3: tách `snapshotChunkSources` (retrieval.js) và `citedChunkIds` (faq.service.js) dùng chung cho FAQ và bộ
+  nhớ câu hỏi lặp lại; `estimateCostVnd` một chỗ (`rag/llm/cost.js`). Bỏ import `LegalChunk` thừa ở faq.service.js.
+- Rule 6: biến mới `ANSWER_REPEAT_MIN_SIMILARITY`, `WEB_SEARCH_*`, `WEB_TOPIC_GATE_TIMEOUT_MS`, `LLM_PRICE_*`;
+  `AI_CACHE_TTL_HOURS` mặc định 120. Tên miền tra web nằm trong DB (`Country.officialWebDomains`), không viết cứng.
+- Rule 7: tra web/chấm chủ đề/bộ nhớ lỗi đều ghi log ngắn rồi rơi về lời từ chối hoặc luồng thường, không nuốt im.
+- Rule 13B: sửa lỗi `null ?? PROVIDER_ERROR` làm câu trả lời web hợp lệ bị coi là lỗi (test bắt được trước khi chạy thật).
+- Rule 13A: không phát sinh warning mới; lint backend/mobile sạch.
+
 ## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Hiệu năng (đo thật): bỏ nạp lại 8.900 chunk đồng bộ mỗi 60 giây; bỏ tra nguồn luật cho câu đã trượt ngưỡng.
@@ -211,6 +221,8 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 26/10/2026: tầng tra web trang chính phủ (gov.au) khi kho thiếu dữ liệu, chặn câu lạc đề trước khi tra, trả lời lặp lại 5 ngày; backend 409, mobile 256, admin 22 tests.
 
 - 22/10/2026 (lần 2): AI từ chối nhanh (dưới 1 giây với chủ đề kho chưa có) và có hướng dẫn tra cứu chính thức; 396 test backend.
 

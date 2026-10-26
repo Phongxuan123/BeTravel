@@ -21,6 +21,10 @@ const aiEventSchema = new mongoose.Schema(
     promptTokens: { type: Number, default: 0 },
     completionTokens: { type: Number, default: 0 },
     costEstimateUsd: { type: Number, default: 0 },
+    // Ước tính theo LLM_PRICE_*_VND_PER_M; tầng tra web dùng để chặn theo ngân sách ngày.
+    costEstimateVnd: { type: Number, default: 0 },
+    // true = lượt này đã gọi tra web (tốn tiền dù câu trả lời có bị guard hạ cấp hay không).
+    webSearch: { type: Boolean, default: false },
     fallbackReason: { type: String, default: null },
     // Luồng phân loại bởi rag/scope.js (emergency, out_of_scope, ...) -- thống kê theo luồng.
     route: { type: String, default: "legal" },

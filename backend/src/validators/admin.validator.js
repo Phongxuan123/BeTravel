@@ -64,6 +64,18 @@ const majorCitiesSchema = z
   .max(40, "Toi da 40 thanh pho goi y")
   .optional();
 
+// Tên miền (không kèm https://, không kèm đường dẫn) cho tầng tra web; "gov.au" khớp cả tên miền con.
+const officialWebDomainsSchema = z
+  .array(
+    z
+      .string()
+      .trim()
+      .toLowerCase()
+      .regex(/^(?:[a-z0-9-]+\.)+[a-z]{2,}$/, "Tên miền không hợp lệ, ví dụ: gov.au"),
+  )
+  .max(20, "Toi da 20 ten mien")
+  .optional();
+
 export const countryCreateSchema = z.object({
   code: countryCodeSchema,
   name: z.string().trim().min(1, "Ten quoc gia khong duoc de trong"),
@@ -73,6 +85,7 @@ export const countryCreateSchema = z.object({
   emergencyNumbers: emergencyNumbersSchema,
   embassy: embassySchema,
   majorCities: majorCitiesSchema,
+  officialWebDomains: officialWebDomainsSchema,
   status: z.enum(Object.values(CountryStatus)).optional(),
 });
 

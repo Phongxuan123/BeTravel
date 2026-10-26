@@ -105,6 +105,9 @@ export const COUNTRIES = [
     // `npm run seed:au-missions` vào support_locations.
     embassy: AU_EMBASSY,
     majorCities: ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Canberra", "Gold Coast"],
+    // Tầng tra web chỉ đọc trang chính phủ: gov.au khớp cả liên bang (abf, agriculture, legislation,
+    // smartraveller) lẫn các bang (nsw.gov.au, vic.gov.au, qld.gov.au...).
+    officialWebDomains: ["gov.au"],
   },
 ];
 

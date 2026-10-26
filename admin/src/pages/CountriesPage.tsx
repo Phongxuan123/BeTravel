@@ -15,15 +15,41 @@ import { Badge } from '../components/ui/Badge';
 // majorCitiesText giu dang chuoi cach nhau boi dau phay trong form -- chi
 // tach thanh mang khi gui len API (payloadFromForm), tranh ep nguoi dung go
 // dung dinh dang moi ky tu.
-type FormState = { code: string; name: string; nameEn: string; status: CountryStatus; majorCitiesText: string; aliasesText: string };
-const EMPTY_FORM: FormState = { code: '', name: '', nameEn: '', status: 'coming_soon', majorCitiesText: '', aliasesText: '' };
+type FormState = {
+  code: string;
+  name: string;
+  nameEn: string;
+  status: CountryStatus;
+  majorCitiesText: string;
+  aliasesText: string;
+  officialWebDomainsText: string;
+};
+const EMPTY_FORM: FormState = {
+  code: '',
+  name: '',
+  nameEn: '',
+  status: 'coming_soon',
+  majorCitiesText: '',
+  aliasesText: '',
+  officialWebDomainsText: '',
+};
+
+const splitList = (text: string) =>
+  text
+    .split(',')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
 
 function payloadFromForm(form: FormState) {
-  const majorCities = form.majorCitiesText
-    .split(',')
-    .map((city) => city.trim())
-    .filter((city) => city.length > 0);
-  return { code: form.code, name: form.name, nameEn: form.nameEn, status: form.status, majorCities, aliases: form.aliasesText.split(',').map((name) => name.trim()).filter(Boolean) };
+  return {
+    code: form.code,
+    name: form.name,
+    nameEn: form.nameEn,
+    status: form.status,
+    majorCities: splitList(form.majorCitiesText),
+    aliases: splitList(form.aliasesText),
+    officialWebDomains: splitList(form.officialWebDomainsText),
+  };
 }
 
 export default function CountriesPage() {
@@ -79,6 +105,7 @@ export default function CountriesPage() {
       status: country.status,
       majorCitiesText: (country.majorCities ?? []).join(', '),
       aliasesText: (country.aliases ?? []).join(', '),
+      officialWebDomainsText: (country.officialWebDomains ?? []).join(', '),
     });
     setFormError(null);
     setModalOpen(true);
@@ -176,6 +203,12 @@ export default function CountriesPage() {
             value={form.majorCitiesText}
             onChange={(e) => setForm({ ...form, majorCitiesText: e.target.value })}
             placeholder="Vd: Seoul, Busan, Incheon"
+          />
+          <Input
+            label="Tên miền chính phủ AI được tra web khi kho thiếu dữ liệu (cách nhau bởi dấu phẩy, để trống = tắt)"
+            value={form.officialWebDomainsText}
+            onChange={(e) => setForm({ ...form, officialWebDomainsText: e.target.value })}
+            placeholder="Vd: gov.au"
           />
 
           {formError && <ErrorState message={formError} />}

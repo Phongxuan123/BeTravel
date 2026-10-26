@@ -477,12 +477,28 @@ export default function ChatScreen() {
   );
 }
 
+// Câu kho chưa có được backend tra trang web chính phủ (15-50 giây, không streaming): sau một lúc
+// chờ thì nói rõ đang tra cứu thêm, để người dùng không tưởng app bị treo.
+const SLOW_ANSWER_HINT_MS = 8000;
+
 function TypingDots() {
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setSlow(true), SLOW_ANSWER_HINT_MS);
+    return () => clearTimeout(timer);
+  }, []);
   return (
-    <View className="flex-row items-center gap-1.5 self-start rounded-[20px] border border-line bg-surface px-4 py-3.5">
-      {[0, 1, 2].map((i) => (
-        <View key={i} className="h-2 w-2 rounded-full bg-muted" style={{ opacity: 0.4 + i * 0.2 }} />
-      ))}
+    <View className="self-start" style={{ gap: 6 }}>
+      <View className="flex-row items-center gap-1.5 self-start rounded-[20px] border border-line bg-surface px-4 py-3.5">
+        {[0, 1, 2].map((i) => (
+          <View key={i} className="h-2 w-2 rounded-full bg-muted" style={{ opacity: 0.4 + i * 0.2 }} />
+        ))}
+      </View>
+      {slow && (
+        <Text testID="typing-slow-hint" className="text-xs text-muted">
+          Đang tra cứu thêm trên trang chính phủ, có thể mất đến 1 phút...
+        </Text>
+      )}
     </View>
   );
 }

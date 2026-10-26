@@ -1,12 +1,11 @@
 import ApprovedFaq, { FaqStatus } from "../models/ApprovedFaq.js";
 import AiEvent from "../models/AiEvent.js";
 import ChatMessage from "../models/ChatMessage.js";
-import LegalChunk from "../models/LegalChunk.js";
 import { ChatRole } from "../core/constants.js";
 import { env } from "../core/env.js";
 import { QuestionRoute } from "../rag/scope.js";
 import { uniqueTerms } from "../rag/lexical.js";
-import { areSourcesCurrent } from "../rag/retrieval.js";
+import { areSourcesCurrent, snapshotChunkSources } from "../rag/retrieval.js";
 import { scoreQuestionSimilarity } from "../rag/questionSimilarity.js";
 
 /*
@@ -254,30 +253,20 @@ export async function listFaqs({ status } = {}) {
 // ── Duyệt / bỏ qua / đổi trạng thái ────────────────────────────────────────
 
 // Chunk của các marker [Sn] mà câu trả lời THỰC SỰ trích (retrieval.chunkIds giữ đúng thứ tự S1..Sn).
+export const citedChunkIds = ({ citations, retrieval }) => [
+  ...new Set(
+    (citations ?? [])
+      .map((citation) => MARKER_PATTERN.exec(citation.marker)?.[1])
+      .map((index) => retrieval?.chunkIds?.[Number(index) - 1])
+      .filter(Boolean)
+      .map(String),
+  ),
+];
+
 async function buildCitedSources(message) {
-  const chunkIds = [
-    ...new Set(
-      (message.citations ?? [])
-        .map((citation) => MARKER_PATTERN.exec(citation.marker)?.[1])
-        .map((index) => message.retrieval?.chunkIds?.[Number(index) - 1])
-        .filter(Boolean)
-        .map(String),
-    ),
-  ];
-  const chunks = await LegalChunk.find({ _id: { $in: chunkIds } })
-    .select("sourceType articleId articleVersion titleId registerId")
-    .lean();
-  if (chunkIds.length === 0 || chunks.length !== chunkIds.length) {
-    throw new Error("FAQ_SOURCES_CHANGED");
-  }
-  return chunks.map((chunk) => ({
-    chunkId: chunk._id,
-    sourceType: chunk.sourceType ?? "article",
-    articleId: chunk.articleId ?? null,
-    articleVersion: chunk.articleVersion ?? null,
-    titleId: chunk.titleId ?? null,
-    registerId: chunk.registerId ?? null,
-  }));
+  const sources = await snapshotChunkSources(citedChunkIds(message));
+  if (!sources) throw new Error("FAQ_SOURCES_CHANGED");
+  return sources;
 }
 
 async function assertNoActiveDuplicate({ countryCode, question, keywordTerms, excludeId }) {

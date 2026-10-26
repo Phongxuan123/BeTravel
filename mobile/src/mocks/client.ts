@@ -206,7 +206,8 @@ export type ChatAnswer =
       status: 'answered';
       updatedAt: string;
       content: string;
-      // verified=false: van ban luat goc chua duoc Be.Travel kiem chung (vi du luat lien bang Uc).
+      // verified=false: nguon chua duoc Be.Travel kiem chung -- kind 'law' = van ban luat goc (vi du luat
+      // lien bang Uc), kind 'web' = trang web chinh phu AI da doc khi tra web.
       sources: {
         name: string;
         url: string;
@@ -214,7 +215,10 @@ export type ChatAnswer =
         articleSlug?: string;
         countryCode?: string;
         verified?: boolean;
+        kind?: 'law' | 'web';
       }[];
+      // true: kho chua co du lieu, AI tra trang web chinh phu (chua kiem chung).
+      webSearched?: boolean;
       // Backend dat true cho tinh huong khan cap (bi bat, tai nan, mat giay to).
       needsOfficialHelp?: boolean;
       // true: cau tra loi admin da duyet cho cau hoi hay gap (G6), hien nhan "Da duoc Be.Travel duyet".

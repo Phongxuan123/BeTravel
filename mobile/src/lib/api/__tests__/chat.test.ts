@@ -105,6 +105,40 @@ describe('chat.ts adapter', () => {
         url: 'https://www.legislation.gov.au/C1958A00062/latest/text',
         marker: 'S1',
         verified: false,
+        kind: 'law',
+      },
+    ]);
+  });
+
+  it('adaptMessage: tra web (official_web) -> webSearched, nguon trang chinh phu chua kiem chung', () => {
+    const answer = adaptMessage(
+      {
+        ...base,
+        text: 'Báo trước 28 ngày [S1].',
+        fallbackReason: null,
+        answerSource: 'official_web',
+        citations: [
+          {
+            marker: 'S1',
+            title: 'Giving notice as a renter',
+            heading: '',
+            sourceType: 'official_web',
+            officialUrl: 'https://www.consumer.vic.gov.au/housing/renting',
+          },
+        ],
+      },
+      'AU',
+    );
+    if (answer.status !== 'answered') throw new Error('expected answered');
+    expect(answer.webSearched).toBe(true);
+    expect(answer.approved).toBe(false);
+    expect(answer.sources).toEqual([
+      {
+        name: 'Giving notice as a renter',
+        url: 'https://www.consumer.vic.gov.au/housing/renting',
+        marker: 'S1',
+        verified: false,
+        kind: 'web',
       },
     ]);
   });
