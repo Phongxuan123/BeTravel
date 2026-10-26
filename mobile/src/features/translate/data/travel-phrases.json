@@ -1,0 +1,704 @@
+{
+  "version": 1,
+  "source": "BeTravel — câu giao tiếp biên soạn cho ứng dụng, cần rà soát ngôn ngữ trước phát hành",
+  "phrases": [
+    {
+      "id": "travel-001",
+      "category": "Giao tiếp",
+      "vi": "Xin chào.",
+      "en": "Hello."
+    },
+    {
+      "id": "travel-002",
+      "category": "Giao tiếp",
+      "vi": "Tạm biệt.",
+      "en": "Goodbye."
+    },
+    {
+      "id": "travel-003",
+      "category": "Giao tiếp",
+      "vi": "Cảm ơn.",
+      "en": "Thank you."
+    },
+    {
+      "id": "travel-004",
+      "category": "Giao tiếp",
+      "vi": "Cảm ơn rất nhiều.",
+      "en": "Thank you very much."
+    },
+    {
+      "id": "travel-005",
+      "category": "Giao tiếp",
+      "vi": "Không có gì.",
+      "en": "You're welcome."
+    },
+    {
+      "id": "travel-006",
+      "category": "Giao tiếp",
+      "vi": "Xin lỗi.",
+      "en": "I'm sorry."
+    },
+    {
+      "id": "travel-007",
+      "category": "Giao tiếp",
+      "vi": "Làm ơn.",
+      "en": "Please."
+    },
+    {
+      "id": "travel-008",
+      "category": "Giao tiếp",
+      "vi": "Tôi không hiểu.",
+      "en": "I don't understand."
+    },
+    {
+      "id": "travel-009",
+      "category": "Giao tiếp",
+      "vi": "Bạn có nói tiếng Anh không?",
+      "en": "Do you speak English?"
+    },
+    {
+      "id": "travel-010",
+      "category": "Giao tiếp",
+      "vi": "Tôi không nói được tiếng Anh.",
+      "en": "I don't speak English."
+    },
+    {
+      "id": "travel-011",
+      "category": "Giao tiếp",
+      "vi": "Xin hãy nói chậm hơn.",
+      "en": "Please speak more slowly."
+    },
+    {
+      "id": "travel-012",
+      "category": "Giao tiếp",
+      "vi": "Bạn có thể nhắc lại không?",
+      "en": "Could you repeat that?"
+    },
+    {
+      "id": "travel-013",
+      "category": "Giao tiếp",
+      "vi": "Bạn có thể viết ra giúp tôi không?",
+      "en": "Could you write it down for me?"
+    },
+    {
+      "id": "travel-014",
+      "category": "Giao tiếp",
+      "vi": "Tôi đến từ Việt Nam.",
+      "en": "I'm from Vietnam."
+    },
+    {
+      "id": "travel-015",
+      "category": "Giao tiếp",
+      "vi": "Tôi đang đi du lịch.",
+      "en": "I'm traveling."
+    },
+    {
+      "id": "travel-016",
+      "category": "Giao tiếp",
+      "vi": "Vâng.",
+      "en": "Yes."
+    },
+    {
+      "id": "travel-017",
+      "category": "Giao tiếp",
+      "vi": "Không.",
+      "en": "No."
+    },
+    {
+      "id": "travel-018",
+      "category": "Giao tiếp",
+      "vi": "Tôi cần giúp đỡ.",
+      "en": "I need help."
+    },
+    {
+      "id": "travel-019",
+      "category": "Giao tiếp",
+      "vi": "Tôi không cần giúp đỡ.",
+      "en": "I don't need help."
+    },
+    {
+      "id": "travel-020",
+      "category": "Giao tiếp",
+      "vi": "Xin hãy đợi một chút.",
+      "en": "Please wait a moment."
+    },
+    {
+      "id": "travel-021",
+      "category": "Đi lại",
+      "vi": "Nhà vệ sinh ở đâu?",
+      "en": "Where is the restroom?"
+    },
+    {
+      "id": "travel-022",
+      "category": "Đi lại",
+      "vi": "Sân bay ở đâu?",
+      "en": "Where is the airport?"
+    },
+    {
+      "id": "travel-023",
+      "category": "Đi lại",
+      "vi": "Ga tàu ở đâu?",
+      "en": "Where is the train station?"
+    },
+    {
+      "id": "travel-024",
+      "category": "Đi lại",
+      "vi": "Trạm xe buýt ở đâu?",
+      "en": "Where is the bus stop?"
+    },
+    {
+      "id": "travel-025",
+      "category": "Đi lại",
+      "vi": "Tôi cần một chiếc taxi.",
+      "en": "I need a taxi."
+    },
+    {
+      "id": "travel-026",
+      "category": "Đi lại",
+      "vi": "Xin đưa tôi đến sân bay.",
+      "en": "Please take me to the airport."
+    },
+    {
+      "id": "travel-027",
+      "category": "Đi lại",
+      "vi": "Xin đưa tôi về khách sạn.",
+      "en": "Please take me to my hotel."
+    },
+    {
+      "id": "travel-028",
+      "category": "Đi lại",
+      "vi": "Tôi muốn mua vé.",
+      "en": "I'd like to buy a ticket."
+    },
+    {
+      "id": "travel-029",
+      "category": "Đi lại",
+      "vi": "Vé khứ hồi giá bao nhiêu?",
+      "en": "How much is a round-trip ticket?"
+    },
+    {
+      "id": "travel-030",
+      "category": "Đi lại",
+      "vi": "Chuyến tàu tiếp theo khởi hành lúc mấy giờ?",
+      "en": "What time does the next train leave?"
+    },
+    {
+      "id": "travel-031",
+      "category": "Đi lại",
+      "vi": "Xe buýt này có đi đến sân bay không?",
+      "en": "Does this bus go to the airport?"
+    },
+    {
+      "id": "travel-032",
+      "category": "Đi lại",
+      "vi": "Tôi bị lạc đường.",
+      "en": "I'm lost."
+    },
+    {
+      "id": "travel-033",
+      "category": "Đi lại",
+      "vi": "Bạn có thể chỉ đường cho tôi không?",
+      "en": "Could you give me directions?"
+    },
+    {
+      "id": "travel-034",
+      "category": "Đi lại",
+      "vi": "Xin dừng ở đây.",
+      "en": "Please stop here."
+    },
+    {
+      "id": "travel-035",
+      "category": "Đi lại",
+      "vi": "Tôi muốn xuống ở trạm tiếp theo.",
+      "en": "I'd like to get off at the next stop."
+    },
+    {
+      "id": "travel-036",
+      "category": "Đi lại",
+      "vi": "Tôi bị lỡ chuyến bay.",
+      "en": "I missed my flight."
+    },
+    {
+      "id": "travel-037",
+      "category": "Đi lại",
+      "vi": "Hành lý của tôi bị thất lạc.",
+      "en": "My luggage is missing."
+    },
+    {
+      "id": "travel-038",
+      "category": "Đi lại",
+      "vi": "Quầy làm thủ tục ở đâu?",
+      "en": "Where is the check-in counter?"
+    },
+    {
+      "id": "travel-039",
+      "category": "Đi lại",
+      "vi": "Cổng lên máy bay ở đâu?",
+      "en": "Where is the boarding gate?"
+    },
+    {
+      "id": "travel-040",
+      "category": "Đi lại",
+      "vi": "Tôi có thể ngồi ở đây không?",
+      "en": "May I sit here?"
+    },
+    {
+      "id": "travel-041",
+      "category": "Khách sạn",
+      "vi": "Tôi đã đặt phòng.",
+      "en": "I have a reservation."
+    },
+    {
+      "id": "travel-042",
+      "category": "Khách sạn",
+      "vi": "Tôi muốn nhận phòng.",
+      "en": "I'd like to check in."
+    },
+    {
+      "id": "travel-043",
+      "category": "Khách sạn",
+      "vi": "Tôi muốn trả phòng.",
+      "en": "I'd like to check out."
+    },
+    {
+      "id": "travel-044",
+      "category": "Khách sạn",
+      "vi": "Khách sạn còn phòng trống không?",
+      "en": "Do you have any rooms available?"
+    },
+    {
+      "id": "travel-045",
+      "category": "Khách sạn",
+      "vi": "Một đêm giá bao nhiêu?",
+      "en": "How much is one night?"
+    },
+    {
+      "id": "travel-046",
+      "category": "Khách sạn",
+      "vi": "Bữa sáng có được bao gồm không?",
+      "en": "Is breakfast included?"
+    },
+    {
+      "id": "travel-047",
+      "category": "Khách sạn",
+      "vi": "Mấy giờ phải trả phòng?",
+      "en": "What time is check-out?"
+    },
+    {
+      "id": "travel-048",
+      "category": "Khách sạn",
+      "vi": "Mật khẩu Wi-Fi là gì?",
+      "en": "What is the Wi-Fi password?"
+    },
+    {
+      "id": "travel-049",
+      "category": "Khách sạn",
+      "vi": "Tôi bị mất chìa khóa phòng.",
+      "en": "I lost my room key."
+    },
+    {
+      "id": "travel-050",
+      "category": "Khách sạn",
+      "vi": "Máy điều hòa không hoạt động.",
+      "en": "The air conditioner isn't working."
+    },
+    {
+      "id": "travel-051",
+      "category": "Khách sạn",
+      "vi": "Không có nước nóng.",
+      "en": "There is no hot water."
+    },
+    {
+      "id": "travel-052",
+      "category": "Khách sạn",
+      "vi": "Tôi có thể gửi hành lý ở đây không?",
+      "en": "Can I leave my luggage here?"
+    },
+    {
+      "id": "travel-053",
+      "category": "Khách sạn",
+      "vi": "Xin cho tôi thêm một chiếc khăn.",
+      "en": "Could I have an extra towel, please?"
+    },
+    {
+      "id": "travel-054",
+      "category": "Ăn uống",
+      "vi": "Cho tôi xem thực đơn.",
+      "en": "May I see the menu?"
+    },
+    {
+      "id": "travel-055",
+      "category": "Ăn uống",
+      "vi": "Cho tôi một chai nước.",
+      "en": "A bottle of water, please."
+    },
+    {
+      "id": "travel-056",
+      "category": "Ăn uống",
+      "vi": "Tôi muốn gọi món.",
+      "en": "I'd like to order."
+    },
+    {
+      "id": "travel-057",
+      "category": "Ăn uống",
+      "vi": "Tôi ăn chay.",
+      "en": "I'm vegetarian."
+    },
+    {
+      "id": "travel-058",
+      "category": "Ăn uống",
+      "vi": "Tôi không ăn thịt lợn.",
+      "en": "I don't eat pork."
+    },
+    {
+      "id": "travel-059",
+      "category": "Ăn uống",
+      "vi": "Tôi bị dị ứng với đậu phộng.",
+      "en": "I'm allergic to peanuts."
+    },
+    {
+      "id": "travel-060",
+      "category": "Ăn uống",
+      "vi": "Món này có đậu phộng không?",
+      "en": "Does this dish contain peanuts?"
+    },
+    {
+      "id": "travel-061",
+      "category": "Ăn uống",
+      "vi": "Xin đừng cho đậu phộng vào món ăn.",
+      "en": "Please do not add peanuts to the food."
+    },
+    {
+      "id": "travel-062",
+      "category": "Ăn uống",
+      "vi": "Xin đừng cho ớt.",
+      "en": "No chili, please."
+    },
+    {
+      "id": "travel-063",
+      "category": "Ăn uống",
+      "vi": "Cho tôi thanh toán.",
+      "en": "The bill, please."
+    },
+    {
+      "id": "travel-064",
+      "category": "Ăn uống",
+      "vi": "Tôi có thể mang đồ ăn về không?",
+      "en": "Can I get the food to go?"
+    },
+    {
+      "id": "travel-065",
+      "category": "Mua sắm",
+      "vi": "Cái này giá bao nhiêu?",
+      "en": "How much is this?"
+    },
+    {
+      "id": "travel-066",
+      "category": "Mua sắm",
+      "vi": "Tôi có thể thanh toán bằng thẻ không?",
+      "en": "Can I pay by card?"
+    },
+    {
+      "id": "travel-067",
+      "category": "Mua sắm",
+      "vi": "Tôi sẽ thanh toán bằng tiền mặt.",
+      "en": "I'll pay in cash."
+    },
+    {
+      "id": "travel-068",
+      "category": "Mua sắm",
+      "vi": "Xin cho tôi hóa đơn.",
+      "en": "Could I have a receipt, please?"
+    },
+    {
+      "id": "travel-069",
+      "category": "Mua sắm",
+      "vi": "Máy ATM ở đâu?",
+      "en": "Where is the ATM?"
+    },
+    {
+      "id": "travel-070",
+      "category": "Mua sắm",
+      "vi": "Tôi muốn đổi tiền.",
+      "en": "I'd like to exchange money."
+    },
+    {
+      "id": "travel-071",
+      "category": "Mua sắm",
+      "vi": "Tôi chỉ xem thôi.",
+      "en": "I'm just looking."
+    },
+    {
+      "id": "travel-072",
+      "category": "Mua sắm",
+      "vi": "Tôi có thể thử cái này không?",
+      "en": "Can I try this on?"
+    },
+    {
+      "id": "travel-073",
+      "category": "Hỗ trợ",
+      "vi": "Xin hãy gọi cảnh sát.",
+      "en": "Please call the police."
+    },
+    {
+      "id": "travel-074",
+      "category": "Hỗ trợ",
+      "vi": "Xin hãy gọi xe cứu thương.",
+      "en": "Please call an ambulance."
+    },
+    {
+      "id": "travel-075",
+      "category": "Hỗ trợ",
+      "vi": "Tôi cần bác sĩ.",
+      "en": "I need a doctor."
+    },
+    {
+      "id": "travel-076",
+      "category": "Hỗ trợ",
+      "vi": "Tôi cảm thấy không khỏe.",
+      "en": "I don't feel well."
+    },
+    {
+      "id": "travel-077",
+      "category": "Hỗ trợ",
+      "vi": "Tôi cần đến bệnh viện.",
+      "en": "I need to go to the hospital."
+    },
+    {
+      "id": "travel-078",
+      "category": "Hỗ trợ",
+      "vi": "Nhà thuốc gần nhất ở đâu?",
+      "en": "Where is the nearest pharmacy?"
+    },
+    {
+      "id": "travel-079",
+      "category": "Hỗ trợ",
+      "vi": "Tôi bị mất hộ chiếu.",
+      "en": "I lost my passport."
+    },
+    {
+      "id": "travel-080",
+      "category": "Hỗ trợ",
+      "vi": "Tôi bị mất điện thoại.",
+      "en": "I lost my phone."
+    },
+    {
+      "id": "travel-081",
+      "category": "Hỗ trợ",
+      "vi": "Tôi bị mất ví.",
+      "en": "I lost my wallet."
+    },
+    {
+      "id": "travel-082",
+      "category": "Hỗ trợ",
+      "vi": "Tôi cần liên hệ với đại sứ quán Việt Nam.",
+      "en": "I need to contact the Vietnamese embassy."
+    },
+    {
+      "id": "travel-083",
+      "category": "Hỗ trợ",
+      "vi": "Tôi cần phiên dịch viên.",
+      "en": "I need an interpreter."
+    },
+    {
+      "id": "travel-084",
+      "category": "Hỗ trợ",
+      "vi": "Tôi muốn gọi cho gia đình.",
+      "en": "I'd like to call my family."
+    },
+    {
+      "id": "travel-085",
+      "category": "Hỗ trợ",
+      "vi": "Xin đừng chạm vào tôi.",
+      "en": "Please do not touch me."
+    },
+    {
+      "id": "travel-086",
+      "category": "Hỗ trợ",
+      "vi": "Tôi cần một nơi an toàn.",
+      "en": "I need a safe place."
+    },
+    {
+      "id": "travel-087",
+      "category": "Hỗ trợ",
+      "vi": "Tôi không hiểu tài liệu này. Tôi cần phiên dịch viên.",
+      "en": "I don't understand this document. I need an interpreter."
+    },
+    {
+      "id": "travel-088",
+      "category": "Hỗ trợ",
+      "vi": "Tôi bị mất hộ chiếu và điện thoại. Xin hãy giúp tôi liên hệ với gia đình.",
+      "en": "I lost my passport and phone. Please help me contact my family."
+    }
+  ],
+  "vocabulary": [
+    {
+      "vi": "sân bay",
+      "en": "airport"
+    },
+    {
+      "vi": "đại sứ quán",
+      "en": "embassy"
+    },
+    {
+      "vi": "lãnh sự quán",
+      "en": "consulate"
+    },
+    {
+      "vi": "cảnh sát",
+      "en": "police"
+    },
+    {
+      "vi": "xe taxi",
+      "en": "taxi"
+    },
+    {
+      "vi": "xe buýt",
+      "en": "bus"
+    },
+    {
+      "vi": "tàu hỏa",
+      "en": "train"
+    },
+    {
+      "vi": "ga tàu",
+      "en": "train station"
+    },
+    {
+      "vi": "nhà ga",
+      "en": "station"
+    },
+    {
+      "vi": "trạm xe buýt",
+      "en": "bus stop"
+    },
+    {
+      "vi": "bệnh viện",
+      "en": "hospital"
+    },
+    {
+      "vi": "nhà thuốc",
+      "en": "pharmacy"
+    },
+    {
+      "vi": "bác sĩ",
+      "en": "doctor"
+    },
+    {
+      "vi": "xe cứu thương",
+      "en": "ambulance"
+    },
+    {
+      "vi": "hộ chiếu",
+      "en": "passport"
+    },
+    {
+      "vi": "thị thực",
+      "en": "visa"
+    },
+    {
+      "vi": "vé",
+      "en": "ticket"
+    },
+    {
+      "vi": "vé khứ hồi",
+      "en": "round-trip ticket"
+    },
+    {
+      "vi": "vé một chiều",
+      "en": "one-way ticket"
+    },
+    {
+      "vi": "thẻ lên máy bay",
+      "en": "boarding pass"
+    },
+    {
+      "vi": "hành lý",
+      "en": "luggage"
+    },
+    {
+      "vi": "quầy làm thủ tục",
+      "en": "check-in counter"
+    },
+    {
+      "vi": "cổng lên máy bay",
+      "en": "boarding gate"
+    },
+    {
+      "vi": "khách sạn",
+      "en": "hotel"
+    },
+    {
+      "vi": "phòng đơn",
+      "en": "single room"
+    },
+    {
+      "vi": "phòng đôi",
+      "en": "double room"
+    },
+    {
+      "vi": "chìa khóa phòng",
+      "en": "room key"
+    },
+    {
+      "vi": "nhà vệ sinh",
+      "en": "restroom"
+    },
+    {
+      "vi": "nhà hàng",
+      "en": "restaurant"
+    },
+    {
+      "vi": "thực đơn",
+      "en": "menu"
+    },
+    {
+      "vi": "nước uống",
+      "en": "drinking water"
+    },
+    {
+      "vi": "đậu phộng",
+      "en": "peanuts"
+    },
+    {
+      "vi": "hóa đơn",
+      "en": "bill"
+    },
+    {
+      "vi": "biên lai",
+      "en": "receipt"
+    },
+    {
+      "vi": "tiền mặt",
+      "en": "cash"
+    },
+    {
+      "vi": "thẻ tín dụng",
+      "en": "credit card"
+    },
+    {
+      "vi": "máy rút tiền",
+      "en": "ATM"
+    },
+    {
+      "vi": "bảo hiểm du lịch",
+      "en": "travel insurance"
+    },
+    {
+      "vi": "phiên dịch viên",
+      "en": "interpreter"
+    },
+    {
+      "vi": "số điện thoại",
+      "en": "phone number"
+    },
+    {
+      "vi": "địa chỉ",
+      "en": "address"
+    },
+    {
+      "vi": "bản đồ",
+      "en": "map"
+    }
+  ]
+}

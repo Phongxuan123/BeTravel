@@ -63,9 +63,14 @@ test('đã đăng nhập: giữ phiên khi quay lại, không có liên kết đ
   expect(screen.getByText(/Ký tự đặc biệt không bắt buộc/)).toBeTruthy();
   await fireEvent.changeText(screen.getByLabelText('Mật khẩu mới'), 'NewPassword123');
   await fireEvent.changeText(screen.getByLabelText('Xác nhận mật khẩu mới'), 'Mismatch123');
-  expect(screen.getByRole('button', { name: 'Đặt lại mật khẩu' }).props.accessibilityState.disabled).toBe(true);
+  expect(screen.queryByText('Xác nhận mật khẩu không khớp.')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Đặt lại mật khẩu' }).props.accessibilityState.disabled).toBe(false);
+  await fireEvent.press(screen.getByText('Đặt lại mật khẩu'));
+  expect(screen.getByText('Xác nhận mật khẩu không khớp.')).toBeTruthy();
+  expect(resetPassword).not.toHaveBeenCalled();
   expect(mockLogout).not.toHaveBeenCalled();
   await fireEvent.changeText(screen.getByLabelText('Xác nhận mật khẩu mới'), 'NewPassword123');
+  expect(screen.queryByText('Xác nhận mật khẩu không khớp.')).toBeNull();
   (resetPassword as jest.Mock).mockRejectedValueOnce(new ApiError('VALIDATION_ERROR', 'Mật khẩu trùng mật khẩu cũ', 400));
   await fireEvent.press(screen.getByText('Đặt lại mật khẩu'));
   await waitFor(() => expect(screen.getByText('Mật khẩu trùng mật khẩu cũ')).toBeTruthy());

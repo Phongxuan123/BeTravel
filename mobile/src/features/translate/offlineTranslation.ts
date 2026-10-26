@@ -1,11 +1,12 @@
 import { requireOptionalNativeModule } from 'expo';
+import { translateBundled, type TranslationResult } from './bundledTranslation';
 import { speechLocale } from './speechLocale';
 
 export const OFFLINE_TEXT_LIMIT = 5000;
 export const ONLINE_TEXT_LIMIT = 500;
 export const TRANSLATION_CHUNK_LIMIT = 450;
 export const NATIVE_TRANSLATION_MESSAGE =
-  'Dịch offline cần bản cài đặt native mới của Be.Travel, không chạy trong Expo Go.';
+  'Dịch câu tự do bằng ML Kit cần bản native Be.Travel. Từ điển và câu Việt–Anh có sẵn vẫn dùng được trong Expo Go.';
 
 export type OfflineTranslationModule = {
   installedLanguages(): Promise<string[]>;
@@ -55,14 +56,20 @@ export async function translateOffline(
   target: string,
   current: () => boolean,
   progress: (done: number, total: number) => void,
-): Promise<{ translated: string; phonetic: string }> {
+): Promise<TranslationResult> {
   if (!text.trim() || text.length > OFFLINE_TEXT_LIMIT)
     throw new Error('Nhập từ 1 đến 5.000 ký tự.');
+  if (!current()) throw new Error('Đã hủy dịch.');
+  const bundled = translateBundled(text, source, target);
+  if (bundled) {
+    progress(1, 1);
+    return bundled;
+  }
   const native = getOfflineModule();
-  if (!native) throw new Error(NATIVE_TRANSLATION_MESSAGE);
+  if (!native) throw new Error('Nội dung này chưa có trong bộ offline tích hợp. Chọn câu thông dụng, tra một từ/cụm từ Việt–Anh hoặc chủ động chuyển online để dịch câu tự do.');
   if (!hasLanguagePair(await native.installedLanguages(), source, target)) {
     throw new Error(
-      'Chưa có đủ gói dịch. Hãy tải gói ngôn ngữ khi còn mạng trước khi dùng offline.',
+      'Nội dung chưa có trong bộ tích hợp và chưa có đủ gói dịch máy mở rộng. Chọn câu thông dụng hoặc chuyển online; ứng dụng không tự gửi nội dung lên mạng.',
     );
   }
   const chunks = splitTranslationText(text);
@@ -76,5 +83,5 @@ export async function translateOffline(
     translated.push(value + (chunk.match(/\s+$/u)?.[0] ?? (index < chunks.length - 1 ? ' ' : '')));
     progress(index + 1, chunks.length);
   }
-  return { translated: translated.join('').trim(), phonetic: '' };
+  return { translated: translated.join('').trim(), phonetic: '', engine: 'mlkit' };
 }

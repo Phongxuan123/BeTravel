@@ -14,8 +14,8 @@ test('chia văn bản dài không mất chữ/xuống dòng và không cắt đ�
 test('thiếu gói không gọi native translate hoặc tự tải model', async () => {
   const native = { installedLanguages: async () => [], translate: jest.fn(), prepare: jest.fn() };
   (requireOptionalNativeModule as jest.Mock).mockReturnValue(native);
-  await expect(translateOffline('hello', 'en', 'vi', () => true, jest.fn())).rejects.toThrow(
-    'Chưa có đủ gói',
+  await expect(translateOffline('This unfamiliar sentence includes number 76391.', 'en', 'vi', () => true, jest.fn())).rejects.toThrow(
+    'chưa có đủ gói',
   );
   expect(native.translate).not.toHaveBeenCalled();
   expect(native.prepare).not.toHaveBeenCalled();
@@ -32,7 +32,7 @@ test('hủy lượt dài không dịch tiếp các đoạn hoặc trả bản d�
   };
   (requireOptionalNativeModule as jest.Mock).mockReturnValue(native);
   await expect(
-    translateOffline('Hello. '.repeat(200), 'en', 'vi', () => current, jest.fn()),
+    translateOffline('Unknown flight 76391. '.repeat(80), 'en', 'vi', () => current, jest.fn()),
   ).rejects.toThrow('Đã hủy');
   expect(native.translate).toHaveBeenCalledTimes(1);
 });

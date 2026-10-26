@@ -40,11 +40,28 @@ vi.mock('../../lib/api', () => ({
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
+const cleanups: Array<() => void> = [];
+
+// Đợi React Query cập nhật giao diện thay vì dựa vào thời gian chờ cố định.
+async function waitForUi(assertion: () => void) {
+  await vi.waitFor(async () => {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    assertion();
+  }, { timeout: 2000 });
+}
+
 async function mount() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const container = document.createElement('div');
   document.body.append(container);
   const root = createRoot(container);
+  cleanups.push(() => {
+    root.unmount();
+    client.clear();
+    container.remove();
+  });
   await act(async () => {
     root.render(
       <QueryClientProvider client={client}>
@@ -52,18 +69,18 @@ async function mount() {
       </QueryClientProvider>,
     );
   });
-  // Chờ react-query trả dữ liệu rồi mới kiểm.
-  await act(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 20));
-  });
+  await waitForUi(() => expect(container.querySelectorAll('tbody tr')).toHaveLength(3));
   return container;
 }
 
 const buttonOf = (container: HTMLElement, label: string, row: number) =>
   Array.from(container.querySelectorAll('tbody tr')[row].querySelectorAll('button')).find((b) => b.textContent?.includes(label));
 
-afterEach(() => {
-  document.body.innerHTML = '';
+afterEach(async () => {
+  await act(async () => {
+    cleanups.splice(0).forEach((cleanup) => cleanup());
+  });
+  vi.restoreAllMocks();
   vi.clearAllMocks();
 });
 
@@ -92,8 +109,7 @@ describe('AuLawsRagPanel', () => {
       buttonOf(container, 'Index', 2)?.click();
     });
     expect(ragApi.indexAuLaws).toHaveBeenCalledWith(['C2005A00005']);
-    // Mutation + refetch chạy bất đồng bộ; trên CI chậm 20 ms cố định không đủ nên chờ có hạn.
-    await vi.waitFor(() => expect(container.textContent).toContain('Đã xếp 1 luật vào hàng đợi'), { timeout: 2000 });
+    await waitForUi(() => expect(container.textContent).toContain('Đã xếp 1 luật vào hàng đợi'));
   });
 
   it('xoá luật phải xác nhận trước, huỷ xác nhận thì không gọi API', async () => {
