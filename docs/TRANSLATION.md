@@ -1,5 +1,13 @@
 # Dịch, giọng nói và dịch offline
 
+## Mặc định chế độ dịch — 26/10/2026
+
+Mỗi lần khởi tạo màn dịch, “Dịch không cần mạng” mặc định **tắt**. Người dùng
+chủ động bật để dùng bộ offline khi cần. Không tự bật theo trạng thái Wi-Fi
+(vì mạng di động cũng có thể cung cấp Internet), không tải model tự động.
+Chỉ gửi văn bản online khi người dùng bấm “Dịch ngay”; quy tắc đăng nhập và
+quota online giữ nguyên. Bật offline vẫn dùng bộ từ/câu đóng gói trước ML Kit.
+
 ## Bản triển khai hiện hành: bộ offline tích hợp — 21/10/2026
 
 Phần này thay thế yêu cầu “phải tải gói trước” đối với **từ/câu Việt–Anh có sẵn**.

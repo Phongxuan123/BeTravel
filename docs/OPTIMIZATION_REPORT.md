@@ -1,5 +1,29 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Dịch mặc định online và đồng bộ lối tắt pháp luật — 26/10/2026
+
+Tiến độ `[###-] 3/4`: sửa luồng, kiểm tự động, tài liệu xong; nghiệm thu điện
+thoại còn mở. Backend 409/409, mobile 265/265 (58 suites), admin 22/22: tổng
+696 tests đạt. Lint/typecheck, backend format và admin build đạt. Mobile chạy
+--detectOpenHandles kết thúc exit 0, còn cảnh báo act ở SosMapScreen và
+TranslatorForm trong full suite (10 tests mục tiêu chạy riêng không cảnh báo).
+Chưa kết luận có lỗi runtime từ cảnh báo test này; theo dõi riêng. Nợ audit đã
+ghi trước đó chưa được đóng, không thay dependency trong đợt này.
+
+- Công tắc “Dịch không cần mạng” mặc định tắt khi khởi tạo màn dịch. Người dùng
+  chủ động bật offline khi cần; không tự phát hiện Wi-Fi, không tự gửi văn bản
+  nếu chưa bấm dịch và không thay cơ chế dịch tích hợp/ML Kit/giới hạn online.
+- Nguyên nhân lối tắt trống: trang chủ đi /search, chỉ tìm kho bài viết khi có
+  từ khóa; luật liên bang Úc là nguồn riêng ở /explore (AuLawsSection).
+  Nay “Tra cứu luật nhanh” đi cùng /explore như tab Khám phá, dùng chung quốc
+  gia đã chọn, truy vấn/cache và lối vào /laws theo chủ đề. Không sao chép dữ
+  liệu luật, không đổi contract/backend hoặc trạng thái công khai nội dung.
+- Hồi quy: mở/remount dịch phải tắt offline; bật tay vẫn dịch được. Trang chủ
+  đi Khám phá, kho bài rỗng vẫn có nhóm luật Úc và bấm được /laws theo chủ đề.
+- Giới hạn: chưa kiểm trực tiếp trên điện thoại hoặc dịch vụ luật/SMTP/AI thật.
+  Rà soát là trong dự án, không khẳng định đã sửa mọi lỗi của hệ điều hành.
+  Giữ nguyên backend/.env.example đang sửa; không push, không ghi DB thật.
+
 ## Hợp nhất main ngày 26/10/2026 (hiện hành)
 
 Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.

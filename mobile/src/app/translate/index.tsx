@@ -36,7 +36,7 @@ export default function TranslatorScreen() {
 
 function TranslatorForm() {
   const { countryCode, country } = useCountry();
-  const [offlineMode, setOfflineMode] = useState(true);
+  const [offlineMode, setOfflineMode] = useState(false);
   const [showMachinePacks, setShowMachinePacks] = useState(false);
   const [translationProgress, setTranslationProgress] = useState('');
   const maxLength = offlineMode ? OFFLINE_TEXT_LIMIT : ONLINE_TEXT_LIMIT;
