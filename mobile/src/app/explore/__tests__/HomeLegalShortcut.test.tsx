@@ -30,13 +30,13 @@ jest.mock('@/lib/api/auLaws', () => ({
   fetchAuLawTopics: jest.fn(async () => [{ slug: 'xuat-nhap-canh', label: 'Hộ chiếu và nhập cảnh Úc', lawCount: 2, note: 'Nguồn chính thức' }]),
 }));
 
-// Hồi quy: kho bài viết có thể rỗng, nhưng luật Úc ở nguồn riêng vẫn phải truy cập được từ trang chủ.
-test('Tra cứu luật nhanh mở cùng Khám phá và truy cập được nhóm luật Úc', async () => {
+// Lối tắt trở lại tìm kiếm cũ; mục Khám phá vẫn giữ nguồn luật Úc riêng.
+test('Tra cứu luật nhanh mở tìm kiếm cũ, Khám phá vẫn có nhóm luật Úc', async () => {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const screen = await render(<QueryClientProvider client={client}><HomeScreen /></QueryClientProvider>);
   await waitFor(() => expect(client.isFetching()).toBe(0));
   await fireEvent.press(screen.getByText('Tra cứu luật nhanh'));
-  expect(router.push).toHaveBeenCalledWith('/explore');
+  expect(router.push).toHaveBeenCalledWith('/search');
   await screen.rerender(<QueryClientProvider client={client}><ExploreScreen /></QueryClientProvider>);
   await waitFor(() => expect(screen.getByText('Hộ chiếu và nhập cảnh Úc')).toBeTruthy());
   expect(fetchAuLawTopics).toHaveBeenCalled();

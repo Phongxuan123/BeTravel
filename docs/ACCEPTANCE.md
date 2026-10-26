@@ -1,5 +1,14 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Khôi phục lối tắt tra cứu luật — 26/10/2026
+
+Đã xong: typecheck/lint mobile và 10 kiểm thử lối tắt/dịch đạt.
+
+Theo yêu cầu mới, “Tra cứu luật nhanh” trở lại `/search` như trước. Quyết định
+này thay thế phần đồng bộ lối tắt ở mục dưới; Khám phá và nguồn luật Úc không
+đổi. Giữ chế độ dịch mặc định online và toàn bộ luồng còn lại. Không sửa
+backend/.env.example, không push Git.
+
 ## Dịch mặc định online và đồng bộ lối tắt pháp luật — 26/10/2026
 
 Tiến độ `[###-] 3/4`: sửa luồng, kiểm tự động, tài liệu xong; nghiệm thu điện
