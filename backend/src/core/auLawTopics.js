@@ -100,3 +100,6 @@ export const topicSlugsForTitle = (titleId) =>
 // Chỉ luật đã tuyển chọn mới được AI diễn giải tiếng Việt: giới hạn số lần gọi LLM (tốn tiền) ở một tập nhỏ.
 const CURATED_TITLE_IDS = new Set(AU_LAW_TOPICS.flatMap((topic) => topic.titleIds));
 export const isCuratedTitle = (titleId) => CURATED_TITLE_IDS.has(titleId);
+
+// Số luật liên bang đã tuyển chọn của Úc, hiển thị là "số quy định" của quốc gia này ở màn chọn nước.
+export const AU_CURATED_TITLE_COUNT = CURATED_TITLE_IDS.size;

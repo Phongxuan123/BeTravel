@@ -2,6 +2,7 @@ import Country from "../models/Country.js";
 import LegalTopic from "../models/LegalTopic.js";
 import LegalArticle from "../models/LegalArticle.js";
 import { ContentStatus } from "../core/constants.js";
+import { AU_CURATED_TITLE_COUNT } from "../core/auLawTopics.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
 import { normalizeVi, toDStrokeInsensitivePattern } from "../utils/textNormalize.js";
 
@@ -20,6 +21,10 @@ const PUBLISHED_CURRENT_FILTER = { status: ContentStatus.PUBLISHED, isCurrent: t
 export const INTERNAL_ARTICLE_FIELDS =
   "-titleNorm -summaryNorm -reviewNote -reviewedBy -indexState -createdBy -updatedBy -__v";
 
+// Quoc gia co nguon luat ngoai legal_articles (luat lien bang Uc tra qua /api/laws/australia): so luat dung
+// de hien thi "so quy dinh" thay vi 0.
+const FEDERAL_LAW_COUNT_BY_COUNTRY = { AU: AU_CURATED_TITLE_COUNT };
+
 // Khong loc theo status: mobile can biet ca quoc gia 'coming_soon' de hien
 // trang thai ro rang thay vi 404 (DoD B3 muc 12).
 export const listCountries = async () => {
@@ -34,6 +39,7 @@ export const listCountries = async () => {
   return countries.map((country) => ({
     ...country.toObject(),
     articleCount: countByCode.get(country.code) ?? 0,
+    federalLawCount: FEDERAL_LAW_COUNT_BY_COUNTRY[country.code] ?? 0,
   }));
 };
 

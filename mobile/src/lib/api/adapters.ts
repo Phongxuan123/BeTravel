@@ -7,7 +7,13 @@
 import type { Article, Country, QuickPhrase, SearchResultItem, SupportLocation, Topic, Trip } from '@/mocks/schemas';
 
 // ── Raw API shapes (khớp backend/src/models + publicContent.service.js) ──
-export type ApiEmergencyNumbers = { police?: string; ambulance?: string; fire?: string; marine?: string };
+export type ApiEmergencyNumbers = {
+  police?: string;
+  ambulance?: string;
+  fire?: string;
+  marine?: string;
+  extra?: { label: string; number: string; group?: 'police' | 'ambulance' }[];
+};
 export type ApiEmbassy = { name?: string; address?: string; phone?: string; lat?: number; lng?: number };
 
 export type ApiCountry = {
@@ -20,6 +26,8 @@ export type ApiCountry = {
   emergencyNumbers?: ApiEmergencyNumbers;
   embassy?: ApiEmbassy;
   articleCount: number;
+  // Số luật liên bang tuyển chọn (chỉ Úc > 0), cộng vào "số quy định" của quốc gia.
+  federalLawCount?: number;
 };
 
 export type ApiTopic = {
@@ -97,7 +105,7 @@ export function adaptCountry(api: ApiCountry): Country {
     name: api.name,
     region: REGION_BY_CODE[api.code] ?? '',
     language: api.language ?? '',
-    regulationsCount: api.articleCount,
+    regulationsCount: api.articleCount + (api.federalLawCount ?? 0),
     // Country khong phai la vi tri hien tai cua user. Khong bia thu do lam vi tri.
     currentCity: '',
     status: api.status,
@@ -107,6 +115,7 @@ export function adaptCountry(api: ApiCountry): Country {
       ambulance: api.emergencyNumbers?.ambulance ?? '',
       fire: api.emergencyNumbers?.fire ?? '',
       marine: api.emergencyNumbers?.marine ?? '',
+      extra: api.emergencyNumbers?.extra ?? [],
     },
     embassy: {
       name: api.embassy?.name ?? '',

@@ -285,6 +285,21 @@ export default function HomeScreen() {
             <CallTile label="Cấp cứu" number={country?.emergencyNumbers.ambulance} tone="red" />
             <CallTile label="Đại sứ quán" number={country?.embassy.phone} tone="blue" compact />
           </View>
+          {(country?.emergencyNumbers.extra ?? []).map((item) => (
+            <Pressable
+              key={item.number}
+              accessibilityRole="button"
+              accessibilityLabel={`Gọi ${item.label}`}
+              onPress={() => void openPhone(item.number)}
+              className="mt-2.5 min-h-[48px] flex-row items-center justify-between rounded-lg border border-line bg-surface px-4"
+            >
+              <View className="flex-1 flex-row items-center" style={{ gap: 10 }}>
+                <Phone size={16} color={colors.primary} />
+                <Text className="flex-1 text-[13px] font-body-bold text-ink" numberOfLines={1}>{item.label}</Text>
+              </View>
+              <Text className="font-mono-bold text-[15px]" style={{ color: colors.primaryStrong }}>{item.number}</Text>
+            </Pressable>
+          ))}
         </View>
       </ScrollView>
     </AppShell>
