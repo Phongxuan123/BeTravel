@@ -41,7 +41,13 @@ const emergencyNumbersSchema = z
     fire: z.string().optional(),
     marine: z.string().optional(),
     extra: z
-      .array(z.object({ label: z.string().trim().min(1).max(80), number: z.string().trim().min(1).max(30) }))
+      .array(
+        z.object({
+          label: z.string().trim().min(1).max(80),
+          number: z.string().trim().min(1).max(30),
+          group: z.enum(["police", "ambulance"]).optional(),
+        }),
+      )
       .max(10)
       .optional(),
   })

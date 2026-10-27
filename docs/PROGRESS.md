@@ -236,8 +236,8 @@ chờ tới 60 giây.
 ## Số khẩn cấp bổ sung và số quy định của Úc — 27/10/2026
 
 - `Country.emergencyNumbers.extra: [{label, number}]` (model, validator admin, contract, mobile): danh sách số hữu ích ngoài bốn số chính.
-  Úc: 131 444 (cảnh sát không khẩn cấp), 112 (khẩn cấp từ điện thoại di động), 1800 022 222 (Healthdirect). Trang chủ hiện thêm
-  các dòng gọi nhanh dưới ba ô Cảnh sát/Cấp cứu/Đại sứ quán. Đã cập nhật dữ liệu Úc trong DB (seed chỉ tạo mới, không ghi đè).
+  Úc: 131 444 (cảnh sát không khẩn cấp), 112 (khẩn cấp từ điện thoại di động), 1800 022 222 (Healthdirect). Mỗi số có `group` (`police`|`ambulance`)
+  và hiện ngay trong ô Cảnh sát / Cấp cứu ở "Gọi nhanh khẩn cấp" (Đại sứ quán xuống hàng riêng). Đã cập nhật dữ liệu Úc trong DB (seed chỉ tạo mới, không ghi đè).
 - `GET /api/countries` thêm `federalLawCount` (Úc = số luật tuyển chọn, 32); mobile cộng vào `regulationsCount` nên màn chọn nước hiện
   "32 quy định" thay vì "0 quy định". 000 vẫn là số duy nhất của cảnh sát, cứu thương và cứu hỏa ở Úc. Chưa thử trên thiết bị thật.
 

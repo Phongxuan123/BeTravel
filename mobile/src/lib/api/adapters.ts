@@ -12,7 +12,7 @@ export type ApiEmergencyNumbers = {
   ambulance?: string;
   fire?: string;
   marine?: string;
-  extra?: { label: string; number: string }[];
+  extra?: { label: string; number: string; group?: 'police' | 'ambulance' }[];
 };
 export type ApiEmbassy = { name?: string; address?: string; phone?: string; lat?: number; lng?: number };
 

@@ -6,9 +6,14 @@ import { CountryStatus } from "../core/constants.js";
  * Danh sach quoc gia ho tro. code la ISO-2 (vi du 'KR', 'JP'). Khong hard-code
  * quoc gia trong business logic o bat ky dau khac -- moi thu di qua bang nay.
  */
-// Số hữu ích ngoài bốn số chính (ví dụ đường dây cảnh sát không khẩn cấp, tư vấn y tế): hiện ở trang chủ để gọi nhanh.
+// Số hữu ích ngoài bốn số chính (ví dụ đường dây cảnh sát không khẩn cấp, tư vấn y tế). `group` cho biết số này xếp vào ô
+// Cảnh sát hay Cấp cứu ở trang chủ để gọi nhanh.
 const extraNumberSchema = new mongoose.Schema(
-  { label: { type: String, required: true, trim: true }, number: { type: String, required: true, trim: true } },
+  {
+    label: { type: String, required: true, trim: true },
+    number: { type: String, required: true, trim: true },
+    group: { type: String, enum: ["police", "ambulance"], default: "police" },
+  },
   { _id: false },
 );
 

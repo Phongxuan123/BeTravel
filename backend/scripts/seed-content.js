@@ -108,9 +108,9 @@ export const COUNTRIES = [
       // 131 444 và 1800 022 222: trang cảnh sát các bang và Healthdirect (đối chiếu 21/10/2026). 112: số khẩn cấp quốc tế,
       // gọi được từ điện thoại di động ở Úc kể cả khi máy không có sóng nhà mạng.
       extra: [
-        { label: "Cảnh sát (không khẩn cấp)", number: "131 444" },
-        { label: "Khẩn cấp từ điện thoại di động", number: "112" },
-        { label: "Tư vấn y tế 24/7 (Healthdirect)", number: "1800 022 222" },
+        { label: "Không khẩn cấp", number: "131 444", group: "police" },
+        { label: "Từ điện thoại di động", number: "112", group: "police" },
+        { label: "Tư vấn y tế 24/7", number: "1800 022 222", group: "ambulance" },
       ],
     },
     // Đại sứ quán Canberra đã đối chiếu DFAT + website + OSM (scripts/data/auVietnamMissions.js); các TLSQ nạp bằng

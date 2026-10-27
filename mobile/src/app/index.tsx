@@ -28,6 +28,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { colors } from '@/lib/theme';
 import { openPhone } from '@/lib/openExternal';
 import { useCountry } from '@/lib/countryContext';
+import type { Country } from '@/mocks/schemas';
 import { useAuth } from '@/lib/auth';
 import { fetchTrips, fetchAlerts, fetchArticles, fetchCountries } from '@/lib/data';
 import { isFeatureDisabledError } from '@/lib/api/http';
@@ -281,25 +282,22 @@ export default function HomeScreen() {
         <View className="mt-7">
           <SectionHeader title="Gọi nhanh khẩn cấp" actionLabel="Trung tâm SOS" onAction={() => router.push('/sos')} />
           <View className="mt-3 flex-row" style={{ gap: 10 }}>
-            <CallTile label="Cảnh sát" number={country?.emergencyNumbers.police} tone="red" />
-            <CallTile label="Cấp cứu" number={country?.emergencyNumbers.ambulance} tone="red" />
+            <CallTile
+              label="Cảnh sát"
+              number={country?.emergencyNumbers.police}
+              tone="red"
+              extras={extraNumbersFor(country, 'police')}
+            />
+            <CallTile
+              label="Cấp cứu"
+              number={country?.emergencyNumbers.ambulance}
+              tone="red"
+              extras={extraNumbersFor(country, 'ambulance')}
+            />
+          </View>
+          <View className="mt-2.5 flex-row">
             <CallTile label="Đại sứ quán" number={country?.embassy.phone} tone="blue" compact />
           </View>
-          {(country?.emergencyNumbers.extra ?? []).map((item) => (
-            <Pressable
-              key={item.number}
-              accessibilityRole="button"
-              accessibilityLabel={`Gọi ${item.label}`}
-              onPress={() => void openPhone(item.number)}
-              className="mt-2.5 min-h-[48px] flex-row items-center justify-between rounded-lg border border-line bg-surface px-4"
-            >
-              <View className="flex-1 flex-row items-center" style={{ gap: 10 }}>
-                <Phone size={16} color={colors.primary} />
-                <Text className="flex-1 text-[13px] font-body-bold text-ink" numberOfLines={1}>{item.label}</Text>
-              </View>
-              <Text className="font-mono-bold text-[15px]" style={{ color: colors.primaryStrong }}>{item.number}</Text>
-            </Pressable>
-          ))}
         </View>
       </ScrollView>
     </AppShell>
@@ -484,39 +482,65 @@ function ShortcutCard({
   );
 }
 
+type ExtraNumber = { label: string; number: string };
+
+// Số bổ sung xếp vào ô Cảnh sát hoặc Cấp cứu; số chưa ghi nhóm mặc định thuộc ô Cảnh sát.
+function extraNumbersFor(country: Country | undefined, group: 'police' | 'ambulance'): ExtraNumber[] {
+  return (country?.emergencyNumbers.extra ?? []).filter((item) => (item.group ?? 'police') === group);
+}
+
 function CallTile({
   label,
   number,
   tone,
   compact,
+  extras = [],
 }: {
   label: string;
   number?: string;
   tone: 'red' | 'blue';
   compact?: boolean;
+  extras?: ExtraNumber[];
 }) {
   const isRed = tone === 'red';
+  const numberColor = isRed ? colors.dangerStrong : colors.primaryStrong;
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Gọi ${label}`}
-      disabled={!number}
-      onPress={() => void openPhone(number)}
-      className={`min-h-[84px] flex-1 items-center justify-center rounded-lg border px-2 ${
+    <View
+      className={`min-h-[84px] flex-1 overflow-hidden rounded-lg border ${
         isRed ? 'border-danger-line bg-danger-tint' : 'border-line bg-surface'
       }`}
-      style={{ gap: 4 }}
     >
-      <Phone size={18} color={isRed ? colors.dangerStrong : colors.primary} />
-      <Text className="text-[13px] font-body-bold text-ink" numberOfLines={1}>{label}</Text>
-      <Text
-        className="font-mono-bold text-[15px]"
-        style={{ color: isRed ? colors.dangerStrong : colors.primaryStrong }}
-        numberOfLines={1}
-        adjustsFontSizeToFit={compact}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Gọi ${label}`}
+        disabled={!number}
+        onPress={() => void openPhone(number)}
+        className="min-h-[84px] items-center justify-center px-2"
+        style={{ gap: 4 }}
       >
-        {number || '--'}
-      </Text>
-    </Pressable>
+        <Phone size={18} color={isRed ? colors.dangerStrong : colors.primary} />
+        <Text className="text-[13px] font-body-bold text-ink" numberOfLines={1}>{label}</Text>
+        <Text
+          className="font-mono-bold text-[15px]"
+          style={{ color: numberColor }}
+          numberOfLines={1}
+          adjustsFontSizeToFit={compact}
+        >
+          {number || '--'}
+        </Text>
+      </Pressable>
+      {extras.map((item) => (
+        <Pressable
+          key={item.number}
+          accessibilityRole="button"
+          accessibilityLabel={`Gọi ${label}: ${item.label}`}
+          onPress={() => void openPhone(item.number)}
+          className="border-t border-danger-line px-2 py-2"
+        >
+          <Text className="text-[11px] text-muted" numberOfLines={1}>{item.label}</Text>
+          <Text className="font-mono-bold text-[14px]" style={{ color: numberColor }} numberOfLines={1}>{item.number}</Text>
+        </Pressable>
+      ))}
+    </View>
   );
 }
