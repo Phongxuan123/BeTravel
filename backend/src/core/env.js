@@ -81,10 +81,14 @@ const envSchema = z.object({
   LLM_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   GEMINI_API_KEY: z.string().optional().default(""),
   OPENAI_API_KEY: z.string().optional().default(""),
+  // Chỉ cần khi TRANSLATION_PROVIDER=claude.
+  ANTHROPIC_API_KEY: z.string().optional().default(""),
   OPENAI_BASE_URL: z.string().url().default("https://api.openai.com/v1"),
   OPENAI_JSON_MODE: booleanish(true),
   LLM_MODEL: z.string().default("gemini-3.5-flash-lite"),
   TRANSLATION_MODEL: z.string().default("gemini-3.5-flash-lite"),
+  // gemini | claude: dịch luật Úc bằng nhà cung cấp đó (cần GEMINI_API_KEY / ANTHROPIC_API_KEY) dù chat dùng nhà cung cấp khác; default: dùng chung với chat.
+  TRANSLATION_PROVIDER: z.enum(["default", "gemini", "claude"]).default("default"),
   // Model riêng cho bước chuyển câu hỏi thành từ khoá (RETRIEVAL_MODE=lexical): việc nhỏ, nên dùng
   // model nhanh/rẻ. Rỗng = dùng LLM_MODEL.
   QUERY_REWRITE_MODEL: z.string().optional().default(""),

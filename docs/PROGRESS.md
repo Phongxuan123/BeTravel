@@ -9,6 +9,40 @@ này thay thế phần đồng bộ lối tắt ở mục dưới; Khám phá v�
 đổi. Giữ chế độ dịch mặc định online và toàn bộ luồng còn lại. Không sửa
 backend/.env.example, không push Git.
 
+## Dịch luật bằng Gemini thay vì APIZ — 24/10/2026
+
+- APIZ (api.apiz.vn) không truy cập được từ 24/10 (máy chủ không phản hồi) nên việc dịch hàng loạt dừng ở 17,5%. Thêm
+  `TRANSLATION_PROVIDER` (`default` | `gemini`): `gemini` dịch luật bằng Gemini (`TRANSLATION_MODEL`, cần `GEMINI_API_KEY`) dù chat vẫn dùng APIZ.
+  Gemini gói miễn phí hết hạn mức giữa chừng (các luật sau lỗi hết trong vài giây) nên thêm `TRANSLATION_PROVIDER=claude`
+  (`rag/llm/claude.llm.js`, Anthropic Messages API, cần `ANTHROPIC_API_KEY`, đặt `TRANSLATION_MODEL=claude-haiku-5-5`).
+  Đã thử một lần gọi dịch thật qua Gemini: thành công. `backend/test/setup.js` ép `default` để test không phụ thuộc `.env` máy.
+
+## Luật Úc hiện tiếng Việt ở cả Tóm tắt và Toàn văn — 24/10/2026
+
+- Tab "Nguyên bản" đổi thành "Toàn văn": hiện bản dịch tiếng Việt mặc định (kèm bản gốc nhỏ bên dưới), bỏ nút "Dịch sang tiếng Việt".
+  Luật ngoài danh sách tuyển chọn (không dịch được) vẫn hiện tiếng Anh.
+- `GET /api/laws/australia/:id/summary` thêm `purpose.textVi`, `outline[].textVi`, `deepSummary.parts[].headingVi`, lấy từ cache bản
+  dịch sẵn (`lookupCachedTranslations`, không gọi AI). Chỉ hiện đủ tiếng Việt cho luật đã dịch xong (script đang chạy nền).
+
+## Dịch sẵn 31 luật Úc sang tiếng Việt — 24/10/2026
+
+- `backend/scripts/translate-au-laws.js` (`npm run translate-au-laws [-- <mã luật>...]`) + `pretranslateTitle` trong
+  `australiaLawTranslation.service.js`: dịch trước toàn bộ luật đã tuyển chọn, lưu cache theo cụm 25 đoạn (AiCache), chạy lại
+  chỉ dịch cụm còn thiếu, dừng sớm khi 3 luật liên tiếp lỗi. Cờ `--concurrency=N` (mặc định 2).
+- Quy mô đo thật: 31 luật = 307.000 đoạn, ~19 triệu ký tự, ~12.300 lần gọi AI. Đo: concurrency 2 khoảng 12s/cụm, concurrency 8
+  khoảng 0,2 cụm/giây (~17 giờ cho toàn bộ). "Toàn bộ luật Úc" (hàng nghìn văn bản) không khả thi, chỉ dịch 31 luật tuyển chọn.
+- Bản dịch vẫn qua hậu kiểm số liệu từng đoạn; đoạn không qua kiểm tra hiển thị bản gốc tiếng Anh.
+
+## Màn chi tiết luật Úc: Tóm tắt / Nguyên bản — 24/10/2026
+
+- `mobile/src/app/laws/[id].tsx`: thêm hai tab "Tóm tắt" (mặc định, các ý chính của luật) và "Nguyên bản" (toàn văn, có nút
+  dịch sang tiếng Việt khi luật hỗ trợ). Trước đây tóm tắt luôn hiện và phải bấm "Xem nội dung" mới thấy toàn văn.
+  Thẻ "Tra cứu luật nhanh" ở trang chủ mở Cẩm nang pháp luật (`/explore`) -- đã được thay bằng `/search` ngày 26/10 (mục "Khôi phục lối tắt tra cứu luật"). Chưa thử trên thiết bị thật.
+- Tab Tóm tắt trình bày theo mục có tiêu đề (Tóm tắt, Mục đích, Nội dung từng phần kèm căn cứ trong luật, Cấu trúc chính, Ghi chú),
+  chữ lớn; ý chính nói về mức phạt/án tù được in đậm đỏ (chỉ đổi kiểu hiển thị). Mẫu tham khảo: màn tra cứu mức phạt giao thông.
+- Rút gọn tab Tóm tắt theo tầng: luôn hiện đoạn tóm tắt + tối đa 4 ý chính; "Nội dung từng phần" chỉ hiện tiêu đề, chạm để mở từng phần;
+  mục đích và cấu trúc (nguyên văn tiếng Anh) thu gọn sau một nút. Không đổi nội dung, chỉ đổi cách hiển thị.
+
 ## Dịch mặc định online và đồng bộ lối tắt pháp luật — 26/10/2026
 
 Tiến độ `[###-] 3/4`: sửa luồng, kiểm tự động, tài liệu xong; nghiệm thu điện

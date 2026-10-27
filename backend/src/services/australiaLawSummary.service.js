@@ -5,6 +5,7 @@ import AiCache from "../models/AiCache.js";
 import { completeWithRateLimitRetry } from "../rag/llm/rateLimitRetry.js";
 import { createTtlCache } from "../utils/ttlCache.js";
 import { getDeepSummaryState } from "./australiaLawDeepSummary.service.js";
+import { lookupCachedTranslations } from "./australiaLawTranslation.service.js";
 import { getTitleName, getTitleOutline } from "./australiaLegislation.service.js";
 
 /*
@@ -151,10 +152,31 @@ export const getTitleSummary = async (titleId) => {
   // Tóm tắt từng Phần: đọc cache; chưa có thì kích hoạt sinh nền và báo "generating" (client hỏi lại sau).
   const deep = await getDeepSummaryState(titleId, outlineResult.source.registerId);
 
+  // Tiêu đề, mục đích và dàn ý hiện bằng tiếng Việt khi toàn văn đã được dịch sẵn (chỉ đọc cache, không gọi AI).
+  const parts = deep.deepSummary?.parts ?? [];
+  const viByCitation = isCuratedTitle(titleId)
+    ? await lookupCachedTranslations(outlineResult.source.registerId, [
+        ...(outlineResult.purpose ? [outlineResult.purpose.citationId] : []),
+        ...outlineResult.outline.map((item) => item.citationId),
+        ...parts.map((part) => part.citationId),
+      ])
+    : new Map();
+  const withVi = (item) => ({ ...item, textVi: viByCitation.get(item.citationId) ?? null });
+
   return {
     ...outlineResult,
+    purpose: outlineResult.purpose ? withVi(outlineResult.purpose) : null,
+    outline: outlineResult.outline.map(withVi),
     deepStatus: deep.status,
-    deepSummary: deep.deepSummary,
+    deepSummary: deep.deepSummary
+      ? {
+          ...deep.deepSummary,
+          parts: parts.map((part) => ({
+            ...part,
+            headingVi: viByCitation.get(part.citationId) ?? null,
+          })),
+        }
+      : null,
     summaryViStatus: status,
     summaryVi: viSummary ? { ...viSummary, aiGenerated: true, basedOn: "longTitle+outline" } : null,
     disclaimer: SUMMARY_DISCLAIMER,

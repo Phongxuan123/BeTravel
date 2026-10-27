@@ -1,5 +1,6 @@
 import { env } from "../../core/env.js";
 import { createMockLlmProvider } from "./mock.llm.js";
+import { createClaudeLlmProvider } from "./claude.llm.js";
 import { createGeminiLlmProvider } from "./gemini.llm.js";
 import { createOpenAiLlmProvider } from "./openai.llm.js";
 import { createOpenAiWebSearchProvider } from "./openai.webSearch.js";
@@ -53,8 +54,12 @@ export function __setWebSearchProviderForTest(provider) {
 }
 
 // Dịch dùng model riêng, không thay đổi cấu hình AI pháp lý; quota dự án vẫn chung.
+// TRANSLATION_PROVIDER=gemini|claude: dịch luôn chạy bằng nhà cung cấp đó (model TRANSLATION_MODEL) dù chat dùng nhà cung cấp
+// khác (APIZ); mặc định dùng chung nhà cung cấp với chat.
 export function getTranslationProvider() {
-  if (env.LLM_PROVIDER === "gemini")
+  if (env.TRANSLATION_PROVIDER === "claude")
+    return createClaudeLlmProvider({ apiKey: env.ANTHROPIC_API_KEY, model: env.TRANSLATION_MODEL });
+  if (env.LLM_PROVIDER === "gemini" || env.TRANSLATION_PROVIDER === "gemini")
     return createGeminiLlmProvider({
       apiKey: env.GEMINI_API_KEY,
       model: env.TRANSLATION_MODEL,
