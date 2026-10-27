@@ -391,7 +391,9 @@ Khong can `Authorization`. Moi truy van `legal_articles` o day BAT BUOC loc
 ### 8.1. Countries
 
 ```
-GET /countries              200, tra CA active lan coming_soon kem articleCount
+GET /countries              200, tra CA active lan coming_soon kem articleCount va federalLawCount
+                            (so luat lien bang tuyen chon, chi AU > 0; mobile cong vao "so quy dinh").
+                            emergencyNumbers co them extra: [{label, number}] (so huu ich khac, co the rong)
 GET /countries/:code        200, hoac 404 NOT_FOUND
 ```
 

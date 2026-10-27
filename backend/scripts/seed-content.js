@@ -100,7 +100,19 @@ export const COUNTRIES = [
     status: CountryStatus.ACTIVE,
     // 000 là số khẩn cấp quốc gia của Úc (cảnh sát, cứu thương, cứu hỏa). Không có số hàng hải
     // riêng đã kiểm chứng nên để trống. Chưa có nguồn cho thông tin Đại sứ quán nên để trống.
-    emergencyNumbers: { police: "000", ambulance: "000", fire: "000", marine: "" },
+    emergencyNumbers: {
+      police: "000",
+      ambulance: "000",
+      fire: "000",
+      marine: "",
+      // 131 444 và 1800 022 222: trang cảnh sát các bang và Healthdirect (đối chiếu 21/10/2026). 112: số khẩn cấp quốc tế,
+      // gọi được từ điện thoại di động ở Úc kể cả khi máy không có sóng nhà mạng.
+      extra: [
+        { label: "Cảnh sát (không khẩn cấp)", number: "131 444" },
+        { label: "Khẩn cấp từ điện thoại di động", number: "112" },
+        { label: "Tư vấn y tế 24/7 (Healthdirect)", number: "1800 022 222" },
+      ],
+    },
     // Đại sứ quán Canberra đã đối chiếu DFAT + website + OSM (scripts/data/auVietnamMissions.js); các TLSQ nạp bằng
     // `npm run seed:au-missions` vào support_locations.
     embassy: AU_EMBASSY,

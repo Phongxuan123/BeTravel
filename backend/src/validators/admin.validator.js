@@ -40,6 +40,10 @@ const emergencyNumbersSchema = z
     ambulance: z.string().optional(),
     fire: z.string().optional(),
     marine: z.string().optional(),
+    extra: z
+      .array(z.object({ label: z.string().trim().min(1).max(80), number: z.string().trim().min(1).max(30) }))
+      .max(10)
+      .optional(),
   })
   .partial()
   .optional();

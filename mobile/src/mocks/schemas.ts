@@ -10,6 +10,7 @@ export const emergencyNumbersSchema = z.object({
   ambulance: z.string(),
   fire: z.string(),
   marine: z.string(),
+  extra: z.array(z.object({ label: z.string(), number: z.string() })).optional(),
 });
 
 export const embassySchema = z.object({

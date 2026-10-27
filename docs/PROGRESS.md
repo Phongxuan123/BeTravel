@@ -233,6 +233,14 @@ chờ tới 60 giây.
   khoá); câu đi qua AI 8-27 giây (thời gian trả lời của model glm-5.3-flash qua APIZ).
 - Emulator: câu giao thông hiện đủ lý do, link Tourism Australia mở được Chrome; câu chó cưng hiện link ABF.
 
+## Số khẩn cấp bổ sung và số quy định của Úc — 27/10/2026
+
+- `Country.emergencyNumbers.extra: [{label, number}]` (model, validator admin, contract, mobile): danh sách số hữu ích ngoài bốn số chính.
+  Úc: 131 444 (cảnh sát không khẩn cấp), 112 (khẩn cấp từ điện thoại di động), 1800 022 222 (Healthdirect). Trang chủ hiện thêm
+  các dòng gọi nhanh dưới ba ô Cảnh sát/Cấp cứu/Đại sứ quán. Đã cập nhật dữ liệu Úc trong DB (seed chỉ tạo mới, không ghi đè).
+- `GET /api/countries` thêm `federalLawCount` (Úc = số luật tuyển chọn, 32); mobile cộng vào `regulationsCount` nên màn chọn nước hiện
+  "32 quy định" thay vì "0 quy định". 000 vẫn là số duy nhất của cảnh sát, cứu thương và cứu hỏa ở Úc. Chưa thử trên thiết bị thật.
+
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 
 Theo yêu cầu người dùng ("AI tạm thời thỏa mãn để kích hoạt lại").
