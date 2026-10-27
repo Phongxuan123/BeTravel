@@ -126,9 +126,29 @@ const envSchema = z.object({
   FAQ_MIN_REPEAT: numeric(3),
   FAQ_WINDOW_DAYS: numeric(15),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
-  AI_CACHE_TTL_HOURS: numeric(24),
+  // Hạn dùng lại câu trả lời đã sinh (cache theo nguồn và bộ nhớ câu hỏi lặp lại), mặc định 5 ngày.
+  AI_CACHE_TTL_HOURS: numeric(120),
+  // Câu hỏi khác chữ nhưng cùng từ khoá (Jaccard 0-1) từ ngưỡng này thì dùng lại câu trả lời trước.
+  // Cao hơn ngưỡng FAQ vì không có người duyệt: trả nhầm câu trái nghĩa tệ hơn gọi lại AI.
+  ANSWER_REPEAT_MIN_SIMILARITY: numeric(0.9),
   AI_DAILY_QUOTA_USER: numeric(40),
   AI_DAILY_QUOTA_GLOBAL: numeric(800),
+  // Tầng tra web (rag/webAnswer.js): chỉ chạy khi kho không đủ bằng chứng, chỉ trong tên miền
+  // chính phủ của quốc gia (Country.officialWebDomains). Cần provider openai có Responses API.
+  WEB_SEARCH_ENABLED: booleanish(false),
+  // Rỗng = dùng LLM_MODEL.
+  WEB_SEARCH_MODEL: z.string().optional().default(""),
+  WEB_SEARCH_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+  WEB_SEARCH_MAX_OUTPUT_TOKENS: numeric(1500),
+  // Mỗi câu tra web tốn gấp 5-8 lần câu trả lời từ kho: trần riêng theo người và theo ngân sách ngày.
+  WEB_SEARCH_DAILY_LIMIT_USER: numeric(5),
+  WEB_SEARCH_DAILY_BUDGET_VND: numeric(2000),
+  // Đơn giá LLM_MODEL (cũng là model tra web mặc định), VND / 1 triệu token: ước tính chi phí ghi
+  // vào ai_events và chặn tra web theo ngân sách ngày. Đổi model thì cập nhật theo bảng giá nhà cung cấp.
+  LLM_PRICE_INPUT_VND_PER_M: numeric(4000),
+  LLM_PRICE_OUTPUT_VND_PER_M: numeric(24000),
+  // Bước chấm nhanh "có thuộc chủ đề pháp lý du lịch" trước khi tra web; quá hạn thì không tra web.
+  WEB_TOPIC_GATE_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
   // Lớp địa điểm bổ sung (CHƯA xác minh, tách khỏi support_locations).
   // osm: OpenStreetMap qua Overpass, miễn phí, không cần key. serpapi: Google Maps qua SerpApi, tốn quota.
@@ -167,6 +187,12 @@ const envSchema = z.object({
   AU_LEGISLATION_CACHE_TTL_MINUTES: numeric(60),
   // RAG: mã bản hiện hành tra thành công gần đây còn được dùng khi nguồn chập chờn (xem retrieval.js).
   AU_REGISTER_MAX_STALE_HOURS: numeric(24),
+  // SEARCH_DRIVER=memory: hạn cache chunk trong RAM; hết hạn thì nạp lại ở nền, vẫn dùng bản cũ.
+  MEMORY_SEARCH_CACHE_TTL_MS: z.coerce.number().int().positive().default(600_000),
+  // RAG: thời gian tối đa chờ nguồn luật Úc xác minh một luật chưa có kết quả còn hạn.
+  AU_REGISTER_LOOKUP_BUDGET_MS: z.coerce.number().int().positive().default(5_000),
+  // Trần thời gian bước tạo từ khoá (lexical); quá hạn thì dùng câu hỏi gốc làm từ khoá.
+  QUERY_REWRITE_TIMEOUT_MS: z.coerce.number().int().positive().default(15_000),
   // true = tự sinh tóm tắt từng Phần (nhiều lượt gọi AI) khi có người mở luật lần đầu. Mặc định tắt để
   // không âm thầm đốt hạn mức AI; sinh chủ động bằng `npm run summarize-au-laws`.
   AU_LAW_DEEP_SUMMARY_AUTOGEN: booleanish(false),

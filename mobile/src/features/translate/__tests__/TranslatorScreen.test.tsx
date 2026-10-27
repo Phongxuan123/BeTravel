@@ -1,7 +1,7 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TranslatorScreen from '@/app/translate';
-import { translateText } from '@/lib/data';
+import { fetchQuickPhrases, translateText } from '@/lib/data';
 import * as Speech from 'expo-speech';
 import * as offlineTranslation from '../offlineTranslation';
 import { AppState } from 'react-native';
@@ -23,12 +23,13 @@ jest.mock('@/lib/data', () => ({ fetchQuickPhrases: jest.fn(), translateText: je
 async function setup() {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
   const screen = await render(<QueryClientProvider client={client}><TranslatorScreen /></QueryClientProvider>);
-  await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', false);
+  await waitFor(() => expect(client.isFetching()).toBe(0));
   return screen;
 }
 
 beforeEach(() => {
   jest.clearAllMocks();
+  (fetchQuickPhrases as jest.Mock).mockResolvedValue({ data: [] });
   Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });
 });
 
@@ -95,14 +96,14 @@ test('response dịch đến muộn không ghi đè câu đã sửa', async () =
 
 
 test('giao diện mới giữ dịch offline đoạn dài và ghi công Google, không gọi server', async () => {
-  const spy = jest.spyOn(offlineTranslation, 'translateOffline').mockResolvedValue({ translated: 'Offline translation.', phonetic: '' });
+  const spy = jest.spyOn(offlineTranslation, 'translateOffline').mockResolvedValue({ translated: 'Offline translation.', phonetic: '', engine: 'mlkit' });
   try {
     const screen = await setup();
     await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', true);
     const text = 'Tôi cần tìm đường đến bệnh viện. '.repeat(24);
     await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), text);
     expect(screen.getByText(`${text.length}/5000`)).toBeTruthy();
-    await fireEvent.press(screen.getByText('Dịch với Google'));
+    await fireEvent.press(screen.getByText('Dịch offline'));
     await waitFor(() => expect(screen.getByText('Phát âm to rõ')).toBeTruthy());
     expect(spy).toHaveBeenCalledWith(text.trim(), 'vi', 'en', expect.any(Function), expect.any(Function));
     expect(translateText).not.toHaveBeenCalled();
@@ -111,4 +112,43 @@ test('giao diện mới giữ dịch offline đoạn dài và ghi công Google, 
   } finally {
     spy.mockRestore();
   }
+});
+
+test('luồng cài mới dịch câu và từ tích hợp, không gọi máy chủ hoặc gắn nhãn Google', async () => {
+  const screen = await setup();
+  await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', true);
+  await fireEvent.press(screen.getByText('Dịch offline'));
+  await waitFor(() => expect(screen.getByText('I need help.')).toBeTruthy());
+  expect(translateText).not.toHaveBeenCalled();
+  expect(screen.queryAllByLabelText('powered by Google Translate')).toHaveLength(0);
+  await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), 'hộ chiếu');
+  await fireEvent.press(screen.getByText('Dịch offline'));
+  await waitFor(() => expect(screen.getByText('passport')).toBeTruthy());
+  expect(screen.getByText(/Từ du lịch cốt lõi/)).toBeTruthy();
+  await fireEvent.press(screen.getByLabelText('Đổi chiều dịch'));
+  await fireEvent.press(screen.getByText('Dịch offline'));
+  await waitFor(() => expect(screen.getByText('hộ chiếu')).toBeTruthy());
+  expect(translateText).not.toHaveBeenCalled();
+});
+
+test('tìm câu thông dụng không dấu, chọn câu và xóa kết quả cũ khi sửa', async () => {
+  const screen = await setup();
+  await fireEvent.changeText(screen.getByLabelText('Tìm câu thông dụng'), 'mat ho chieu');
+  await fireEvent.press(screen.getByText('Tôi bị mất hộ chiếu.'));
+  expect(screen.getByDisplayValue('Tôi bị mất hộ chiếu.')).toBeTruthy();
+  expect(screen.getAllByText('I lost my passport.').length).toBeGreaterThan(0);
+  await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), 'Tôi không bị mất hộ chiếu.');
+  expect(screen.queryByText('Phát âm to rõ')).toBeNull();
+});
+
+
+test('mở màn dịch mặc định online; chỉ dịch offline khi người dùng bật', async () => {
+  const screen = await setup();
+  expect(screen.getByLabelText('Dịch không cần mạng').props.value).toBe(false);
+  expect(screen.getByText('Dịch ngay')).toBeTruthy();
+  await fireEvent(screen.getByLabelText('Dịch không cần mạng'), 'valueChange', true);
+  expect(screen.getByText('Dịch offline')).toBeTruthy();
+  await screen.unmount();
+  const reopened = await setup();
+  expect(reopened.getByLabelText('Dịch không cần mạng').props.value).toBe(false);
 });

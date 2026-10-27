@@ -1,5 +1,14 @@
 # TIEN DO BE.TRAVEL
 
+## Khôi phục lối tắt tra cứu luật — 26/10/2026
+
+Đã xong: typecheck/lint mobile và 10 kiểm thử lối tắt/dịch đạt.
+
+Theo yêu cầu mới, “Tra cứu luật nhanh” trở lại `/search` như trước. Quyết định
+này thay thế phần đồng bộ lối tắt ở mục dưới; Khám phá và nguồn luật Úc không
+đổi. Giữ chế độ dịch mặc định online và toàn bộ luồng còn lại. Không sửa
+backend/.env.example, không push Git.
+
 ## Dịch luật bằng Gemini thay vì APIZ — 24/10/2026
 
 - APIZ (api.apiz.vn) không truy cập được từ 24/10 (máy chủ không phản hồi) nên việc dịch hàng loạt dừng ở 17,5%. Thêm
@@ -28,11 +37,201 @@
 
 - `mobile/src/app/laws/[id].tsx`: thêm hai tab "Tóm tắt" (mặc định, các ý chính của luật) và "Nguyên bản" (toàn văn, có nút
   dịch sang tiếng Việt khi luật hỗ trợ). Trước đây tóm tắt luôn hiện và phải bấm "Xem nội dung" mới thấy toàn văn.
-  Thẻ "Tra cứu luật nhanh" ở trang chủ mở Cẩm nang pháp luật (`/explore`). Chưa thử trên thiết bị thật.
+  Thẻ "Tra cứu luật nhanh" ở trang chủ mở Cẩm nang pháp luật (`/explore`) -- đã được thay bằng `/search` ngày 26/10 (mục "Khôi phục lối tắt tra cứu luật"). Chưa thử trên thiết bị thật.
 - Tab Tóm tắt trình bày theo mục có tiêu đề (Tóm tắt, Mục đích, Nội dung từng phần kèm căn cứ trong luật, Cấu trúc chính, Ghi chú),
   chữ lớn; ý chính nói về mức phạt/án tù được in đậm đỏ (chỉ đổi kiểu hiển thị). Mẫu tham khảo: màn tra cứu mức phạt giao thông.
 - Rút gọn tab Tóm tắt theo tầng: luôn hiện đoạn tóm tắt + tối đa 4 ý chính; "Nội dung từng phần" chỉ hiện tiêu đề, chạm để mở từng phần;
   mục đích và cấu trúc (nguyên văn tiếng Anh) thu gọn sau một nút. Không đổi nội dung, chỉ đổi cách hiển thị.
+
+## Dịch mặc định online và đồng bộ lối tắt pháp luật — 26/10/2026
+
+Tiến độ `[###-] 3/4`: sửa luồng, kiểm tự động, tài liệu xong; nghiệm thu điện
+thoại còn mở. Backend 409/409, mobile 265/265 (58 suites), admin 22/22: tổng
+696 tests đạt. Lint/typecheck, backend format và admin build đạt. Mobile chạy
+--detectOpenHandles kết thúc exit 0, còn cảnh báo act ở SosMapScreen và
+TranslatorForm trong full suite (10 tests mục tiêu chạy riêng không cảnh báo).
+Chưa kết luận có lỗi runtime từ cảnh báo test này; theo dõi riêng. Nợ audit đã
+ghi trước đó chưa được đóng, không thay dependency trong đợt này.
+
+- Công tắc “Dịch không cần mạng” mặc định tắt khi khởi tạo màn dịch. Người dùng
+  chủ động bật offline khi cần; không tự phát hiện Wi-Fi, không tự gửi văn bản
+  nếu chưa bấm dịch và không thay cơ chế dịch tích hợp/ML Kit/giới hạn online.
+- Nguyên nhân lối tắt trống: trang chủ đi /search, chỉ tìm kho bài viết khi có
+  từ khóa; luật liên bang Úc là nguồn riêng ở /explore (AuLawsSection).
+  Nay “Tra cứu luật nhanh” đi cùng /explore như tab Khám phá, dùng chung quốc
+  gia đã chọn, truy vấn/cache và lối vào /laws theo chủ đề. Không sao chép dữ
+  liệu luật, không đổi contract/backend hoặc trạng thái công khai nội dung.
+- Hồi quy: mở/remount dịch phải tắt offline; bật tay vẫn dịch được. Trang chủ
+  đi Khám phá, kho bài rỗng vẫn có nhóm luật Úc và bấm được /laws theo chủ đề.
+- Giới hạn: chưa kiểm trực tiếp trên điện thoại hoặc dịch vụ luật/SMTP/AI thật.
+  Rà soát là trong dự án, không khẳng định đã sửa mọi lỗi của hệ điều hành.
+  Giữ nguyên backend/.env.example đang sửa; không push, không ghi DB thật.
+
+## Hợp nhất main ngày 26/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 409/409, mobile 263/263 (57 suites), admin 22/22: tổng 694 tests đạt.
+Lint/typecheck tương ứng, backend format và admin production build đạt.
+Mobile lần đầu báo thoát chậm nhưng exit 0; chạy lại với --detectOpenHandles
+đạt 263 tests, exit 0, không báo handle còn mở. Không build native lại lần này.
+
+- Nhận main `0805c46` (PR #56, #57) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261026-1d8c0b1`.
+- Nhận tầng tra web nguồn chính phủ, bộ nhớ câu trả lời và mở lại chat AI mặc
+  định từ main; giữ nguyên dịch offline, logo và luồng auth đang làm cục bộ.
+- Hai xung đột tài liệu được giải quyết bằng cách giữ nội dung cả hai phía.
+  Mã nguồn hợp nhất tự động. Thay đổi chưa commit backend/.env.example được
+  stash/khôi phục, diff cục bộ sau merge khớp trước merge; giữ ngoài commit.
+- Không sửa .env thật, không chạy seed/index hoặc gọi AI trả phí. Không push,
+  không merge ngược vào main. Chưa nghiệm thu điện thoại hoặc dịch vụ thật;
+  bộ kiểm thử backend dùng DB tạm và provider mock. Nợ audit trước vẫn còn.
+
+## Hợp nhất main ngày 25/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 396/396, mobile 262/262 (57 suites): tổng 658 tests chạy lần này đạt.
+Backend lint/format và mobile typecheck/lint đạt. Backend dùng DB tạm, provider
+mock; kết quả này không phải nghiệm thu UI hay dịch vụ bên ngoài trên máy thật.
+
+- Nhận main `0a94efc` (PR #54, #55) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261025-42d4cc6`.
+- Nhận phản hồi AI khi thiếu nguồn, cache xác minh luật và khóa chat AI mặc định
+  theo main. Giữ nguyên dịch offline, logo, auth và các bản vá dependency cục bộ.
+- Chỉ xung đột PROGRESS/OPTIMIZATION_REPORT; giữ cả hai phía tài liệu. Không
+  phát sinh xung đột mã nguồn. Thay đổi chưa commit trong backend/.env.example
+  được stash, khôi phục và giữ ngoài commit; mọi dòng cũ còn nguyên theo thứ tự,
+  cộng thêm biến mới của main. Giữ stash dự phòng, không sửa .env thật.
+- Admin không đổi so với lần đạt 22 tests/build ngày 22/10, không chạy lại.
+  Chưa kiểm thiết bị/dịch vụ thật, không build native lại; không seed dữ liệu,
+  không push và không merge ngược vào main. Nợ audit trước đó vẫn còn hiệu lực.
+
+## Hợp nhất main ngày 22/10/2026
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 385/385, mobile 262/262, admin 22/22 (tổng 669); lint/typecheck tương
+ứng, backend format và admin build đạt. Chưa nghiệm thu điện thoại hoặc
+AI/SMTP/Atlas thật trong lần này; backend test dùng DB tạm/provider mock.
+Không export/build native lại ở đợt này; không đổi native dependency.
+
+- Nhánh làm việc: `feature/offline-translation-20261012`; nhận main `d5f0535`
+  (PR #52, #53). Mốc dự phòng: `backup/offline-before-main-20261022-ca9f7f8`.
+- Nhận mở chat AI mặc định, luật hải quan Úc và cache xác minh nguồn từ main;
+  giữ dịch offline tích hợp, logo và luồng auth cục bộ.
+- Xung đột hai tài liệu được giữ nội dung cả hai phía. Kiểm thử AuLawsRagPanel
+  giữ helper chờ trong act và cleanup của nhánh; nhận timeout 2000 ms từ main.
+- `backend/.env.example` chưa commit đã cất stash trước merge, khôi phục đúng
+  từng byte bản người dùng và vẫn ngoài commit; giữ stash dự phòng, không xóa.
+- Không thay .env thật, không seed/ghi DB thật, không push hoặc merge vào main.
+
+## Hợp nhất main vào nhánh đang làm — 21/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, fetch/merge, xử lý xung đột, kiểm tự động xong.
+Đây là tiến độ hợp nhất cục bộ; nghiệm thu thiết bị thật vẫn còn mở.
+
+- Nhánh: `feature/offline-translation-20261012`; main lấy về: `4f54f16` (PR #51).
+- Mốc trước merge: `90fdaae`, giữ tại `backup/offline-before-main-20261021-90fdaae`.
+- Nhận cập nhật AI, dữ liệu hỗ trợ và bản đồ SOS từ main. Giữ nguyên bộ dịch
+  offline tích hợp, logo, auth/quên mật khẩu và hai bản vá dependency cục bộ.
+- Chỉ xung đột PROGRESS/OPTIMIZATION_REPORT; giữ nội dung cả hai phía, không
+  chọn bỏ toàn bộ phía nào. Không thay .env, không seed hay ghi dữ liệu Atlas.
+- Sửa kiểm thử admin mới: chờ React Query cập nhật theo điều kiện; unmount,
+  clear QueryClient và restore spy sau mỗi test để tránh rò trạng thái/timer.
+- Kết quả: backend 384/384, mobile 262/262 (57 suites), admin 22/22; tổng 668.
+  Lint/typecheck tương ứng, backend format, admin build và export Hermes
+  Android/iOS đạt. Không có thay đổi dependency mới trong lần hợp nhất này.
+- Chưa kiểm UI trên điện thoại, GPS/dịch vụ bản đồ/AI/SMTP thật ở lần này.
+  Không chạy seed mới tự động; dữ liệu hỗ trợ mới trên Git không đồng nghĩa
+  đã được nạp vào DB. Các giới hạn và nợ audit trước đó vẫn còn hiệu lực.
+- Chỉ commit trên feature ở máy; không push, không merge ngược vào main.
+
+## Bộ dịch tích hợp, logo và xác nhận mật khẩu — 21/10/2026 (hiện hành)
+
+Tiến độ `[###-] 3/4`: triển khai, kiểm tự động/export và tài liệu xong; nghiệm thu
+điện thoại ở chế độ máy bay còn mở. Không đồng nghĩa đã hết mọi lỗi trên máy.
+
+- Offline: 25.473 cặp từ/nghĩa, 13.688 mục từ Việt khác nhau, 868.586 byte JSON
+  Wiktionary/Kaikki CC BY-SA 4.0; 42 từ du lịch cốt lõi và 88 câu BeTravel theo 6 nhóm + 10 câu Tatoeba cũ.
+  Gói nằm trong bundle, không có bước tải cho bộ Việt–Anh. Tra hai chiều và đoạn
+  gồm toàn câu có sẵn; không ghép từ hoặc trả đoạn thiếu câu. Câu tự do ngoài bộ
+  vẫn cần ML Kit có model hoặc online do người dùng chủ động chọn.
+- Giữ ML Kit là mở rộng tùy chọn; ghi engine/nguồn đúng, giữ câu lưu cũ, không đổi
+  API/quota/auth/backend. Thư viện câu có tìm kiếm không dấu, lọc nhóm, xem thêm.
+- Logo gốc assets/logo.jpg đã nối Logo dùng chung (auth, welcome) và trang chủ.
+  Đã xem logo trang chủ BlueStacks. Công cụ bấm Dịch nhanh không chuyển màn,
+  chưa xác nhận trực quan luồng dịch/mật khẩu trên thiết bị; không dùng unit test
+  để khẳng định UI/micro/TTS hoặc chất lượng mọi nghĩa trong corpus.
+- Xác nhận mật khẩu chỉ kiểm khi gửi; sai không gọi API, sửa ô xóa lỗi cũ;
+  giữ OTP và chỉ logout sau thành công. Không thay bố cục auth đã khôi phục.
+- Vá follow-redirects 1.16.0 → 1.16.1 (backend test dependency), Vite 8.3.0 →
+  8.3.4 và dependency tương ứng (admin), không đổi major/SDK.
+- Kiểm: mobile 244/244 (56 suites), backend 296/296, admin 18/18; lint/typecheck,
+  backend format, admin build đạt. Export Hermes Android/iOS đạt, có logo 98 KB.
+  Backend/admin đã kiểm lại sau bản vá. Expo install --check: xem kết quả ở ACCEPTANCE.
+- Audit: admin 0; backend còn 3 high ở nodemon/chokidar/braces (production 0);
+  mobile còn 59 (54 high, 5 moderate), gốc braces/node-forge/sprintf-js. Chưa có
+  bản vá tương thích theo audit hiện tại; không dùng --force đổi major hoặc hạ Expo.
+- Chi tiết phương pháp, nguồn, giấy phép, script tái lập và kịch bản máy thật:
+  [TRANSLATION.md](TRANSLATION.md), [ACCEPTANCE.md](ACCEPTANCE.md).
+- Không push Git, không gửi OTP thật/đổi mật khẩu thật, không sửa dữ liệu DB.
+
+## Khoá lại chat AI trên app — 24/10/2026 (cập nhật mới nhất)
+
+## Mở khoá chat AI trên app — 26/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng (nhóm tự thử bằng env được cấp, dự án chưa deploy): màn Trợ lý AI MỞ mặc định; chỉ khoá
+khi đặt `EXPO_PUBLIC_AI_CHAT_ENABLED=false`. `backend/.env.example` bật sẵn tầng tra web (`WEB_SEARCH_ENABLED=true`)
+và model `gpt-6.1-sol` để env mẫu khớp cấu hình đang dùng. Đảo lại quyết định khoá ngày 24/10.
+
+## Tầng tra web trang chính phủ + trả lời lặp lại — 26/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng: đổi model chat sang `gpt-6.1-sol` (APIZ), thêm tầng tra web khi kho thiếu dữ liệu, chặn
+câu lạc đề trước khi tốn tiền, và dùng lại câu trả lời cho câu hỏi trùng lặp trong 5 ngày.
+
+- **Tra web** (`rag/webAnswer.js`, `WEB_SEARCH_ENABLED`): chỉ chạy khi kho không đủ bằng chứng (dưới ngưỡng, AI báo
+  không đủ, hoặc chủ đề kho chưa có như giao thông/thuê nhà bang). Gọi Responses API + `web_search` (đã đo:
+  `/chat/completions` của APIZ không tra web được), giới hạn tên miền `Country.officialWebDomains` (Úc: `gov.au`).
+  Code chỉ giữ nguồn https thuộc tên miền đó VÀ thật sự nằm trong trang công cụ tìm kiếm trả về; model không tìm
+  lần nào thì bỏ; số liệu không có marker nguồn thì bỏ/hạ cấp; bỏ link công cụ chèn giữa câu; nhãn "chưa kiểm chứng".
+- **Chặn trước khi tốn tiền:** trần 5 câu tra web/người/ngày và ngân sách 2.000 ₫/ngày (ước tính theo
+  `LLM_PRICE_*`), rồi model nhỏ (`QUERY_REWRITE_MODEL`) chấm "có thuộc chủ đề pháp lý du lịch" (`rag/webTopicGate.js`).
+- **Trả lời lặp lại** (`services/answerMemory.service.js`, `AI_CACHE_TTL_HOURS=120`): trùng chính xác (bỏ hoa/thường,
+  dấu, dấu câu) trả ngay trước cả bước tạo từ khoá; khác chữ cùng từ khoá (Jaccard >= 0,9) trả sau bước tạo từ khoá.
+  Không gọi AI, không trừ lượt. Nguồn kho phải còn đúng phiên bản và `updatedAt`, không thì xoá và trả lời lại.
+- **Telemetry:** `ai_events` ghi token thật, `costEstimateVnd`, `webSearch` (trước đây token luôn 0 với APIZ).
+- **Chạy thật** (API + emulator, đã dọn bản ghi thử): câu thuê nhà Queensland tra web 23,7 giây (~69 ₫, nguồn
+  rta.qld.gov.au); hỏi lại 0,4 giây, 0 ₫. Câu lạc đề "đội bóng rổ Melbourne" bị chặn, không tra web. Emulator: câu mất
+  hộ chiếu trả từ kho 10,2 giây (Passports Act điều 41), hỏi lại 0,3 giây; dao bấm, mũ bảo hiểm xe đạp Victoria,
+  huỷ visa du lịch đều ra bằng tra web 22-28 giây (60-79 ₫), nguồn abf/transport.vic/homeaffairs.gov.au.
+- Test: backend 409, mobile 256, admin 22 đạt; typecheck/lint/build xanh.
+- Ghi chú: trên emulator 2/3 câu dự kiến "từ kho" (dao bấm, huỷ visa) lại đi tra web vì kho không đủ đoạn khớp
+  (câu gõ không dấu qua adb). Chat trên app vẫn KHOÁ mặc định; chỉ mở tạm trong buổi test.
+
+## Khoá lại chat AI trên app — 24/10/2026
+
+Theo yêu cầu người dùng: màn Trợ lý AI trở lại mặc định khoá (màn chờ "Trợ lý AI sắp ra mắt"), đảo lại thay đổi mở
+mặc định ngày 22/10. Chỉ đổi phía mobile: cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` mặc định `false`, bật bằng `true`.
+Backend (lexical, APIZ, từ chối nhanh, luật hải quan) giữ nguyên và API chat vẫn hoạt động; chỉ app không gọi tới.
+
+## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (cập nhật mới nhất)
+
+Theo yêu cầu người dùng (thử trên máy: câu luật giao thông chờ rất lâu rồi chỉ nhận "Chưa đủ dữ liệu").
+Đo bằng chạy thật: các lần chờ 40-80 giây đến từ (1) nạp lại toàn bộ ~8.900 chunk vào RAM mỗi 60 giây
+(15-25 giây/lần), (2) chờ nguồn luật Úc xác minh dù câu hỏi đã chắc chắn trượt ngưỡng, (3) bước tạo từ khoá
+chờ tới 60 giây.
+
+- **Nhanh:** kiểm ngưỡng điểm trước khi xác minh (trượt thì từ chối ngay); cache chunk 10 phút, hết hạn thì
+  nạp lại ở nền và vẫn dùng bản cũ (`MEMORY_SEARCH_CACHE_TTL_MS`); nạp chunk và xác minh trước 10 luật Úc khi
+  server khởi động; kết quả xác minh lưu DB (`au_register_checks`) giữ qua lần khởi động lại; chờ nguồn luật
+  tối đa `AU_REGISTER_LOOKUP_BUDGET_MS` (5 giây, quá thì fail-closed và tra tiếp ở nền); bước tạo từ khoá tối
+  đa `QUERY_REWRITE_TIMEOUT_MS` (15 giây).
+- **Có ích:** `core/aiCoverageGaps.js` liệt kê chủ đề kho chưa có. Giao thông đường bộ và thuê nhà (luật bang)
+  trả lời NGAY (dưới 1 giây, không tốn lượt AI): lý do + thông tin chung đã đối chiếu + link trang chính thức.
+  Thú cưng/thực phẩm vẫn để AI tìm trước; thiếu bằng chứng mới chỉ trang "Can you bring it in?" của ABF. Các
+  câu khác: lời từ chối chuẩn + danh sách chủ đề AI trả lời được. Ca khẩn cấp (tai nạn giao thông) không bị
+  rẽ nhánh này. Mobile hiển thị in đậm, gạch đầu dòng, link bấm được.
+- **Đo lại:** câu giao thông 0,6-0,9 giây (trước 8-78 giây); câu trượt ngưỡng khoảng 7 giây (chủ yếu là tạo từ
+  khoá); câu đi qua AI 8-27 giây (thời gian trả lời của model glm-5.3-flash qua APIZ).
+- Emulator: câu giao thông hiện đủ lý do, link Tourism Australia mở được Chrome; câu chó cưng hiện link ABF.
 
 ## Mở lại Be.Travel AI + luật hải quan Úc + dữ liệu điểm hỗ trợ — 22/10/2026 (cập nhật mới nhất)
 

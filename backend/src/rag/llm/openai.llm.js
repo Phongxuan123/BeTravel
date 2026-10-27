@@ -12,10 +12,11 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
   return {
     provider: "openai",
     model,
-    async complete({ systemPrompt, userPrompt, maxOutputTokens }) {
+    // onUsage (tuỳ chọn): nhận số token thật để ghi chi phí; complete vẫn chỉ trả văn bản.
+    async complete({ systemPrompt, userPrompt, maxOutputTokens, timeoutMs, onUsage }) {
       const res = await fetch(chatUrl(), {
         method: "POST",
-        signal: AbortSignal.timeout(env.AI_PROVIDER_TIMEOUT_MS),
+        signal: AbortSignal.timeout(timeoutMs ?? env.AI_PROVIDER_TIMEOUT_MS),
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
         body: JSON.stringify({
           model,
@@ -41,6 +42,10 @@ export function createOpenAiLlmProvider({ apiKey, model }) {
       if (!text) {
         throw new Error("OPENAI_LLM_EMPTY_RESPONSE");
       }
+      onUsage?.({
+        inputTokens: json.usage?.prompt_tokens ?? 0,
+        outputTokens: json.usage?.completion_tokens ?? 0,
+      });
       return text;
     },
   };

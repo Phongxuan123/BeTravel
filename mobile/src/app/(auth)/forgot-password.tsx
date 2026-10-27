@@ -16,7 +16,7 @@ import {
   resendPasswordResetOtp,
   resetPassword,
 } from '@/lib/api/auth';
-import { isPasswordValid, passwordValidationMessage, PASSWORD_REQUIREMENTS } from '@/lib/password';
+import { passwordValidationMessage, PASSWORD_REQUIREMENTS } from '@/lib/password';
 
 type Step = 'email' | 'otp' | 'password' | 'done';
 const RESEND_WAIT_SECONDS = 30;
@@ -227,7 +227,7 @@ export default function ForgotPasswordScreen() {
               <TextField
                 label="Mật khẩu mới"
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(value) => { setPassword(value); setError(null); }}
                 secureTextEntry
                 iconLeft={<Lock size={20} color={colors.subtle} />}
                 helperText={PASSWORD_REQUIREMENTS}
@@ -237,8 +237,7 @@ export default function ForgotPasswordScreen() {
             <TextField
               label="Xác nhận mật khẩu mới"
               value={confirm}
-              error={confirm && password !== confirm ? 'Xác nhận mật khẩu không khớp.' : undefined}
-              onChangeText={setConfirm}
+              onChangeText={(value) => { setConfirm(value); setError(null); }}
               secureTextEntry
               iconLeft={<Lock size={20} color={colors.subtle} />}
             />
@@ -251,7 +250,7 @@ export default function ForgotPasswordScreen() {
               label="Đặt lại mật khẩu"
               onPress={submitNewPassword}
               loading={loading}
-              disabled={!isPasswordValid(password) || password !== confirm}
+              disabled={loading}
             />
           </View>
         </>

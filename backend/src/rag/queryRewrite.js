@@ -67,6 +67,8 @@ export async function rewriteQuestionToKeywords(question, getProvider = getRewri
         chunks: [],
         question,
         maxOutputTokens: REWRITE_MAX_OUTPUT_TOKENS,
+        // Bước phụ: chờ quá lâu thì dùng câu hỏi gốc làm từ khoá, không bắt người dùng đợi cả phút.
+        timeoutMs: env.QUERY_REWRITE_TIMEOUT_MS,
       },
       getProvider,
       { maxRetries: REWRITE_RETRIES, maxWaitMs: REWRITE_MAX_WAIT_MS },

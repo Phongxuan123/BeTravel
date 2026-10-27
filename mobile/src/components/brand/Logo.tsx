@@ -1,18 +1,16 @@
-import { View, Text } from 'react-native';
-import { ShieldCheck } from 'lucide-react-native';
-import { colors } from '@/lib/theme';
+import { View, Text, Image } from 'react-native';
 
 type LogoProps = { size?: number; textSize?: number; tagline?: string };
 
 export function Logo({ size = 30, textSize = 20, tagline }: LogoProps) {
   return (
     <View className="flex-row items-center" style={{ gap: 8 }}>
-      <View
-        className="items-center justify-center rounded-sm"
-        style={{ width: size, height: size, backgroundColor: colors.primary }}
-      >
-        <ShieldCheck color="#fff" size={size * 0.6} />
-      </View>
+      <Image
+        source={require('../../../assets/logo.jpg')}
+        style={{ width: size, height: size }}
+        resizeMode="contain"
+        accessibilityLabel="Logo BeTravel"
+      />
       <View>
         <Text className="font-display text-ink" style={{ fontSize: textSize }}>
           Be.<Text className="text-primary">Travel</Text>

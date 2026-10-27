@@ -1,5 +1,112 @@
 # Dịch, giọng nói và dịch offline
 
+## Mặc định chế độ dịch — 26/10/2026
+
+Mỗi lần khởi tạo màn dịch, “Dịch không cần mạng” mặc định **tắt**. Người dùng
+chủ động bật để dùng bộ offline khi cần. Không tự bật theo trạng thái Wi-Fi
+(vì mạng di động cũng có thể cung cấp Internet), không tải model tự động.
+Chỉ gửi văn bản online khi người dùng bấm “Dịch ngay”; quy tắc đăng nhập và
+quota online giữ nguyên. Bật offline vẫn dùng bộ từ/câu đóng gói trước ML Kit.
+
+## Bản triển khai hiện hành: bộ offline tích hợp — 21/10/2026
+
+Phần này thay thế yêu cầu “phải tải gói trước” đối với **từ/câu Việt–Anh có sẵn**.
+ML Kit ở mục 3 vẫn là engine tùy chọn cho nội dung ngoài bộ tích hợp.
+
+### Phương pháp và phạm vi thực tế
+
+- Đóng gói 25.473 cặp từ/nghĩa Việt–Anh (868.586 byte JSON) trong JavaScript bundle,
+  cộng 42 từ du lịch cốt lõi và 88 câu giao tiếp theo 6 nhóm và giữ 10 cặp Tatoeba có từ trước.
+  Đây là số cặp từ/nghĩa, không phải 25.473 từ riêng biệt hoặc một model dịch máy.
+- Nguồn từ điển: [Wiktionary qua Kaikki/Wiktextract](https://kaikki.org/dictionary/Vietnamese/index.html),
+  dump 02/09/2026, lấy ngày 21/10/2026. Chọn CC BY-SA 4.0 theo
+  [giấy phép Wiktionary](https://en.wiktionary.org/wiki/Wiktionary:Copyrights).
+  Có notice, giấy phép đầy đủ, checksum nguồn và script trích xuất trong repository.
+- Từ điển tra **nguyên từ/cụm từ**, trả các nghĩa phân cách bằng dấu chấm phẩy.
+  Không dùng từ điển để dịch từng từ rồi ghép thành câu; không suy đoán ngữ cảnh.
+- Câu do BeTravel biên soạn: giao tiếp, đi lại, khách sạn, ăn uống, mua sắm, hỗ trợ.
+  Có câu phủ định, câu hỏi và câu dài. Cần người thông thạo ngôn ngữ rà soát
+  trước phát hành; không coi unit tests là chứng nhận chất lượng dịch.
+- Không có gói tải lúc sử dụng cho bộ này; không cần tài khoản, API key hay native
+  ML Kit. Standalone app mang sẵn bundle dùng từ lần mở đầu. Expo Go vẫn cần nạp
+  bundle dự án từ Metro lần đầu; sau đó tính năng tra cứu không gọi mạng.
+- **Không hỗ trợ dịch mọi câu tự do offline mà không model.** Đoạn nhiều câu chỉ
+  được tra bằng bộ sẵn khi mọi câu đều có bản dịch; có một câu lạ thì không trả
+  đoạn dở. Native ML Kit đã cài gói có thể dịch tiếp; nếu chưa có thì báo thiếu
+  phạm vi, không tự tải và không tự gửi nội dung đến server.
+- Cặp ngôn ngữ khác Việt–Anh chưa có bộ tích hợp. Không dùng bản Anh thay cho
+  Hàn/Nhật/Thái/Trung/Pháp/Đức. Giọng đọc và micro là khả năng riêng của OS,
+  không được đóng gói bằng từ điển; giữ giới hạn Expo Go/native ở mục 4.
+
+### Luồng thực thi
+
+1. Mở Dịch, mặc định offline; chọn Việt–Anh hoặc đổi chiều. Không có màn bắt tải gói.
+2. Nhập từ/câu hoặc tìm trong “Câu thông dụng có sẵn”. Tìm câu có thể bỏ dấu để
+   dễ tìm, nhưng nội dung thực tế đưa vào dịch vẫn có dấu và đầy đủ phủ định.
+3. Bấm Dịch offline: kiểm nội dung 1–5.000 ký tự và phiên còn hiệu lực.
+4. Tra nguyên câu sẵn có (NFC, khoảng trắng, hoa/thường, dấu kết câu).
+5. Nếu nhiều câu: tra từng câu, chỉ trả kết quả khi khớp toàn bộ.
+6. Nếu một từ/cụm từ: ưu tiên 42 từ du lịch cốt lõi BeTravel, rồi tra chỉ mục
+   từ điển hai chiều. Hiện loại kết quả và liên kết
+   nguồn theo mục từ. Không gắn badge Google cho dữ liệu tích hợp.
+7. Không khớp: chỉ thử ML Kit nếu module/gói đã có. Giao diện “Dịch câu tự do bằng
+   ML Kit (tùy chọn)” cho mở quản lý model; bộ tích hợp không bị xóa khi xóa model.
+8. Muốn dịch online phải chủ động tắt chế độ offline; giữ auth, giới hạn 500 ký tự
+   và quota backend. Lưu/sao chép/phóng to/phát âm dùng kết quả cùng luồng hiện có.
+9. Khi sửa câu/đổi chiều/rời màn, bỏ tác vụ cũ. Câu lưu mang engine/sourceTerms
+   để giữ nguồn; bản lưu cũ vẫn đọc được, không migration/xóa dữ liệu.
+
+### Kế hoạch và quá trình đã thực hiện
+
+1. Rà kiến trúc 3 workspace, module dịch native, API client, phrasebook, lưu câu,
+   voice, màn OTP và tiến độ. Xác định lỗi: đường bấm dịch offline bỏ qua phrasebook.
+2. So sánh nguồn mở: không nhập corpus scrape từ từ điển thương mại chỉ dựa vào
+   LICENSE của mã scraper; không dùng một bộ nghĩa máy chưa rà soát như nguồn
+   được chứng nhận. Chọn dữ liệu cộng đồng có trang mục từ và lịch sử đóng góp.
+3. Tải snapshot nguồn khi phát triển, lọc bằng script tái lập. Chỉ giữ từ Latin,
+   loại từ thông dụng, nghĩa ngắn không nhãn/không chú thích; không tự bỏ chú thích
+   để biến nghĩa chuyên biệt thành nghĩa thông thường. Giữ loại từ trong dữ liệu.
+4. Viết engine tra cứu thuần TypeScript và thư viện câu theo nhóm; nối trước ML Kit.
+   Không thay contract, không thêm thư viện runtime hoặc endpoint backend.
+5. Tích hợp logo nguyên bản `mobile/assets/logo.jpg` qua component Logo: auth,
+   onboarding/welcome và trang chủ. Không đổi bố cục auth đã khôi phục, không tự
+   thay icon launcher/adaptive icon hoặc signing của bản native.
+6. Xác nhận mật khẩu: bỏ lỗi khi gõ và điều kiện vô hiệu nút vì hai ô chưa trùng.
+   Bấm “Đặt lại mật khẩu” mới kiểm chính sách/mật khẩu xác nhận. Sai thì không gọi
+   reset API, giữ phiên; sửa ô xóa lỗi cũ; thành công mới logout theo luồng sẵn có.
+7. Chạy kiểm hồi quy, export bundle Android/iOS, kiểm dependency và cập nhật sổ.
+   Kết quả và giới hạn nghiệm thu cụ thể ghi tại PROGRESS/ACCEPTANCE.
+
+### Bảo trì dữ liệu
+
+```sh
+# Chỉ nhà phát triển chạy, không phải bước người dùng cần làm.
+cd mobile
+node scripts/build-bundled-dictionary.cjs /path/to/kaikki.org-dictionary-Vietnamese.jsonl
+npm run typecheck
+npm test -- --runInBand
+```
+
+Script tạo `src/features/translate/data/dictionary-vi-en.json`. Muốn dùng snapshot
+mới, kiểm lại dumpDate/retrievedAt, nguồn, giấy phép, checksum và cặp nghĩa mẫu;
+không ghi đè mù dữ liệu đã review. Sổ câu nằm trong `data/travel-phrases.json`;
+ID ổn định, không lưu vào DB. Bản dữ liệu phái sinh giữ CC BY-SA 4.0. Giữ nguyên
+hai file vi-en.json cũ đồng bộ backend/mobile để không làm lệch test nguồn Tatoeba.
+
+### Kịch bản kiểm tra trên thiết bị
+
+- Bản cài mới, không model, tắt mạng: `hộ chiếu` → `passport`; đảo chiều vẫn tra được.
+- `Tôi cần giúp đỡ` → `I need help.`; `Tôi không cần giúp đỡ` → `I don't need help.`.
+- `Tôi cần giúp đỡ. Tôi bị mất hộ chiếu.` trả đủ hai câu; thêm câu lạ hoặc con số
+  không có trong bộ phải báo không hỗ trợ, không trả một phần hoặc gọi server.
+- Tìm `mat ho chieu` trong thư viện câu; chạm câu đúng, đổi chiều, sao chép, lưu;
+  mở lại và kiểm nguồn/engine, thử phóng to. Gói text không bảo đảm giọng OS offline.
+- Đổi sang Hàn: không được hiển thị bản Anh như bản Hàn. Không tự tải model.
+- Màn mật khẩu: gõ xác nhận từng ký tự không có lỗi không khớp; bấm nút với hai ô
+  khác nhau mới báo lỗi, không gọi API; sửa lại rồi gửi. OTP thật cần người dùng
+  thao tác email; kiểm tự động không gửi thư hoặc thay mật khẩu tài khoản thật.
+
+
 Gộp từ TRANSLATION_SOURCES, VOICE_TRANSLATION, OFFLINE_TRANSLATION và PHONE_MAP_VOICE (19/10/2026; bản gốc còn trong lịch sử git). Tiến độ và nghiệm thu từng đợt xem `PROGRESS.md`.
 
 ## 1. Dịch online và nguồn câu mẫu

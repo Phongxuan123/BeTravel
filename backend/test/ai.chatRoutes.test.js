@@ -272,7 +272,8 @@ test("nut Tao lai: bo qua cache, goi lai LLM va van ton luot quota", async () =>
 
   await ask(user, question, { regenerate: true });
   assert.equal(llmCalls, 2, "regenerate phai goi lai LLM");
-  assert.equal(await usedToday(user), 3);
+  // Lần hỏi lặp lại dùng bộ nhớ câu hỏi lặp lại nên không trừ lượt; lần đầu và "Tạo lại" mới trừ.
+  assert.equal(await usedToday(user), 2);
 });
 
 test("xin tu van ca nhan: van tra thong tin kem cau ranh gioi co dinh", async () => {

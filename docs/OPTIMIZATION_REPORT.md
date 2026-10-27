@@ -1,5 +1,144 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Khôi phục lối tắt tra cứu luật — 26/10/2026
+
+Đã xong: typecheck/lint mobile và 10 kiểm thử lối tắt/dịch đạt.
+
+Theo yêu cầu mới, “Tra cứu luật nhanh” trở lại `/search` như trước. Quyết định
+này thay thế phần đồng bộ lối tắt ở mục dưới; Khám phá và nguồn luật Úc không
+đổi. Giữ chế độ dịch mặc định online và toàn bộ luồng còn lại. Không sửa
+backend/.env.example, không push Git.
+
+## Dịch mặc định online và đồng bộ lối tắt pháp luật — 26/10/2026
+
+Tiến độ `[###-] 3/4`: sửa luồng, kiểm tự động, tài liệu xong; nghiệm thu điện
+thoại còn mở. Backend 409/409, mobile 265/265 (58 suites), admin 22/22: tổng
+696 tests đạt. Lint/typecheck, backend format và admin build đạt. Mobile chạy
+--detectOpenHandles kết thúc exit 0, còn cảnh báo act ở SosMapScreen và
+TranslatorForm trong full suite (10 tests mục tiêu chạy riêng không cảnh báo).
+Chưa kết luận có lỗi runtime từ cảnh báo test này; theo dõi riêng. Nợ audit đã
+ghi trước đó chưa được đóng, không thay dependency trong đợt này.
+
+- Công tắc “Dịch không cần mạng” mặc định tắt khi khởi tạo màn dịch. Người dùng
+  chủ động bật offline khi cần; không tự phát hiện Wi-Fi, không tự gửi văn bản
+  nếu chưa bấm dịch và không thay cơ chế dịch tích hợp/ML Kit/giới hạn online.
+- Nguyên nhân lối tắt trống: trang chủ đi /search, chỉ tìm kho bài viết khi có
+  từ khóa; luật liên bang Úc là nguồn riêng ở /explore (AuLawsSection).
+  Nay “Tra cứu luật nhanh” đi cùng /explore như tab Khám phá, dùng chung quốc
+  gia đã chọn, truy vấn/cache và lối vào /laws theo chủ đề. Không sao chép dữ
+  liệu luật, không đổi contract/backend hoặc trạng thái công khai nội dung.
+- Hồi quy: mở/remount dịch phải tắt offline; bật tay vẫn dịch được. Trang chủ
+  đi Khám phá, kho bài rỗng vẫn có nhóm luật Úc và bấm được /laws theo chủ đề.
+- Giới hạn: chưa kiểm trực tiếp trên điện thoại hoặc dịch vụ luật/SMTP/AI thật.
+  Rà soát là trong dự án, không khẳng định đã sửa mọi lỗi của hệ điều hành.
+  Giữ nguyên backend/.env.example đang sửa; không push, không ghi DB thật.
+
+## Hợp nhất main ngày 26/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 409/409, mobile 263/263 (57 suites), admin 22/22: tổng 694 tests đạt.
+Lint/typecheck tương ứng, backend format và admin production build đạt.
+Mobile lần đầu báo thoát chậm nhưng exit 0; chạy lại với --detectOpenHandles
+đạt 263 tests, exit 0, không báo handle còn mở. Không build native lại lần này.
+
+- Nhận main `0805c46` (PR #56, #57) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261026-1d8c0b1`.
+- Nhận tầng tra web nguồn chính phủ, bộ nhớ câu trả lời và mở lại chat AI mặc
+  định từ main; giữ nguyên dịch offline, logo và luồng auth đang làm cục bộ.
+- Hai xung đột tài liệu được giải quyết bằng cách giữ nội dung cả hai phía.
+  Mã nguồn hợp nhất tự động. Thay đổi chưa commit backend/.env.example được
+  stash/khôi phục, diff cục bộ sau merge khớp trước merge; giữ ngoài commit.
+- Không sửa .env thật, không chạy seed/index hoặc gọi AI trả phí. Không push,
+  không merge ngược vào main. Chưa nghiệm thu điện thoại hoặc dịch vụ thật;
+  bộ kiểm thử backend dùng DB tạm và provider mock. Nợ audit trước vẫn còn.
+
+## Hợp nhất main ngày 25/10/2026 (hiện hành)
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 396/396, mobile 262/262 (57 suites): tổng 658 tests chạy lần này đạt.
+Backend lint/format và mobile typecheck/lint đạt. Backend dùng DB tạm, provider
+mock; kết quả này không phải nghiệm thu UI hay dịch vụ bên ngoài trên máy thật.
+
+- Nhận main `0a94efc` (PR #54, #55) vào `feature/offline-translation-20261012`.
+  Backup trước merge: `backup/offline-before-main-20261025-42d4cc6`.
+- Nhận phản hồi AI khi thiếu nguồn, cache xác minh luật và khóa chat AI mặc định
+  theo main. Giữ nguyên dịch offline, logo, auth và các bản vá dependency cục bộ.
+- Chỉ xung đột PROGRESS/OPTIMIZATION_REPORT; giữ cả hai phía tài liệu. Không
+  phát sinh xung đột mã nguồn. Thay đổi chưa commit trong backend/.env.example
+  được stash, khôi phục và giữ ngoài commit; mọi dòng cũ còn nguyên theo thứ tự,
+  cộng thêm biến mới của main. Giữ stash dự phòng, không sửa .env thật.
+- Admin không đổi so với lần đạt 22 tests/build ngày 22/10, không chạy lại.
+  Chưa kiểm thiết bị/dịch vụ thật, không build native lại; không seed dữ liệu,
+  không push và không merge ngược vào main. Nợ audit trước đó vẫn còn hiệu lực.
+
+## Hợp nhất main ngày 22/10/2026
+
+Tiến độ `[####] 4/4`: dự phòng, hợp nhất, xử lý xung đột và kiểm tự động xong.
+Backend 385/385, mobile 262/262, admin 22/22 (tổng 669); lint/typecheck tương
+ứng, backend format và admin build đạt. Chưa nghiệm thu điện thoại hoặc
+AI/SMTP/Atlas thật trong lần này; backend test dùng DB tạm/provider mock.
+Không export/build native lại ở đợt này; không đổi native dependency.
+
+- Nhánh làm việc: `feature/offline-translation-20261012`; nhận main `d5f0535`
+  (PR #52, #53). Mốc dự phòng: `backup/offline-before-main-20261022-ca9f7f8`.
+- Nhận mở chat AI mặc định, luật hải quan Úc và cache xác minh nguồn từ main;
+  giữ dịch offline tích hợp, logo và luồng auth cục bộ.
+- Xung đột hai tài liệu được giữ nội dung cả hai phía. Kiểm thử AuLawsRagPanel
+  giữ helper chờ trong act và cleanup của nhánh; nhận timeout 2000 ms từ main.
+- `backend/.env.example` chưa commit đã cất stash trước merge, khôi phục đúng
+  từng byte bản người dùng và vẫn ngoài commit; giữ stash dự phòng, không xóa.
+- Không thay .env thật, không seed/ghi DB thật, không push hoặc merge vào main.
+
+## Lịch sử cập nhật — 21/10/2026: hợp nhất main 4f54f16
+
+- Giữ toàn bộ hai nhánh nội dung khi giải quyết hai xung đột tài liệu; không
+  ghi đè triển khai offline/logo/auth cục bộ, không đổi contract đã nhận từ main.
+- Sửa một lỗi kiểm thử admin: assertion chạy trước mutation notification của
+  React Query. Chờ điều kiện có timeout thay sleep cố định; dọn root/query cache
+  và spy sau test. Không đổi logic index luật để chiều theo test.
+- 668 tests đạt, lint/typecheck/format tương ứng đạt, admin build và export
+  Hermes Android/iOS đạt. Không cài dependency mới; nợ audit trước giữ nguyên.
+- Giới hạn: kiểm thử backend dùng DB tạm/mock; chưa kiểm dịch vụ ngoài và UI
+  thiết bị thật. Không chạy seed, không sửa dữ liệu người dùng, không push.
+
+## Lịch sử cập nhật — 21/10/2026: bộ offline đóng gói
+
+- Sửa đường dịch offline bỏ qua phrasebook: tra nội dung tích hợp trước native.
+  Index từ điển dựng một lần, không gọi network/model cho kết quả bundled.
+  Sổ câu hiển thị 8 câu/lượt, tìm/lọc tại máy; không render 25 nghìn mục từ thành UI.
+- Không ghép âm tiết/từ để dịch câu, không bỏ câu chưa biết. Engine và sourceTerms
+  đi cùng câu lưu để tránh gắn nhãn Google sai. Câu cũ vẫn đọc được.
+- Sửa hồi quy UX xác nhận mật khẩu: validate khi gửi; lỗi cũ xóa khi sửa.
+  Shared Logo dùng static asset, không fetch ảnh và không đổi layout auth.
+- Dependency patch: follow-redirects 1.16.1, Vite 8.3.4 (lockfiles); đã kiểm lại.
+- Audit còn mobile 59 (braces/node-forge/sprintf-js cùng chuỗi phụ thuộc), backend
+  dev 3 (braces/chokidar/nodemon), admin 0 và backend production 0. Không áp dụng
+  npm audit fix --force vì gợi ý bao gồm đổi SDK/major/hạ phiên bản không tương thích.
+  Đây là nợ kỹ thuật đang mở, không đánh dấu hết warning. Nguồn advisories:
+  https://github.com/advisories/GHSA-vfj7-8cjw-p6xm
+  https://github.com/advisories/GHSA-86w9-cpqp-85rv
+  https://github.com/advisories/GHSA-hp3w-g68c-fv3c
+- Áp dụng DRY, xử lý lỗi rõ, phân biệt nguồn dữ liệu, không thay contract/migration.
+  Chi tiết kết quả và giới hạn thực tế tại ACCEPTANCE/TRANSLATION.
+
+## Tầng tra web + trả lời lặp lại — 26/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Rule 3: tách `snapshotChunkSources` (retrieval.js) và `citedChunkIds` (faq.service.js) dùng chung cho FAQ và bộ
+  nhớ câu hỏi lặp lại; `estimateCostVnd` một chỗ (`rag/llm/cost.js`). Bỏ import `LegalChunk` thừa ở faq.service.js.
+- Rule 6: biến mới `ANSWER_REPEAT_MIN_SIMILARITY`, `WEB_SEARCH_*`, `WEB_TOPIC_GATE_TIMEOUT_MS`, `LLM_PRICE_*`;
+  `AI_CACHE_TTL_HOURS` mặc định 120. Tên miền tra web nằm trong DB (`Country.officialWebDomains`), không viết cứng.
+- Rule 7: tra web/chấm chủ đề/bộ nhớ lỗi đều ghi log ngắn rồi rơi về lời từ chối hoặc luồng thường, không nuốt im.
+- Rule 13B: sửa lỗi `null ?? PROVIDER_ERROR` làm câu trả lời web hợp lệ bị coi là lỗi (test bắt được trước khi chạy thật).
+- Rule 13A: không phát sinh warning mới; lint backend/mobile sạch.
+
+## AI từ chối nhanh và có hướng dẫn — 22/10/2026 (Chế độ B, chỉ file đã động tới)
+
+- Hiệu năng (đo thật): bỏ nạp lại 8.900 chunk đồng bộ mỗi 60 giây; bỏ tra nguồn luật cho câu đã trượt ngưỡng.
+- Rule 2/3: gom điều kiện ngưỡng thành `meetsThreshold` dùng cho cả nhánh lexical và hybrid.
+- Rule 6: 3 biến mới `MEMORY_SEARCH_CACHE_TTL_MS`, `AU_REGISTER_LOOKUP_BUDGET_MS`, `QUERY_REWRITE_TIMEOUT_MS`.
+- Rule 7: lỗi nạp nền/xác minh nền đều ghi log ngắn, không nuốt im lặng; vẫn fail-closed khi chưa xác minh được.
+- Rule 13A: không phát sinh warning mới; thêm test hồi quy cho từ chối nhanh, ngân sách chờ, lưu xác minh, khẩn cấp.
+
 ## Mở lại AI + luật hải quan Úc — 22/10/2026 (Chế độ B, chỉ file đã động tới)
 
 - Rule 6: thời hạn dùng mã bản hiện hành đã xác minh là biến `AU_REGISTER_MAX_STALE_HOURS`, không hard-code.
@@ -203,6 +342,10 @@ Patch dependency là giải pháp tương thích có test, cần rà lại khi n
 Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùng override.
 
 ## 7. LICH SU CAP NHAT
+
+- 26/10/2026: tầng tra web trang chính phủ (gov.au) khi kho thiếu dữ liệu, chặn câu lạc đề trước khi tra, trả lời lặp lại 5 ngày; backend 409, mobile 256, admin 22 tests.
+
+- 22/10/2026 (lần 2): AI từ chối nhanh (dưới 1 giây với chủ đề kho chưa có) và có hướng dẫn tra cứu chính thức; 396 test backend.
 
 - 22/10/2026: mở lại chat AI, thêm Customs Regulation 2015, nhớ mã bản luật Úc đã xác minh khi nguồn chập chờn; holdout 26/30.
 

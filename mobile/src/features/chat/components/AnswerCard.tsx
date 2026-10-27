@@ -9,10 +9,12 @@ import { colors } from '@/lib/theme';
 import type { ChatAnswer } from '@/lib/data';
 import { ContactCard, type ContactInfo } from './ContactCard';
 
-// Tách một dòng thành: **đậm**, marker nguồn [S1]..[Sn] bấm được (mở đúng bài luật), và chữ thường.
-const INLINE_RE = /(\*\*[^*]+\*\*|\[S\d+\])/g;
+// Tách một dòng thành: **đậm**, marker nguồn [S1]..[Sn] bấm được (mở đúng bài luật), đường dẫn
+// trang chính thức (mở trình duyệt) và chữ thường.
+const INLINE_RE = /(\*\*[^*]+\*\*|\[S\d+\]|https:\/\/[^\s)]+)/g;
 const BOLD_RE = /^\*\*([^*]+)\*\*$/;
 const MARKER_RE = /^\[S(\d+)\]$/;
+const URL_RE = /^https:\/\/[^\s)]+$/;
 const NUMBERED_RE = /^(\d+)[.)]\s+(.*)$/;
 const LINE_BREAK = String.fromCharCode(10);
 // Tiêu đề 3 phần do backend ghép (rag/guard.js#composeAnswerText); "Nguồn" là danh sách bên dưới thẻ.
@@ -29,6 +31,13 @@ function RichLine({ line, sources }: { line: string; sources: SourceRef[] }) {
           return (
             <Text key={i} className="font-body-bold">
               {boldMatch[1]}
+            </Text>
+          );
+        }
+        if (URL_RE.test(part)) {
+          return (
+            <Text key={i} className="text-primary underline" onPress={() => Linking.openURL(part)}>
+              {part}
             </Text>
           );
         }
@@ -142,9 +151,9 @@ export function AnswerCard({
           </Text>
         </View>
         <Text className="mt-3 text-[18px] font-body-bold text-ink">{answer.title ?? 'Chưa tìm thấy nguồn pháp lý phù hợp.'}</Text>
-        <Text className="mt-2 text-base leading-6" style={{ color: '#334E68' }}>
-          {answer.reason}
-        </Text>
+        <View className="mt-2">
+          <AnswerBody content={answer.reason} sources={[]} />
+        </View>
         <View className="mt-3 rounded-lg border border-cream-line bg-surface p-3.5">
           <Text className="text-[15px] font-body-bold" style={{ color: colors.warningStrong }}>
             Bạn nên làm
@@ -176,6 +185,11 @@ export function AnswerCard({
       {answer.approved && (
         <View testID="answer-card-approved" className="mb-3">
           <Badge label="Đã được Be.Travel duyệt" tone="info" dot />
+        </View>
+      )}
+      {answer.webSearched && (
+        <View testID="answer-card-web" className="mb-3">
+          <Badge label="Từ trang chính phủ, chưa kiểm chứng" tone="warning" dot />
         </View>
       )}
       <AnswerBody content={answer.content} sources={answer.sources} />
@@ -214,7 +228,9 @@ export function AnswerCard({
                   <Text className="text-sm font-body-semibold text-ink">{s.name}</Text>
                   {s.verified === false ? (
                     <Text className="text-[11px]" style={{ color: colors.warningStrong }}>
-                      Văn bản luật gốc, chưa được Be.Travel kiểm chứng
+                      {s.kind === 'web'
+                        ? 'Trang web chính phủ, chưa được Be.Travel kiểm chứng'
+                        : 'Văn bản luật gốc, chưa được Be.Travel kiểm chứng'}
                     </Text>
                   ) : null}
                 </View>
@@ -226,7 +242,9 @@ export function AnswerCard({
       )}
       {answer.sources.length > 0 && (
         <View className="mt-3 flex-row items-center" style={{ gap: 8 }}>
-          {answer.sources.some((s) => s.verified === false) ? (
+          {answer.webSearched ? (
+            <Badge label="Nguồn: trang chính phủ" tone="warning" dot />
+          ) : answer.sources.some((s) => s.verified === false) ? (
             <Badge label="Gồm luật gốc chưa kiểm chứng" tone="warning" dot />
           ) : (
             <Badge label="Có nguồn pháp lý" tone="success" dot />

@@ -7,7 +7,7 @@ import { colors } from '@/lib/theme';
 
 /*
  * Màn chờ thay cho Be.Travel AI khi tính năng đang tạm khóa
- * (EXPO_PUBLIC_AI_CHAT_ENABLED khác 'true'). Mọi lối vào /chat (tab, Home,
+ * (EXPO_PUBLIC_AI_CHAT_ENABLED=false). Mọi lối vào /chat (tab, Home,
  * Search, bài luật, sự cố) đều dừng ở đây; vẫn chỉ đường sang cẩm nang đã
  * xác minh và SOS để người dùng không bị bỏ rơi khi cần gấp.
  */

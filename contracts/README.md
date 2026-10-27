@@ -405,6 +405,10 @@ goi y nhanh, KHONG rang buoc gia tri `destinationCity` nguoi dung tu go —
 khong ap dung Rule "8 bai co nguon that" vi day khong phai noi dung phap ly.
 Rong (`[]`) la hop le, UI chi an phan goi y neu vay.
 
+`officialWebDomains: string[]` — ten mien chinh phu (vd `"gov.au"`, khop ca ten mien con) ma AI duoc tra web
+khi kho chua du du lieu (muc chat, "Tang tra web"). Rong = quoc gia nay khong co tang tra web. Admin sua qua
+`PATCH /admin/countries/:id`.
+
 ### 8.2. Legal content
 
 [!] **Cong chan tam thoi (`LEGAL_LOOKUP_ENABLED`, mac dinh `false`)**: khi tat, moi
@@ -479,8 +483,8 @@ POST   /chat/sessions/:id/messages {question, focusArticleId?, regenerate?}  201
                                                       focusArticleId (B5): CTA "Hoi AI ve bai nay" tu man
                                                       hinh chi tiet bai luat -- uu tien chunk cua bai do
                                                       trong RRF (xem rag/retrieval.js FOCUS_ARTICLE_WEIGHT).
-                                                      regenerate (nut "Tao lai"): true --> bo qua cache cau tra loi,
-                                                      goi lai LLM, van tinh luot quota.
+                                                      regenerate (nut "Tao lai"): true --> bo qua cache cau tra loi
+                                                      va bo nho cau hoi lap lai, goi lai LLM, van tinh luot quota.
 POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  200
 ```
 
@@ -492,15 +496,38 @@ POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  2
   "sections": { "answer": "...", "actions": ["... [S1]"], "avoid": ["... [S1]"] },  // null neu khong co AI tra loi
   "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading",
                   "sourceType": "article",   // hoac "au_legislation" (van ban luat goc, CHUA duoc Be.Travel kiem chung)
-                  "officialUrl": "" }],      // chi co voi au_legislation; bai noi bo mo trong app theo articleSlug
+                                             // hoac "official_web" (trang web chinh phu AI da doc khi tra web, CHUA kiem chung)
+                  "officialUrl": "" }],      // co voi au_legislation va official_web; bai noi bo mo trong app theo articleSlug
   "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
   "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR" | "OUT_OF_SCOPE"
+                           // INSUFFICIENT_EVIDENCE: text do CODE soan (rag/noEvidence.js), markdown: neu cau hoi
+                           // thuoc chu de kho chua co (core/aiCoverageGaps.js) thi neu ly do + link trang chinh thuc;
+                           // khong thi loi tu choi chuan + danh sach chu de AI tra loi duoc. Shape khong doi.
   "confidence": "medium",
   "needsOfficialHelp": false,
   "answerSource": "ai",    // hoac "approved_faq": tra tu cau tra loi admin da duyet (muc 10b), khong goi LLM
+                           // hoac "official_web": AI tra trang web chinh phu vi kho khong du du lieu (CHUA kiem chung)
+  "repeated": false,       // true = dung lai cau tra loi cua cau hoi trung lap (khong goi AI, khong tru luot)
   "faqId": null            // id FAQ khi answerSource="approved_faq"
 }
 ```
+
+[!] **Tra loi lap lai** (`services/answerMemory.service.js`): voi luong `legal`, khong `regenerate`, khong
+`focusArticleId`, cau hoi trung CHINH XAC (bo khac biet hoa/thuong, dau tieng Viet, dau cau, khoang trang; cung
+quoc gia) voi cau da tra loi trong `AI_CACHE_TTL_HOURS` (mac dinh 120 = 5 ngay) duoc tra NGAY, truoc ca buoc tao
+tu khoa. Cau khac chu nhung cung tu khoa (Jaccard >= `ANSWER_REPEAT_MIN_SIMILARITY`) duoc tra sau buoc tao tu
+khoa. Ca hai: `repeated:true`, khong goi LLM, khong tru luot quota. Cau tra loi tu kho chi duoc dung lai khi moi
+nguon con dung phien ban (bai `published`+`isCurrent`, cung `version` va `updatedAt`; luat Uc cung `registerId`),
+khong thi bi xoa va tra loi lai. Chi luu cau tra loi khong co `fallbackReason`. FAQ admin da duyet duoc uu tien.
+
+[!] **Tang tra web** (`rag/webAnswer.js`, bat bang `WEB_SEARCH_ENABLED`): voi luong `legal`, khi kho khong du bang
+chung (truy hoi duoi nguong, AI bao `answerable:false`, hoac chu de kho chua co trong `core/aiCoverageGaps.js`),
+backend tra web CHI tren `Country.officialWebDomains` (vd `gov.au`, khop ca ten mien con). Truoc khi tra: con tran
+`WEB_SEARCH_DAILY_LIMIT_USER` cau/nguoi/ngay va ngan sach `WEB_SEARCH_DAILY_BUDGET_VND`, va model nho xac nhan cau
+hoi thuoc chu de phap ly du lich (`rag/webTopicGate.js`). Code chi giu nguon la URL https thuoc danh sach ten mien
+VA nam trong tap trang cong cu tim kiem thuc su tra ve; moi khoi co so lieu bat buoc co marker toi nguon hop le.
+Thanh cong: `answerSource:"official_web"`, citations `sourceType:"official_web"`, disclaimer rieng ("Be.Travel chua
+kiem chung"). Khong ra cau tra loi dung duoc: van la `INSUFFICIENT_EVIDENCE` nhu truoc. Thoi gian 15-50 giay.
 
 [!] **Cau tra loi da duyet (FAQ, muc 10b)**: voi luong `legal`, khong `regenerate`, khong `focusArticleId`,
 backend so tu khoa cau hoi voi FAQ `active` cung quoc gia; khop du nguong `FAQ_MATCH_MIN_SIMILARITY` va nguon

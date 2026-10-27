@@ -50,7 +50,7 @@ emulator, chưa thử điện thoại thật; việc thử máy thật được 
 | Kiểm tra tự động | backend 295 test (gồm 26 ca golden RAG), mobile 235 test, admin 18 test; CI GitHub chạy 3 phần, đang xanh |
 | Kiểm thử thực tế | Có chạy thật trên Android emulator (Android 16) với backend thật nối Atlas (gồm dịch offline ở chế độ máy bay, 17/10); **chưa thử trên điện thoại thật** |
 | Dữ liệu hiện có trên Atlas (11/10) | 8 bài luật KR **đều ở nháp, 0 bài xuất bản**; 0 điểm hỗ trợ; 0 cảnh báo vị trí; 5 hướng dẫn sự cố và 25 câu dịch đang hiển thị |
-| Tính năng khoá có chủ đích | Không còn: Be.Travel AI mở từ 22/10/2026; cờ `EXPO_PUBLIC_AI_CHAT_ENABLED=false` để khoá nhanh |
+| Tính năng khoá có chủ đích | Be.Travel AI (chat pháp lý) khoá lại ngày 24/10/2026 bằng cờ `EXPO_PUBLIC_AI_CHAT_ENABLED` (mở: `true`) |
 
 Tổng số dòng task ở mục 3: **85** = 36 Xong · 11 Đang làm · 19 Chưa làm · 18 Chờ người · 1 Không làm. Theo trạng thái Jira: **36 Done · 11 In Progress · 36 To Do (trong đó 18 bị chặn chờ người) · 2 Won't Do**.
 

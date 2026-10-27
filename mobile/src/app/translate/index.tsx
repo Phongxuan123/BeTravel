@@ -20,11 +20,13 @@ import { getRecognitionModule } from '@/features/translate/voiceRecognition';
 import { useVoiceInput } from '@/features/translate/useVoiceInput';
 import { useTranslationSpeech } from '@/features/translate/useTranslationSpeech';
 
+import { BundledPhrasePanel } from '@/features/translate/BundledPhrasePanel';
+import { dictionaryInfo, hasBundledPair, type TranslationResult, type TranslationEngine } from '@/features/translate/bundledTranslation';
 import { OfflinePackPanel } from '@/features/translate/OfflinePackPanel';
 import { VoiceTools } from '@/features/translate/VoiceTools';
 import { translateOffline, translationLanguage, OFFLINE_TEXT_LIMIT, ONLINE_TEXT_LIMIT } from '@/features/translate/offlineTranslation';
 
-type SavedPhrase = { vi: string; translated: string; phonetic: string; targetLanguage?: string; engine?: 'mlkit' };
+type SavedPhrase = { vi: string; translated: string; phonetic: string; targetLanguage?: string; engine?: TranslationEngine; sourceTerms?: string[] };
 
 export default function TranslatorScreen() {
   const { countryCode } = useCountry();
@@ -34,11 +36,12 @@ export default function TranslatorScreen() {
 
 function TranslatorForm() {
   const { countryCode, country } = useCountry();
-  const [offlineMode, setOfflineMode] = useState(true);
+  const [offlineMode, setOfflineMode] = useState(false);
+  const [showMachinePacks, setShowMachinePacks] = useState(false);
   const [translationProgress, setTranslationProgress] = useState('');
   const maxLength = offlineMode ? OFFLINE_TEXT_LIMIT : ONLINE_TEXT_LIMIT;
   const [input, setInput] = useState('Tôi cần giúp đỡ');
-  const [result, setResult] = useState<{ translated: string; phonetic: string; engine?: 'mlkit' } | null>(null);
+  const [result, setResult] = useState<TranslationResult | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [reversed, setReversed] = useState(false); // false: Việt -> ngôn ngữ nước sở tại
@@ -121,7 +124,7 @@ function TranslatorForm() {
           (done, total) => setTranslationProgress(`${done}/${total} đoạn`))
         : await translateText(trimmed, { countryCode, from: fromLabel, to: toLabel, mode: 'text' });
       if (id === requestId.current) {
-        setResult({ ...r, ...(offlineMode ? { engine: 'mlkit' as const } : {}) });
+        setResult(r);
         if (autoSpeakRef.current) void audio.play(r.translated);
       }
     } catch (error) {
@@ -138,20 +141,20 @@ function TranslatorForm() {
     setInput(nextInput);
   };
 
-  const onPickPhrase = (phrase: QuickPhrase) => {
+  const onPickPhrase = (phrase: QuickPhrase, engine?: TranslationEngine) => {
     invalidateResult();
     setSelectedId(phrase.id);
     setInput(reversed ? phrase.translated : phrase.vi);
     setTranslateError(null);
-    setResult({ translated: reversed ? phrase.vi : phrase.translated, phonetic: reversed ? '' : phrase.phonetic });
+    setResult({ translated: reversed ? phrase.vi : phrase.translated, phonetic: reversed ? '' : phrase.phonetic, engine });
     if (autoSpeakRef.current) void audio.play(reversed ? phrase.vi : phrase.translated);
   };
 
   // Câu đã lưu luôn lưu theo chiều Việt -> ngôn ngữ đích để hiển thị thống nhất.
   const currentPhrase: SavedPhrase | null = result
     ? reversed
-      ? { vi: result.translated, translated: input.trim(), phonetic: '', targetLanguage: otherLanguage, engine: result.engine }
-      : { vi: input.trim(), translated: result.translated, phonetic: result.phonetic, targetLanguage: otherLanguage, engine: result.engine }
+      ? { vi: result.translated, translated: input.trim(), phonetic: '', targetLanguage: otherLanguage, engine: result.engine, sourceTerms: result.sourceTerms }
+      : { vi: input.trim(), translated: result.translated, phonetic: result.phonetic, targetLanguage: otherLanguage, engine: result.engine, sourceTerms: result.sourceTerms }
     : null;
   const isCurrentSaved = !!currentPhrase && savedPhrases.value.some((p) => p.vi === currentPhrase.vi && p.translated === currentPhrase.translated && p.targetLanguage === otherLanguage);
   const onToggleSave = () => {
@@ -182,13 +185,13 @@ function TranslatorForm() {
     <View className="flex-1 bg-bg">
       <PageHeader
         title="Dịch khẩn cấp"
-        subtitle="Dịch từ và đoạn văn · tải gói trước để dùng khi mất mạng"
+        subtitle="Từ điển và câu Việt–Anh có sẵn · không cần tải thêm"
         right={<Badge label={englishMode ? 'Câu mẫu có sẵn' : isOffline ? 'Bản lưu' : phrasesQuery.isLoading ? 'Đang tải' : phrasesQuery.isError ? 'Lỗi tải' : 'Đã tải'} tone={!englishMode && (isOffline || phrasesQuery.isError) ? 'warning' : 'success'} />}
       />
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 18, gap: 16, paddingBottom: 48 }}>
         <View className="flex-row items-center gap-3 rounded-lg border border-line bg-surface p-4">
           <View className="flex-1"><Text className="font-body-bold text-ink">Dịch không cần mạng</Text>
-            <Text className="mt-1 text-xs text-muted">{offlineMode ? 'Từ vựng và đoạn tối đa 5.000 ký tự xử lý trên máy. Micro/giọng đọc cần gói riêng.' : 'Chế độ online gửi văn bản đến máy chủ; tối đa 500 ký tự.'}</Text></View>
+            <Text className="mt-1 text-xs text-muted">{offlineMode ? 'Tra từ và câu Việt–Anh có sẵn trong app, tối đa 5.000 ký tự. Câu tự do ngoài bộ cần dịch máy mở rộng hoặc online. Micro/giọng đọc phụ thuộc thiết bị.' : 'Chế độ online gửi văn bản đến máy chủ; tối đa 500 ký tự.'}</Text></View>
           <Switch accessibilityLabel="Dịch không cần mạng" value={offlineMode} onValueChange={(next) => { invalidateResult(); setOfflineMode(next); }} />
         </View>
         {!englishMode && phrasesQuery.isLoading && <Text className="text-muted">Đang tải câu mẫu…</Text>}
@@ -224,7 +227,16 @@ function TranslatorForm() {
           </View>
         </View>
 
-        {offlineMode && <OfflinePackPanel key={`${sourceLanguage}:${targetLanguage}`} source={sourceLanguage} target={targetLanguage} disabled={loading || voice.busy} />}
+        {offlineMode && <View className="gap-2 rounded-lg border border-line bg-surface p-4">
+          <Text className="font-body-bold text-ink">{hasBundledPair(sourceLanguage, targetLanguage) ? 'Bộ Việt–Anh đã tích hợp sẵn' : 'Chưa có bộ tích hợp cho cặp ngôn ngữ này'}</Text>
+          <Text className="text-sm text-muted">{dictionaryInfo.count.toLocaleString('vi-VN')} cặp từ/nghĩa và câu thông dụng. Dùng được từ lần mở đầu, không cần tài khoản hay tải gói. Không dịch từng từ để ghép thành câu.</Text>
+          <Text className="text-xs text-muted">Từ điển: Wiktionary qua Kaikki · {dictionaryInfo.license}. Dữ liệu cộng đồng có thể có nhiều nghĩa.</Text>
+          <Pressable accessibilityRole="button" onPress={() => Linking.openURL(dictionaryInfo.licenseUrl).catch(() => Alert.alert('Cần mạng để mở giấy phép'))} className="min-h-11 justify-center"><Text className="text-primary">Giấy phép từ điển CC BY-SA 4.0</Text></Pressable>
+          <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMachinePacks }} onPress={() => setShowMachinePacks((value) => !value)} className="min-h-11 justify-center">
+            <Text className="text-primary">{showMachinePacks ? 'Ẩn dịch máy mở rộng' : 'Dịch câu tự do bằng ML Kit (tùy chọn)'}</Text>
+          </Pressable>
+          {showMachinePacks && <OfflinePackPanel key={`${sourceLanguage}:${targetLanguage}`} source={sourceLanguage} target={targetLanguage} disabled={loading || voice.busy} />}
+        </View>}
         <VoiceTools key={fromLabel} locale={speechLocale(fromLabel)} disabled={loading || voice.busy || audio.speaking} />
         <View className="rounded-lg border border-line bg-surface p-4">
           <View className="flex-row items-center justify-between">
@@ -280,7 +292,7 @@ function TranslatorForm() {
               onPress={() => runTranslate(input)}
               className="h-[50px] flex-row items-center rounded-lg bg-primary px-5"
             >
-              <Text className="font-body-bold text-white">{loading ? `Đang dịch ${translationProgress}…` : offlineMode ? 'Dịch với Google' : 'Dịch ngay'}</Text>
+              <Text className="font-body-bold text-white">{loading ? `Đang dịch ${translationProgress}…` : offlineMode ? 'Dịch offline' : 'Dịch ngay'}</Text>
             </Pressable>
           </View>
         </View>
@@ -311,7 +323,13 @@ function TranslatorForm() {
             <Text className="mt-2 font-display text-white" style={{ fontSize: 34 }}>
               {result.translated}
             </Text>
-            {result.engine === 'mlkit' && <View className="mt-3 gap-2">
+            {result.engine === 'bundled-vocabulary' && <Text className="mt-3 text-xs text-white">Từ du lịch cốt lõi · BeTravel. Nghĩa theo ngữ cảnh du lịch.</Text>}
+            {result.engine === 'bundled-phrase' && <Text className="mt-3 text-xs text-white">Câu có sẵn trong app · BeTravel / Tatoeba. Xem nguồn câu mẫu bên dưới.</Text>}
+            {result.engine === 'bundled-dictionary' && <View className="mt-3 gap-2">
+              <Text className="text-xs text-white">Tra từ điển, các nghĩa phân cách bằng dấu chấm phẩy; không phải bản dịch câu. Wiktionary / Kaikki · CC BY-SA 4.0.</Text>
+              {result.sourceTerms?.map((term) => <Pressable key={term} accessibilityRole="button" onPress={() => Linking.openURL(`https://en.wiktionary.org/wiki/${encodeURIComponent(term)}#Vietnamese`).catch(() => Alert.alert('Cần mạng để mở nguồn'))} className="min-h-11 justify-center"><Text className="text-primary-soft">Nguồn và lịch sử đóng góp: {term}</Text></Pressable>)}
+            </View>}
+            {result.engine === 'mlkit'  && <View className="mt-3 gap-2">
               <Text className="text-xs text-white">Bản dịch tự động trên máy · Google Translate. Có thể sai nghĩa; kiểm tra lại khi dùng cho y tế/pháp luật.</Text>
               <Pressable onPress={() => Linking.openURL('https://translate.google.com').catch(() => Alert.alert('Cần mạng để mở nguồn'))}><Image source={require('../../../assets/translation/white-regular.png')} style={{ width: 176, height: 16 }} resizeMode="contain" accessibilityLabel="powered by Google Translate" /></Pressable>
             </View>}
@@ -331,7 +349,7 @@ function TranslatorForm() {
                 <Pressable
                   key={`${phrase.vi}|${phrase.translated}`}
                   onPress={() => { invalidateResult(); setReversed(false); setInput(phrase.vi);
-                    if (phrase.targetLanguage) setResult({ translated: phrase.translated, phonetic: phrase.phonetic, engine: phrase.engine }); }}
+                    if (phrase.targetLanguage) setResult({ translated: phrase.translated, phonetic: phrase.phonetic, engine: phrase.engine, sourceTerms: phrase.sourceTerms }); }}
                   className="min-h-[60px] flex-row items-center gap-3 rounded-lg border border-line bg-surface px-3 py-3"
                 >
                   <Star size={18} color={colors.warning} fill={colors.warning} />
@@ -342,6 +360,7 @@ function TranslatorForm() {
           </View>
         )}
 
+        {hasBundledPair(sourceLanguage, targetLanguage) && <BundledPhrasePanel reversed={reversed} onPick={(phrase) => onPickPhrase({ id: phrase.id, countryCode, vi: phrase.vi, translated: phrase.en, phonetic: '' }, 'bundled-phrase')} />}
         <View>
           <View className="flex-row items-center justify-between">
             <Text className="text-base font-body-bold text-ink">{englishMode ? 'Mẫu câu Việt - Anh' : 'Mẫu câu khẩn cấp một chạm'}</Text>
