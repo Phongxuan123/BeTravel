@@ -191,11 +191,15 @@ export const getTitleContentVi = async (titleId, { offset, limit }) => {
 
 // Cụm đã lưu nhưng còn đoạn null (AI dịch sai số ở lần đầu): dịch lại RIÊNG các đoạn đó rồi ghi đè cache.
 const repairChunk = async (key, cached, texts) => {
-  const missing = cached.map((item, position) => (item === null ? position : -1)).filter((position) => position >= 0);
+  const missing = cached
+    .map((item, position) => (item === null ? position : -1))
+    .filter((position) => position >= 0);
   if (cached.length !== texts.length || missing.length === 0) return cached;
   const retried = await translateChunk(missing.map((position) => texts[position]));
   const merged = cached.map((item, position) => item ?? retried[missing.indexOf(position)] ?? null);
-  if (merged.filter((item) => item !== null).length > cached.filter((item) => item !== null).length) {
+  if (
+    merged.filter((item) => item !== null).length > cached.filter((item) => item !== null).length
+  ) {
     await writeCachedChunk(key, merged);
   }
   return merged;
@@ -210,7 +214,8 @@ export const pretranslateTitle = async (titleId, { concurrency = 2, onProgress }
   if (!isCuratedTitle(titleId)) throw notTranslatable();
   const { rawVersion, allBlocks } = await loadDisplayedBlocks(titleId);
   const chunkStarts = [];
-  for (let start = 0; start < allBlocks.length; start += TRANSLATION_CHUNK_SIZE) chunkStarts.push(start);
+  for (let start = 0; start < allBlocks.length; start += TRANSLATION_CHUNK_SIZE)
+    chunkStarts.push(start);
 
   const stats = { chunks: chunkStarts.length, cached: 0, translated: 0, failed: 0 };
   let next = 0;
@@ -218,10 +223,14 @@ export const pretranslateTitle = async (titleId, { concurrency = 2, onProgress }
     while (next < chunkStarts.length) {
       const chunkStart = chunkStarts[next];
       next += 1;
-      const texts = allBlocks.slice(chunkStart, chunkStart + TRANSLATION_CHUNK_SIZE).map((block) => block.text);
+      const texts = allBlocks
+        .slice(chunkStart, chunkStart + TRANSLATION_CHUNK_SIZE)
+        .map((block) => block.text);
       const key = cacheKeyFor(rawVersion.registerId, chunkStart);
       const cached = await readCachedChunk(key);
-      const translations = cached ? await repairChunk(key, cached, texts) : await resolveChunk(rawVersion.registerId, chunkStart, texts);
+      const translations = cached
+        ? await repairChunk(key, cached, texts)
+        : await resolveChunk(rawVersion.registerId, chunkStart, texts);
       if (cached) stats.cached += 1;
       else if (translations.some((item) => item !== null)) stats.translated += 1;
       else stats.failed += 1;

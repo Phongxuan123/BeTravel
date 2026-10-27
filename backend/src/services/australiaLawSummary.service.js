@@ -171,7 +171,10 @@ export const getTitleSummary = async (titleId) => {
     deepSummary: deep.deepSummary
       ? {
           ...deep.deepSummary,
-          parts: parts.map((part) => ({ ...part, headingVi: viByCitation.get(part.citationId) ?? null })),
+          parts: parts.map((part) => ({
+            ...part,
+            headingVi: viByCitation.get(part.citationId) ?? null,
+          })),
         }
       : null,
     summaryViStatus: status,

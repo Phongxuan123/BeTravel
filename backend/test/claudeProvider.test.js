@@ -6,7 +6,10 @@ import { createClaudeLlmProvider } from "../src/rag/llm/claude.llm.js";
 
 // Provider Claude dùng cho dịch luật: kiểm đúng định dạng gọi Messages API và cách đọc kết quả/lỗi.
 test("createClaudeLlmProvider: thiếu key thì từ chối ngay", () => {
-  assert.throws(() => createClaudeLlmProvider({ apiKey: "", model: "m" }), /ANTHROPIC_API_KEY_MISSING/);
+  assert.throws(
+    () => createClaudeLlmProvider({ apiKey: "", model: "m" }),
+    /ANTHROPIC_API_KEY_MISSING/,
+  );
 });
 
 test("claude provider: gửi x-api-key, system, max_tokens và trả text; lỗi HTTP giữ mã để retry 429", async () => {
@@ -15,7 +18,10 @@ test("claude provider: gửi x-api-key, system, max_tokens và trả text; lỗi
   globalThis.fetch = async (url, init) => {
     calls.push({ url, init, body: JSON.parse(init.body) });
     return calls.length === 1
-      ? { ok: true, json: async () => ({ content: [{ type: "text", text: '{"translations":["a"]}' }] }) }
+      ? {
+          ok: true,
+          json: async () => ({ content: [{ type: "text", text: '{"translations":["a"]}' }] }),
+        }
       : { ok: false, status: 429, text: async () => "rate limit" };
   };
   try {
@@ -27,7 +33,12 @@ test("claude provider: gửi x-api-key, system, max_tokens và trả text; lỗi
     assert.equal(calls[0].body.system, "sys");
     assert.equal(calls[0].body.model, "claude-haiku-5-5");
     assert.ok(calls[0].body.max_tokens > 0);
-    await assert.rejects(provider.complete({ systemPrompt: "s", userPrompt: "u" }), /CLAUDE_LLM_FAILED: 429/);
+    // Messages API trả 400 nếu có tham số lấy mẫu.
+    assert.equal(calls[0].body.temperature, undefined);
+    await assert.rejects(
+      provider.complete({ systemPrompt: "s", userPrompt: "u" }),
+      /CLAUDE_LLM_FAILED: 429/,
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }

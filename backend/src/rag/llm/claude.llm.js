@@ -26,7 +26,8 @@ export function createClaudeLlmProvider({ apiKey, model }) {
         body: JSON.stringify({
           model,
           max_tokens: maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS,
-          temperature: 0.2,
+          // Không gửi temperature/top_p/top_k: từ 21/10/2026 Messages API trả 400 cho mọi model khi có các
+          // tham số này (claude-haiku-5-5 vốn đã từ chối giá trị khác mặc định).
           system: systemPrompt,
           messages: [{ role: "user", content: userPrompt }],
         }),
