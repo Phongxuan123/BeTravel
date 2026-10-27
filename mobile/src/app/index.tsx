@@ -286,16 +286,14 @@ export default function HomeScreen() {
               label="Cảnh sát"
               number={country?.emergencyNumbers.police}
               tone="red"
-              extras={extraNumbersFor(country, 'police')}
+              extras={extraNumbersFor(country, 'police').slice(0, 1)}
             />
             <CallTile
               label="Cấp cứu"
               number={country?.emergencyNumbers.ambulance}
               tone="red"
-              extras={extraNumbersFor(country, 'ambulance')}
+              extras={extraNumbersFor(country, 'ambulance').slice(0, 1)}
             />
-          </View>
-          <View className="mt-2.5 flex-row">
             <CallTile label="Đại sứ quán" number={country?.embassy.phone} tone="blue" compact />
           </View>
         </View>
@@ -535,10 +533,12 @@ function CallTile({
           accessibilityRole="button"
           accessibilityLabel={`Gọi ${label}: ${item.label}`}
           onPress={() => void openPhone(item.number)}
-          className="border-t border-danger-line px-2 py-2"
+          className="items-center border-t border-danger-line px-1 py-1.5"
         >
-          <Text className="text-[11px] text-muted" numberOfLines={1}>{item.label}</Text>
-          <Text className="font-mono-bold text-[14px]" style={{ color: numberColor }} numberOfLines={1}>{item.number}</Text>
+          <Text className="text-[10px] text-muted" numberOfLines={1}>{item.label}</Text>
+          <Text className="font-mono-bold text-[12px]" style={{ color: numberColor }} numberOfLines={1} adjustsFontSizeToFit>
+            {item.number}
+          </Text>
         </Pressable>
       ))}
     </View>
