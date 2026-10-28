@@ -29,3 +29,17 @@ test('khách vào màn cần đăng nhập vẫn bị đưa về /login', async 
   await renderGate('/sos/map', { onboarded: true });
   await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/login'));
 });
+
+// BUG-23: khách đọc được hướng dẫn sự cố từ SOS Hub.
+test.each(['/incidents', '/incidents/mat-ho-chieu'])('khách vào %s không bị chuyển hướng', async (pathname) => {
+  const screen = await renderGate(pathname, { onboarded: true });
+  await waitFor(() => expect(screen.getByText('noi dung')).toBeTruthy());
+  expect(router.replace).not.toHaveBeenCalled();
+});
+
+// BUG-16: màn "đang hoàn thiện" mở được từ liên kết Điều khoản ở màn Đăng ký.
+test('khách vào /coming-soon không bị đưa về /login', async () => {
+  const screen = await renderGate('/coming-soon', { onboarded: true });
+  await waitFor(() => expect(screen.getByText('noi dung')).toBeTruthy());
+  expect(router.replace).not.toHaveBeenCalled();
+});

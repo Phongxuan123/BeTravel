@@ -769,6 +769,8 @@ GET /incidents/:slug   200 | 404 NOT_FOUND (draft hoac khong ton tai)
 `cta.type`: `map` (payload.locationType loc SOS map) · `call` (payload.phone,
 rong = dung SDT dai su quan cua country dang chon) · `ai` (payload.question
 prefill man hinh chat) · `link` (payload.url mo ngoai).
+`cta.payload` LUON la object (co the rong `{}`), backend khong bo field nay; client van
+chuan hoa `payload ?? {}` o adapter phong du lieu cu.
 
 ## 18. ENDPOINT TIEN DO SU CO — `/api/users/incident-progress/:incidentId` (B7, can dang nhap)
 

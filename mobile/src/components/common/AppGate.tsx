@@ -4,13 +4,23 @@ import { getJSON, StorageKeys } from '@/lib/storage';
 import { useAuth } from '@/lib/auth';
 
 // Các route công khai — không yêu cầu đăng nhập.
-const PUBLIC_ROUTES = ['/welcome', '/login', '/register', '/login-phone', '/forgot-password', '/_dev/design-system'];
+const PUBLIC_ROUTES = ['/welcome', '/login', '/register', '/login-phone', '/forgot-password', '/coming-soon', '/_dev/design-system'];
 
 // Khẩn cấp không được chờ đăng nhập hay xem hết onboarding (quyết định 08/10/2026): người vừa cài
 // app, chưa có tài khoản hoặc đang mất mạng vẫn phải gọi được số khẩn cấp và chia sẻ vị trí.
 // Dịch offline (12/10) không phụ thuộc phiên mạng; API dịch online vẫn yêu cầu auth.
 // Bản đồ/điểm hỗ trợ vẫn cần đăng nhập.
+// 28/10/2026: hướng dẫn xử lý sự cố (/incidents, /incidents/<slug>) cũng mở cho khách (BUG-23);
+// API incidents công khai và màn đã hỗ trợ chế độ khách.
 export const EMERGENCY_ROUTES = ['/sos', '/sos/share-location', '/translate'];
+const EMERGENCY_ROUTE_PREFIXES = ['/incidents'];
+
+export function isEmergencyRoute(pathname: string): boolean {
+  return (
+    EMERGENCY_ROUTES.includes(pathname) ||
+    EMERGENCY_ROUTE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))
+  );
+}
 
 // Cổng chặn 2 lớp, chạy lại mỗi khi đổi route hoặc trạng thái đăng nhập thay đổi:
 // 1) Chưa xem onboarding → /welcome (spec Q20).
@@ -29,7 +39,7 @@ export function AppGate({ children }: { children: ReactNode }) {
 
     getJSON<number>(StorageKeys.onboarded).then((onboarded) => {
       if (cancelledRef.current) return;
-      if (EMERGENCY_ROUTES.includes(pathname)) {
+      if (isEmergencyRoute(pathname)) {
         // Bỏ qua cả hai lớp cổng.
       } else if (!onboarded) {
         if (pathname !== '/welcome') router.replace('/welcome');

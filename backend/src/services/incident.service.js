@@ -43,6 +43,8 @@ const stableSteps = (incident) =>
         steps: incident.steps.map((step) => ({
           ...step,
           stepId: step.stepId ?? `legacy-${incident._id}-${step.order}`,
+          // Doc lean khong qua default/minimize cua Mongoose: du lieu cu luu cta khong co payload.
+          ctas: (step.ctas ?? []).map((cta) => ({ ...cta, payload: cta.payload ?? {} })),
         })),
       }
     : null;

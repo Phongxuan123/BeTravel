@@ -20,7 +20,7 @@
           "checklist": [],
           "contactRefs": [],
           "articleRefs": [],
-          "ctas": [],
+          "ctas": [{ "type": "call", "label": "Goi Dai su quan", "payload": {} }],
           "stepId": "fixture-step-0"
         }
       ],

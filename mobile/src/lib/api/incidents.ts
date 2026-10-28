@@ -6,7 +6,8 @@
 import { apiRequest, ApiError } from './http';
 import type { Incident } from '@/mocks/schemas';
 
-export type ApiIncidentCta = { type: 'map' | 'call' | 'ai' | 'link'; label: string; payload: Record<string, unknown> };
+// payload co the vang tren du lieu cu (Mongoose bo object rong) -- adaptIncident chuan hoa ve {}.
+export type ApiIncidentCta = { type: 'map' | 'call' | 'ai' | 'link'; label: string; payload?: Record<string, unknown> };
 export type ApiIncidentStep = {
   stepId?: string;
   order: number;
@@ -43,7 +44,11 @@ export function adaptIncident(api: ApiIncident): Incident {
     tone: api.tone,
     urgent: api.urgent,
     reassurance: api.reassurance,
-    steps: api.steps,
+    // Phong thu kep voi backend: moi cta luon co payload de man hinh doc an toan (BUG-22).
+    steps: api.steps.map((step) => ({
+      ...step,
+      ctas: step.ctas.map((cta) => ({ ...cta, payload: cta.payload ?? {} })),
+    })),
   };
 }
 
