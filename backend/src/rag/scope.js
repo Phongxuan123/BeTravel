@@ -267,7 +267,14 @@ export const DECEPTION_ADVICE_REASON = "PERSONAL_ADVICE_DECEPTION";
 export const EMERGENCY_HYPOTHETICAL_REASON = "EMERGENCY_HYPOTHETICAL";
 
 // Xin tư vấn làm điều trái luật (khai gian, làm giả giấy tờ...): trả câu cố định do code soạn (V-07).
-const DECEPTION_PHRASES = ["khai gian", "khai man", "khai sai sự thật", "làm giả", "giả mạo", "giấu"];
+const DECEPTION_PHRASES = [
+  "khai gian",
+  "khai man",
+  "khai sai sự thật",
+  "làm giả",
+  "giả mạo",
+  "giấu",
+];
 
 const hasAny = (question, phrases) => phrases.some((phrase) => containsPhrase(question, phrase));
 const wordCount = (text) => text.trim().split(/\s+/).filter(Boolean).length;
@@ -330,7 +337,7 @@ export const DECEPTION_ADVICE_ANSWER =
   "Mình không hướng dẫn cách khai báo gian dối hay lách luật. Khai sai sự thật hoặc dùng giấy tờ giả " +
   "thường bị coi là vi phạm nghiêm trọng và có thể dẫn tới bị từ chối hoặc huỷ thị thực, bị trục xuất " +
   "hoặc bị truy cứu trách nhiệm theo luật nước sở tại.\n\n" +
-  "Bạn có thể hỏi mình quy định khai báo đúng là gì (ví dụ: \"Hồ sơ visa cần khai những gì?\"). " +
+  'Bạn có thể hỏi mình quy định khai báo đúng là gì (ví dụ: "Hồ sơ visa cần khai những gì?"). ' +
   "Với trường hợp cụ thể, hãy liên hệ Đại sứ quán/Lãnh sự quán Việt Nam hoặc luật sư địa phương.";
 
 // Khi là ca khẩn cấp mà không có nguồn pháp lý phù hợp: số khẩn cấp đã là câu trả lời hữu ích nhất.

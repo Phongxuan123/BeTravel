@@ -57,7 +57,10 @@ export function withAuxiliaryFallback(primary, fallback) {
         return await fallback.complete(input);
       } catch (fallbackError) {
         if (primaryError) throw primaryError;
-        console.error("[rag] model dự phòng bước phụ cũng lỗi:", String(fallbackError?.message ?? fallbackError).slice(0, 200));
+        console.error(
+          "[rag] model dự phòng bước phụ cũng lỗi:",
+          String(fallbackError?.message ?? fallbackError).slice(0, 200),
+        );
         return primaryText;
       }
     },

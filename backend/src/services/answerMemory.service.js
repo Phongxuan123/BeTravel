@@ -122,7 +122,9 @@ export const findSimilarRepeat = ({ countryCode, keywordTerms, question = "" }) 
         .map((memory) => ({ memory, score: jaccardSimilarity(memory.keywordTerms, keywordTerms) }))
         .sort((a, b) => b.score - a.score);
       const direct = await firstUsable(
-        ranked.filter(({ score }) => score >= env.ANSWER_REPEAT_MIN_SIMILARITY).map((item) => item.memory),
+        ranked
+          .filter(({ score }) => score >= env.ANSWER_REPEAT_MIN_SIMILARITY)
+          .map((item) => item.memory),
       );
       if (direct || !question) return direct;
 

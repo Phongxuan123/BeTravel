@@ -756,7 +756,9 @@ export const sendMessage = async ({
   }
 
   // Cùng ý nhưng khác chữ với câu đã trả lời: dùng lại và trả lượt quota vừa cấp (không tốn tiền).
-  const similarRepeat = canRepeat ? await findSimilarRepeat({ countryCode, keywordTerms, question }) : null;
+  const similarRepeat = canRepeat
+    ? await findSimilarRepeat({ countryCode, keywordTerms, question })
+    : null;
   if (similarRepeat) {
     await releaseQuota(userId).catch((error) =>
       console.error("[chat] không trả lại được lượt quota:", error.message),
@@ -878,7 +880,8 @@ export const sendMessage = async ({
           sections: guarded.sections ?? null,
           citations: guarded.citations,
           confidence,
-          needsOfficialHelp: needsOfficialHelp || route === QuestionRoute.EMERGENCY || isHypotheticalEmergency,
+          needsOfficialHelp:
+            needsOfficialHelp || route === QuestionRoute.EMERGENCY || isHypotheticalEmergency,
           fallbackReason: guarded.fallbackReason,
           retrieval: retrievalMeta,
           usage,
