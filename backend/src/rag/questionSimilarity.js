@@ -63,6 +63,7 @@ async function askModelForScores(baseQuestion, questions, getProvider) {
       chunks: [],
       question: baseQuestion,
       maxOutputTokens: SCORE_MAX_OUTPUT_TOKENS,
+      validate: (text) => parseScores(text, questions.length) !== null,
     },
     getProvider,
     { maxRetries: SCORE_RETRIES, maxWaitMs: SCORE_MAX_WAIT_MS },

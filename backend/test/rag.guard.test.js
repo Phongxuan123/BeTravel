@@ -70,3 +70,20 @@ test("marker ở câu trước không bảo chứng mức phạt phía sau", () 
   );
   assert.equal(result.fallbackReason, "GUARD_REJECTED");
 });
+
+// BUG-20: model tự đánh số trong từng ý; guard bỏ tiền tố để client không hiện "1 1." hay nhảy số.
+test("guard bo tien to so thu tu va gach dau dong trong tung y", () => {
+  const raw = {
+    answer: "Cần hộ chiếu khi nhập cảnh [S1].",
+    usedSources: ["S1"],
+    confidence: "high",
+    actions: ["1. Mang theo hộ chiếu còn hạn [S1].", "3) Khai báo hải quan [S1].", "- Giữ vé khứ hồi [S1]."],
+    avoid: ["* Không mang thực phẩm tươi [S1]."],
+  };
+  const retrieved = new Map([["S1", { marker: "S1", text: "Cần hộ chiếu, khai báo hải quan, vé khứ hồi, thực phẩm tươi" }]]);
+
+  const { sections } = guardAnswer(raw, retrieved);
+
+  for (const item of [...sections.actions, ...sections.avoid]) assert.doesNotMatch(item, /^\s*(\d+[.)]|[-*•])\s/);
+  assert.equal(sections.actions.length, 3);
+});

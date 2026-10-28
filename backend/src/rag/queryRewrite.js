@@ -69,6 +69,8 @@ export async function rewriteQuestionToKeywords(question, getProvider = getRewri
         maxOutputTokens: REWRITE_MAX_OUTPUT_TOKENS,
         // Bước phụ: chờ quá lâu thì dùng câu hỏi gốc làm từ khoá, không bắt người dùng đợi cả phút.
         timeoutMs: env.QUERY_REWRITE_TIMEOUT_MS,
+        // JSON hỏng thì provider thử model dự phòng (nếu có) trước khi rơi về câu hỏi gốc.
+        validate: (text) => parseRewriteJson(text) !== null,
       },
       getProvider,
       { maxRetries: REWRITE_RETRIES, maxWaitMs: REWRITE_MAX_WAIT_MS },

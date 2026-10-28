@@ -59,7 +59,7 @@ VĂN PHONG: tiếng Việt, ngắn gọn, dễ hiểu với người không họ
   "confidence": "high" | "medium" | "low",
   "needsOfficialHelp": true | false
 }
-"actions" và "avoid" tối đa 3 ý mỗi mảng, có thể rỗng; không bịa cho đủ ý.`;
+"actions" và "avoid" tối đa 3 ý mỗi mảng, có thể rỗng; không bịa cho đủ ý. Không tự đánh số hay gạch đầu dòng trong từng ý.`;
 
 // So khớp URL bỏ qua phần không đổi nội dung (#mục, dấu "/" cuối, hoa/thường của tên miền).
 const canonicalUrl = (rawUrl) => {

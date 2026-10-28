@@ -176,6 +176,11 @@ export function composeAnswerText({ answer, actions, avoid }) {
  *   gốc để đối chiếu số tiền nên chỉ bắt buộc mỗi khối định lượng có marker nguồn hợp lệ.
  * @returns {{answer:string, sections:object|null, citations:object[], fallbackReason:string|null, violations:string[]}}
  */
+// Model hay tự đánh số/gạch đầu dòng trong từng ý; client đã vẽ huy hiệu số riêng nên bỏ tiền tố
+// này để không bị "1 1." hoặc nhảy số khi một ý bị loại (BUG-20).
+const LIST_PREFIX_PATTERN = /^\s*(?:\d+[.)]|[-*•])\s+/;
+export const stripListPrefix = (text) => text.replace(LIST_PREFIX_PATTERN, "");
+
 export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER, options = {}) {
   const violations = [];
   const allowedDigits = (options.allowedNumbers ?? []).map(digitsOf).filter(Boolean);
@@ -250,7 +255,7 @@ export function guardAnswer(raw, retrieved, disclaimer = DEFAULT_DISCLAIMER, opt
         violations.push("DROPPED_ITEM:MISSING_CITATION");
         return [];
       }
-      return [part.text];
+      return [stripListPrefix(part.text)];
     });
 
   const sections = {

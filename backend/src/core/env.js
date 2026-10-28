@@ -92,6 +92,8 @@ const envSchema = z.object({
   // Model riêng cho bước chuyển câu hỏi thành từ khoá (RETRIEVAL_MODE=lexical): việc nhỏ, nên dùng
   // model nhanh/rẻ. Rỗng = dùng LLM_MODEL.
   QUERY_REWRITE_MODEL: z.string().optional().default(""),
+  // Model dự phòng cho các bước phụ (tạo từ khoá, chấm chủ đề, chấm trùng câu); rỗng = tắt.
+  QUERY_REWRITE_FALLBACK_MODEL: z.string().optional().default(""),
   // Trần token đầu ra của câu trả lời chat: câu trả lời ngắn hơn thì model trả nhanh hơn.
   LLM_MAX_OUTPUT_TOKENS: numeric(1500),
   EMBEDDING_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
@@ -131,6 +133,10 @@ const envSchema = z.object({
   // Câu hỏi khác chữ nhưng cùng từ khoá (Jaccard 0-1) từ ngưỡng này thì dùng lại câu trả lời trước.
   // Cao hơn ngưỡng FAQ vì không có người duyệt: trả nhầm câu trái nghĩa tệ hơn gọi lại AI.
   ANSWER_REPEAT_MIN_SIMILARITY: numeric(0.9),
+  // Tầng 2 (BUG-24): câu có Jaccard từ ngưỡng này trở lên được AI chấm trùng ý; điểm 0-100 từ
+  // ANSWER_REPEAT_AI_MIN_SCORE trở lên mới dùng lại câu trả lời. Gọi AI chấm rẻ hơn nhiều so với tra web.
+  ANSWER_REPEAT_CANDIDATE_SIMILARITY: numeric(0.5),
+  ANSWER_REPEAT_AI_MIN_SCORE: numeric(85),
   AI_DAILY_QUOTA_USER: numeric(40),
   AI_DAILY_QUOTA_GLOBAL: numeric(800),
   // Tầng tra web (rag/webAnswer.js): chỉ chạy khi kho không đủ bằng chứng, chỉ trong tên miền
