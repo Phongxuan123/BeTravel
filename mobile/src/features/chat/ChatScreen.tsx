@@ -9,6 +9,7 @@ import { QuickChip } from '@/components/ui/QuickChip';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { AppShell, useAppShellNavClearance } from '@/components/common/AppShell';
+import { useKeyboardInset } from '@/lib/useKeyboardInset';
 import { AnswerCard } from '@/features/chat/components/AnswerCard';
 import { BotAvatar } from '@/features/chat/components/BotAvatar';
 import { ChatHeader } from '@/features/chat/components/ChatHeader';
@@ -78,6 +79,7 @@ function buildFeedbackMap(history: ChatUiMessage[]): Record<string, 'up' | 'down
 
 export default function ChatScreen() {
   const navClearance = useAppShellNavClearance();
+  const keyboardInset = useKeyboardInset();
   const { isGuest } = useAuth();
   const { countryCode, country } = useCountry();
   const params = useLocalSearchParams<{ q?: string; focusArticleId?: string }>();
@@ -85,6 +87,10 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [feedback, setFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const scrollRef = useRef<ScrollView>(null);
+  // Bàn phím mở thì cuộn xuống cuối để tin nhắn mới nhất không bị đẩy ra khỏi tầm nhìn (AN-05).
+  useEffect(() => {
+    if (keyboardInset > 0) setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 50);
+  }, [keyboardInset]);
   const focusArticleIdUsedRef = useRef(false);
   const sendingRef = useRef(false);
   // Backend phong toa tra cuu phap luat (FEATURE_DISABLED): chan ca man chat.
@@ -384,7 +390,7 @@ export default function ChatScreen() {
           </ScrollView>
         )}
 
-        <View className="border-t border-line bg-surface px-[18px] pt-2.5" style={{ paddingBottom: navClearance }}>
+        <View className="border-t border-line bg-surface px-[18px] pt-2.5" style={{ paddingBottom: keyboardInset > 0 ? keyboardInset + 8 : navClearance }}>
           <Text className="mb-2 text-center text-[11px] leading-4 text-muted">{CHAT_DISCLAIMER}</Text>
           <View className="flex-row items-center rounded-full border border-line bg-bg pl-4 pr-1.5" style={{ minHeight: 52 }}>
             <TextInput
