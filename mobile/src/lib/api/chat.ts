@@ -131,6 +131,9 @@ export function adaptMessage(message: ApiChatMessage, countryCode: string): Chat
   };
 }
 
+const ASK_TIMEOUT_MS = 100_000;
+const HISTORY_TIMEOUT_MS = 15_000;
+
 let activeSessionId: string | null = null;
 let activeSessionCountry: string | null = null;
 let lastMessageId: string | null = null;
@@ -182,6 +185,8 @@ export async function askLegalAssistant(
   const res = await apiRequest<{ sessionId: string; message: ApiChatMessage }>(`/chat/sessions/${sessionId}/messages`, {
     method: 'POST',
     body: { question, focusArticleId: opts?.focusArticleId, regenerate: opts?.regenerate },
+    // Tra web có thể kéo dài tới ~90 s; quá mức này coi là mất kết nối để màn chat đối chiếu với máy chủ.
+    timeoutMs: ASK_TIMEOUT_MS,
   });
   lastMessageId = res.message._id;
   return adaptMessage(res.message, countryCode);
@@ -214,7 +219,10 @@ export async function loadChatSessionMessages(
   sessionId: string,
   countryCode: string,
 ): Promise<{ ok: true; data: ChatUiMessage[] }> {
-  const messages = await apiRequest<ApiChatMessage[]>(`/chat/sessions/${sessionId}/messages`);
+  const messages = await apiRequest<ApiChatMessage[]>(`/chat/sessions/${sessionId}/messages`, {
+    // Dùng cả cho việc đối chiếu sau lỗi mạng: không được treo mãi khi mạng vừa đứt.
+    timeoutMs: HISTORY_TIMEOUT_MS,
+  });
   const data: ChatUiMessage[] = messages.map((m) =>
     m.role === 'user'
       ? { _id: m._id, role: 'user', text: m.text }

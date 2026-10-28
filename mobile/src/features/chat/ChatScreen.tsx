@@ -49,6 +49,12 @@ type Message = {
 const CHAT_DISCLAIMER =
   'Lưu ý: Be.Travel cung cấp thông tin dựa trên dữ liệu AI, không thay thế tư vấn pháp lý chính thức. Vui lòng xác nhận các thông tin khẩn cấp với cơ quan chức năng.';
 
+const RECONCILE_INTERVAL_MS = 5_000;
+// Tra web có thể kéo dài tới ~90 s, nên chờ máy chủ tối đa 120 s trước khi báo mất kết nối.
+const RECONCILE_TIMEOUT_MS = 120_000;
+const currentTimeMs = () => Date.now();
+const isNetworkError = (error: unknown) => !(error instanceof ApiError) || error.status === 0;
+
 let messageIdCounter = 0;
 function nextMessageId(prefix: string): string {
   messageIdCounter += 1;
@@ -93,6 +99,8 @@ export default function ChatScreen() {
   }, [keyboardInset]);
   const focusArticleIdUsedRef = useRef(false);
   const sendingRef = useRef(false);
+  // Các tin đang được đối chiếu với máy chủ (tránh chạy hai vòng cho cùng một tin).
+  const reconcilingRef = useRef(new Set<string>());
   // Backend phong toa tra cuu phap luat (FEATURE_DISABLED): chan ca man chat.
   const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
 
@@ -169,9 +177,72 @@ export default function ChatScreen() {
   // State de lam mo nut; ref chan ca hai lan bam trong cung mot frame.
   const isAwaitingAnswer = messages.some((m) => m.pending);
 
+  // Tin trả lời đã có trên máy chủ cho đúng câu hỏi chưa (kể cả khi kết nối của app bị cắt giữa chừng).
+  const findServerAnswer = async (sessionId: string, question: string): Promise<Message | null> => {
+    const history = await loadChatSessionMessages(sessionId, countryCode);
+    const known = new Set(messages.map((m) => m.serverId).filter(Boolean));
+    const list = history.data;
+    for (let i = list.length - 2; i >= 0; i -= 1) {
+      const user = list[i];
+      const reply = list[i + 1];
+      if (user.role === 'user' && user.text === question && reply.role === 'assistant' && !known.has(reply._id)) {
+        return { id: reply._id, role: 'assistant', answer: reply.answer, serverId: reply._id, forQuestion: question };
+      }
+    }
+    return null;
+  };
+
+  // Hỏi lại máy chủ mỗi RECONCILE_INTERVAL_MS tối đa RECONCILE_TIMEOUT_MS; hết hạn mới hiện thẻ "Mất kết nối".
+  const reconcilePending = async (pendingId: string, question: string, sessionId: string | null) => {
+    if (reconcilingRef.current.has(pendingId)) return;
+    reconcilingRef.current.add(pendingId);
+    const startedAt = currentTimeMs();
+    try {
+      while (currentTimeMs() - startedAt < RECONCILE_TIMEOUT_MS) {
+        if (sessionId) {
+          try {
+            const found = await findServerAnswer(sessionId, question);
+            if (found) {
+              setMessages((prev) => prev.map((m) => (m.id === pendingId ? { ...found, id: pendingId } : m)));
+              return;
+            }
+          } catch {
+            // Vẫn mất mạng: thử lại ở nhịp sau.
+          }
+        }
+        await new Promise((resolve) => setTimeout(resolve, RECONCILE_INTERVAL_MS));
+      }
+      const errorAnswer: ChatAnswer = {
+        status: 'connection_error',
+        message: 'Không nhận được câu trả lời từ trợ lý AI. Kiểm tra mạng rồi bấm Thử lại.',
+      };
+      setMessages((prev) => prev.map((m) => (m.id === pendingId ? { ...m, pending: false, answer: errorAnswer } : m)));
+    } finally {
+      reconcilingRef.current.delete(pendingId);
+    }
+  };
+
+  // Thử lại sau lỗi mạng: đối chiếu máy chủ trước, chỉ gửi lại khi chắc chắn chưa có câu trả lời (không trừ lượt hai lần).
+  const retry = async (message: Message) => {
+    const question = message.forQuestion ?? '';
+    const sessionId = getActiveChatSessionId();
+    if (sessionId) {
+      try {
+        const found = await findServerAnswer(sessionId, question);
+        if (found) {
+          setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...found, id: message.id } : m)));
+          return;
+        }
+      } catch {
+        // Không đối chiếu được thì gửi lại như bình thường.
+      }
+    }
+    await send(question, { regenerateId: message.id, isRetry: true });
+  };
+
   // regenerateId: nút "Tạo lại" -- thay đúng câu trả lời đó, không thêm lượt hỏi mới,
   // và báo backend bỏ qua cache để thật sự sinh lại.
-  const send = async (question: string, options: { regenerateId?: string } = {}) => {
+  const send = async (question: string, options: { regenerateId?: string; isRetry?: boolean } = {}) => {
     if (!question.trim() || sendingRef.current) return;
     sendingRef.current = true;
     const { regenerateId } = options;
@@ -193,11 +264,12 @@ export default function ChatScreen() {
     const focusArticleId = !focusArticleIdUsedRef.current ? params.focusArticleId : undefined;
     focusArticleIdUsedRef.current = true;
 
+    const sessionIdAtSend = getActiveChatSessionId();
     try {
       const answer = await askLegalAssistant(question, {
         countryCode,
         focusArticleId,
-        regenerate: Boolean(regenerateId),
+        regenerate: Boolean(regenerateId) && !options.isRetry,
       });
       const serverId = getLastChatMessageId() ?? undefined;
       setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer, serverId } : m)));
@@ -211,14 +283,20 @@ export default function ChatScreen() {
         return;
       }
       const isQuota = error instanceof ApiError && error.code === 'QUOTA_EXCEEDED';
-      const errorAnswer: ChatAnswer = {
-        status: 'insufficient_evidence',
-        reason: isQuota
-          ? (error as ApiError).message
-          : 'Không thể kết nối tới trợ lý AI lúc này. Kiểm tra kết nối mạng và thử lại.',
-        suggestions: [],
-      };
-      setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer: errorAnswer } : m)));
+      if (isQuota) {
+        const quotaAnswer: ChatAnswer = { status: 'quota_exceeded', message: (error as ApiError).message };
+        setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer: quotaAnswer } : m)));
+      } else if (isNetworkError(error)) {
+        // Mạng hoặc app bị đưa xuống nền lúc chờ: máy chủ có thể đã trả lời xong (BUG-19), đối chiếu trước khi báo lỗi.
+        void reconcilePending(pendingMsg.id, question, sessionIdAtSend);
+      } else {
+        const errorAnswer: ChatAnswer = {
+          status: 'insufficient_evidence',
+          reason: 'Không thể kết nối tới trợ lý AI lúc này. Kiểm tra kết nối mạng và thử lại.',
+          suggestions: [],
+        };
+        setMessages((prev) => prev.map((m) => (m.id === pendingMsg.id ? { ...m, pending: false, answer: errorAnswer } : m)));
+      }
     } finally {
       sendingRef.current = false;
     }
@@ -356,13 +434,14 @@ export default function ChatScreen() {
               </View>
             ) : (
               <View key={m.id} className="flex-row items-start" style={{ gap: 10 }}>
-                <BotAvatar tone={m.answer?.status === 'insufficient_evidence' ? 'warning' : 'brand'} />
+                <BotAvatar tone={m.answer?.status === 'insufficient_evidence' || m.answer?.status === 'connection_error' ? 'warning' : 'brand'} />
                 <View className="flex-1">
                   {m.pending ? (
                     <TypingDots />
                   ) : m.answer ? (
                     <AnswerCard
                       answer={m.answer}
+                      onRetry={m.forQuestion ? () => retry(m) : undefined}
                       contact={country?.embassy}
                       feedback={feedback[m.id]}
                       onFeedback={(v) => onFeedback(m, v)}

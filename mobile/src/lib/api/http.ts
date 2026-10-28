@@ -123,6 +123,8 @@ type RequestOptions = {
   body?: unknown;
   /** Endpoint auth công khai (register/login/...) -- không gắn Bearer, không tự refresh khi 401. */
   skipAuth?: boolean;
+  /** Huỷ yêu cầu sau ngần này ms (coi như lỗi mạng). Mặc định: không giới hạn phía app. */
+  timeoutMs?: number;
 };
 
 /**
@@ -143,7 +145,7 @@ export async function apiRequestWithMeta<T>(
   options: RequestOptions = {},
   isRetry = false,
 ): Promise<{ data: T; meta?: PageMeta }> {
-  const { method = 'GET', body, skipAuth = false } = options;
+  const { method = 'GET', body, skipAuth = false, timeoutMs } = options;
 
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (!skipAuth) {
@@ -152,14 +154,20 @@ export async function apiRequestWithMeta<T>(
   }
 
   let res: Response;
+  // Mất mạng có thể khiến fetch treo mãi chứ không báo lỗi; timeoutMs buộc nó thất bại để UI xử lý.
+  const controller = timeoutMs ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
   try {
     res = await fetch(`${getApiBaseUrl()}${path}`, {
       method,
       headers,
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      signal: controller?.signal,
     });
   } catch {
     throw new ApiError('UPSTREAM_ERROR', 'Không thể kết nối tới máy chủ. Kiểm tra kết nối mạng.', 0);
+  } finally {
+    if (timer) clearTimeout(timer);
   }
 
   let envelope: Envelope<T>;

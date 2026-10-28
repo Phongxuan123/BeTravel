@@ -7,6 +7,7 @@ import { IconButton } from '@/components/ui/IconButton';
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/lib/theme';
 import type { ChatAnswer } from '@/lib/data';
+import { notify } from '@/lib/notify';
 import { ContactCard, type ContactInfo } from './ContactCard';
 
 // Tách một dòng thành: **đậm**, marker nguồn [S1]..[Sn] bấm được (mở đúng bài luật), đường dẫn
@@ -16,6 +17,9 @@ const BOLD_RE = /^\*\*([^*]+)\*\*$/;
 const MARKER_RE = /^\[S(\d+)\]$/;
 const URL_RE = /^https:\/\/[^\s)]+$/;
 const NUMBERED_RE = /^(\d+)[.)]\s+(.*)$/;
+// Câu trả lời cũ trong bộ nhớ có thể còn số/gạch đầu dòng do model tự thêm vào trong từng ý (BUG-20).
+const NESTED_PREFIX_RE = /^\s*(?:\d+[.)]|[-*•])\s+/;
+const stripNestedPrefix = (text: string) => text.replace(NESTED_PREFIX_RE, '');
 const LINE_BREAK = String.fromCharCode(10);
 // Tiêu đề 3 phần do backend ghép (rag/guard.js#composeAnswerText); "Nguồn" là danh sách bên dưới thẻ.
 const SECTION_HEADING_RE = /^\*\*(Trả lời ngắn|Việc nên làm|Điều cần tránh)\*\*$/;
@@ -83,7 +87,7 @@ function AnswerBody({ content, sources }: { content: string; sources: SourceRef[
                 <Text className="text-xs font-body-bold text-primary">{numbered[1]}</Text>
               </View>
               <View className="flex-1">
-                <RichLine line={numbered[2]} sources={sources} />
+                <RichLine line={stripNestedPrefix(numbered[2])} sources={sources} />
               </View>
             </View>
           );
@@ -93,7 +97,7 @@ function AnswerBody({ content, sources }: { content: string; sources: SourceRef[
             <View key={i} className="ml-1 flex-row items-start" style={{ gap: 8 }}>
               <View className="mt-2.5 h-1.5 w-1.5 rounded-full bg-[#9DBBEE]" />
               <View className="flex-1">
-                <RichLine line={line.slice(2)} sources={sources} />
+                <RichLine line={stripNestedPrefix(line.slice(2))} sources={sources} />
               </View>
             </View>
           );
@@ -104,6 +108,30 @@ function AnswerBody({ content, sources }: { content: string; sources: SourceRef[
   );
 }
 
+// Văn bản thuần để sao chép (V-08): bỏ ** và marker [Sn], đánh số lại ý, thêm danh sách nguồn.
+function toPlainText(answer: Extract<ChatAnswer, { status: 'answered' }>): string {
+  let order = 0;
+  const lines = answer.content
+    .split(LINE_BREAK)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const heading = line.match(SECTION_HEADING_RE);
+      if (heading) {
+        order = 0;
+        return heading[1].toUpperCase();
+      }
+      const numbered = line.match(NUMBERED_RE);
+      const body = stripNestedPrefix(numbered ? numbered[2] : line.startsWith('- ') ? line.slice(2) : line);
+      const clean = body.replace(/\*\*/g, '').replace(/\s*\[S\d+\]/g, '');
+      if (!numbered && !line.startsWith('- ')) return clean;
+      order += 1;
+      return `${order}. ${clean}`;
+    });
+  const sources = answer.sources.map((s) => `- ${s.name}${s.url ? ` - ${s.url}` : ''}`);
+  return [...lines, ...(sources.length ? ['', 'Nguồn:', ...sources] : [])].join(LINE_BREAK);
+}
+
 // 2 biến thể theo spec mục 6.10: "Có nguồn pháp lý" và "Chưa đủ dữ liệu".
 // Biến thể "Chưa đủ dữ liệu" KHÔNG BAO GIỜ hiển thị nội dung trả lời — chỉ lý do + gợi ý.
 export function AnswerCard({
@@ -112,6 +140,7 @@ export function AnswerCard({
   onFeedback,
   onReport,
   onRegenerate,
+  onRetry,
   contact,
 }: {
   answer: ChatAnswer;
@@ -119,6 +148,8 @@ export function AnswerCard({
   onFeedback: (v: 'up' | 'down') => void;
   onReport?: () => void;
   onRegenerate?: () => void;
+  // Chỉ dùng cho trạng thái connection_error: gửi lại đúng câu hỏi.
+  onRetry?: () => void;
   // Thông tin liên hệ chính thức (Đại sứ quán) hiển thị khi câu trả lời cần hỗ trợ trực tiếp.
   contact?: ContactInfo | null;
 }) {
@@ -142,6 +173,23 @@ export function AnswerCard({
     );
   }
 
+  if (answer.status === 'connection_error' || answer.status === 'quota_exceeded') {
+    const isConnection = answer.status === 'connection_error';
+    return (
+      <View testID={isConnection ? 'answer-card-connection-error' : 'answer-card-quota'} className="rounded-[20px] border border-danger-line bg-surface p-4">
+        <Text className="text-[18px] font-body-bold text-ink">{isConnection ? 'Mất kết nối' : 'Hết lượt hỏi hôm nay'}</Text>
+        <View className="mt-2">
+          <AnswerBody content={answer.message} sources={[]} />
+        </View>
+        <View className="mt-4" style={{ gap: 8 }}>
+          {isConnection && onRetry && <Button label="Thử lại" iconLeft={<RefreshCw size={18} color="#fff" />} onPress={onRetry} />}
+          <Button label="Mở SOS" variant="secondary" iconLeft={<Phone size={18} color={colors.primary} />} onPress={() => router.push('/sos')} />
+          {!isConnection && <Button label="Xem cẩm nang pháp lý" variant="secondary" iconLeft={<BookOpen size={18} color={colors.primary} />} onPress={() => router.push('/explore')} />}
+        </View>
+      </View>
+    );
+  }
+
   if (answer.status === 'insufficient_evidence') {
     return (
       <View testID="answer-card-insufficient" className="rounded-[20px] border border-cream-line bg-cream p-4">
@@ -154,6 +202,7 @@ export function AnswerCard({
         <View className="mt-2">
           <AnswerBody content={answer.reason} sources={[]} />
         </View>
+        {answer.suggestions.length > 0 && (
         <View className="mt-3 rounded-lg border border-cream-line bg-surface p-3.5">
           <Text className="text-[15px] font-body-bold" style={{ color: colors.warningStrong }}>
             Bạn nên làm
@@ -167,8 +216,9 @@ export function AnswerCard({
             ))}
           </View>
         </View>
+        )}
         <View className="mt-4" style={{ gap: 8 }}>
-          <Button label="Xem Legal Handbook" iconLeft={<BookOpen size={18} color="#fff" />} onPress={() => router.push('/explore')} />
+          <Button label="Xem cẩm nang pháp lý" iconLeft={<BookOpen size={18} color="#fff" />} onPress={() => router.push('/explore')} />
           <Button label="Liên hệ hỗ trợ" variant="secondary" iconLeft={<Phone size={18} color={colors.primary} />} onPress={() => router.push('/sos')} />
         </View>
         <FeedbackRow feedback={feedback} onFeedback={onFeedback} showReport={false} onRegenerate={onRegenerate} />
@@ -258,7 +308,7 @@ export function AnswerCard({
         showReport
         onReport={onReport}
         onRegenerate={onRegenerate}
-        copyText={answer.content}
+        copyText={toPlainText(answer)}
       />
     </View>
   );
@@ -287,7 +337,9 @@ function FeedbackRow({
             accessibilityLabel="Sao chép câu trả lời"
             variant="outline"
             icon={<Copy size={18} color={colors.ink} />}
-            onPress={() => void Clipboard.setStringAsync(copyText)}
+            onPress={() => {
+              void Clipboard.setStringAsync(copyText).then(() => notify('Đã sao chép'));
+            }}
           />
         )}
         <IconButton

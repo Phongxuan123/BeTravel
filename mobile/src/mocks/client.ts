@@ -237,7 +237,10 @@ export type ChatAnswer =
       status: 'out_of_scope';
       message: string;
       greeting: boolean;
-    };
+    }
+  // Trạng thái chỉ có ở client (BUG-09): mất mạng / hết lượt hỏi không phải "thiếu dữ liệu pháp lý".
+  | { status: 'connection_error'; message: string }
+  | { status: 'quota_exceeded'; message: string };
 
 export async function askLegalAssistant(
   question: string,
