@@ -7,7 +7,8 @@ V-13 den V-18 (8 nhanh xep chong tu `fix/emergency-access`; chua push, chua mo P
 Dai su quan, khach doc huong dan su co, lien ket Dieu khoan, quoc gia theo chuyen di, ban phim khong che o nhap,
 the Mat ket noi + Thu lai, the Het luot, ban do OSM khi khong co key.
 BUG-03 (chu cuoi bi cat) sua bang numberOfLines=1 trong Button; V-12, V-19, V-20 da lam; V-11 da co san.
-Con lai / quyet dinh cho nguoi: Q5 (dich truoc 32 luat Uc, ton tien AI, can nguoi dong y). Dat QUERY_REWRITE_MODEL=gpt-6-luna tren Render (xem
+Q5 (dich truoc luat Uc): KHONG lam, ghi nhan co chu dich. 30 luat doc duoc = 245.218 doan = 9.809 cum, ~7-29 gio va ton tien AI;
+chi cai thien thoi gian cho lan doc dau (BUG-07 da co tu thu lai + man cho). Chay `npm run translate-au-laws -- <ma luat>` cho tung luat khi co nhu cau. Dat QUERY_REWRITE_MODEL=gpt-6-luna tren Render (xem
 `.env.example`, them QUERY_REWRITE_FALLBACK_MODEL, ANSWER_REPEAT_CANDIDATE_SIMILARITY, ANSWER_REPEAT_AI_MIN_SCORE).
 Chua ghi `fallbackReason` REWRITE_FAILED len ai_events (moi co log).
 
