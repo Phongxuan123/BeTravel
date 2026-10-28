@@ -14,8 +14,15 @@ export function mapRuntime(platform: string, environment: string | undefined, ex
 // thư viện bản đồ native), 'native' dùng MapView của Google/Apple. Mặc định 'auto' chọn OSM ở Expo Go
 // Android: Expo Go không dùng được key Google của dự án và MapView có thể chỉ hiện nền trống (đã gặp trên
 // LDPlayer dù Internet bình thường). Ép bằng EXPO_PUBLIC_MAP_TILES=osm|native.
-export function mapTiles(platform: string, environment: string | undefined, preference?: string): 'osm' | 'native' {
+// Khi bản đồ native không dùng được (thiếu key Google Android, BUG-08) tự rơi về OSM thay vì màn "chưa cấu hình".
+export function mapTiles(
+  platform: string,
+  environment: string | undefined,
+  preference?: string,
+  nativeAvailable = true,
+): 'osm' | 'native' {
   if (preference === 'osm' || preference === 'native') return preference;
+  if (!nativeAvailable) return 'osm';
   return platform === 'android' && environment === 'storeClient' ? 'osm' : 'native';
 }
 

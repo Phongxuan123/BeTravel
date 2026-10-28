@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, Linking, Image } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,7 @@ import { useTranslationSpeech } from '@/features/translate/useTranslationSpeech'
 import { BundledPhrasePanel } from '@/features/translate/BundledPhrasePanel';
 import { dictionaryInfo, hasBundledPair, type TranslationResult, type TranslationEngine } from '@/features/translate/bundledTranslation';
 import { OfflinePackPanel } from '@/features/translate/OfflinePackPanel';
+import { looksLikeUnaccentedVietnamese } from '@/features/translate/unaccentedVietnamese';
 import { VoiceTools } from '@/features/translate/VoiceTools';
 import { translateOffline, translationLanguage, OFFLINE_TEXT_LIMIT, ONLINE_TEXT_LIMIT } from '@/features/translate/offlineTranslation';
 
@@ -36,7 +37,10 @@ export default function TranslatorScreen() {
 
 function TranslatorForm() {
   const { countryCode, country } = useCountry();
-  const [offlineMode, setOfflineMode] = useState(false);
+  // Mở từ SOS Hub ("Dịch không cần mạng") thì bật sẵn chế độ offline (V-09).
+  const { offline: offlineParam } = useLocalSearchParams<{ offline?: string }>();
+  const [offlineMode, setOfflineMode] = useState(offlineParam === '1');
+  const scrollRef = useRef<ScrollView>(null);
   const [showMachinePacks, setShowMachinePacks] = useState(false);
   const [translationProgress, setTranslationProgress] = useState('');
   const maxLength = offlineMode ? OFFLINE_TEXT_LIMIT : ONLINE_TEXT_LIMIT;
@@ -143,6 +147,8 @@ function TranslatorForm() {
 
   const onPickPhrase = (phrase: QuickPhrase, engine?: TranslationEngine) => {
     invalidateResult();
+    // Kết quả hiện ở đầu màn: cuộn lên để người dùng thấy ngay câu vừa chọn (TR-04).
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
     setSelectedId(phrase.id);
     setInput(reversed ? phrase.translated : phrase.vi);
     setTranslateError(null);
@@ -188,7 +194,7 @@ function TranslatorForm() {
         subtitle="Từ điển và câu Việt–Anh có sẵn · không cần tải thêm"
         right={<Badge label={englishMode ? 'Câu mẫu có sẵn' : isOffline ? 'Bản lưu' : phrasesQuery.isLoading ? 'Đang tải' : phrasesQuery.isError ? 'Lỗi tải' : 'Đã tải'} tone={!englishMode && (isOffline || phrasesQuery.isError) ? 'warning' : 'success'} />}
       />
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 18, gap: 16, paddingBottom: 48 }}>
+      <ScrollView ref={scrollRef} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 18, gap: 16, paddingBottom: 48 }}>
         <View className="flex-row items-center gap-3 rounded-lg border border-line bg-surface p-4">
           <View className="flex-1"><Text className="font-body-bold text-ink">Dịch không cần mạng</Text>
             <Text className="mt-1 text-xs text-muted">{offlineMode ? 'Tra từ và câu Việt–Anh có sẵn trong app, tối đa 5.000 ký tự. Câu tự do ngoài bộ cần dịch máy mở rộng hoặc online. Micro/giọng đọc phụ thuộc thiết bị.' : 'Chế độ online gửi văn bản đến máy chủ; tối đa 500 ký tự.'}</Text></View>
@@ -263,6 +269,13 @@ function TranslatorForm() {
           />
           {loading && <Pressable accessibilityRole="button" onPress={invalidateResult} className="min-h-12 justify-center"><Text className="text-primary-strong">Hủy dịch</Text></Pressable>}
           {translateError && <Text className="mt-1 text-xs text-danger-strong">{translateError}</Text>}
+          {offlineMode && sourceLanguage === 'vi' && looksLikeUnaccentedVietnamese(input) && (
+            <View testID="unaccented-warning" className="mt-2 rounded-lg border border-cream-line bg-cream p-3">
+              <Text className="text-sm" style={{ color: colors.warningStrong }}>
+                Câu không dấu có thể bị dịch sai nghĩa. Hãy gõ có dấu, chọn câu có sẵn bên dưới hoặc tắt chế độ offline để dịch online khi có mạng.
+              </Text>
+            </View>
+          )}
           {voice.busy && <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-primary-strong">{voice.listening ? `Đang nghe ${fromLabel}. Bấm dừng, kiểm tra văn bản rồi dịch.` : 'Đang chuẩn bị micro...'}</Text>}
           {voice.error && <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-danger-strong">{voice.error}</Text>}
           <View className="mt-3 flex-row items-center justify-between">

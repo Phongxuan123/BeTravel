@@ -141,7 +141,7 @@ export default function SosMapScreen() {
   const mounted = useRef(true);
   const locatingRef = useRef(false);
   const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
-  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
+  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES, runtime.available) === 'osm';
   // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
   const canRenderMap = osmTiles || runtime.available;
   // Bắt buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ) hoặc có lỗi cần người dùng thấy (thiếu quốc gia).

@@ -29,3 +29,9 @@ test('mapTiles: Expo Go Android tự dùng ô OSM, nơi khác dùng ô native, c
   expect(mapTiles('android', 'storeClient', 'native')).toBe('native');
   expect(mapTiles('android', 'storeClient', 'auto')).toBe('osm');
 });
+
+test('mapTiles: thiếu key native thì rơi về OSM, ép native vẫn được tôn trọng (BUG-08)', () => {
+  expect(mapTiles('android', 'standalone', undefined, false)).toBe('osm');
+  expect(mapTiles('android', 'standalone', undefined, true)).toBe('native');
+  expect(mapTiles('android', 'standalone', 'native', false)).toBe('native');
+});
