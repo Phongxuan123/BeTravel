@@ -34,6 +34,7 @@ import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
 import type { Alert } from '@/lib/data';
 import { now, daysBetween, parseISODate } from '@/lib/date';
+import { CountryFlag } from '@/components/brand/CountryFlag';
 import { AU_COUNTRY_CODE } from '@/lib/api/auLaws';
 import { activeStop, pickCurrentTrip } from '@/features/trips/itinerary';
 
@@ -107,7 +108,7 @@ export default function HomeScreen() {
                 style={{ gap: 4 }}
                 hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
               >
-                <Text className="font-mono-bold text-[10px] text-primary-strong">{countryCode}</Text>
+                <CountryFlag code={countryCode} width={18} height={13} />
                 <Text className="text-[13px] font-body-bold text-primary-strong" numberOfLines={1}>
                   Điểm đến: {country?.name}
                 </Text>
@@ -364,7 +365,7 @@ function CurrentTripCard({
 
       <View className="flex-row items-start" style={{ gap: 12 }}>
         <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
-          <Text className="font-mono-bold text-lg text-white">{countryCode}</Text>
+          <CountryFlag code={countryCode} width={36} height={26} />
         </View>
         <View className="flex-1">
           <View className="flex-row flex-wrap items-center" style={{ columnGap: 6, rowGap: 2 }}>

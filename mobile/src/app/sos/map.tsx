@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard } from 'react-native';
+import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard, useWindowDimensions } from 'react-native';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe, MapPin, X } from 'lucide-react-native';
+import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe, MapPin, X, ChevronUp, ChevronDown } from 'lucide-react-native';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -140,6 +140,9 @@ export default function SosMapScreen() {
   const mapRef = useRef<MapHandle>(null);
   const mounted = useRef(true);
   const locatingRef = useRef(false);
+  // Danh sách địa điểm có hai nấc chiều cao: 320dp mặc định, 70% màn hình khi mở rộng (V-20).
+  const { height: windowHeight } = useWindowDimensions();
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
   const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES, runtime.available) === 'osm';
   // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
@@ -566,7 +569,7 @@ export default function SosMapScreen() {
 
       {showSheet && <Animated.View
         style={{ position: 'absolute', left: 0, right: 0, bottom: 0, borderTopLeftRadius: 28, borderTopRightRadius: 28,
-          backgroundColor: colors.surface, maxHeight: 320, paddingBottom: insets.bottom + 16, transform: [{ translateY: sheetOffset }] }}>
+          backgroundColor: colors.surface, maxHeight: sheetExpanded ? Math.round(windowHeight * 0.7) : 320, paddingBottom: insets.bottom + 16, transform: [{ translateY: sheetOffset }] }}>
         <View {...(listOnly ? {} : swipeHandlers)}>
         {listOnly ? (
           <View className="items-center py-2.5">
@@ -583,6 +586,10 @@ export default function SosMapScreen() {
             {activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh`}
           </Text>
           <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsFailure ? 'GPS không khả dụng' : country?.name}</Text>
+          <Pressable accessibilityLabel={sheetExpanded ? 'Thu gọn danh sách' : 'Mở rộng danh sách'} hitSlop={10} onPress={() => setSheetExpanded((open) => !open)}
+            className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">
+            {sheetExpanded ? <ChevronDown size={18} color={colors.ink} /> : <ChevronUp size={18} color={colors.ink} />}
+          </Pressable>
           {!listOnly && (
             <Pressable accessibilityLabel="Đóng danh sách địa điểm" hitSlop={10} onPress={closeSheet}
               className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">

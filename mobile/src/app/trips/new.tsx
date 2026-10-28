@@ -20,6 +20,7 @@ import { now, parseISODate } from '@/lib/date';
 import { formatDateIfComplete, formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 import { ItineraryEditor } from '@/features/trips/ItineraryEditor';
 import { itineraryError, tripStops } from '@/features/trips/itinerary';
+import * as Location from 'expo-location';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 
 type State = {
@@ -38,6 +39,7 @@ type Action =
   | { type: 'SET_DESTINATION_DETAIL'; value: string }
   | { type: 'SET_RANGE'; range: DateRange }
   | { type: 'TOGGLE_LOCATION' }
+  | { type: 'SET_LOCATION'; value: boolean }
   | { type: 'TOGGLE_REGULATION' };
 
 function reducer(state: State, action: Action): State {
@@ -61,6 +63,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, destinationDetail: action.value };
     case 'SET_RANGE':
       return { ...state, range: action.range };
+    case 'SET_LOCATION':
+      return { ...state, locationAlerts: action.value };
     case 'TOGGLE_LOCATION':
       return { ...state, locationAlerts: !state.locationAlerts };
     case 'TOGGLE_REGULATION':
@@ -182,6 +186,22 @@ export default function TripWizardScreen() {
   const stops: TripStop[] = [{ countryCode: state.countryCode ?? '', destinationCity: state.destinationCity.trim(),
     destinationDetail: state.destinationDetail.trim(), startDate: state.range.start ?? '' }, ...followingStops];
   const scheduleError = state.range.start && state.range.end ? itineraryError(stops, state.range.start, state.range.end) : null;
+  // Chuyến mới mặc định BẬT cảnh báo theo vị trí khi máy đã cấp quyền (V-12); chưa cấp quyền thì giữ tắt, người dùng tự bật.
+  useEffect(() => {
+    if (editingTripId) return;
+    let cancelled = false;
+    Location.getForegroundPermissionsAsync()
+      .then((permission) => {
+        if (cancelled || !permission.granted) return;
+        setLocationPermissionGranted(true);
+        dispatch({ type: 'SET_LOCATION', value: true });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [editingTripId]);
+
   const enableLocation = async () => {
     if (state.locationAlerts) { dispatch({ type: 'TOGGLE_LOCATION' }); return; }
     if (requestingPermission) return;
