@@ -24,7 +24,7 @@ export function ItineraryEditor({ stops, countries, onChange }: {
             accessibilityLabel={`Chặng ${index + 1} chọn ${c.name}`} accessibilityState={{ selected: c.code === stop.countryCode }}
             onPress={() => patch(index, { countryCode: c.code, destinationCity: '', destinationDetail: '' })}
             className={`rounded-full px-3 py-2 ${c.code === stop.countryCode ? 'bg-primary' : 'bg-primary-soft'}`}>
-            <Text className={c.code === stop.countryCode ? 'text-white' : 'text-primary'}>{c.name}</Text>
+            <Text className={c.code === stop.countryCode ? 'text-white' : 'text-primary-strong'}>{c.name}</Text>
           </Pressable>)}
         </View>
         <TextInput accessibilityLabel={`Thành phố chặng ${index + 1}`} value={stop.destinationCity}
@@ -34,7 +34,7 @@ export function ItineraryEditor({ stops, countries, onChange }: {
           onChangeText={(destinationDetail) => patch(index, { destinationDetail })} placeholder="Địa điểm cụ thể (tùy chọn)"
           maxLength={200} className="rounded-md border border-line px-3 py-3 text-ink" />
         <Pressable onPress={() => setCalendarIndex(calendarIndex === index ? null : index)}>
-          <Text className="text-primary">Ngày tới: {stop.startDate ? formatDateIfComplete(stop.startDate) : 'Chọn ngày'}</Text>
+          <Text className="text-primary-strong">Ngày tới: {stop.startDate ? formatDateIfComplete(stop.startDate) : 'Chọn ngày'}</Text>
         </Pressable>
         {calendarIndex === index && <DateRangeCalendar month={month} onMonthChange={setMonth}
           value={{ start: null, end: null }} today={new Date(0)}
@@ -43,14 +43,14 @@ export function ItineraryEditor({ stops, countries, onChange }: {
           placeholder="YYYY-MM-DD" maxLength={10} onChangeText={(startDate) => patch(index, { startDate })}
           className="rounded-md border border-line px-3 py-3 text-ink" />
         <Pressable accessibilityLabel={`Xóa chặng ${index + 1}`} onPress={() => { onChange(stops.filter((_, i) => i !== index)); setCalendarIndex(null); }}>
-          <Text className="text-danger">Xóa chặng</Text>
+          <Text className="text-danger-strong">Xóa chặng</Text>
         </Pressable>
       </>}
     </View>)}
     {stops.length < 20 && <Pressable accessibilityLabel="Thêm chặng hoặc quốc gia" onPress={() => onChange([...stops,
       { countryCode: countries.find((c) => c.status !== 'coming_soon' && c.code !== stops[stops.length - 1]?.countryCode)?.code ?? stops[0].countryCode,
         destinationCity: '', startDate: '' }])} className="rounded-md bg-primary-soft p-3">
-      <Text className="text-center font-body-bold text-primary">Thêm chặng / quốc gia</Text>
+      <Text className="text-center font-body-bold text-primary-strong">Thêm chặng / quốc gia</Text>
     </Pressable>}
   </View>;
 }

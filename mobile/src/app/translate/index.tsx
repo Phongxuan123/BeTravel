@@ -195,14 +195,14 @@ function TranslatorForm() {
           <Switch accessibilityLabel="Dịch không cần mạng" value={offlineMode} onValueChange={(next) => { invalidateResult(); setOfflineMode(next); }} />
         </View>
         {!englishMode && phrasesQuery.isLoading && <Text className="text-muted">Đang tải câu mẫu…</Text>}
-        {!englishMode && phrasesQuery.isError && <View className="gap-2"><Text className="text-danger">Không tải được câu mẫu.</Text><Pressable onPress={() => { void phrasesQuery.refetch(); }}><Text className="font-body-bold text-primary">Thử lại</Text></Pressable></View>}
+        {!englishMode && phrasesQuery.isError && <View className="gap-2"><Text className="text-danger-strong">Không tải được câu mẫu.</Text><Pressable onPress={() => { void phrasesQuery.refetch(); }}><Text className="font-body-bold text-primary-strong">Thử lại</Text></Pressable></View>}
         {!englishMode && !phrasesQuery.isLoading && !phrasesQuery.isError && phrases.length === 0 && <Text className="text-muted">Chưa có câu mẫu cho quốc gia này.</Text>}
         <View className="flex-row gap-2">
           {[true, false].map((english) => (
             <Pressable key={String(english)} accessibilityRole="button" accessibilityState={{ selected: englishMode === english }}
               onPress={() => { invalidateResult(); setEnglishMode(english); setReversed(false); setInput(''); }}
               className={`min-h-12 flex-1 items-center justify-center rounded-lg border px-3 ${englishMode === english ? 'border-primary bg-primary-soft' : 'border-line bg-surface'}`}>
-              <Text className="font-body-bold text-primary">{english ? 'Việt - Anh' : 'Ngôn ngữ sở tại'}</Text>
+              <Text className="font-body-bold text-primary-strong">{english ? 'Việt - Anh' : 'Ngôn ngữ sở tại'}</Text>
             </Pressable>
           ))}
         </View>
@@ -231,9 +231,9 @@ function TranslatorForm() {
           <Text className="font-body-bold text-ink">{hasBundledPair(sourceLanguage, targetLanguage) ? 'Bộ Việt–Anh đã tích hợp sẵn' : 'Chưa có bộ tích hợp cho cặp ngôn ngữ này'}</Text>
           <Text className="text-sm text-muted">{dictionaryInfo.count.toLocaleString('vi-VN')} cặp từ/nghĩa và câu thông dụng. Dùng được từ lần mở đầu, không cần tài khoản hay tải gói. Không dịch từng từ để ghép thành câu.</Text>
           <Text className="text-xs text-muted">Từ điển: Wiktionary qua Kaikki · {dictionaryInfo.license}. Dữ liệu cộng đồng có thể có nhiều nghĩa.</Text>
-          <Pressable accessibilityRole="button" onPress={() => Linking.openURL(dictionaryInfo.licenseUrl).catch(() => Alert.alert('Cần mạng để mở giấy phép'))} className="min-h-11 justify-center"><Text className="text-primary">Giấy phép từ điển CC BY-SA 4.0</Text></Pressable>
+          <Pressable accessibilityRole="button" onPress={() => Linking.openURL(dictionaryInfo.licenseUrl).catch(() => Alert.alert('Cần mạng để mở giấy phép'))} className="min-h-11 justify-center"><Text className="text-primary-strong">Giấy phép từ điển CC BY-SA 4.0</Text></Pressable>
           <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMachinePacks }} onPress={() => setShowMachinePacks((value) => !value)} className="min-h-11 justify-center">
-            <Text className="text-primary">{showMachinePacks ? 'Ẩn dịch máy mở rộng' : 'Dịch câu tự do bằng ML Kit (tùy chọn)'}</Text>
+            <Text className="text-primary-strong">{showMachinePacks ? 'Ẩn dịch máy mở rộng' : 'Dịch câu tự do bằng ML Kit (tùy chọn)'}</Text>
           </Pressable>
           {showMachinePacks && <OfflinePackPanel key={`${sourceLanguage}:${targetLanguage}`} source={sourceLanguage} target={targetLanguage} disabled={loading || voice.busy} />}
         </View>}
@@ -241,7 +241,7 @@ function TranslatorForm() {
         <View className="rounded-lg border border-line bg-surface p-4">
           <View className="flex-row items-center justify-between">
             <Text className="text-xs font-body-bold text-muted">Nội dung {fromLabel}</Text>
-            <Text className={`text-[11px] ${input.length > maxLength ? 'text-danger' : 'text-muted'}`}>
+            <Text className={`text-[11px] ${input.length > maxLength ? 'text-danger-strong' : 'text-muted'}`}>
               {input.length}/{maxLength}
             </Text>
           </View>
@@ -261,10 +261,10 @@ function TranslatorForm() {
             placeholder="Nhập câu cần dịch..."
             placeholderTextColor={colors.subtle}
           />
-          {loading && <Pressable accessibilityRole="button" onPress={invalidateResult} className="min-h-12 justify-center"><Text className="text-primary">Hủy dịch</Text></Pressable>}
-          {translateError && <Text className="mt-1 text-xs text-danger">{translateError}</Text>}
-          {voice.busy && <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-primary">{voice.listening ? `Đang nghe ${fromLabel}. Bấm dừng, kiểm tra văn bản rồi dịch.` : 'Đang chuẩn bị micro...'}</Text>}
-          {voice.error && <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-danger">{voice.error}</Text>}
+          {loading && <Pressable accessibilityRole="button" onPress={invalidateResult} className="min-h-12 justify-center"><Text className="text-primary-strong">Hủy dịch</Text></Pressable>}
+          {translateError && <Text className="mt-1 text-xs text-danger-strong">{translateError}</Text>}
+          {voice.busy && <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-primary-strong">{voice.listening ? `Đang nghe ${fromLabel}. Bấm dừng, kiểm tra văn bản rồi dịch.` : 'Đang chuẩn bị micro...'}</Text>}
+          {voice.error && <Text accessibilityLiveRegion="polite" className="mt-2 text-sm text-danger-strong">{voice.error}</Text>}
           <View className="mt-3 flex-row items-center justify-between">
             <View className="flex-row" style={{ gap: 8 }}>
               <Pressable accessibilityRole="button" accessibilityLabel={voice.busy ? 'Dừng nhận giọng nói' : 'Nhập bằng giọng nói'}
@@ -302,7 +302,7 @@ function TranslatorForm() {
             <Text className="mt-1 text-xs text-muted">Giọng đọc theo ngôn ngữ đích. Trên iPhone, bật âm lượng và tắt chế độ im lặng.</Text></View>
           <Switch value={autoSpeak} accessibilityLabel="Tự phát âm sau khi dịch" onValueChange={(next) => { autoSpeakRef.current = next; setAutoSpeak(next); audio.cancel(); }} />
         </View>
-        {audio.error && <Text accessibilityLiveRegion="polite" className="text-sm text-danger">{audio.error}</Text>}
+        {audio.error && <Text accessibilityLiveRegion="polite" className="text-sm text-danger-strong">{audio.error}</Text>}
 
         {result && (
           <View className="rounded-xl bg-ink p-[18px]" style={{ shadowColor: 'rgba(16,42,67,1)', shadowOpacity: 0.25, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 6 }}>
@@ -367,7 +367,7 @@ function TranslatorForm() {
             <Text className="text-[13px] text-muted">Chạm để dịch</Text>
           </View>
           <View className="mt-3" style={{ gap: 10 }}>
-            {!englishMode && phrasesQuery.isError && <Text className="text-sm text-danger">Không tải được câu mẫu. Vui lòng thử lại khi có mạng.</Text>}
+            {!englishMode && phrasesQuery.isError && <Text className="text-sm text-danger-strong">Không tải được câu mẫu. Vui lòng thử lại khi có mạng.</Text>}
             {!englishMode && !phrasesQuery.isLoading && !phrasesQuery.isError && phrases.length === 0 && <Text className="text-sm text-muted">Chưa có câu mẫu cho ngôn ngữ này.</Text>}
             {phrases.map((phrase) => {
               const selected = selectedId === phrase.id;
@@ -387,10 +387,10 @@ function TranslatorForm() {
           </View>
           {englishMode && <View className="mt-3 gap-2">
             <Text className="text-xs text-muted">Câu mẫu: cộng đồng Tatoeba · {phrasebookLicense}. Không phải bản dịch được chứng nhận.</Text>
-            <Pressable onPress={() => Linking.openURL(phrasebookLicenseUrl).catch(() => Alert.alert('Không mở được liên kết'))}><Text className="text-sm text-primary">Giấy phép và ghi công</Text></Pressable>
+            <Pressable onPress={() => Linking.openURL(phrasebookLicenseUrl).catch(() => Alert.alert('Không mở được liên kết'))}><Text className="text-sm text-primary-strong">Giấy phép và ghi công</Text></Pressable>
             {englishPhrases.filter((p) => String(p.enId) === selectedId).map((p) => <View key={p.enId} className="flex-row gap-4">
-              <Pressable onPress={() => Linking.openURL(`https://tatoeba.org/en/sentences/show/${p.enId}`).catch(() => Alert.alert('Không mở được nguồn'))}><Text className="text-sm text-primary">Nguồn câu Anh</Text></Pressable>
-              <Pressable onPress={() => Linking.openURL(`https://tatoeba.org/en/sentences/show/${p.viId}`).catch(() => Alert.alert('Không mở được nguồn'))}><Text className="text-sm text-primary">Nguồn câu Việt</Text></Pressable>
+              <Pressable onPress={() => Linking.openURL(`https://tatoeba.org/en/sentences/show/${p.enId}`).catch(() => Alert.alert('Không mở được nguồn'))}><Text className="text-sm text-primary-strong">Nguồn câu Anh</Text></Pressable>
+              <Pressable onPress={() => Linking.openURL(`https://tatoeba.org/en/sentences/show/${p.viId}`).catch(() => Alert.alert('Không mở được nguồn'))}><Text className="text-sm text-primary-strong">Nguồn câu Việt</Text></Pressable>
             </View>)}
           </View>}
         </View>

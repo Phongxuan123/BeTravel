@@ -100,7 +100,7 @@ export function LawSummaryBlock({ id }: { id: string }) {
             onPress={() => setShowSource((value) => !value)}
             className="flex-row items-center justify-between"
           >
-            <Text className="text-base font-body-bold text-primary">Mục đích và cấu trúc của luật</Text>
+            <Text className="text-base font-body-bold text-primary-strong">Mục đích và cấu trúc của luật</Text>
             {showSource ? <ChevronUp size={18} color={colors.primary} /> : <ChevronDown size={18} color={colors.primary} />}
           </Pressable>
           {showSource && purpose && (
@@ -120,7 +120,7 @@ export function LawSummaryBlock({ id }: { id: string }) {
               ))}
               {outline.length > OUTLINE_PREVIEW_COUNT && (
                 <Pressable accessibilityRole="button" onPress={() => setShowAllOutline((value) => !value)}>
-                  <Text className="py-1 text-sm font-body-bold text-primary">
+                  <Text className="py-1 text-sm font-body-bold text-primary-strong">
                     {showAllOutline ? 'Thu gọn' : `Xem tất cả ${outline.length}${outlineTruncated ? '+' : ''} mục`}
                   </Text>
                 </Pressable>
@@ -160,7 +160,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Point({ text }: { text: string }) {
   const isPenalty = PENALTY_PATTERN.test(text);
   return (
-    <Text className={isPenalty ? 'text-[17px] font-body-bold leading-6 text-danger' : 'text-[17px] leading-6 text-ink'}>
+    <Text className={isPenalty ? 'text-[17px] font-body-bold leading-6 text-danger-strong' : 'text-[17px] leading-6 text-ink'}>
       {'• '}
       {text}
     </Text>

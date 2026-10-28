@@ -98,10 +98,10 @@ export default function SosHubScreen() {
           <View className="flex-row items-center justify-between">
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
             <View className="mx-3 flex-1">
-              <Text className="font-display text-ink" style={{ fontSize: 20 }} numberOfLines={1}>
+              <Text className="font-display text-ink" style={{ fontSize: 20 }} numberOfLines={2}>
                 Hỗ trợ khẩn cấp
               </Text>
-              <Text className="text-xs text-muted" numberOfLines={1}>
+              <Text className="text-xs text-muted" numberOfLines={2}>
                 Trung tâm cứu trợ khẩn cấp · {country.name}
               </Text>
             </View>
@@ -110,7 +110,7 @@ export default function SosHubScreen() {
               onPress={() => router.push('/incidents')}
               className="min-h-[44px] justify-center rounded-2xl bg-primary-soft px-3"
             >
-              <Text className="text-[13px] font-body-bold text-primary">Quy trình sự cố</Text>
+              <Text className="text-[13px] font-body-bold text-primary-strong">Quy trình sự cố</Text>
             </Pressable>
           </View>
 
@@ -119,8 +119,8 @@ export default function SosHubScreen() {
             <Text className="flex-1 text-base font-body-semibold text-ink" numberOfLines={1}>
               {currentCity || country.currentCity || 'Chưa xác định vị trí'}
             </Text>
-            <Pressable onPress={updateLocation} disabled={locatingGps}>
-              <Text className="font-body-bold text-primary">{locatingGps ? 'Đang tìm...' : 'Cập nhật'}</Text>
+            <Pressable accessibilityRole="button" onPress={updateLocation} disabled={locatingGps} hitSlop={12} className="min-h-[44px] justify-center">
+              <Text className="font-body-bold text-primary-strong">{locatingGps ? 'Đang tìm...' : 'Cập nhật'}</Text>
             </Pressable>
           </View>
         </TopInsetView>
@@ -140,7 +140,7 @@ export default function SosHubScreen() {
               accessibilityLabel={`Gọi cảnh sát số ${country.emergencyNumbers.police}`}
             >
               <Phone size={20} color={colors.danger} />
-              <Text className="font-mono-bold text-[22px] text-danger">Gọi ngay {country.emergencyNumbers.police}</Text>
+              <Text className="font-mono-bold text-[22px] text-danger-strong">Gọi ngay {country.emergencyNumbers.police}</Text>
             </Pressable>
             <Text className="mt-2 text-center text-[13px] text-white/85">Cuộc gọi miễn phí, kể cả khi hết dữ liệu di động</Text>
           </View>

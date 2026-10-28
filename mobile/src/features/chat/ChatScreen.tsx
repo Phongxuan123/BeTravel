@@ -484,7 +484,7 @@ export default function ChatScreen() {
               accessibilityLabel="Gửi câu hỏi"
               disabled={!canSend}
               onPress={() => send(input)}
-              className={`h-10 w-10 items-center justify-center rounded-full bg-primary ${canSend ? '' : 'opacity-50'}`}
+              className={`h-11 w-11 items-center justify-center rounded-full bg-primary ${canSend ? '' : 'opacity-50'}`}
             >
               <Send size={18} color="#fff" />
             </Pressable>
@@ -499,7 +499,7 @@ export default function ChatScreen() {
               onPress={startNewConversation}
             >
               <Plus size={18} color={colors.primary} />
-              <Text className="font-body-bold text-primary">Cuộc trò chuyện mới</Text>
+              <Text className="font-body-bold text-primary-strong">Cuộc trò chuyện mới</Text>
             </Pressable>
 
             {loadingSessions && <Text className="py-3 text-center text-sm text-muted">Đang tải...</Text>}

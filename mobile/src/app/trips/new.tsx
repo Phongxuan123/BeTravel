@@ -302,7 +302,7 @@ export default function TripWizardScreen() {
       )}
       {editingTripId && !editTripsQuery.isLoading && editTripsQuery.data && !tripToEdit && (
         <View className="px-[18px] pt-5">
-          <Text className="text-center text-sm text-danger">Không tìm thấy chuyến đi cần sửa.</Text>
+          <Text className="text-center text-sm text-danger-strong">Không tìm thấy chuyến đi cần sửa.</Text>
         </View>
       )}
 
@@ -408,7 +408,7 @@ export default function TripWizardScreen() {
                         ? previous.filter((stop) => stop.countryCode !== c.code)
                         : previous.length < 19 ? [...previous, { countryCode: c.code, destinationCity: '', startDate: '' }] : previous)}
                       className={`rounded-full px-3 py-2 ${checked ? 'bg-primary' : 'bg-primary-soft'}`}>
-                      <Text className={checked ? 'text-white' : 'text-primary'}>{c.name}</Text>
+                      <Text className={checked ? 'text-white' : 'text-primary-strong'}>{c.name}</Text>
                     </Pressable>;
                   })}
                 </View>
@@ -516,13 +516,13 @@ export default function TripWizardScreen() {
                   : 'Chọn ngày đi và ngày về'}
               </Text>
               <Pressable onPress={() => dispatch({ type: 'SET_RANGE', range: { start: null, end: null } })}>
-                <Text className="text-[15px] font-body-bold text-primary" numberOfLines={1}>
+                <Text className="text-[15px] font-body-bold text-primary-strong" numberOfLines={1}>
                   Đặt lại
                 </Text>
               </Pressable>
             </View>
             <ItineraryEditor countries={countries} stops={stops} onChange={(next) => setFollowingStops(next.slice(1))} />
-            {!!scheduleError && <Text className="mt-3 px-[18px] text-danger">{scheduleError}</Text>}
+            {!!scheduleError && <Text className="mt-3 px-[18px] text-danger-strong">{scheduleError}</Text>}
           </View>
         )}
 
@@ -575,7 +575,7 @@ export default function TripWizardScreen() {
                   </Text>
                 </View>
                 <Pressable onPress={() => goStep(1)}>
-                  <Text className="text-[15px] font-body-bold text-primary">Sửa</Text>
+                  <Text className="text-[15px] font-body-bold text-primary-strong">Sửa</Text>
                 </Pressable>
               </View>
 
@@ -606,7 +606,7 @@ export default function TripWizardScreen() {
               </View>
               <View className="mt-2 flex-row justify-end">
                 <Pressable onPress={() => goStep(2)}>
-                  <Text className="text-[15px] font-body-bold text-primary">Sửa</Text>
+                  <Text className="text-[15px] font-body-bold text-primary-strong">Sửa</Text>
                 </Pressable>
               </View>
               <View className="mt-3 flex-row" style={{ gap: 8 }}>
@@ -643,7 +643,7 @@ export default function TripWizardScreen() {
         <View className="flex-1">
           {error && (
             <View className="mb-2 rounded-md bg-danger-tint p-3">
-              <Text className="text-sm text-danger">{error}</Text>
+              <Text className="text-sm text-danger-strong">{error}</Text>
             </View>
           )}
           {!!continueHint && editReady && (
@@ -651,7 +651,7 @@ export default function TripWizardScreen() {
               onPress={focusCityInput} className="mb-2">
               <Text className="text-center text-sm text-muted">
                 {continueHint}
-                {missingCity && <Text className="font-body-bold text-primary"> Đến ô nhập</Text>}
+                {missingCity && <Text className="font-body-bold text-primary-strong"> Đến ô nhập</Text>}
               </Text>
             </Pressable>
           )}

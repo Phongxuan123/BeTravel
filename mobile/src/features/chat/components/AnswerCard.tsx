@@ -40,7 +40,7 @@ function RichLine({ line, sources }: { line: string; sources: SourceRef[] }) {
         }
         if (URL_RE.test(part)) {
           return (
-            <Text key={i} className="text-primary underline" onPress={() => Linking.openURL(part)}>
+            <Text key={i} className="text-primary-strong underline" onPress={() => Linking.openURL(part)}>
               {part}
             </Text>
           );
@@ -54,7 +54,7 @@ function RichLine({ line, sources }: { line: string; sources: SourceRef[] }) {
         return (
           <Text
             key={i}
-            className="font-body-bold text-primary"
+            className="font-body-bold text-primary-strong"
             onPress={() => router.push(`/explore/${source.countryCode}/${source.articleSlug}` as never)}
           >
             {part}
@@ -84,7 +84,7 @@ function AnswerBody({ content, sources }: { content: string; sources: SourceRef[
           return (
             <View key={i} className="flex-row items-start" style={{ gap: 10 }}>
               <View className="mt-0.5 h-6 w-6 items-center justify-center rounded-full bg-primary-soft">
-                <Text className="text-xs font-body-bold text-primary">{numbered[1]}</Text>
+                <Text className="text-xs font-body-bold text-primary-strong">{numbered[1]}</Text>
               </View>
               <View className="flex-1">
                 <RichLine line={stripNestedPrefix(numbered[2])} sources={sources} />
@@ -370,7 +370,7 @@ function FeedbackRow({
           onPress={onReport}
         >
           <Flag size={16} color={colors.danger} />
-          <Text className="text-[15px] font-body-bold text-danger">Báo sai</Text>
+          <Text className="text-[15px] font-body-bold text-danger-strong">Báo sai</Text>
         </Pressable>
       )}
     </View>

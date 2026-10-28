@@ -38,7 +38,7 @@ export default function AustraliaLawDetailScreen() {
 
         {lawQuery.isLoading && <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>}
         {lawQuery.isError && (
-          <Text className="py-6 text-center text-sm text-danger">Không tải được văn bản. Kiểm tra kết nối mạng.</Text>
+          <Text className="py-6 text-center text-sm text-danger-strong">Không tải được văn bản. Kiểm tra kết nối mạng.</Text>
         )}
 
         {law && (
@@ -116,7 +116,7 @@ function ContentViewer({ id, translate }: { id: string; translate: boolean }) {
       </Text>;
   }
   if (contentQuery.isError) {
-    return <Text className="py-6 text-center text-sm text-danger">{translate ? 'Chưa dịch được lúc này. Thử lại sau hoặc xem bản gốc.' : 'Không tải được nội dung. Thử lại sau.'}</Text>;
+    return <Text className="py-6 text-center text-sm text-danger-strong">{translate ? 'Chưa dịch được lúc này. Thử lại sau hoặc xem bản gốc.' : 'Không tải được nội dung. Thử lại sau.'}</Text>;
   }
 
   const blocks = contentQuery.data?.pages.flatMap((page) => page.blocks) ?? [];

@@ -56,7 +56,7 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
         >
           <Text className="font-display text-base text-white">SOS</Text>
         </Pressable>
-        <Text className="mt-1 text-xs font-body-bold text-danger">Khẩn cấp</Text>
+        <Text className="mt-1 text-xs font-body-bold text-danger-strong">Khẩn cấp</Text>
       </View>
     </View>
   );

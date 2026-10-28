@@ -32,7 +32,7 @@ export default function IncidentsScreen() {
 
         {incidentsQuery.isLoading && <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>}
         {incidentsQuery.isError && (
-          <Text className="py-6 text-center text-sm text-danger">Không tải được danh sách hướng dẫn. Kiểm tra kết nối mạng.</Text>
+          <Text className="py-6 text-center text-sm text-danger-strong">Không tải được danh sách hướng dẫn. Kiểm tra kết nối mạng.</Text>
         )}
         {!incidentsQuery.isLoading && !incidentsQuery.isError && (incidentsQuery.data?.data.length ?? 0) === 0 && (
           <Text className="py-6 text-center text-sm text-muted">Chưa có hướng dẫn xử lý sự cố cho quốc gia này.</Text>

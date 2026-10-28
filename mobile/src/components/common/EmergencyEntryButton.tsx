@@ -21,7 +21,7 @@ export function EmergencyEntryButton({ variant }: { variant: 'pill' | 'block' })
     <Pressable accessibilityRole="button" accessibilityLabel="Mở SOS khẩn cấp" onPress={() => router.push('/sos')}
       className="h-14 flex-row items-center justify-center rounded-lg border border-danger-line bg-danger-tint" style={{ gap: 8 }}>
       <Siren size={18} color={colors.danger} />
-      <Text className="font-body-bold text-danger">Đang gặp nguy hiểm? Mở SOS khẩn cấp</Text>
+      <Text className="font-body-bold text-danger-strong">Đang gặp nguy hiểm? Mở SOS khẩn cấp</Text>
     </Pressable>
   );
 }

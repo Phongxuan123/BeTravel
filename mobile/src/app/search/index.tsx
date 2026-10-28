@@ -90,7 +90,7 @@ export default function SearchScreen() {
 
         {hasQuery && hasError && (
           <View className="rounded-md bg-danger-tint p-4">
-            <Text className="text-center text-sm text-danger">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
+            <Text className="text-center text-sm text-danger-strong">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
           </View>
         )}
 
@@ -103,7 +103,7 @@ export default function SearchScreen() {
               {results.map((r) => (
                 <Pressable key={r.id} className="rounded-2xl border border-line bg-surface p-4" onPress={() => router.push(`/explore/${r.countryCode}/${r.slug}` as never)}>
                   <View className="flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
-                    <Text className="text-xs font-body-bold text-primary">{country?.name}</Text>
+                    <Text className="text-xs font-body-bold text-primary-strong">{country?.name}</Text>
                     <Text className="text-xs text-muted">· {r.topicLabel}</Text>
                     <View className="flex-row items-center" style={{ gap: 3 }}>
                       <CircleCheck size={13} color={colors.successStrong} />

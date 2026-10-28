@@ -106,7 +106,7 @@ export default function WelcomeScreen() {
           <View style={{ width: SCREEN_WIDTH, paddingHorizontal: 18 }} className="pt-6">
             <View className="items-center rounded-3xl bg-primary-soft py-4">
               <OnboardingIllustration slide={item.id} />
-              <Text className="mt-4 text-[13px] font-body-bold text-primary">
+              <Text className="mt-4 text-[13px] font-body-bold text-primary-strong">
                 {`0${item.id} / 04 · ${item.caption}`}
               </Text>
             </View>

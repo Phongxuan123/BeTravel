@@ -85,7 +85,7 @@ export default function IncidentDetailScreen() {
       <View className="flex-1 items-center justify-center gap-3 bg-bg px-8">
         <Text className="text-center text-base font-body-bold text-ink">Không tải được hướng dẫn này</Text>
         <Pressable onPress={() => router.back()}>
-          <Text className="font-body-bold text-primary">Quay lại</Text>
+          <Text className="font-body-bold text-primary-strong">Quay lại</Text>
         </Pressable>
       </View>
     );
@@ -136,7 +136,7 @@ export default function IncidentDetailScreen() {
         </View>
 
         <View className="mt-4 rounded-2xl border border-line bg-surface p-4">
-          <Text className="text-[11px] font-body-bold uppercase text-primary">Quy trình {incident.steps.length} bước chuẩn</Text>
+          <Text className="text-[11px] font-body-bold uppercase text-primary-strong">Quy trình {incident.steps.length} bước chuẩn</Text>
           <View className="mt-1 flex-row items-center justify-between" style={{ gap: 8 }}>
             <Text className="flex-1 text-base font-body-bold text-ink">{incident.title}</Text>
             <Text className="text-xs font-body-bold text-success-strong">
@@ -152,7 +152,7 @@ export default function IncidentDetailScreen() {
                     {done ? (
                       <Check size={16} color="#fff" strokeWidth={3} />
                     ) : (
-                      <Text className="text-xs font-body-bold text-primary">{i + 1}</Text>
+                      <Text className="text-xs font-body-bold text-primary-strong">{i + 1}</Text>
                     )}
                   </View>
                   {i < incident.steps.length - 1 && <View className={`mx-1 h-0.5 flex-1 ${done ? 'bg-success' : 'bg-line'}`} />}
@@ -167,7 +167,7 @@ export default function IncidentDetailScreen() {
             <LogIn size={16} color={colors.muted} />
             <Text className="flex-1 text-[13px] text-muted">Đăng nhập để lưu tiến độ các bước đã làm.</Text>
             <Pressable onPress={() => router.push('/login?next=/incidents/' + slug as never)}>
-              <Text className="text-[13px] font-body-bold text-primary">Đăng nhập</Text>
+              <Text className="text-[13px] font-body-bold text-primary-strong">Đăng nhập</Text>
             </Pressable>
           </View>
         )}

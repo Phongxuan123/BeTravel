@@ -91,7 +91,7 @@ export default function ExploreScreen() {
             style={{ gap: 6 }}
           >
             <Search size={16} color={colors.primary} />
-            <Text className="text-[13px] font-body-bold text-primary">Tìm nâng cao</Text>
+            <Text className="text-[13px] font-body-bold text-primary-strong">Tìm nâng cao</Text>
           </Pressable>
         </View>
         <Pressable onPress={() => router.push('/search')} className="mt-3 h-12 flex-row items-center rounded-lg border border-line bg-bg px-4">
@@ -100,7 +100,7 @@ export default function ExploreScreen() {
             Tìm luật giao thông, hộ chiếu, hải quan...
           </Text>
           <View className="rounded-xl bg-primary-soft px-3 py-1.5">
-            <Text className="text-xs font-body-bold text-primary">Bộ lọc</Text>
+            <Text className="text-xs font-body-bold text-primary-strong">Bộ lọc</Text>
           </View>
         </Pressable>
         <View className="mt-3 flex-row" style={{ gap: 8 }}>
@@ -117,9 +117,9 @@ export default function ExploreScreen() {
             </Pressable>
           ))}
         </View>
-        <View className="mt-4 flex-row items-center justify-between">
+        <View className="mt-4 flex-row flex-wrap items-center justify-between" style={{ columnGap: 8, rowGap: 2 }}>
           <Text className="text-xs font-body-bold text-ink">Lọc theo quốc gia và danh mục</Text>
-          <Text className="text-[11px] text-muted">Chỉ hiển thị nội dung đã xác minh</Text>
+          <Text className="shrink text-[11px] text-muted">Chỉ hiển thị nội dung đã xác minh</Text>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-2">
           <View className="flex-row" style={{ gap: 8 }}>
@@ -150,7 +150,7 @@ export default function ExploreScreen() {
         )}
         {(topicsQuery.isError || articlesQuery.isError) && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-center text-sm text-danger">Không tải được dữ liệu. Kiểm tra kết nối mạng.</Text>
+            <Text className="text-center text-sm text-danger-strong">Không tải được dữ liệu. Kiểm tra kết nối mạng.</Text>
           </View>
         )}
 
@@ -244,7 +244,7 @@ function ArticleCard({
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-1 flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
-          <Text className="text-xs font-body-bold text-primary">{countryName ?? ''}</Text>
+          <Text className="text-xs font-body-bold text-primary-strong">{countryName ?? ''}</Text>
           {topicLabel && <Text className="text-xs text-muted">· {topicLabel}</Text>}
           <View className="flex-row items-center" style={{ gap: 3 }}>
             <CircleCheck size={13} color={colors.successStrong} />

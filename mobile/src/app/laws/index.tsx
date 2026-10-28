@@ -101,7 +101,7 @@ export default function AustraliaLawsScreen() {
           lawsQuery.isLoading ? (
             <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>
           ) : lawsQuery.isError ? (
-            <Text className="py-6 text-center text-sm text-danger">
+            <Text className="py-6 text-center text-sm text-danger-strong">
               {disabled ? 'Tra cứu pháp luật đang tạm ngưng. Vui lòng quay lại sau.' : 'Không tải được dữ liệu. Kiểm tra kết nối mạng.'}
             </Text>
           ) : (

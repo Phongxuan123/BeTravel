@@ -13,7 +13,7 @@ const colors = {
   surface: '#FFFFFF',
   ink: '#102A43',
   muted: '#6B7280',
-  subtle: '#94A3B8',
+  subtle: '#64748B',
   line: '#E2E8F0',
   success: '#22C55E',
   successStrong: '#15803D',

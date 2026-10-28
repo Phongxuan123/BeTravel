@@ -96,7 +96,7 @@ export default function LoginPhoneScreen() {
 
         {error && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-sm text-danger">{error}</Text>
+            <Text className="text-sm text-danger-strong">{error}</Text>
           </View>
         )}
 

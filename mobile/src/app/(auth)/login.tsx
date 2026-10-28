@@ -91,7 +91,7 @@ export default function LoginScreen() {
 
         {error && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-sm text-danger">{error}</Text>
+            <Text className="text-sm text-danger-strong">{error}</Text>
           </View>
         )}
 
@@ -108,7 +108,7 @@ export default function LoginScreen() {
           </View>
 
           <Pressable accessibilityRole="button" onPress={() => router.push('/forgot-password' as never)}>
-            <Text className="text-[15px] font-body-bold text-primary">Quên mật khẩu?</Text>
+            <Text className="text-[15px] font-body-bold text-primary-strong">Quên mật khẩu?</Text>
           </Pressable>
         </View>
 
@@ -136,7 +136,7 @@ export default function LoginScreen() {
       <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
         <Text className="text-muted">Chưa có tài khoản Be.Travel?</Text>
         <Pressable accessibilityRole="button" onPress={() => router.push('/register')}>
-          <Text className="font-body-bold text-primary">Đăng ký ngay</Text>
+          <Text className="font-body-bold text-primary-strong">Đăng ký ngay</Text>
         </Pressable>
       </View>
 

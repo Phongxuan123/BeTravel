@@ -17,7 +17,7 @@ const containerClass: Record<Variant, string> = {
   primary: 'bg-primary rounded-lg',
   secondary: 'bg-surface border border-line rounded-lg',
   soft: 'bg-primary-soft rounded-lg',
-  danger: 'bg-danger rounded-lg',
+  danger: 'bg-danger-strong rounded-lg',
   white: 'bg-surface rounded-lg',
   'ghost-link': 'bg-transparent',
 };
@@ -27,7 +27,7 @@ const textClass: Record<Variant, string> = {
   secondary: 'text-ink font-body-semibold text-[15px]',
   soft: 'text-primary-strong font-body-bold text-base',
   danger: 'text-white font-body-bold text-base',
-  white: 'text-primary font-body-bold text-base',
+  white: 'text-primary-strong font-body-bold text-base',
   'ghost-link': 'text-muted font-body-semibold text-[15px]',
 };
 

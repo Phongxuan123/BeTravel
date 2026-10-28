@@ -136,8 +136,8 @@ export default function SettingsScreen() {
           <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={(countries.find((c) => c.code === (preferredCountryCode || countryCode)) ?? country)?.name} onPress={() => setPickingCountry(true)} />
         </SettingsGroup>
 
-        {preferencesQuery.isError && <View className="gap-2"><Text className="text-danger">Không tải được cài đặt. Các công tắc tạm khóa.</Text><Button label="Thử lại" onPress={() => { void preferencesQuery.refetch(); }} /></View>}
-        {preferencesMutation.isError && <Text className="text-danger">Không lưu được cài đặt. Vui lòng thử lại.</Text>}
+        {preferencesQuery.isError && <View className="gap-2"><Text className="text-danger-strong">Không tải được cài đặt. Các công tắc tạm khóa.</Text><Button label="Thử lại" onPress={() => { void preferencesQuery.refetch(); }} /></View>}
+        {preferencesMutation.isError && <Text className="text-danger-strong">Không lưu được cài đặt. Vui lòng thử lại.</Text>}
         <SettingsGroup title="THÔNG BÁO">
           <SettingsSwitchRow
             disabled={preferencesQuery.isLoading || preferencesQuery.isError || preferencesMutation.isPending}
@@ -203,7 +203,7 @@ export default function SettingsScreen() {
 
         <Pressable onPress={onLogout} className="h-[52px] flex-row items-center justify-center gap-2 rounded-lg border border-danger-line bg-surface">
           <LogOut size={18} color={colors.danger} />
-          <Text className="text-[17px] font-body-bold text-danger">Đăng xuất</Text>
+          <Text className="text-[17px] font-body-bold text-danger-strong">Đăng xuất</Text>
         </Pressable>
       </ScrollView>
 
@@ -247,7 +247,7 @@ export default function SettingsScreen() {
           <TextField label="Xác nhận mật khẩu mới" secureTextEntry value={pwForm.confirm} onChangeText={(v) => setPwForm((p) => ({ ...p, confirm: v }))} />
           {pwError && (
             <View className="rounded-md bg-danger-tint p-3">
-              <Text className="text-sm text-danger">{pwError}</Text>
+              <Text className="text-sm text-danger-strong">{pwError}</Text>
             </View>
           )}
           <Button label="Đổi mật khẩu" onPress={onSubmitPasswordChange} loading={savingPassword} />

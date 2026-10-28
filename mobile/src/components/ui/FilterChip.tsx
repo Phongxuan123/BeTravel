@@ -20,6 +20,7 @@ export function FilterChip({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
+      hitSlop={{ top: 4, bottom: 4 }}
       className={`h-[38px] flex-row items-center gap-1.5 rounded-full border px-4 ${
         active ? 'border-primary bg-primary' : 'border-line bg-surface'
       }`}
