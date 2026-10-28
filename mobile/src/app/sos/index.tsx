@@ -21,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 export default function SosHubScreen() {
   const bottomPadding = useAppShellBottomPadding();
   
-  const { country } = useCountry();
+  const { country, isResolving } = useCountry();
   const [currentCity, setCurrentCity] = useState('');
   const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
   const [locatingGps, setLocatingGps] = useState(false);
@@ -36,7 +36,7 @@ export default function SosHubScreen() {
           <ScrollView contentContainerStyle={{ paddingBottom: bottomPadding }}>
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
             <Text className="mt-6 font-display text-ink" style={{ fontSize: 22 }}>
-              Chưa tải được dữ liệu mới nhất
+              {isResolving ? 'Đang xác định quốc gia của bạn...' : 'Chưa tải được dữ liệu mới nhất'}
             </Text>
             <Text className="mt-2 text-base leading-6 text-ink">
               Hãy kết nối mạng rồi thử lại. Nếu đang gặp nguy hiểm, gọi ngay các số dưới đây hoặc nhờ người xung quanh hỗ trợ.

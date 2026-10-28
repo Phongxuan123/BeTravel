@@ -29,7 +29,9 @@ const TOOL_SHORTCUTS = [
 export default function ExploreScreen() {
   const bottomPadding = useAppShellBottomPadding();
   const params = useLocalSearchParams<{ saved?: string }>();
-  const { countryCode, setCountryCode, country } = useCountry();
+  const { countryCode: travelCountryCode } = useCountry();
+  // Bộ lọc quốc gia của Khám phá chỉ là state cục bộ, không đổi quốc gia toàn app (BUG-17).
+  const [filterCountryCode, setCountryCode] = useState('');
   const [savedOnly, setSavedOnly] = useState(params.saved === '1');
   const [topicFilter, setTopicFilter] = useState<string | null>(null);
   const [pickingCountry, setPickingCountry] = useState(false);
@@ -37,6 +39,8 @@ export default function ExploreScreen() {
   const { isSaved, toggleSaved } = useSavedArticles();
 
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
+  const countryCode = filterCountryCode || travelCountryCode;
+  const country = countriesQuery.data?.data.find((c) => c.code === countryCode);
   // enabled: !!countryCode -- countryCode rong trong luc CountryProvider con
   // dang xac dinh quoc gia mac dinh (xem lib/countryContext.tsx). Thieu guard
   // nay thi goi API voi countryCode rong, backend tra 400 VALIDATION_ERROR va
@@ -174,6 +178,7 @@ export default function ExploreScreen() {
                 key={article.id}
                 article={article}
                 countryCode={countryCode}
+                countryName={country?.name}
                 topicLabel={topicsQuery.data?.data.find((t) => t.key === article.topicKey)?.label}
                 saved={isSaved(article.id)}
                 onToggleSaved={() => toggleSaved(article.id)}
@@ -220,17 +225,18 @@ export default function ExploreScreen() {
 function ArticleCard({
   article,
   countryCode,
+  countryName,
   topicLabel,
   saved,
   onToggleSaved,
 }: {
   article: Article;
   countryCode: string;
+  countryName?: string;
   topicLabel?: string;
   saved: boolean;
   onToggleSaved: () => void;
 }) {
-  const { country } = useCountry();
   return (
     <Pressable
       className="rounded-lg border border-line bg-surface p-4"
@@ -238,7 +244,7 @@ function ArticleCard({
     >
       <View className="flex-row items-center justify-between">
         <View className="flex-1 flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
-          <Text className="text-xs font-body-bold text-primary">{country?.name ?? ''}</Text>
+          <Text className="text-xs font-body-bold text-primary">{countryName ?? ''}</Text>
           {topicLabel && <Text className="text-xs text-muted">· {topicLabel}</Text>}
           <View className="flex-row items-center" style={{ gap: 3 }}>
             <CircleCheck size={13} color={colors.successStrong} />

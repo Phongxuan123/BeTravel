@@ -34,7 +34,7 @@ const DEFAULT_PREFERENCES: Preferences = {
 
 export default function SettingsScreen() {
   const { logout } = useAuth();
-  const { country, countryCode, setCountryCode } = useCountry();
+  const { country, countryCode, preferredCountryCode, setPreferredCountryCode, followsTrip } = useCountry();
   const queryClient = useQueryClient();
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const countries = countriesQuery.data?.data ?? [];
@@ -133,7 +133,7 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 24 }}>
         <SettingsGroup title="NGÔN NGỮ & KHU VỰC">
           <SettingsRow icon={<Globe size={18} color={colors.primary} />} label="Ngôn ngữ ứng dụng" value="Chỉ có tiếng Việt" />
-          <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={country?.name} onPress={() => setPickingCountry(true)} />
+          <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={(countries.find((c) => c.code === (preferredCountryCode || countryCode)) ?? country)?.name} onPress={() => setPickingCountry(true)} />
         </SettingsGroup>
 
         {preferencesQuery.isError && <View className="gap-2"><Text className="text-danger">Không tải được cài đặt. Các công tắc tạm khóa.</Text><Button label="Thử lại" onPress={() => { void preferencesQuery.refetch(); }} /></View>}
@@ -208,16 +208,21 @@ export default function SettingsScreen() {
       </ScrollView>
 
       <SimpleSheet visible={pickingCountry} onClose={() => setPickingCountry(false)} title="Quốc gia mặc định">
+        {followsTrip && (
+          <Text className="mb-3 text-sm text-muted">
+            Đang theo chuyến đi {country?.name}. Quốc gia mặc định chỉ dùng khi bạn không có chuyến đi.
+          </Text>
+        )}
         <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
           {countries.map((c) => {
-            const selected = c.code === countryCode;
+            const selected = c.code === (preferredCountryCode || countryCode);
             return (
               <Pressable
                 key={c.code}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: selected }}
                 onPress={() => {
-                  setCountryCode(c.code);
+                  setPreferredCountryCode(c.code);
                   setPickingCountry(false);
                 }}
                 className={`h-16 flex-row items-center rounded-lg border px-3 ${selected ? 'border-[1.5px] border-primary bg-[#F5F9FF]' : 'border-line bg-surface'}`}

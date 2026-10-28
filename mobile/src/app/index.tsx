@@ -34,7 +34,7 @@ import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
 import type { Alert } from '@/lib/data';
 import { now, daysBetween, parseISODate } from '@/lib/date';
-import { activeStop } from '@/features/trips/itinerary';
+import { activeStop, pickCurrentTrip } from '@/features/trips/itinerary';
 
 export default function HomeScreen() {
   const bottomPadding = useAppShellBottomPadding();
@@ -53,29 +53,7 @@ export default function HomeScreen() {
 
   const trips = tripsQuery.data?.data ?? [];
   const today = now();
-  const ongoingTrips = trips.filter((trip) => {
-    const start = parseISODate(trip.startDate);
-    const end = parseISODate(trip.endDate);
-    return today >= start && today <= end;
-  });
-  const upcomingTrips = trips
-    .filter((trip) => today < parseISODate(trip.startDate))
-    .sort((a, b) => parseISODate(a.startDate).getTime() - parseISODate(b.startDate).getTime());
-  const pastTrips = trips
-    .filter((trip) => today > parseISODate(trip.endDate))
-    .sort((a, b) => parseISODate(b.endDate).getTime() - parseISODate(a.endDate).getTime());
-
-  // Ưu tiên đúng theo trạng thái thời gian: chuyến đang diễn ra trước. Nếu
-  // không có chuyến nào đang diễn ra thì hiển thị chuyến sắp tới gần nhất.
-  // isCurrent chỉ dùng làm tie-breaker trong cùng một nhóm, không được khiến
-  // một chuyến tương lai che mất chuyến đang diễn ra.
-  const currentTrip =
-    ongoingTrips.find((trip) => trip.isCurrent) ??
-    ongoingTrips[0] ??
-    upcomingTrips.find((trip) => trip.isCurrent) ??
-    upcomingTrips[0] ??
-    pastTrips.find((trip) => trip.isCurrent) ??
-    pastTrips[0];
+  const currentTrip = pickCurrentTrip(trips, today);
 
   const currentStop = currentTrip ? activeStop(currentTrip) : null;
   const countryCode = currentStop?.countryCode ?? selectedCountryCode;
