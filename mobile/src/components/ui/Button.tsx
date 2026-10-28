@@ -72,7 +72,7 @@ export function Button({
       ) : (
         <>
           {iconLeft}
-          <Text className={`text-center ${textClass[variant]}`} style={{ flexShrink: 1 }}>{label}</Text>
+          <Text numberOfLines={1} className={`text-center ${textClass[variant]}`} style={{ flexShrink: 1 }}>{label}</Text>
           {iconRight}
         </>
       )}
