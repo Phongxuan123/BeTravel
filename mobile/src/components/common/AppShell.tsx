@@ -10,10 +10,12 @@ import { TopInsetProvider } from './screenTopInset';
 export type ActiveTab = 'home' | 'explore' | 'sos' | 'chat' | 'profile';
 
 const NAV_HEIGHT = 72;
-const SOS_BUTTON_SIZE = 60;
-// Nút SOS nhô lên trên thanh điều hướng 22px (xem style bottom bên dưới).
-const SOS_OVERLAP = 22;
+const SOS_BUTTON_SIZE = 52;
+// Nhãn "Khẩn cấp" nằm cùng hàng với nhãn các tab khác (cách đáy thanh 8px), nên nút SOS chỉ
+// nhô lên trên mép thanh điều hướng vài px thay vì đè lên nội dung phía trên.
+const SOS_LABEL_BOTTOM = 8;
 const SOS_LABEL_HEIGHT = 18;
+const SOS_PROTRUSION = SOS_LABEL_BOTTOM + SOS_LABEL_HEIGHT + SOS_BUTTON_SIZE - NAV_HEIGHT;
 const CONTENT_GAP = 16;
 
 const tabs: { key: Exclude<ActiveTab, 'sos'>; label: string; icon: typeof House; href: '/' | '/explore' | '/chat' | '/profile' }[] = [
@@ -46,7 +48,7 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
           <NavItem key={tab.key} tab={tab} active={active === tab.key} />
         ))}
       </View>
-      <View className="absolute inset-x-0 items-center" style={{ bottom: NAV_HEIGHT + insets.bottom - SOS_OVERLAP }}>
+      <View className="absolute inset-x-0 items-center" style={{ bottom: insets.bottom + SOS_LABEL_BOTTOM }}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Khẩn cấp — mở SOS Hub"
@@ -54,9 +56,11 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
           className="items-center justify-center rounded-full border-4 border-white"
           style={{ width: SOS_BUTTON_SIZE, height: SOS_BUTTON_SIZE, backgroundColor: colors.danger, ...shadows.sos }}
         >
-          <Text className="font-display text-base text-white">SOS</Text>
+          <Text className="font-display text-sm text-white">SOS</Text>
         </Pressable>
-        <Text className="mt-1 text-xs font-body-bold text-danger">Khẩn cấp</Text>
+        <Text className="text-[11px] font-body-bold text-danger" style={{ lineHeight: SOS_LABEL_HEIGHT }}>
+          Khẩn cấp
+        </Text>
       </View>
     </View>
   );
@@ -96,10 +100,10 @@ function NavItem({
 // đặt sát thanh tab (màn chat) thay vì cuộn nội dung như useAppShellBottomPadding.
 export function useAppShellNavClearance(): number {
   const insets = useSafeAreaInsets();
-  return NAV_HEIGHT + insets.bottom + SOS_OVERLAP + CONTENT_GAP / 2;
+  return NAV_HEIGHT + insets.bottom + SOS_PROTRUSION + CONTENT_GAP / 2;
 }
 
 export function useAppShellBottomPadding(): number {
   const insets = useSafeAreaInsets();
-  return NAV_HEIGHT + insets.bottom + (SOS_BUTTON_SIZE - SOS_OVERLAP) + SOS_LABEL_HEIGHT + CONTENT_GAP;
+  return NAV_HEIGHT + insets.bottom + SOS_PROTRUSION + CONTENT_GAP;
 }
