@@ -6,9 +6,8 @@ Da sua BUG-01, 04, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 2
 V-13 den V-18 (8 nhanh xep chong tu `fix/emergency-access`; chua push, chua mo PR). Kiem tren emulator: CTA goi
 Dai su quan, khach doc huong dan su co, lien ket Dieu khoan, quoc gia theo chuyen di, ban phim khong che o nhap,
 the Mat ket noi + Thu lai, the Het luot, ban do OSM khi khong co key.
-Con lai / quyet dinh cho nguoi: Q5 (dich truoc 32 luat Uc, ton tien), BUG-03 (nut "Lay lai vi tri" bi cat chu `tri`,
-chua tim ra nguyen nhan, ghi nhan tren emulator Android), V-12 (mac dinh canh bao theo vi tri giu TAT vi can quyen),
-V-19, V-20, V-11 (ghi cong giay phep da du chu, khong doi). Dat QUERY_REWRITE_MODEL=gpt-6-luna tren Render (xem
+BUG-03 (chu cuoi bi cat) sua bang numberOfLines=1 trong Button; V-12, V-19, V-20 da lam; V-11 da co san.
+Con lai / quyet dinh cho nguoi: Q5 (dich truoc 32 luat Uc, ton tien AI, can nguoi dong y). Dat QUERY_REWRITE_MODEL=gpt-6-luna tren Render (xem
 `.env.example`, them QUERY_REWRITE_FALLBACK_MODEL, ANSWER_REPEAT_CANDIDATE_SIMILARITY, ANSWER_REPEAT_AI_MIN_SCORE).
 Chua ghi `fallbackReason` REWRITE_FAILED len ai_events (moi co log).
 
