@@ -70,7 +70,7 @@ export default function SearchScreen() {
             autoFocus
           />
           {query.length > 0 && (
-            <Pressable accessibilityLabel="Xoá" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center rounded-md bg-[#F3F4F6]">
+            <Pressable accessibilityLabel="Xóa" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center rounded-md bg-[#F3F4F6]">
               <X size={18} color={colors.muted} />
             </Pressable>
           )}

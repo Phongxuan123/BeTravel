@@ -56,19 +56,19 @@ export default function SettingsScreen() {
   const [deletingHistory, setDeletingHistory] = useState(false);
 
   const onDeleteChatHistory = () => {
-    Alert.alert('Xoá lịch sử hỏi AI', 'Toàn bộ cuộc trò chuyện với AI sẽ bị xoá vĩnh viễn. Không thể hoàn tác.', [
-      { text: 'Huỷ', style: 'cancel' },
+    Alert.alert('Xóa lịch sử hỏi AI', 'Toàn bộ cuộc trò chuyện với AI sẽ bị xóa vĩnh viễn. Không thể hoàn tác.', [
+      { text: 'Hủy', style: 'cancel' },
       {
-        text: 'Xoá tất cả',
+        text: 'Xóa tất cả',
         style: 'destructive',
         onPress: async () => {
           setDeletingHistory(true);
           try {
             const { data: sessions } = await listChatSessions();
             await Promise.all(sessions.map((s) => deleteChatSession(s._id)));
-            toast('Đã xoá lịch sử hỏi AI');
+            toast('Đã xóa lịch sử hỏi AI');
           } catch {
-            toast('Không xoá được toàn bộ lịch sử. Kiểm tra kết nối mạng và thử lại.');
+            toast('Không xóa được toàn bộ lịch sử. Kiểm tra kết nối mạng và thử lại.');
           } finally {
             setDeletingHistory(false);
           }
@@ -79,7 +79,7 @@ export default function SettingsScreen() {
 
   const onLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
-      { text: 'Huỷ', style: 'cancel' },
+      { text: 'Hủy', style: 'cancel' },
       {
         text: 'Đăng xuất',
         style: 'destructive',
@@ -187,7 +187,7 @@ export default function SettingsScreen() {
           <View className="h-px bg-line" />
           <SettingsRow
             icon={<Trash2 size={18} color={colors.danger} />}
-            label={deletingHistory ? 'Đang xoá…' : 'Xoá lịch sử hỏi AI'}
+            label={deletingHistory ? 'Đang xóa…' : 'Xóa lịch sử hỏi AI'}
             onPress={onDeleteChatHistory}
           />
         </SettingsGroup>

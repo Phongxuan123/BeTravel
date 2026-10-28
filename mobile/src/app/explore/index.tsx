@@ -23,7 +23,7 @@ import type { Article } from '@/lib/data';
 const TOOL_SHORTCUTS = [
   { label: 'Bản đồ hỗ trợ', hint: 'ĐSQ & Cảnh sát', href: '/sos/map', icon: MapIcon },
   { label: 'Dịch khẩn cấp', hint: 'Mẫu câu phát âm', href: '/translate', icon: Languages },
-  { label: 'Xử lý sự cố', hint: 'Hướng dẫn 5 bước', href: '/incidents', icon: TriangleAlert },
+  { label: 'Xử lý sự cố', hint: 'Hướng dẫn từng bước', href: '/incidents', icon: TriangleAlert },
 ] as const;
 
 export default function ExploreScreen() {

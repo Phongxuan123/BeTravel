@@ -84,7 +84,7 @@ describe('chat.ts adapter', () => {
     const answer = adaptMessage(
       {
         ...base,
-        text: 'Visa có thể bị huỷ [S1].',
+        text: 'Visa có thể bị hủy [S1].',
         fallbackReason: null,
         citations: [
           {

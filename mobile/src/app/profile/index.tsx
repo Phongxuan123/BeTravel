@@ -34,7 +34,7 @@ import { useDocumentStatus, type DocumentKey } from '@/features/profile/useDocum
 
 // Liên hệ khẩn cấp và ghi chú giấy tờ chỉ nằm trong AsyncStorage của máy (quyết định B6, B7 ngày
 // 08/10/2026): không đồng bộ server, nên phải nói rõ để người dùng không tưởng đã sao lưu.
-const LOCAL_ONLY_NOTE = 'Chỉ lưu trên điện thoại này; có thể mất khi xoá dữ liệu hoặc cài lại ứng dụng.';
+const LOCAL_ONLY_NOTE = 'Chỉ lưu trên điện thoại này; có thể mất khi xóa dữ liệu hoặc cài lại ứng dụng.';
 
 const DOCUMENTS: { key: DocumentKey; label: string; icon: typeof IdCard }[] = [
   { key: 'passport', label: 'Hộ chiếu', icon: IdCard },
@@ -203,7 +203,7 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   <IconButton accessibilityLabel={`Gọi ${contact.name}`} variant="soft" icon={<Phone size={18} color={colors.primary} />} onPress={() => void openPhone(contact.phone)} />
-                  <IconButton accessibilityLabel={`Xoá ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
+                  <IconButton accessibilityLabel={`Xóa ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
                 </View>
               ))}
             </View>

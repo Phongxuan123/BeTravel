@@ -123,7 +123,7 @@ type RequestOptions = {
   body?: unknown;
   /** Endpoint auth công khai (register/login/...) -- không gắn Bearer, không tự refresh khi 401. */
   skipAuth?: boolean;
-  /** Huỷ yêu cầu sau ngần này ms (coi như lỗi mạng). Mặc định: không giới hạn phía app. */
+  /** Hủy yêu cầu sau ngần này ms (coi như lỗi mạng). Mặc định: không giới hạn phía app. */
   timeoutMs?: number;
 };
 

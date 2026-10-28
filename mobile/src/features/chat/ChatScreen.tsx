@@ -385,10 +385,10 @@ export default function ChatScreen() {
   };
 
   const removeSession = (session: ChatSession) => {
-    Alert.alert('Xoá cuộc trò chuyện', `Xoá "${session.title || 'Cuộc trò chuyện'}"? Không thể hoàn tác.`, [
-      { text: 'Huỷ', style: 'cancel' },
+    Alert.alert('Xóa cuộc trò chuyện', `Xóa "${session.title || 'Cuộc trò chuyện'}"? Không thể hoàn tác.`, [
+      { text: 'Hủy', style: 'cancel' },
       {
-        text: 'Xoá',
+        text: 'Xóa',
         style: 'destructive',
         onPress: async () => {
           try {
@@ -519,7 +519,7 @@ export default function ChatScreen() {
                   <Pressable accessibilityLabel="Lưu tên" onPress={() => saveRename(s)} hitSlop={8}>
                     <Check size={18} color={colors.primary} />
                   </Pressable>
-                  <Pressable accessibilityLabel="Huỷ đổi tên" onPress={() => setRenamingSessionId(null)} hitSlop={8}>
+                  <Pressable accessibilityLabel="Hủy đổi tên" onPress={() => setRenamingSessionId(null)} hitSlop={8}>
                     <X size={18} color={colors.muted} />
                   </Pressable>
                 </View>
@@ -534,7 +534,7 @@ export default function ChatScreen() {
                   <Pressable accessibilityLabel="Đổi tên" className="px-2.5 py-3" onPress={() => startRename(s)} hitSlop={8}>
                     <Pencil size={16} color={colors.muted} />
                   </Pressable>
-                  <Pressable accessibilityLabel="Xoá" className="px-2.5 py-3" onPress={() => removeSession(s)} hitSlop={8}>
+                  <Pressable accessibilityLabel="Xóa" className="px-2.5 py-3" onPress={() => removeSession(s)} hitSlop={8}>
                     <Trash2 size={16} color={colors.danger} />
                   </Pressable>
                 </View>

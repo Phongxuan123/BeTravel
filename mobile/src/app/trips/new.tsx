@@ -158,6 +158,10 @@ export default function TripWizardScreen() {
   }, [query, countries]);
 
   const hasCitySuggestions = (country?.majorCities?.length ?? 0) > 0;
+  // Ví dụ lấy từ dữ liệu quốc gia đang chọn, không gắn cứng một nước (BUG-21).
+  const cityPlaceholder = hasCitySuggestions
+    ? `Ví dụ: ${(country?.majorCities ?? []).slice(0, 3).join(', ')}...`
+    : 'Nhập tên thành phố hoặc khu vực';
 
   // Loc theo tu da go, khong dau -- khong ep nguoi dung phai chon dung trong
   // danh sach, ho van go tu do va gia tri se duoc giu nguyen (BE khong rang
@@ -428,10 +432,14 @@ export default function TripWizardScreen() {
                     ref={cityInputRef}
                     accessibilityLabel="Thành phố / khu vực"
                     className={`h-14 rounded-md border border-line bg-[#F5F9FF] pl-4 text-base text-ink ${hasCitySuggestions ? 'pr-11' : 'pr-4'}`}
-                    placeholder="Ví dụ: Seoul, Busan, Jeju..."
+                    placeholder={cityPlaceholder}
                     placeholderTextColor={colors.subtle}
                     value={state.destinationCity}
-                    onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_CITY', value })}
+                    onChangeText={(value) => {
+                      dispatch({ type: 'SET_DESTINATION_CITY', value });
+                      // Gõ từ 2 ký tự trở lên thì tự mở danh sách gợi ý, không bắt người dùng bấm mũi tên.
+                      if (hasCitySuggestions && value.trim().length >= 2) setCityListVisible(true);
+                    }}
                     autoCapitalize="words"
                     maxLength={100}
                   />
@@ -470,7 +478,7 @@ export default function TripWizardScreen() {
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Địa điểm cụ thể (không bắt buộc)</Text>
                 <TextInput
                   className="min-h-[56px] rounded-md border border-line bg-[#F5F9FF] px-4 py-3 text-base text-ink"
-                  placeholder="Ví dụ: Gangnam-gu, tên khách sạn, địa chỉ..."
+                  placeholder="Ví dụ: tên khách sạn, địa chỉ, quận/khu phố..."
                   placeholderTextColor={colors.subtle}
                   value={state.destinationDetail}
                   onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_DETAIL', value })}

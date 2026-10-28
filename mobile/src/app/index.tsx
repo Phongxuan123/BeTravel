@@ -34,6 +34,7 @@ import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
 import type { Alert } from '@/lib/data';
 import { now, daysBetween, parseISODate } from '@/lib/date';
+import { AU_COUNTRY_CODE } from '@/lib/api/auLaws';
 import { activeStop, pickCurrentTrip } from '@/features/trips/itinerary';
 
 export default function HomeScreen() {
@@ -192,7 +193,7 @@ export default function HomeScreen() {
         <View className="mt-3 flex-row" style={{ gap: 10 }}>
           <ShortcutCard
             title="Gặp sự cố khẩn cấp?"
-            subtitle="Quy trình 5 bước xử lý"
+            subtitle="Hướng dẫn xử lý từng bước"
             icon={<Siren size={18} color={colors.danger} />}
             onPress={() => router.push('/incidents')}
           />
@@ -232,7 +233,17 @@ export default function HomeScreen() {
                 <Skeleton className="h-[66px] rounded-lg" />
               </>
             ) : !articlesQuery.isError && (articlesQuery.data?.data.length ?? 0) === 0 ? (
-              <Text className="text-sm text-muted">Chưa có quy định đã được duyệt cho quốc gia này. Trong lúc chờ, bạn vẫn dùng được SOS, dịch nhanh và hướng dẫn xử lý sự cố.</Text>
+              countryCode === AU_COUNTRY_CODE ? (
+                // Úc dùng bộ luật liên bang riêng (màn /laws) thay cho bài viết đã duyệt: không báo "chưa có quy định" (BUG-06).
+                <ListRow
+                  icon={<IconTile tone="blue"><FileText size={20} color={colors.primary} /></IconTile>}
+                  title="Luật liên bang Úc"
+                  subtitle="Tra cứu văn bản luật gốc theo chủ đề"
+                  onPress={() => router.push('/laws' as never)}
+                />
+              ) : (
+                <Text className="text-sm text-muted">Chưa có quy định đã được duyệt cho quốc gia này. Trong lúc chờ, bạn vẫn dùng được SOS, dịch nhanh và hướng dẫn xử lý sự cố.</Text>
+              )
             ) : (
               articlesQuery.data?.data.slice(0, 3).map((a) => (
                 <ListRow

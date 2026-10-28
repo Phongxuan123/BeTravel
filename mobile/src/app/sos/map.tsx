@@ -612,7 +612,7 @@ export default function SosMapScreen() {
         )}
         {origin && (
           <Text className="mt-2 px-[18px] text-xs text-muted">
-            {picked ? `Khoảng cách đường chim bay từ ${picked.label}.` : 'Khoảng cách đường chim bay từ lần đo gần nhất'}
+            {picked ? `Khoảng cách đường chim bay từ ${picked.label}.` : 'Khoảng cách đường chim bay từ lần đo gần nhất.'}
             {picked ? '' : staleFixNotice(measuredAt)}
             {` Không có điểm trong ${radiusKm} km sẽ mở rộng toàn quốc.`}
             {picked ? '' : ' Bấm Vị trí của tôi để cập nhật.'}

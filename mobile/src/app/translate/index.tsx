@@ -273,7 +273,7 @@ function TranslatorForm() {
                 <Mic size={20} color={colors.primary} />
               </Pressable>
               <Pressable
-                accessibilityLabel="Xoá"
+                accessibilityLabel="Xóa"
                 onPress={() => {
                   invalidateResult();
                   setInput('');

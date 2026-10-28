@@ -165,7 +165,7 @@ export default function SosHubScreen() {
             </View>
             <View className="min-h-[44px] flex-row items-center justify-center rounded-2xl bg-primary px-3" style={{ gap: 6 }}>
               <ListChecks size={16} color="#fff" />
-              <Text className="text-[13px] font-body-bold text-white">Xem 5 bước</Text>
+              <Text className="text-[13px] font-body-bold text-white">Xem các bước</Text>
             </View>
           </Pressable>
 
