@@ -205,6 +205,7 @@ export const favoriteItemSchema = z.object({
   countryCode: z.string().optional(),
   slug: z.string().optional(),
   isOutdated: z.boolean().optional(),
+  isRemoved: z.boolean().optional(),
   currentArticleId: z.string().nullable().optional(),
   createdAt: z.string(),
 });

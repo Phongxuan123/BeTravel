@@ -98,6 +98,8 @@ export const listFavorites = async (userId) => {
           article: article.isCurrent ? article : historicalArticleSummary(article),
           isOutdated: !article.isCurrent,
           currentArticleId: current ? String(current._id) : null,
+          // Bản cũ mà không còn bản công khai hiện hành = đã gỡ (V-01).
+          isRemoved: !article.isCurrent && !current,
         };
       }
       if (f.targetType === "location") {

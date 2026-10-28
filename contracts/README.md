@@ -851,7 +851,9 @@ khi liệt kê thì ẩn nhưng giữ nguyên bản ghi Favorite trong DB.
 Ngoại lệ lịch sử: bài superseded không hiện hành vẫn giữ bookmark, nhưng
 `article` chỉ có `_id`, `countryCode`, `slug`, `title`, `topicSlug` (không trả
 nội dung pháp lý cũ). Kèm `isOutdated:true` và `currentArticleId` chỉ trỏ tới
-bản published hiện hành; chưa có bản công khai thì null. Các mục hiện hành
+bản published hiện hành; chưa có bản công khai thì null. Kèm `isRemoved:true`
+khi bài đã gỡ khỏi công khai (không còn bản published hiện hành, V-01): client hiện nhãn
+"Đã gỡ", không mở chi tiết, chỉ cho bỏ lưu. Các mục hiện hành
 vẫn trả đối tượng `article`/`location`/`incident` như trước.
 Fixture: `fixtures/favorites.json`.
 

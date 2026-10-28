@@ -15,6 +15,7 @@ type ApiFavorite = {
   location?: { countryCode: string; type: string; name: string };
   incident?: { slug: string; title: string; countryCode: string | null };
   isOutdated?: boolean;
+  isRemoved?: boolean;
   currentArticleId?: string | null;
 };
 
@@ -37,6 +38,7 @@ function adaptFavorite(api: ApiFavorite): FavoriteItem | null {
       countryCode: api.article.countryCode,
       slug: api.article.slug,
       isOutdated: api.isOutdated,
+      isRemoved: api.isRemoved,
       currentArticleId: api.currentArticleId ?? null,
       createdAt: api.createdAt,
     };

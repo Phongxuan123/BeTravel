@@ -128,6 +128,7 @@ test("Favorite bai da bi thay the (superseded) van tra ve, kem co isOutdated + c
     .set("Authorization", auth(accessToken));
   assert.equal(res.body.data[0].isOutdated, true);
   assert.equal(res.body.data[0].currentArticleId, String(newArticle._id));
+  assert.equal(res.body.data[0].isRemoved, false);
 });
 
 test("Favorite loai location tra ve kem thong tin dia diem", async () => {
@@ -242,6 +243,7 @@ test("Bookmark lịch sử chỉ trả metadata và không dẫn tới phiên b�
     .set("Authorization", auth(accessToken));
   assert.equal(response.body.data[0].currentArticleId, null);
   assert.equal(response.body.data[0].isOutdated, true);
+  assert.equal(response.body.data[0].isRemoved, true); // không còn bản công khai hiện hành (V-01)
   const fixture = JSON.parse(
     await (
       await import("node:fs/promises")

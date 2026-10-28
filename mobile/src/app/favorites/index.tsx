@@ -33,6 +33,8 @@ export default function FavoritesScreen() {
   });
 
   const openItem = (item: FavoriteItem) => {
+    // Bài đã gỡ không còn nội dung công khai để mở: chỉ cho bỏ lưu (V-01).
+    if (item.isRemoved) return;
     if (item.targetType === 'article' && item.countryCode && item.slug) {
       router.push(`/explore/${item.countryCode}/${item.slug}` as never);
     } else if (item.targetType === 'incident' && item.slug) {
@@ -107,7 +109,7 @@ export default function FavoritesScreen() {
                         <Text className="text-[13px] text-muted" numberOfLines={1}>
                           {subtitleOf(item)}
                         </Text>
-                        {item.isOutdated && <Badge label="Đã có bản mới" tone="warning" />}
+                        {item.isRemoved ? <Badge label="Đã gỡ" tone="warning" /> : item.isOutdated && <Badge label="Đã có bản mới" tone="warning" />}
                       </View>
                     </View>
                     <Pressable
