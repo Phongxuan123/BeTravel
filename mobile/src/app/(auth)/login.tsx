@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
+import { enterApp } from '@/lib/navigation';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Mail, Lock, Eye, EyeOff, Phone, ArrowRight } from 'lucide-react-native';
@@ -34,7 +35,7 @@ export default function LoginScreen() {
 
     try {
       await login(identifier.trim(), password, remember);
-      router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
+      enterApp(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
     } catch (err) {
       setError(
         err instanceof ApiError

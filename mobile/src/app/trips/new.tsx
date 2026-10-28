@@ -252,13 +252,15 @@ export default function TripWizardScreen() {
         return;
       }
 
+      // Chỉ đặt chuyến mới làm chuyến chính khi người dùng chưa có chuyến chính (V-18); không giật vị trí của chuyến gần hơn.
+      const hasMainTrip = (await fetchTrips().catch(() => null))?.data.some((trip) => trip.isCurrent) ?? false;
       const created = await createTrip(payload);
 
       // Chuyến vừa tạo vẫn được đặt làm chuyến đi chính theo hành vi hiện tại.
       // Màn Home/Trips sẽ ưu tiên hiển thị chuyến đang diễn ra theo ngày; nếu
       // không có chuyến đang diễn ra thì mới ưu tiên chuyến sắp tới.
       try {
-        await setCurrentTrip(created.data.id);
+        if (!hasMainTrip) await setCurrentTrip(created.data.id);
       } catch (currentError) {
         await queryClient.invalidateQueries({ queryKey: ['trips'] });
         Alert.alert(
@@ -611,7 +613,7 @@ export default function TripWizardScreen() {
               </View>
               <View className="mt-3 flex-row" style={{ gap: 8 }}>
                 <Badge label={`${tripDurationDays(state.range.start, state.range.end)} ngày`} tone="info" />
-                <Badge label={editingTripId ? (tripToEdit?.isCurrent ? 'Chuyến đi chính' : 'Đang chỉnh sửa') : 'Sẽ là chuyến đi chính'} tone="success" />
+                <Badge label={editingTripId ? (tripToEdit?.isCurrent ? 'Chuyến đi chính' : 'Đang chỉnh sửa') : 'Chuyến đi mới'} tone="success" />
               </View>
             </View>
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
+import { enterApp } from '@/lib/navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Check, ArrowRight } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
@@ -62,7 +63,7 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register(name, email, password, phone.trim());
-      router.replace('/trips/new?step=1');
+      enterApp('/trips/new?step=1' as never);
     } catch (err) {
       setError(
         err instanceof ApiError
