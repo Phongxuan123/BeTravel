@@ -26,9 +26,9 @@ const SEVERITY_META: Record<
   NonNullable<Alert['severity']>,
   { label: string; badge: BadgeTone; cardClass: string; textClass: string }
 > = {
-  danger: { label: 'Nguy hiểm', badge: 'danger', cardClass: 'border-danger-line bg-danger-tint', textClass: 'text-danger' },
+  danger: { label: 'Nguy hiểm', badge: 'danger', cardClass: 'border-danger-line bg-danger-tint', textClass: 'text-danger-strong' },
   warn: { label: 'Cảnh báo', badge: 'warning', cardClass: 'border-cream-line bg-warning-tint', textClass: 'text-warning-strong' },
-  info: { label: 'Thông tin', badge: 'info', cardClass: 'border-line bg-surface', textClass: 'text-primary' },
+  info: { label: 'Thông tin', badge: 'info', cardClass: 'border-line bg-surface', textClass: 'text-primary-strong' },
 };
 
 const FILTERS: { key: 'all' | Alert['category']; label: string }[] = [
@@ -105,7 +105,7 @@ export default function AlertsScreen() {
         subtitle="Cảnh báo pháp lý và an toàn theo thời gian thực"
         right={
           <Pressable accessibilityRole="button" onPress={onReadAll} className="min-h-[44px] justify-center rounded-2xl bg-primary-soft px-3">
-            <Text className="text-[13px] font-body-bold text-primary" numberOfLines={1}>
+            <Text className="text-[13px] font-body-bold text-primary-strong" numberOfLines={1}>
               Đọc tất cả
             </Text>
           </Pressable>
@@ -135,7 +135,7 @@ export default function AlertsScreen() {
         }
       >
         {alertsQuery.isLoading && <Text className="mt-8 text-center text-sm text-muted">Đang tải…</Text>}
-        {alertsQuery.isError && <Text className="mt-8 text-center text-sm text-danger">Không tải được cảnh báo. Kiểm tra kết nối mạng.</Text>}
+        {alertsQuery.isError && <Text className="mt-8 text-center text-sm text-danger-strong">Không tải được cảnh báo. Kiểm tra kết nối mạng.</Text>}
         {!alertsQuery.isLoading && !alertsQuery.isError && alerts.length === 0 && (
           <Text className="mt-8 text-center text-sm text-muted">Không có cảnh báo nào.</Text>
         )}

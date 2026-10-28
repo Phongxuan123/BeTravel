@@ -34,7 +34,9 @@ import { isFeatureDisabledError } from '@/lib/api/http';
 import { formatTripRange } from '@/lib/format';
 import type { Alert } from '@/lib/data';
 import { now, daysBetween, parseISODate } from '@/lib/date';
-import { activeStop } from '@/features/trips/itinerary';
+import { CountryFlag } from '@/components/brand/CountryFlag';
+import { AU_COUNTRY_CODE } from '@/lib/api/auLaws';
+import { activeStop, pickCurrentTrip } from '@/features/trips/itinerary';
 
 export default function HomeScreen() {
   const bottomPadding = useAppShellBottomPadding();
@@ -53,29 +55,7 @@ export default function HomeScreen() {
 
   const trips = tripsQuery.data?.data ?? [];
   const today = now();
-  const ongoingTrips = trips.filter((trip) => {
-    const start = parseISODate(trip.startDate);
-    const end = parseISODate(trip.endDate);
-    return today >= start && today <= end;
-  });
-  const upcomingTrips = trips
-    .filter((trip) => today < parseISODate(trip.startDate))
-    .sort((a, b) => parseISODate(a.startDate).getTime() - parseISODate(b.startDate).getTime());
-  const pastTrips = trips
-    .filter((trip) => today > parseISODate(trip.endDate))
-    .sort((a, b) => parseISODate(b.endDate).getTime() - parseISODate(a.endDate).getTime());
-
-  // Ưu tiên đúng theo trạng thái thời gian: chuyến đang diễn ra trước. Nếu
-  // không có chuyến nào đang diễn ra thì hiển thị chuyến sắp tới gần nhất.
-  // isCurrent chỉ dùng làm tie-breaker trong cùng một nhóm, không được khiến
-  // một chuyến tương lai che mất chuyến đang diễn ra.
-  const currentTrip =
-    ongoingTrips.find((trip) => trip.isCurrent) ??
-    ongoingTrips[0] ??
-    upcomingTrips.find((trip) => trip.isCurrent) ??
-    upcomingTrips[0] ??
-    pastTrips.find((trip) => trip.isCurrent) ??
-    pastTrips[0];
+  const currentTrip = pickCurrentTrip(trips, today);
 
   const currentStop = currentTrip ? activeStop(currentTrip) : null;
   const countryCode = currentStop?.countryCode ?? selectedCountryCode;
@@ -104,7 +84,7 @@ export default function HomeScreen() {
         <View className="mb-4"><Logo size={36} textSize={20} /></View>
         {(tripsQuery.isError || (articlesQuery.isError && !articlesDisabled)) && (
           <View className="mb-3 rounded-md bg-danger-tint p-3">
-            <Text className="text-center text-sm text-danger">Không tải được một số dữ liệu. Kiểm tra kết nối mạng.</Text>
+            <Text className="text-center text-sm text-danger-strong">Không tải được một số dữ liệu. Kiểm tra kết nối mạng.</Text>
           </View>
         )}
 
@@ -126,9 +106,10 @@ export default function HomeScreen() {
                 onPress={() => router.push(changeCountryHref as never)}
                 className="mt-0.5 flex-row items-center"
                 style={{ gap: 4 }}
+                hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
               >
-                <Text className="font-mono-bold text-[10px] text-primary">{countryCode}</Text>
-                <Text className="text-[13px] font-body-bold text-primary" numberOfLines={1}>
+                <CountryFlag code={countryCode} width={18} height={13} />
+                <Text className="text-[13px] font-body-bold text-primary-strong" numberOfLines={1}>
                   Điểm đến: {country?.name}
                 </Text>
                 <ChevronRight size={14} color={colors.primary} />
@@ -194,7 +175,7 @@ export default function HomeScreen() {
         <View className="mt-6 flex-row items-center justify-between">
           <Text className="text-base font-display text-ink">Thao tác nhanh</Text>
           <Pressable accessibilityRole="button" onPress={() => router.push('/incidents')} className="flex-row items-center" style={{ gap: 4 }}>
-            <Text className="text-[13px] font-body-bold text-primary">Báo cáo sự cố</Text>
+            <Text className="text-[13px] font-body-bold text-primary-strong">Báo cáo sự cố</Text>
             <ArrowRight size={14} color={colors.primary} />
           </Pressable>
         </View>
@@ -214,7 +195,7 @@ export default function HomeScreen() {
         <View className="mt-3 flex-row" style={{ gap: 10 }}>
           <ShortcutCard
             title="Gặp sự cố khẩn cấp?"
-            subtitle="Quy trình 5 bước xử lý"
+            subtitle="Hướng dẫn xử lý từng bước"
             icon={<Siren size={18} color={colors.danger} />}
             onPress={() => router.push('/incidents')}
           />
@@ -254,7 +235,17 @@ export default function HomeScreen() {
                 <Skeleton className="h-[66px] rounded-lg" />
               </>
             ) : !articlesQuery.isError && (articlesQuery.data?.data.length ?? 0) === 0 ? (
-              <Text className="text-sm text-muted">Chưa có quy định đã được duyệt cho quốc gia này. Trong lúc chờ, bạn vẫn dùng được SOS, dịch nhanh và hướng dẫn xử lý sự cố.</Text>
+              countryCode === AU_COUNTRY_CODE ? (
+                // Úc dùng bộ luật liên bang riêng (màn /laws) thay cho bài viết đã duyệt: không báo "chưa có quy định" (BUG-06).
+                <ListRow
+                  icon={<IconTile tone="blue"><FileText size={20} color={colors.primary} /></IconTile>}
+                  title="Luật liên bang Úc"
+                  subtitle="Tra cứu văn bản luật gốc theo chủ đề"
+                  onPress={() => router.push('/laws' as never)}
+                />
+              ) : (
+                <Text className="text-sm text-muted">Chưa có quy định đã được duyệt cho quốc gia này. Trong lúc chờ, bạn vẫn dùng được SOS, dịch nhanh và hướng dẫn xử lý sự cố.</Text>
+              )
             ) : (
               articlesQuery.data?.data.slice(0, 3).map((a) => (
                 <ListRow
@@ -319,7 +310,7 @@ function HomeAlertCard({ alert, onPress }: { alert: Alert; onPress: () => void }
       onPress={onPress}
       className="rounded-2xl border border-danger-line bg-danger-tint p-4"
     >
-      <Text className="text-[11px] font-body-bold text-danger" numberOfLines={2}>
+      <Text className="text-[11px] font-body-bold text-danger-strong" numberOfLines={2}>
         ● {ALERT_CATEGORY_LABEL[alert.category]} · {alert.meta}
       </Text>
       <Text className="mt-1.5 text-[15px] font-body-bold text-ink">{alert.title}</Text>
@@ -374,10 +365,10 @@ function CurrentTripCard({
 
       <View className="flex-row items-start" style={{ gap: 12 }}>
         <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white/15">
-          <Text className="font-mono-bold text-lg text-white">{countryCode}</Text>
+          <CountryFlag code={countryCode} width={36} height={26} />
         </View>
         <View className="flex-1">
-          <View className="flex-row items-center" style={{ gap: 6 }}>
+          <View className="flex-row flex-wrap items-center" style={{ columnGap: 6, rowGap: 2 }}>
             <Text className="text-[11px] font-body-bold text-primary-soft">Quốc gia hiện tại</Text>
             <Text className="text-[11px] font-body-bold" style={{ color: statusColor }}>● {statusLabel}</Text>
           </View>
@@ -389,7 +380,7 @@ function CurrentTripCard({
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push(changeCountryHref as never)}
-          className="min-h-[36px] justify-center rounded-full bg-white/20 px-3"
+          className="min-h-[44px] shrink-0 justify-center rounded-full bg-white/20 px-3"
         >
           <Text className="text-xs font-body-bold text-white">Đổi nước</Text>
         </Pressable>
@@ -448,7 +439,7 @@ function QuickTile({
         {icon}
       </View>
       <Text
-        className={`text-center text-[12px] font-body-bold ${danger ? 'text-danger' : 'text-ink'}`}
+        className={`text-center text-[12px] font-body-bold ${danger ? 'text-danger-strong' : 'text-ink'}`}
         numberOfLines={2}
       >
         {label}

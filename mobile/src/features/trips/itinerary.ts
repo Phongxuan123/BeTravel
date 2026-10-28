@@ -1,5 +1,5 @@
 import type { Trip, TripStop } from '@/lib/data';
-import { now } from '@/lib/date';
+import { now, parseISODate } from '@/lib/date';
 
 export function tripStops(trip: Trip): TripStop[] {
   return trip.stops?.length ? trip.stops : [{ countryCode: trip.countryCode,
@@ -29,4 +29,24 @@ export function itineraryError(stops: TripStop[], start: string, end: string): s
     if (!stop.countryCode || !stop.destinationCity.trim()) return `Chọn quốc gia và thành phố cho chặng ${i + 1}.`;
   }
   return null;
+}
+
+/**
+ * Chuyến "hiện tại" dùng chung cho Home và CountryProvider (BUG-17): ưu tiên đúng theo trạng
+ * thái thời gian, chuyến đang diễn ra trước, rồi sắp tới gần nhất, rồi đã qua gần nhất.
+ * isCurrent chỉ là tie-breaker trong cùng một nhóm, không để chuyến tương lai che chuyến đang đi.
+ */
+export function pickCurrentTrip(trips: Trip[], today = now()): Trip | undefined {
+  const ongoing = trips.filter((trip) => today >= parseISODate(trip.startDate) && today <= parseISODate(trip.endDate));
+  const upcoming = trips
+    .filter((trip) => today < parseISODate(trip.startDate))
+    .sort((a, b) => parseISODate(a.startDate).getTime() - parseISODate(b.startDate).getTime());
+  const past = trips
+    .filter((trip) => today > parseISODate(trip.endDate))
+    .sort((a, b) => parseISODate(b.endDate).getTime() - parseISODate(a.endDate).getTime());
+  return (
+    ongoing.find((trip) => trip.isCurrent) ?? ongoing[0] ??
+    upcoming.find((trip) => trip.isCurrent) ?? upcoming[0] ??
+    past.find((trip) => trip.isCurrent) ?? past[0]
+  );
 }

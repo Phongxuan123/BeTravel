@@ -143,7 +143,7 @@ export default function TripsScreen() {
       >
         {tripsQuery.isError && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-center text-sm text-danger">
+            <Text className="text-center text-sm text-danger-strong">
               Không tải được danh sách chuyến đi. Kiểm tra kết nối mạng.
             </Text>
           </View>
@@ -257,14 +257,14 @@ function OngoingTripCard({
           className="h-[46px] flex-1 items-center justify-center rounded-md bg-danger-soft"
           onPress={() => router.push('/sos')}
         >
-          <Text className="font-body-bold text-danger">Số khẩn cấp</Text>
+          <Text className="font-body-bold text-danger-strong">Số khẩn cấp</Text>
         </Pressable>
       </View>
 
       <View className="mt-3 flex-row items-center justify-end" style={{ gap: 10 }}>
         {!trip.isCurrent && (
           <Pressable onPress={() => onSetCurrent(trip.id)} className="rounded-md bg-success-soft px-3 py-2">
-            <Text className="text-sm font-body-bold text-success">Đặt làm chính</Text>
+            <Text className="text-sm font-body-bold text-success-strong">Đặt làm chính</Text>
           </Pressable>
         )}
         <ActionButton label="Sửa" icon={<Pencil size={15} color={colors.primary} />} onPress={() => onEdit(trip.id)} />
@@ -325,7 +325,7 @@ function SimpleTripCard({
       <View className="mt-3 flex-row items-center justify-end" style={{ gap: 10 }}>
         {!!onSetCurrent && !trip.isCurrent && (
           <Pressable onPress={() => onSetCurrent(trip.id)} className="rounded-md bg-success-soft px-3 py-2">
-            <Text className="text-sm font-body-bold text-success">Đặt làm chính</Text>
+            <Text className="text-sm font-body-bold text-success-strong">Đặt làm chính</Text>
           </Pressable>
         )}
         <ActionButton label="Sửa" icon={<Pencil size={15} color={colors.primary} />} onPress={() => onEdit(trip.id)} />
@@ -357,7 +357,7 @@ function ActionButton({
       style={{ gap: 6 }}
     >
       {icon}
-      <Text className={`text-sm font-body-bold ${danger ? 'text-danger' : 'text-primary'}`}>{label}</Text>
+      <Text className={`text-sm font-body-bold ${danger ? 'text-danger-strong' : 'text-primary-strong'}`}>{label}</Text>
     </Pressable>
   );
 }

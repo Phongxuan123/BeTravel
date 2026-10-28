@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard } from 'react-native';
+import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard, useWindowDimensions } from 'react-native';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe, MapPin, X } from 'lucide-react-native';
+import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe, MapPin, X, ChevronUp, ChevronDown } from 'lucide-react-native';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -140,8 +140,11 @@ export default function SosMapScreen() {
   const mapRef = useRef<MapHandle>(null);
   const mounted = useRef(true);
   const locatingRef = useRef(false);
+  // Danh sách địa điểm có hai nấc chiều cao: 320dp mặc định, 70% màn hình khi mở rộng (V-20).
+  const { height: windowHeight } = useWindowDimensions();
+  const [sheetExpanded, setSheetExpanded] = useState(false);
   const runtime = mapRuntime(Platform.OS, Constants.executionEnvironment, Constants.expoConfig?.extra);
-  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES) === 'osm';
+  const osmTiles = mapTiles(Platform.OS, Constants.executionEnvironment, process.env.EXPO_PUBLIC_MAP_TILES, runtime.available) === 'osm';
   // Chế độ OSM (WebView) không cần key Google nên luôn vẽ được bản đồ khi có Internet.
   const canRenderMap = osmTiles || runtime.available;
   // Bắt buộc hiện khi danh sách là nội dung duy nhất (chế độ danh sách, không vẽ được bản đồ) hoặc có lỗi cần người dùng thấy (thiếu quốc gia).
@@ -433,7 +436,7 @@ export default function SosMapScreen() {
               )}
               {canSearchPlaces && !isTypingPending && placesQuery.isError && (
                 <Pressable accessibilityLabel="Thử tìm lại địa điểm" onPress={() => void placesQuery.refetch()}>
-                  <Text className="px-4 pb-3 text-sm text-danger">
+                  <Text className="px-4 pb-3 text-sm text-danger-strong">
                     Chưa tìm được địa điểm lúc này. Chạm để thử lại, hoặc giữ lâu trên bản đồ để chọn vị trí.
                   </Text>
                 </Pressable>
@@ -482,37 +485,37 @@ export default function SosMapScreen() {
         {!searchPanelOpen && <View className="mt-2 flex-row flex-wrap" style={{ gap: 8 }}>
           <Pressable accessibilityLabel="Lấy vị trí hiện tại" disabled={locating} onPress={() => void locate()}
             className="rounded-full bg-surface px-3 py-2">
-            <Text className="text-sm text-primary">{locating ? 'Đang định vị...' : 'Vị trí của tôi'}</Text>
+            <Text className="text-sm text-primary-strong">{locating ? 'Đang định vị...' : 'Vị trí của tôi'}</Text>
           </Pressable>
           {canRenderMap && <Pressable onPress={() => listOnly ? restartMap() : setListOnly(true)} className="rounded-full bg-surface px-3 py-2">
-            <Text className="text-sm text-primary">{listOnly ? mapTimedOut ? 'Thử tải lại bản đồ' : 'Xem bản đồ' : 'Xem danh sách'}</Text>
+            <Text className="text-sm text-primary-strong">{listOnly ? mapTimedOut ? 'Thử tải lại bản đồ' : 'Xem bản đồ' : 'Xem danh sách'}</Text>
           </Pressable>}
           {canRenderMap && !listOnly && <>
             <Pressable accessibilityLabel="Đưa bản đồ về tâm" disabled={!mapReady}
               onPress={() => mapRef.current?.animateToRegion(region, 400)} className="rounded-full bg-surface px-3 py-2">
-              <Text className="text-sm text-primary">Về tâm bản đồ</Text>
+              <Text className="text-sm text-primary-strong">Về tâm bản đồ</Text>
             </Pressable>
             {!osmTiles && <Pressable accessibilityLabel="Chế độ vệ tinh" accessibilityState={{ selected: mapType === 'hybrid' }}
               onPress={() => setMapType((type) => type === 'standard' ? 'hybrid' : 'standard')}
               className={`rounded-full px-3 py-2 ${mapType === 'hybrid' ? 'bg-primary' : 'bg-surface'}`}>
-              <Text className={mapType === 'hybrid' ? 'text-sm text-white' : 'text-sm text-primary'}>Vệ tinh</Text>
+              <Text className={mapType === 'hybrid' ? 'text-sm text-white' : 'text-sm text-primary-strong'}>Vệ tinh</Text>
             </Pressable>}
           </>}
           {canRenderMap && !listOnly && locations.length > 0 && <Pressable
             onPress={() => mapRef.current?.fitToCoordinates(locations.map((loc) => ({ latitude: loc.lat, longitude: loc.lng })),
               { edgePadding: { top: 220, right: 40, bottom: 340, left: 40 }, animated: true })}
             className="rounded-full bg-surface px-3 py-2">
-            <Text className="text-sm text-primary">Xem các điểm</Text>
+            <Text className="text-sm text-primary-strong">Xem các điểm</Text>
           </Pressable>}
           {canQueryExternal && <Pressable accessibilityLabel="Hiện gợi ý thêm chưa xác minh"
             accessibilityState={{ selected: showExternal }} onPress={() => setShowExternal((value) => !value)}
             className={`rounded-full px-3 py-2 ${showExternal ? 'bg-primary' : 'bg-surface'}`}>
-            <Text className={showExternal ? 'text-sm text-white' : 'text-sm text-primary'}>Gợi ý thêm (chưa xác minh)</Text>
+            <Text className={showExternal ? 'text-sm text-white' : 'text-sm text-primary-strong'}>Gợi ý thêm (chưa xác minh)</Text>
           </Pressable>}
           {origin && MAP_RADIUS_OPTIONS.map((radius) => <Pressable key={radius}
             accessibilityLabel={`Bán kính ${radius} km`} accessibilityState={{ selected: radiusKm === radius }}
             onPress={() => setRadiusKm(radius)} className={`rounded-full px-3 py-2 ${radiusKm === radius ? 'bg-primary' : 'bg-surface'}`}>
-            <Text className={`text-sm ${radiusKm === radius ? 'text-white' : 'text-primary'}`}>{radius} km</Text>
+            <Text className={`text-sm ${radiusKm === radius ? 'text-white' : 'text-primary-strong'}`}>{radius} km</Text>
           </Pressable>)}
         </View>}
         {picked && !searchPanelOpen && (
@@ -556,7 +559,7 @@ export default function SosMapScreen() {
           <Pressable accessibilityLabel="Mở danh sách địa điểm" onPress={openSheet}
             className="rounded-full bg-surface px-4 py-3"
             style={{ shadowColor: '#102A43', shadowOpacity: 0.15, shadowRadius: 10, elevation: 4 }}>
-            <Text className={`text-sm font-body-bold ${activeQuery.isError ? 'text-danger' : 'text-ink'}`}>
+            <Text className={`text-sm font-body-bold ${activeQuery.isError ? 'text-danger-strong' : 'text-ink'}`}>
               {activeQuery.isError ? 'Không tải được danh sách. Chạm để mở'
                 : activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh · Xem danh sách`}
             </Text>
@@ -566,7 +569,7 @@ export default function SosMapScreen() {
 
       {showSheet && <Animated.View
         style={{ position: 'absolute', left: 0, right: 0, bottom: 0, borderTopLeftRadius: 28, borderTopRightRadius: 28,
-          backgroundColor: colors.surface, maxHeight: 320, paddingBottom: insets.bottom + 16, transform: [{ translateY: sheetOffset }] }}>
+          backgroundColor: colors.surface, maxHeight: sheetExpanded ? Math.round(windowHeight * 0.7) : 320, paddingBottom: insets.bottom + 16, transform: [{ translateY: sheetOffset }] }}>
         <View {...(listOnly ? {} : swipeHandlers)}>
         {listOnly ? (
           <View className="items-center py-2.5">
@@ -583,6 +586,10 @@ export default function SosMapScreen() {
             {activeQuery.isLoading ? 'Đang tìm...' : `${locations.length} địa điểm đã xác minh`}
           </Text>
           <Text className="ml-2 flex-1 text-right text-sm text-muted">{gpsFailure ? 'GPS không khả dụng' : country?.name}</Text>
+          <Pressable accessibilityLabel={sheetExpanded ? 'Thu gọn danh sách' : 'Mở rộng danh sách'} hitSlop={10} onPress={() => setSheetExpanded((open) => !open)}
+            className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">
+            {sheetExpanded ? <ChevronDown size={18} color={colors.ink} /> : <ChevronUp size={18} color={colors.ink} />}
+          </Pressable>
           {!listOnly && (
             <Pressable accessibilityLabel="Đóng danh sách địa điểm" hitSlop={10} onPress={closeSheet}
               className="ml-3 h-9 w-9 items-center justify-center rounded-full bg-primary-soft">
@@ -602,7 +609,7 @@ export default function SosMapScreen() {
             </Text>
             {(gpsFailure === 'denied' || gpsFailure === 'services-off') && (
               <Pressable accessibilityLabel="Mở cài đặt vị trí" onPress={() => void Linking.openSettings()}>
-                <Text className="text-sm font-body-bold text-primary">Mở Cài đặt</Text>
+                <Text className="text-sm font-body-bold text-primary-strong">Mở Cài đặt</Text>
               </Pressable>
             )}
             <Text className="text-sm text-muted">
@@ -612,7 +619,7 @@ export default function SosMapScreen() {
         )}
         {origin && (
           <Text className="mt-2 px-[18px] text-xs text-muted">
-            {picked ? `Khoảng cách đường chim bay từ ${picked.label}.` : 'Khoảng cách đường chim bay từ lần đo gần nhất'}
+            {picked ? `Khoảng cách đường chim bay từ ${picked.label}.` : 'Khoảng cách đường chim bay từ lần đo gần nhất.'}
             {picked ? '' : staleFixNotice(measuredAt)}
             {` Không có điểm trong ${radiusKm} km sẽ mở rộng toàn quốc.`}
             {picked ? '' : ' Bấm Vị trí của tôi để cập nhật.'}
@@ -620,7 +627,7 @@ export default function SosMapScreen() {
         )}
         {activeQuery.isError && (
           <Pressable accessibilityLabel="Thử tải lại địa điểm" onPress={() => void activeQuery.refetch()}>
-            <Text className="mt-2 px-[18px] text-sm text-danger">Không tải được danh sách. Chạm để thử lại.</Text>
+            <Text className="mt-2 px-[18px] text-sm text-danger-strong">Không tải được danh sách. Chạm để thử lại.</Text>
           </Pressable>
         )}
         {/* Đặt ngoài ScrollView: khi danh sách rỗng, ScrollView trong sheet maxHeight co về 0 và
@@ -680,7 +687,7 @@ export default function SosMapScreen() {
               </Text>
               {externalQuery.isLoading && <Text className="text-sm text-muted">Đang tìm gợi ý...</Text>}
               {externalQuery.isError && <Pressable accessibilityLabel="Thử tải lại gợi ý" onPress={() => void externalQuery.refetch()}>
-                <Text className="text-sm text-danger">Nguồn địa điểm chưa phản hồi. Chạm để thử lại; chưa thể kết luận không có đại sứ quán hoặc địa điểm.</Text>
+                <Text className="text-sm text-danger-strong">Nguồn địa điểm chưa phản hồi. Chạm để thử lại; chưa thể kết luận không có đại sứ quán hoặc địa điểm.</Text>
               </Pressable>}
               {!externalQuery.isLoading && !externalQuery.isError && externalPlaces.length === 0 && (
                 <Text className="text-sm text-muted">Không có gợi ý nào gần đây.</Text>
@@ -749,7 +756,7 @@ export default function SosMapScreen() {
             {!!detail.website && (
               <View className="flex-row items-center" style={{ gap: 8 }}>
                 <Globe size={16} color={colors.muted} />
-                <Text className="flex-1 text-sm text-primary" numberOfLines={1} onPress={() => void openUrl(detail.website!)}>
+                <Text className="flex-1 text-sm text-primary-strong" numberOfLines={1} onPress={() => void openUrl(detail.website!)}>
                   {detail.website}
                 </Text>
               </View>

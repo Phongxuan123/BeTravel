@@ -143,7 +143,7 @@ test('API lỗi có nút thử lại; thiếu quốc gia hiện hướng dẫn',
   expect(screen.getByText(/Chưa tải được quốc gia/)).toBeTruthy();
 });
 
-test('Android thiếu key hiển thị danh sách và giữ thao tác chi tiết', async () => {
+test('Android thiếu key rơi về bản đồ OSM, không còn màn chưa cấu hình', async () => {
   // Jest preset chọn iOS; đổi OS trong test này để kiểm tra guard native Android.
   const { Platform } = jest.requireActual('react-native');
   const previous = Platform.OS;
@@ -152,8 +152,7 @@ test('Android thiếu key hiển thị danh sách và giữ thao tác chi tiết
     expect(Constants.expoConfig?.extra?.androidMapsConfigured).toBeUndefined();
     const screen = await render(<SosMapScreen />, { wrapper: wrapper() });
     expect(screen.queryByTestId('native-map')).toBeNull();
-    expect(screen.getByText(/Bản đồ chưa được cấu hình/)).toBeTruthy();
-    await waitFor(() => expect(screen.getByLabelText(`Xem chi tiết ${point.name}`)).toBeTruthy());
+    expect(screen.queryByText(/Bản đồ chưa được cấu hình/)).toBeNull();
   } finally { Platform.OS = previous; }
 });
 

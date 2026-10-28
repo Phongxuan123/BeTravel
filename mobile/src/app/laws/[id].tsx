@@ -38,7 +38,7 @@ export default function AustraliaLawDetailScreen() {
 
         {lawQuery.isLoading && <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>}
         {lawQuery.isError && (
-          <Text className="py-6 text-center text-sm text-danger">Không tải được văn bản. Kiểm tra kết nối mạng.</Text>
+          <Text className="py-6 text-center text-sm text-danger-strong">Không tải được văn bản. Kiểm tra kết nối mạng.</Text>
         )}
 
         {law && (
@@ -107,16 +107,23 @@ function ContentViewer({ id, translate }: { id: string; translate: boolean }) {
       const nextOffset = last.offset + AU_LAW_CONTENT_PAGE_SIZE;
       return nextOffset < last.totalBlocks ? nextOffset : undefined;
     },
-    retry: false,
+    // Lần dịch đầu có thể hỏng ở cụm khối đầu tiên; tự thử lại một lần sau 3 giây trước khi báo lỗi (BUG-07).
+    retry: translate ? 1 : false,
+    retryDelay: 3000,
   });
 
   if (contentQuery.isLoading) {
     return <Text className="py-6 text-center text-sm text-muted">
-        {translate ? 'Đang dịch sang tiếng Việt (lần đầu có thể mất vài chục giây)…' : 'Đang tải văn bản (lần đầu có thể mất vài giây)…'}
+        {translate ? 'Đang dịch sang tiếng Việt, lần đầu có thể mất khoảng 30 giây…' : 'Đang tải văn bản (lần đầu có thể mất vài giây)…'}
       </Text>;
   }
   if (contentQuery.isError) {
-    return <Text className="py-6 text-center text-sm text-danger">{translate ? 'Chưa dịch được lúc này. Thử lại sau hoặc xem bản gốc.' : 'Không tải được nội dung. Thử lại sau.'}</Text>;
+    return (
+      <View className="items-center py-6" style={{ gap: 12 }}>
+        <Text className="text-center text-sm text-danger-strong">{translate ? 'Chưa dịch được lúc này. Bấm Thử lại hoặc xem bản chính thức.' : 'Không tải được nội dung. Thử lại sau.'}</Text>
+        <Button label="Thử lại" variant="secondary" onPress={() => contentQuery.refetch()} />
+      </View>
+    );
   }
 
   const blocks = contentQuery.data?.pages.flatMap((page) => page.blocks) ?? [];

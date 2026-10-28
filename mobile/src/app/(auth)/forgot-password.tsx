@@ -172,7 +172,7 @@ export default function ForgotPasswordScreen() {
             />
             {error && (
               <View className="rounded-md bg-danger-tint p-3">
-                <Text className="text-sm text-danger">{error}</Text>
+                <Text className="text-sm text-danger-strong">{error}</Text>
               </View>
             )}
             <Button label="Gửi mã OTP" onPress={sendOtp} loading={loading} />
@@ -203,7 +203,7 @@ export default function ForgotPasswordScreen() {
             )}
             {error && (
               <View className="rounded-md bg-danger-tint p-3">
-                <Text className="text-sm text-danger">{error}</Text>
+                <Text className="text-sm text-danger-strong">{error}</Text>
               </View>
             )}
             <Button label="Xác thực OTP" onPress={verifyOtp} loading={loading} disabled={otp.length !== 6} />
@@ -243,7 +243,7 @@ export default function ForgotPasswordScreen() {
             />
             {error && (
               <View className="rounded-md bg-danger-tint p-3">
-                <Text className="text-sm text-danger">{error}</Text>
+                <Text className="text-sm text-danger-strong">{error}</Text>
               </View>
             )}
             <Button
@@ -281,7 +281,7 @@ export default function ForgotPasswordScreen() {
         <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
           <Text className="text-muted">Nhớ ra mật khẩu rồi?</Text>
           <Pressable accessibilityRole="button" onPress={() => router.replace('/login')}>
-            <Text className="font-body-bold text-primary">Đăng nhập</Text>
+            <Text className="font-body-bold text-primary-strong">Đăng nhập</Text>
           </Pressable>
         </View>
       )}

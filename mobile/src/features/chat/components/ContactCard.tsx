@@ -34,7 +34,7 @@ export function ContactCard({ contact }: { contact?: ContactInfo | null }) {
           onPress={() => void openPhone(phone)}
         >
           <Phone size={16} color={colors.primary} />
-          <Text className="text-sm font-body-bold text-primary">{phone}</Text>
+          <Text className="text-sm font-body-bold text-primary-strong">{phone}</Text>
         </Pressable>
       ) : null}
     </View>

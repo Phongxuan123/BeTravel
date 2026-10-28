@@ -22,6 +22,9 @@ import {
   buildOutOfScopeAnswer,
   buildGreetingAnswer,
   PERSONAL_ADVICE_NOTICE,
+  DECEPTION_ADVICE_REASON,
+  DECEPTION_ADVICE_ANSWER,
+  EMERGENCY_HYPOTHETICAL_REASON,
   EMERGENCY_NO_EVIDENCE_NOTE,
 } from "../rag/scope.js";
 import { getLlmProvider, getWebSearchProvider } from "../rag/llm/index.js";
@@ -211,7 +214,7 @@ async function recordUserTurn(session, question) {
  * khác quốc gia, thiếu bằng chứng, hết quota trong ca khẩn cấp. Lưu cả tin nhắn lẫn
  * ai_event để thống kê đầy đủ.
  */
-async function replyWithoutLlm({
+async function replyWithoutLlmRaw({
   session,
   userId,
   question,
@@ -282,6 +285,11 @@ const emptyRetrieval = (topScore = 0) => ({ topScore, chunkIds: [], passed: fals
 // Khối khẩn cấp (nếu có) luôn đứng ĐẦU câu trả lời, trước mọi nội dung do AI viết.
 const withEmergencyNotice = (route, emergency, text) =>
   route === QuestionRoute.EMERGENCY ? `${emergency.text}\n\n${text}` : text;
+
+// Câu hỏi luật chứa từ khoá khẩn cấp (BUG-04): trả lời pháp lý bình thường, thêm khối số khẩn cấp ở CUỐI
+// để người đang gặp nạn vẫn thấy số gọi mà người hỏi luật không bị đẩy vào luồng khẩn cấp.
+const withHypotheticalNotice = (isHypothetical, emergency, text) =>
+  isHypothetical && !text.includes(emergency.text) ? `${text}\n\n${emergency.text}` : text;
 
 // Lỗi provider (hết quota, mạng, timeout) không được nuốt im lặng: ghi log ngắn, không kèm key.
 async function completeOrNull(llm, input) {
@@ -529,9 +537,22 @@ export const sendMessage = async ({
   const currentCountry = await Country.findOne({ code: countryCode }).lean();
   if (!currentCountry) throw new AppError(ErrorCode.VALIDATION_ERROR, "Quốc gia không tồn tại");
 
-  const { route } = classifyQuestion(question);
+  const { route, reason: routeReason } = classifyQuestion(question);
+  const isHypotheticalEmergency = routeReason === EMERGENCY_HYPOTHETICAL_REASON;
   const emergency = buildEmergencyNotice(currentCountry);
   const baseResult = { route, citations: [], retrieval: emptyRetrieval() };
+  // Câu hỏi luật chứa từ khoá khẩn cấp: mọi lời đáp do code soạn (thiếu nguồn, hết quota...) cũng kèm số khẩn cấp.
+  const replyWithoutLlm = (args) =>
+    replyWithoutLlmRaw({
+      ...args,
+      result: isHypotheticalEmergency
+        ? {
+            ...args.result,
+            answer: withHypotheticalNotice(true, emergency, args.result.answer),
+            needsOfficialHelp: true,
+          }
+        : args.result,
+    });
 
   // Ngoài phạm vi / chào hỏi: không gọi AI, không tốn lượt quota.
   if (NO_AI_ROUTES.has(route)) {
@@ -550,6 +571,25 @@ export const sendMessage = async ({
           : buildOutOfScopeAnswer(currentCountry.name),
         confidence: "high",
         needsOfficialHelp: false,
+        fallbackReason: FallbackReason.OUT_OF_SCOPE,
+      },
+    });
+  }
+
+  // Xin hướng dẫn gian dối: lời từ chối cố định do code soạn, không gọi AI (V-07).
+  if (routeReason === DECEPTION_ADVICE_REASON) {
+    await recordUserTurn(session, question);
+    return replyWithoutLlm({
+      session,
+      userId,
+      question,
+      startedAt,
+      embeddingModel: "none",
+      result: {
+        ...baseResult,
+        answer: `${DECEPTION_ADVICE_ANSWER}\n\n---\n${DEFAULT_DISCLAIMER}`,
+        confidence: "high",
+        needsOfficialHelp: true,
         fallbackReason: FallbackReason.OUT_OF_SCOPE,
       },
     });
@@ -716,7 +756,9 @@ export const sendMessage = async ({
   }
 
   // Cùng ý nhưng khác chữ với câu đã trả lời: dùng lại và trả lượt quota vừa cấp (không tốn tiền).
-  const similarRepeat = canRepeat ? await findSimilarRepeat({ countryCode, keywordTerms }) : null;
+  const similarRepeat = canRepeat
+    ? await findSimilarRepeat({ countryCode, keywordTerms, question })
+    : null;
   if (similarRepeat) {
     await releaseQuota(userId).catch((error) =>
       console.error("[chat] không trả lại được lượt quota:", error.message),
@@ -824,17 +866,22 @@ export const sendMessage = async ({
               ? QuestionRoute.OUT_OF_SCOPE
               : route,
           // AI tự báo không đủ dữ liệu: dùng lời từ chối có hướng dẫn như nhánh truy hồi thất bại.
-          answer: withEmergencyNotice(
-            route,
+          answer: withHypotheticalNotice(
+            isHypotheticalEmergency,
             emergency,
-            guarded.fallbackReason === FallbackReason.INSUFFICIENT_EVIDENCE
-              ? buildNoEvidenceAnswer({ question, countryCode, countryName: currentCountry.name })
-              : guarded.answer,
+            withEmergencyNotice(
+              route,
+              emergency,
+              guarded.fallbackReason === FallbackReason.INSUFFICIENT_EVIDENCE
+                ? buildNoEvidenceAnswer({ question, countryCode, countryName: currentCountry.name })
+                : guarded.answer,
+            ),
           ),
           sections: guarded.sections ?? null,
           citations: guarded.citations,
           confidence,
-          needsOfficialHelp: needsOfficialHelp || route === QuestionRoute.EMERGENCY,
+          needsOfficialHelp:
+            needsOfficialHelp || route === QuestionRoute.EMERGENCY || isHypotheticalEmergency,
           fallbackReason: guarded.fallbackReason,
           retrieval: retrievalMeta,
           usage,

@@ -40,6 +40,51 @@ const INJECTION_PHRASES = [
   "jailbreak",
 ];
 
+// Tín hiệu NGUY HIỂM ĐANG XẢY RA: luôn là khẩn cấp, kể cả khi câu có dạng "có ... không"
+// (BUG-04). Ví dụ người đang bị giật túi, bị theo dõi phải nhận số khẩn cấp ngay.
+const STRONG_EMERGENCY_PHRASES = [
+  "cứu tôi",
+  "cứu với",
+  "cứu mình",
+  "bị giật",
+  "giật túi",
+  "cướp giật",
+  "kẻ cướp",
+  "tên cướp",
+  "kẻ lạ",
+  "người lạ đi theo",
+  "đi theo tôi",
+  "đang theo tôi",
+  "bám theo",
+  "đuổi theo",
+  "đe dọa",
+  "đe doạ",
+  "quấy rối",
+  "xâm hại",
+  "bị đánh",
+  "bị hiếp",
+  "chảy máu",
+  "đau ngực",
+  "help me",
+];
+
+// Câu có dạng hỏi luật/giả định ("có bị ... không", "nếu", "mức phạt"): nếu chỉ khớp cụm khẩn cấp
+// thường thì đây là câu hỏi pháp lý chứ không phải người đang gặp nạn.
+const HYPOTHETICAL_MARKERS = [
+  "có bị",
+  "thì có",
+  "thì bị",
+  "nếu",
+  "bao lâu",
+  "mức phạt",
+  "bị phạt",
+  "có được",
+  "có phải",
+  "quy định",
+  "luật",
+  "hậu quả",
+];
+
 const EMERGENCY_PHRASES = [
   "tai nạn",
   "bị tấn công",
@@ -173,6 +218,10 @@ const OUT_OF_SCOPE_PHRASES = [
   "dịch giúp",
   "dịch sang",
   "công thức nấu",
+  "cách nấu",
+  "nấu ăn",
+  "nấu phở",
+  "công thức",
   "sức khỏe",
   "giảm cân",
   "chính trị",
@@ -214,6 +263,19 @@ const PERSONAL_ADVICE_PHRASES = [
   "trốn thuế",
 ];
 
+export const DECEPTION_ADVICE_REASON = "PERSONAL_ADVICE_DECEPTION";
+export const EMERGENCY_HYPOTHETICAL_REASON = "EMERGENCY_HYPOTHETICAL";
+
+// Xin tư vấn làm điều trái luật (khai gian, làm giả giấy tờ...): trả câu cố định do code soạn (V-07).
+const DECEPTION_PHRASES = [
+  "khai gian",
+  "khai man",
+  "khai sai sự thật",
+  "làm giả",
+  "giả mạo",
+  "giấu",
+];
+
 const hasAny = (question, phrases) => phrases.some((phrase) => containsPhrase(question, phrase));
 const wordCount = (text) => text.trim().split(/\s+/).filter(Boolean).length;
 
@@ -225,7 +287,14 @@ export function classifyQuestion(question) {
   if (hasAny(question, INJECTION_PHRASES)) {
     return { route: QuestionRoute.OUT_OF_SCOPE, reason: "PROMPT_INJECTION" };
   }
+  if (hasAny(question, STRONG_EMERGENCY_PHRASES)) {
+    return { route: QuestionRoute.EMERGENCY, reason: "EMERGENCY_STRONG_SIGNAL" };
+  }
   if (hasAny(question, EMERGENCY_PHRASES)) {
+    // Hỏi luật về tình huống giả định: trả lời pháp lý bình thường, chat.service gắn thêm khối số khẩn cấp.
+    if (hasAny(question, HYPOTHETICAL_MARKERS)) {
+      return { route: QuestionRoute.LEGAL, reason: EMERGENCY_HYPOTHETICAL_REASON };
+    }
     return { route: QuestionRoute.EMERGENCY, reason: "EMERGENCY_KEYWORD" };
   }
 
@@ -237,6 +306,9 @@ export function classifyQuestion(question) {
     return { route: QuestionRoute.GREETING, reason: "GREETING" };
   }
   if (hasAny(question, PERSONAL_ADVICE_PHRASES)) {
+    if (hasAny(question, DECEPTION_PHRASES)) {
+      return { route: QuestionRoute.PERSONAL_ADVICE, reason: DECEPTION_ADVICE_REASON };
+    }
     return { route: QuestionRoute.PERSONAL_ADVICE, reason: "PERSONAL_ADVICE_KEYWORD" };
   }
   return { route: QuestionRoute.LEGAL, reason: "DEFAULT" };
@@ -258,6 +330,14 @@ export const buildGreetingAnswer = (countryName) =>
 // Câu ranh giới cố định do code chèn, không để model tự viết (Đạt đề xuất, đã đối chiếu).
 export const PERSONAL_ADVICE_NOTICE =
   "Mình chỉ cung cấp thông tin từ nguồn đã có, không đánh giá tình huống cá nhân hay thay luật sư. " +
+  "Với trường hợp cụ thể, hãy liên hệ Đại sứ quán/Lãnh sự quán Việt Nam hoặc luật sư địa phương.";
+
+// Trả lời cố định cho câu xin hướng dẫn gian dối (khai gian, làm giả...). Không kèm con số hay mức phạt cụ thể.
+export const DECEPTION_ADVICE_ANSWER =
+  "Mình không hướng dẫn cách khai báo gian dối hay lách luật. Khai sai sự thật hoặc dùng giấy tờ giả " +
+  "thường bị coi là vi phạm nghiêm trọng và có thể dẫn tới bị từ chối hoặc huỷ thị thực, bị trục xuất " +
+  "hoặc bị truy cứu trách nhiệm theo luật nước sở tại.\n\n" +
+  'Bạn có thể hỏi mình quy định khai báo đúng là gì (ví dụ: "Hồ sơ visa cần khai những gì?"). ' +
   "Với trường hợp cụ thể, hãy liên hệ Đại sứ quán/Lãnh sự quán Việt Nam hoặc luật sư địa phương.";
 
 // Khi là ca khẩn cấp mà không có nguồn pháp lý phù hợp: số khẩn cấp đã là câu trả lời hữu ích nhất.

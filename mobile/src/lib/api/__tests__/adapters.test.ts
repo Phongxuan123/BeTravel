@@ -76,12 +76,21 @@ describe('adapters.ts chuyen du lieu API that sang dung shape man hinh dang dung
     expect(location.meta).toContain('450 m');
   });
 
+  it('adaptIncident them payload rong cho cta thieu payload (BUG-22)', () => {
+    const api = incidentFixture.data[0] as unknown as ApiIncident;
+    const cta = { type: 'call' as const, label: 'Goi' };
+    const incident = adaptIncident({ ...api, steps: [{ ...api.steps[0]!, ctas: [cta] }] });
+    const step = incident.steps[0];
+    expect(step).toBeDefined();
+    expect(step?.ctas?.[0]?.payload).toEqual({});
+  });
+
   it('adaptIncident(public.incident.json) khop incidentSchema, giu nguyen step.order/ctas', () => {
     const api = incidentFixture.data[0] as unknown as ApiIncident;
     const incident = adaptIncident(api);
     expect(incidentSchema.parse(incident)).toBeTruthy();
     expect(incident.countryCode).toBeNull();
     expect(incident.steps[0].order).toBe(0);
-    expect(incident.steps[0].ctas).toEqual([]);
+    expect(incident.steps[0].ctas).toEqual([{ type: 'call', label: 'Goi Dai su quan', payload: {} }]);
   });
 });

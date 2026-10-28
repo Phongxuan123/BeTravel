@@ -32,6 +32,8 @@ export default function SearchScreen() {
   const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
   // Gợi ý lấy theo chủ đề đang có bài, tránh gợi ý một câu mà kho chưa có bài nào trả lời (B16).
   const topicWithArticles = topicsQuery.data?.data.find((topic) => topic.count > 0);
+  // Gợi ý lấy từ chủ đề thật của quốc gia (chỉ chủ đề đã có bài), không cố định trong code (V-17).
+  const suggestionTopics = (topicsQuery.data?.data ?? []).filter((topic) => topic.count > 0).slice(0, 4);
   const searchPlaceholder = topicWithArticles
     ? `Ví dụ: ${topicWithArticles.label.toLowerCase()}`
     : 'Nhập từ khoá cần tìm';
@@ -70,7 +72,7 @@ export default function SearchScreen() {
             autoFocus
           />
           {query.length > 0 && (
-            <Pressable accessibilityLabel="Xoá" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center rounded-md bg-[#F3F4F6]">
+            <Pressable accessibilityLabel="Xóa" onPress={() => setQuery('')} className="h-11 w-11 items-center justify-center rounded-md bg-[#F3F4F6]">
               <X size={18} color={colors.muted} />
             </Pressable>
           )}
@@ -90,7 +92,7 @@ export default function SearchScreen() {
 
         {hasQuery && hasError && (
           <View className="rounded-md bg-danger-tint p-4">
-            <Text className="text-center text-sm text-danger">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
+            <Text className="text-center text-sm text-danger-strong">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
           </View>
         )}
 
@@ -103,7 +105,7 @@ export default function SearchScreen() {
               {results.map((r) => (
                 <Pressable key={r.id} className="rounded-2xl border border-line bg-surface p-4" onPress={() => router.push(`/explore/${r.countryCode}/${r.slug}` as never)}>
                   <View className="flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
-                    <Text className="text-xs font-body-bold text-primary">{country?.name}</Text>
+                    <Text className="text-xs font-body-bold text-primary-strong">{country?.name}</Text>
                     <Text className="text-xs text-muted">· {r.topicLabel}</Text>
                     <View className="flex-row items-center" style={{ gap: 3 }}>
                       <CircleCheck size={13} color={colors.successStrong} />
@@ -154,12 +156,16 @@ export default function SearchScreen() {
               <Button label="Xem tất cả chủ đề" variant="secondary" onPress={() => router.push('/explore')} />
             </EmptyState>
 
-            <Text className="mb-3 mt-4 text-sm font-body-bold text-ink">Từ khóa gợi ý</Text>
-            <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-              {['Thuốc mang theo người', 'Hàng cấm nhập cảnh', 'Khai báo hải quan'].map((s) => (
-                <QuickChip key={s} label={s} onPress={() => setQuery(s)} />
-              ))}
-            </View>
+            {suggestionTopics.length > 0 && (
+              <>
+                <Text className="mb-3 mt-4 text-sm font-body-bold text-ink">Từ khóa gợi ý</Text>
+                <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                  {suggestionTopics.map((topic) => (
+                    <QuickChip key={topic.key} label={topic.label} onPress={() => setQuery(topic.label)} />
+                  ))}
+                </View>
+              </>
+            )}
 
             <Text className="mb-3 mt-5 text-sm font-body-bold text-ink">Chủ đề phổ biến</Text>
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>

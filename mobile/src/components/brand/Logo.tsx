@@ -13,7 +13,7 @@ export function Logo({ size = 30, textSize = 20, tagline }: LogoProps) {
       />
       <View>
         <Text className="font-display text-ink" style={{ fontSize: textSize }}>
-          Be.<Text className="text-primary">Travel</Text>
+          Be.<Text className="text-primary-strong">Travel</Text>
         </Text>
         {tagline ? <Text className="text-[11px] text-muted">{tagline}</Text> : null}
       </View>

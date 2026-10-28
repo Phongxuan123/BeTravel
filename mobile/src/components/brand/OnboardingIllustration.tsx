@@ -6,7 +6,7 @@ import { colors } from '@/lib/theme';
 // Minh hoạ vẽ lại đơn giản hoá bằng SVG/icon (spec mục 6.1) — không dùng ảnh ngoài.
 export function OnboardingIllustration({ slide }: { slide: 1 | 2 | 3 | 4 }) {
   const size = 200;
-  const bg = slide === 1 ? '#FFFFFF' : slide === 4 ? '#FBEDED' : colors.primarySoft;
+  const bg = slide === 1 ? '#FFFFFF' : slide === 3 ? '#FBEDED' : colors.primarySoft;
 
   return (
     <View
@@ -27,8 +27,8 @@ export function OnboardingIllustration({ slide }: { slide: 1 | 2 | 3 | 4 }) {
         </View>
       )}
       {slide === 2 && <FileCheck2 color={colors.primary} size={96} strokeWidth={1.5} />}
-      {slide === 3 && <MessageCircle color={colors.primary} size={96} strokeWidth={1.5} />}
-      {slide === 4 && (
+      {slide === 4 && <MessageCircle color={colors.primary} size={96} strokeWidth={1.5} />}
+      {slide === 3 && (
         <View className="items-center justify-center">
           <View
             className="items-center justify-center rounded-full border-4 border-white"

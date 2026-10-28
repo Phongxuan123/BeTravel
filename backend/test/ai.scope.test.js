@@ -275,3 +275,17 @@ test("parseLlmJson: answerable=false cho phep answer rong, sai kieu thi bi tu ch
   assert.ok(parseLlmJson(JSON.stringify({ ...base, answerable: false, answer: "" })));
   assert.equal(parseLlmJson(JSON.stringify({ ...base, answerable: "no", answer: "A" })), null);
 });
+
+// Bộ câu vàng phân luồng (BUG-04, BUG-24, V-07): thêm câu mới vào test/golden/scope-vi.json.
+test("phan luong: bo cau vang scope-vi.json", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const golden = JSON.parse(
+    await readFile(new URL("./golden/scope-vi.json", import.meta.url), "utf8"),
+  );
+  assert.ok(golden.cases.length >= 40);
+  for (const { q, route, reason } of golden.cases) {
+    const actual = classifyQuestion(q);
+    assert.equal(actual.route, route, q);
+    if (reason) assert.equal(actual.reason, reason, q);
+  }
+});

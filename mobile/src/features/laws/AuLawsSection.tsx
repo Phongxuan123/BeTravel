@@ -22,7 +22,7 @@ export function AuLawsSection() {
         <Text className="text-xs text-warning-strong">{AU_SCOPE_NOTICE}</Text>
       </View>
       {topicsQuery.isLoading && <Text className="text-sm text-muted">Đang tải…</Text>}
-      {topicsQuery.isError && <Text className="text-sm text-danger">Không tải được luật Úc. Kiểm tra kết nối mạng.</Text>}
+      {topicsQuery.isError && <Text className="text-sm text-danger-strong">Không tải được luật Úc. Kiểm tra kết nối mạng.</Text>}
       {topicsQuery.data?.map((topic) => (
         <Pressable
           key={topic.slug}
@@ -36,7 +36,7 @@ export function AuLawsSection() {
               <Text className="text-xs text-muted" numberOfLines={2}>
                 {topic.note}
               </Text>
-              <Text className="text-xs font-body-semibold text-primary">{topic.lawCount} văn bản</Text>
+              <Text className="text-xs font-body-semibold text-primary-strong">{topic.lawCount} văn bản</Text>
             </View>
             <ChevronRight size={20} color={colors.muted} />
           </View>

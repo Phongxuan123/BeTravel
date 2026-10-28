@@ -188,7 +188,7 @@ test("chao hoi: tra loi gioi thieu bang code, khong ton quota", async () => {
 test("khan cap: so khan cap tu du lieu quoc gia dung dau cau tra loi, needsOfficialHelp bat", async () => {
   await seed();
   const user = await createUser();
-  const { message } = await ask(user, "Vượt đèn đỏ gây tai nạn bị phạt bao nhiêu?");
+  const { message } = await ask(user, "Vượt đèn đỏ gây tai nạn phạt bao nhiêu?");
 
   assert.equal(message.route, "emergency");
   assert.equal(message.needsOfficialHelp, true);
@@ -220,7 +220,7 @@ test("khan cap khi guard tu choi cau tra loi AI: van giu so khan cap", async () 
   await seed();
   useLlm(mockLlm.createHallucinatingMockLlmProvider());
   const user = await createUser();
-  const { message } = await ask(user, "Vượt đèn đỏ gây tai nạn bị phạt bao nhiêu?");
+  const { message } = await ask(user, "Vượt đèn đỏ gây tai nạn phạt bao nhiêu?");
 
   assert.equal(message.route, "emergency");
   assert.match(message.text, /Công an 112/);
@@ -366,4 +366,16 @@ test("LLM hết hạn mức lâu: báo AI đang bận (PROVIDER_ERROR), không g
   assert.equal(message.fallbackReason, "PROVIDER_ERROR");
   assert.match(message.text, /Trợ lý AI đang bận/);
   assert.doesNotMatch(message.text, /chưa có dữ liệu đã kiểm chứng/);
+});
+
+// BUG-04: câu hỏi luật chứa từ khoá khẩn cấp vẫn được trả lời pháp lý, số khẩn cấp nằm ở cuối.
+test("cau hoi luat chua tu khoa khan cap: tra loi phap ly, so khan cap dat o cuoi", async () => {
+  await seed();
+  const user = await createUser();
+  const { message } = await ask(user, "Vượt đèn đỏ gây tai nạn bị phạt bao nhiêu?");
+
+  assert.equal(message.route, "legal");
+  assert.equal(message.needsOfficialHelp, true);
+  assert.match(message.text, /Công an 112, Cấp cứu 119/);
+  assert.doesNotMatch(message.text, /^Nếu bạn hoặc người thân đang gặp nguy hiểm/);
 });

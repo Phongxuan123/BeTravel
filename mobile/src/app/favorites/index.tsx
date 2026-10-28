@@ -33,6 +33,8 @@ export default function FavoritesScreen() {
   });
 
   const openItem = (item: FavoriteItem) => {
+    // Bài đã gỡ không còn nội dung công khai để mở: chỉ cho bỏ lưu (V-01).
+    if (item.isRemoved) return;
     if (item.targetType === 'article' && item.countryCode && item.slug) {
       router.push(`/explore/${item.countryCode}/${item.slug}` as never);
     } else if (item.targetType === 'incident' && item.slug) {
@@ -73,7 +75,7 @@ export default function FavoritesScreen() {
       />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 24 }}>
         {favoritesQuery.isLoading && <Text className="mt-8 text-center text-sm text-muted">Đang tải…</Text>}
-        {favoritesQuery.isError && <Text className="mt-8 text-center text-sm text-danger">Không tải được danh sách đã lưu.</Text>}
+        {favoritesQuery.isError && <Text className="mt-8 text-center text-sm text-danger-strong">Không tải được danh sách đã lưu.</Text>}
         {!favoritesQuery.isLoading && !favoritesQuery.isError && favorites.length === 0 && (
           <Text className="mt-8 text-center text-sm text-muted">
             Chưa có gì được lưu. Bấm biểu tượng ngôi sao/bookmark trên bài luật hoặc hướng dẫn xử lý sự cố để lưu lại.
@@ -107,7 +109,7 @@ export default function FavoritesScreen() {
                         <Text className="text-[13px] text-muted" numberOfLines={1}>
                           {subtitleOf(item)}
                         </Text>
-                        {item.isOutdated && <Badge label="Đã có bản mới" tone="warning" />}
+                        {item.isRemoved ? <Badge label="Đã gỡ" tone="warning" /> : item.isOutdated && <Badge label="Đã có bản mới" tone="warning" />}
                       </View>
                     </View>
                     <Pressable

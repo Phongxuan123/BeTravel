@@ -21,7 +21,7 @@ import { useQueryClient } from '@tanstack/react-query';
 export default function SosHubScreen() {
   const bottomPadding = useAppShellBottomPadding();
   
-  const { country } = useCountry();
+  const { country, isResolving } = useCountry();
   const [currentCity, setCurrentCity] = useState('');
   const [embassyDistanceKm, setEmbassyDistanceKm] = useState<number | null>(null);
   const [locatingGps, setLocatingGps] = useState(false);
@@ -36,7 +36,7 @@ export default function SosHubScreen() {
           <ScrollView contentContainerStyle={{ paddingBottom: bottomPadding }}>
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
             <Text className="mt-6 font-display text-ink" style={{ fontSize: 22 }}>
-              Chưa tải được dữ liệu mới nhất
+              {isResolving ? 'Đang xác định quốc gia của bạn...' : 'Chưa tải được dữ liệu mới nhất'}
             </Text>
             <Text className="mt-2 text-base leading-6 text-ink">
               Hãy kết nối mạng rồi thử lại. Nếu đang gặp nguy hiểm, gọi ngay các số dưới đây hoặc nhờ người xung quanh hỗ trợ.
@@ -51,7 +51,7 @@ export default function SosHubScreen() {
               <Text className="font-body-bold text-white">Thử lại</Text>
             </Pressable>
             <View className="mt-3">
-              <Button label="Dịch không cần mạng" onPress={() => router.push('/translate')} />
+              <Button label="Dịch không cần mạng" onPress={() => router.push('/translate?offline=1' as never)} />
               <Button label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
             </View>
           </ScrollView>
@@ -73,7 +73,12 @@ export default function SosHubScreen() {
       const { coords, failure } = await requestLocationDetailed();
       if (!coords) {
         // Người dùng tự chọn "Để sau" thì không làm phiền thêm; các lỗi khác phải nói rõ lý do.
-        if (failure !== 'declined') Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure]);
+        if (failure === 'denied') {
+          Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure], [
+            { text: 'Để sau', style: 'cancel' },
+            { text: 'Mở Cài đặt', onPress: () => void Linking.openSettings() },
+          ]);
+        } else if (failure !== 'declined') Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure]);
         return;
       }
 
@@ -98,10 +103,10 @@ export default function SosHubScreen() {
           <View className="flex-row items-center justify-between">
             <IconButton accessibilityLabel="Quay lại" variant="outline" icon={<ChevronLeft size={20} color={colors.ink} />} onPress={() => router.back()} />
             <View className="mx-3 flex-1">
-              <Text className="font-display text-ink" style={{ fontSize: 20 }} numberOfLines={1}>
+              <Text className="font-display text-ink" style={{ fontSize: 20 }} numberOfLines={2}>
                 Hỗ trợ khẩn cấp
               </Text>
-              <Text className="text-xs text-muted" numberOfLines={1}>
+              <Text className="text-xs text-muted" numberOfLines={2}>
                 Trung tâm cứu trợ khẩn cấp · {country.name}
               </Text>
             </View>
@@ -110,7 +115,7 @@ export default function SosHubScreen() {
               onPress={() => router.push('/incidents')}
               className="min-h-[44px] justify-center rounded-2xl bg-primary-soft px-3"
             >
-              <Text className="text-[13px] font-body-bold text-primary">Quy trình sự cố</Text>
+              <Text className="text-[13px] font-body-bold text-primary-strong">Quy trình sự cố</Text>
             </Pressable>
           </View>
 
@@ -119,15 +124,15 @@ export default function SosHubScreen() {
             <Text className="flex-1 text-base font-body-semibold text-ink" numberOfLines={1}>
               {currentCity || country.currentCity || 'Chưa xác định vị trí'}
             </Text>
-            <Pressable onPress={updateLocation} disabled={locatingGps}>
-              <Text className="font-body-bold text-primary">{locatingGps ? 'Đang tìm...' : 'Cập nhật'}</Text>
+            <Pressable accessibilityRole="button" onPress={updateLocation} disabled={locatingGps} hitSlop={12} className="min-h-[44px] justify-center">
+              <Text className="font-body-bold text-primary-strong">{locatingGps ? 'Đang tìm...' : 'Cập nhật'}</Text>
             </Pressable>
           </View>
         </TopInsetView>
 
         <View className="px-[18px]">
           <View className="mt-4">
-            <Button label="Dịch không cần mạng" onPress={() => router.push('/translate')} />
+            <Button label="Dịch không cần mạng" onPress={() => router.push('/translate?offline=1' as never)} />
           </View>
           <View className="mt-5 rounded-xl bg-danger p-[18px]" style={{ shadowColor: 'rgba(239,68,68,1)', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
             <Text className="text-xs font-body-bold text-white/80">SỐ KHẨN CẤP TẠI {country.name.toUpperCase()}</Text>
@@ -140,7 +145,7 @@ export default function SosHubScreen() {
               accessibilityLabel={`Gọi cảnh sát số ${country.emergencyNumbers.police}`}
             >
               <Phone size={20} color={colors.danger} />
-              <Text className="font-mono-bold text-[22px] text-danger">Gọi ngay {country.emergencyNumbers.police}</Text>
+              <Text className="font-mono-bold text-[22px] text-danger-strong">Gọi ngay {country.emergencyNumbers.police}</Text>
             </Pressable>
             <Text className="mt-2 text-center text-[13px] text-white/85">Cuộc gọi miễn phí, kể cả khi hết dữ liệu di động</Text>
           </View>
@@ -165,7 +170,7 @@ export default function SosHubScreen() {
             </View>
             <View className="min-h-[44px] flex-row items-center justify-center rounded-2xl bg-primary px-3" style={{ gap: 6 }}>
               <ListChecks size={16} color="#fff" />
-              <Text className="text-[13px] font-body-bold text-white">Xem 5 bước</Text>
+              <Text className="text-[13px] font-body-bold text-white">Xem các bước</Text>
             </View>
           </Pressable>
 

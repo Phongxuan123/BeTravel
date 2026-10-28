@@ -6,7 +6,7 @@ import * as Speech from 'expo-speech';
 import * as offlineTranslation from '../offlineTranslation';
 import { AppState } from 'react-native';
 
-jest.mock('expo-router', () => ({ useFocusEffect: (callback: () => void) => {
+jest.mock('expo-router', () => ({ useLocalSearchParams: () => ({}), useFocusEffect: (callback: () => void) => {
   const React = jest.requireActual('react'); React.useEffect(callback, [callback]);
 } }));
 jest.mock('../voiceRecognition', () => ({ getRecognitionModule: () => null }));

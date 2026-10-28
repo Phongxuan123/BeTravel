@@ -47,7 +47,7 @@ export function BundledPhrasePanel({ reversed, onPick }: Props) {
             }}
             className={`min-h-11 justify-center rounded-md px-3 ${category === item ? 'bg-primary-soft' : 'bg-bg'}`}
           >
-            <Text className="text-primary">{item}</Text>
+            <Text className="text-primary-strong">{item}</Text>
           </Pressable>
         ))}
       </View>
@@ -71,7 +71,7 @@ export function BundledPhrasePanel({ reversed, onPick }: Props) {
           onPress={() => setLimit((value) => value + 8)}
           className="min-h-12 justify-center"
         >
-          <Text className="font-body-bold text-primary">
+          <Text className="font-body-bold text-primary-strong">
             Xem thêm câu ({matches.length - limit})
           </Text>
         </Pressable>

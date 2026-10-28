@@ -6,7 +6,7 @@ const location = { latitude: 10.1234567, longitude: 106.7654321, accuracy: 15.2,
 test('tin gửi có tọa độ, thời gian UTC, sai số và link bản đồ chuẩn', () => {
   const message = buildLocationMessage(location, now);
   expect(message).toContain('query=10.123457%2C106.765432');
-  expect(message).toContain('2026-09-28T12:00:00.000Z');
+  expect(message).toMatch(/\d{2}:\d{2} \d{2}\/\d{2}\/2026 \(giờ máy, UTC[+-]\d{2}:\d{2}\)/);
   expect(message).toContain('16 m');
   expect(message).toContain('không cập nhật trực tiếp');
 });

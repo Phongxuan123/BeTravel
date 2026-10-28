@@ -25,15 +25,54 @@ export function __setLlmProviderForTest(provider) {
   cachedProvider = provider;
 }
 
-// Bước tạo từ khoá (RETRIEVAL_MODE=lexical) dùng model riêng nếu có cấu hình, cùng nhà cung cấp chat.
-export function getRewriteProvider() {
-  const model = env.QUERY_REWRITE_MODEL;
+// Provider cho một model bước phụ, cùng nhà cung cấp với chat; model rỗng hoặc trùng chat dùng luôn provider chat.
+export function buildAuxiliaryProvider(model) {
   if (!model || model === env.LLM_MODEL) return getLlmProvider();
   if (env.LLM_PROVIDER === "openai")
     return createOpenAiLlmProvider({ apiKey: env.OPENAI_API_KEY, model });
   if (env.LLM_PROVIDER === "gemini")
     return createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model });
   return getLlmProvider();
+}
+
+/*
+ * Bọc provider chính bằng model dự phòng (BUG-01): model chính hết giờ, báo lỗi hoặc trả kết quả mà
+ * input.validate (tuỳ chọn) từ chối thì thử model dự phòng đúng 1 lần. Không có model dự phòng thì giữ
+ * nguyên hành vi cũ (lỗi ném ra, kết quả không hợp lệ trả lại để caller tự xử lý).
+ */
+export function withAuxiliaryFallback(primary, fallback) {
+  if (!fallback || fallback === primary) return primary;
+  return {
+    ...primary,
+    async complete(input) {
+      let primaryText = null;
+      let primaryError = null;
+      try {
+        primaryText = await primary.complete(input);
+        if (!input.validate || input.validate(primaryText)) return primaryText;
+      } catch (error) {
+        primaryError = error;
+      }
+      try {
+        return await fallback.complete(input);
+      } catch (fallbackError) {
+        if (primaryError) throw primaryError;
+        console.error(
+          "[rag] model dự phòng bước phụ cũng lỗi:",
+          String(fallbackError?.message ?? fallbackError).slice(0, 200),
+        );
+        return primaryText;
+      }
+    },
+  };
+}
+
+// Bước tạo từ khoá / chấm chủ đề / chấm trùng câu dùng model riêng (QUERY_REWRITE_MODEL), có model dự phòng tuỳ chọn.
+export function getRewriteProvider() {
+  const primary = buildAuxiliaryProvider(env.QUERY_REWRITE_MODEL);
+  const fallbackModel = env.QUERY_REWRITE_FALLBACK_MODEL;
+  if (!fallbackModel) return primary;
+  return withAuxiliaryFallback(primary, buildAuxiliaryProvider(fallbackModel));
 }
 
 let webSearchProviderOverride;

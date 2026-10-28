@@ -128,7 +128,7 @@ export function OfflinePackPanel({ source, target, disabled }: Props) {
           onPress={askDownload}
           className="min-h-12 justify-center"
         >
-          <Text className="font-body-bold text-primary">
+          <Text className="font-body-bold text-primary-strong">
             {busy ? 'Đang xử lý gói…' : 'Tải gói dịch'}
           </Text>
         </Pressable>
@@ -140,7 +140,7 @@ export function OfflinePackPanel({ source, target, disabled }: Props) {
           }}
           className="min-h-12 justify-center"
         >
-          <Text className="text-primary">Kiểm tra gói</Text>
+          <Text className="text-primary-strong">Kiểm tra gói</Text>
         </Pressable>
         {installed
           .filter((language) => language !== 'en' && [source, target].includes(language))

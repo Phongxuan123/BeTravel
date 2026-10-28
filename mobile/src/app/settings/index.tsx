@@ -13,6 +13,7 @@ import { TextField } from '@/components/ui/TextField';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { notify } from '@/lib/notify';
 import { useCountry } from '@/lib/countryContext';
 import { fetchCountries, fetchPreferences, updatePreferences, listChatSessions, deleteChatSession } from '@/lib/data';
 import type { Preferences } from '@/lib/data';
@@ -34,7 +35,7 @@ const DEFAULT_PREFERENCES: Preferences = {
 
 export default function SettingsScreen() {
   const { logout } = useAuth();
-  const { country, countryCode, setCountryCode } = useCountry();
+  const { country, countryCode, preferredCountryCode, setPreferredCountryCode, followsTrip } = useCountry();
   const queryClient = useQueryClient();
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
   const countries = countriesQuery.data?.data ?? [];
@@ -45,6 +46,7 @@ export default function SettingsScreen() {
     mutationFn: (patch: PreferencesPatch) => updatePreferences(patch),
     onSuccess: (res) => {
       queryClient.setQueryData(['preferences'], res);
+      notify('Đã lưu');
     },
   });
 
@@ -56,19 +58,19 @@ export default function SettingsScreen() {
   const [deletingHistory, setDeletingHistory] = useState(false);
 
   const onDeleteChatHistory = () => {
-    Alert.alert('Xoá lịch sử hỏi AI', 'Toàn bộ cuộc trò chuyện với AI sẽ bị xoá vĩnh viễn. Không thể hoàn tác.', [
-      { text: 'Huỷ', style: 'cancel' },
+    Alert.alert('Xóa lịch sử hỏi AI', 'Toàn bộ cuộc trò chuyện với AI sẽ bị xóa vĩnh viễn. Không thể hoàn tác.', [
+      { text: 'Hủy', style: 'cancel' },
       {
-        text: 'Xoá tất cả',
+        text: 'Xóa tất cả',
         style: 'destructive',
         onPress: async () => {
           setDeletingHistory(true);
           try {
             const { data: sessions } = await listChatSessions();
             await Promise.all(sessions.map((s) => deleteChatSession(s._id)));
-            toast('Đã xoá lịch sử hỏi AI');
+            toast('Đã xóa lịch sử hỏi AI');
           } catch {
-            toast('Không xoá được toàn bộ lịch sử. Kiểm tra kết nối mạng và thử lại.');
+            toast('Không xóa được toàn bộ lịch sử. Kiểm tra kết nối mạng và thử lại.');
           } finally {
             setDeletingHistory(false);
           }
@@ -79,7 +81,7 @@ export default function SettingsScreen() {
 
   const onLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
-      { text: 'Huỷ', style: 'cancel' },
+      { text: 'Hủy', style: 'cancel' },
       {
         text: 'Đăng xuất',
         style: 'destructive',
@@ -133,11 +135,11 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 24 }}>
         <SettingsGroup title="NGÔN NGỮ & KHU VỰC">
           <SettingsRow icon={<Globe size={18} color={colors.primary} />} label="Ngôn ngữ ứng dụng" value="Chỉ có tiếng Việt" />
-          <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={country?.name} onPress={() => setPickingCountry(true)} />
+          <SettingsRow icon={<Flag size={18} color={colors.primary} />} label="Quốc gia mặc định" value={(countries.find((c) => c.code === (preferredCountryCode || countryCode)) ?? country)?.name} onPress={() => setPickingCountry(true)} />
         </SettingsGroup>
 
-        {preferencesQuery.isError && <View className="gap-2"><Text className="text-danger">Không tải được cài đặt. Các công tắc tạm khóa.</Text><Button label="Thử lại" onPress={() => { void preferencesQuery.refetch(); }} /></View>}
-        {preferencesMutation.isError && <Text className="text-danger">Không lưu được cài đặt. Vui lòng thử lại.</Text>}
+        {preferencesQuery.isError && <View className="gap-2"><Text className="text-danger-strong">Không tải được cài đặt. Các công tắc tạm khóa.</Text><Button label="Thử lại" onPress={() => { void preferencesQuery.refetch(); }} /></View>}
+        {preferencesMutation.isError && <Text className="text-danger-strong">Không lưu được cài đặt. Vui lòng thử lại.</Text>}
         <SettingsGroup title="THÔNG BÁO">
           <SettingsSwitchRow
             disabled={preferencesQuery.isLoading || preferencesQuery.isError || preferencesMutation.isPending}
@@ -187,7 +189,7 @@ export default function SettingsScreen() {
           <View className="h-px bg-line" />
           <SettingsRow
             icon={<Trash2 size={18} color={colors.danger} />}
-            label={deletingHistory ? 'Đang xoá…' : 'Xoá lịch sử hỏi AI'}
+            label={deletingHistory ? 'Đang xóa…' : 'Xóa lịch sử hỏi AI'}
             onPress={onDeleteChatHistory}
           />
         </SettingsGroup>
@@ -203,21 +205,26 @@ export default function SettingsScreen() {
 
         <Pressable onPress={onLogout} className="h-[52px] flex-row items-center justify-center gap-2 rounded-lg border border-danger-line bg-surface">
           <LogOut size={18} color={colors.danger} />
-          <Text className="text-[17px] font-body-bold text-danger">Đăng xuất</Text>
+          <Text className="text-[17px] font-body-bold text-danger-strong">Đăng xuất</Text>
         </Pressable>
       </ScrollView>
 
       <SimpleSheet visible={pickingCountry} onClose={() => setPickingCountry(false)} title="Quốc gia mặc định">
+        {followsTrip && (
+          <Text className="mb-3 text-sm text-muted">
+            Đang theo chuyến đi {country?.name}. Quốc gia mặc định chỉ dùng khi bạn không có chuyến đi.
+          </Text>
+        )}
         <View accessibilityRole="radiogroup" style={{ gap: 10 }}>
           {countries.map((c) => {
-            const selected = c.code === countryCode;
+            const selected = c.code === (preferredCountryCode || countryCode);
             return (
               <Pressable
                 key={c.code}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: selected }}
                 onPress={() => {
-                  setCountryCode(c.code);
+                  setPreferredCountryCode(c.code);
                   setPickingCountry(false);
                 }}
                 className={`h-16 flex-row items-center rounded-lg border px-3 ${selected ? 'border-[1.5px] border-primary bg-[#F5F9FF]' : 'border-line bg-surface'}`}
@@ -242,7 +249,7 @@ export default function SettingsScreen() {
           <TextField label="Xác nhận mật khẩu mới" secureTextEntry value={pwForm.confirm} onChangeText={(v) => setPwForm((p) => ({ ...p, confirm: v }))} />
           {pwError && (
             <View className="rounded-md bg-danger-tint p-3">
-              <Text className="text-sm text-danger">{pwError}</Text>
+              <Text className="text-sm text-danger-strong">{pwError}</Text>
             </View>
           )}
           <Button label="Đổi mật khẩu" onPress={onSubmitPasswordChange} loading={savingPassword} />

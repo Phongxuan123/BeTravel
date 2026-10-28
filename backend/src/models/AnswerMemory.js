@@ -26,6 +26,8 @@ const answerMemorySchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true },
     countryCode: { type: String, required: true },
+    // Câu hỏi gốc, dùng để AI chấm trùng ý với câu đảo từ (BUG-24); bản ghi cũ không có thì bỏ qua.
+    question: { type: String, default: "" },
     keywordTerms: { type: [String], default: [] },
     answer: { type: String, required: true },
     sections: { type: mongoose.Schema.Types.Mixed, default: null },

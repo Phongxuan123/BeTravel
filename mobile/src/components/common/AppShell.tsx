@@ -58,7 +58,7 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
         >
           <Text className="font-display text-sm text-white">SOS</Text>
         </Pressable>
-        <Text className="text-[11px] font-body-bold text-danger" style={{ lineHeight: SOS_LABEL_HEIGHT }}>
+        <Text className="text-[11px] font-body-bold text-danger-strong" style={{ lineHeight: SOS_LABEL_HEIGHT }}>
           Khẩn cấp
         </Text>
       </View>

@@ -52,13 +52,13 @@ async function setup(country: typeof KR_COUNTRY | typeof NO_CITY_COUNTRY = KR_CO
   // Ten quoc gia xuat hien o ca chip "Pho bien" lan danh sach day du -- lay
   // cai dau tien, ca hai deu goi cung dispatch SET_COUNTRY.
   await fireEvent.press(screen.getAllByText(country.name)[0]);
-  await waitFor(() => expect(screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...')).toBeTruthy());
+  await waitFor(() => expect(screen.getByLabelText('Thành phố / khu vực')).toBeTruthy());
   return screen;
 }
 
 test('danh sach goi y KHONG tu hien khi focus o nhap -- chi hien khi bam mui ten', async () => {
   const screen = await setup();
-  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
+  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Incheon...');
   await fireEvent(input, 'focus');
   expect(screen.queryByText('Seoul')).toBeNull();
 
@@ -82,7 +82,7 @@ test('go tim khong dau van loc dung goi y trong luc danh sach dang mo', async ()
   const screen = await setup();
   await fireEvent.press(screen.getByLabelText('Hiện danh sách gợi ý thành phố'));
 
-  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
+  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Incheon...');
   await fireEvent.changeText(input, 'busa');
   expect(screen.getByText('Busan')).toBeTruthy();
   expect(screen.queryByText('Seoul')).toBeNull();
@@ -90,7 +90,7 @@ test('go tim khong dau van loc dung goi y trong luc danh sach dang mo', async ()
 
 test('go ten khong co trong danh sach van duoc giu nguyen, khong bi ep chon', async () => {
   const screen = await setup();
-  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Jeju...');
+  const input = screen.getByPlaceholderText('Ví dụ: Seoul, Busan, Incheon...');
   await fireEvent.changeText(input, 'Gangneung');
   expect(screen.getByDisplayValue('Gangneung')).toBeTruthy();
 });

@@ -41,6 +41,7 @@ export async function isTravelLegalQuestion(question, countryName) {
       question,
       maxOutputTokens: GATE_MAX_OUTPUT_TOKENS,
       timeoutMs: env.WEB_TOPIC_GATE_TIMEOUT_MS,
+      validate: (text) => /"travelLegal"\s*:\s*(true|false)/.test(text ?? ""),
     });
     return parseTopicGate(rawText);
   } catch (error) {

@@ -1,46 +1,61 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchCountries, fetchTrips } from '@/lib/data';
 import { useAuth } from '@/lib/auth';
-import { activeStop } from '@/features/trips/itinerary';
+import { useUserStorage } from '@/lib/useUserStorage';
+import { activeStop, pickCurrentTrip } from '@/features/trips/itinerary';
 import type { Country } from '@/mocks/schemas';
 
 type CountryContextValue = {
+  /** Quốc gia đang áp dụng cho cả app (Home, SOS, chat, cảnh báo...); rỗng khi đang xác định. */
   countryCode: string;
   country: Country | undefined;
-  setCountryCode: (code: string) => void;
+  /** Quốc gia mặc định người dùng chọn ở Cài đặt; chỉ dùng khi không có chuyến đi. */
+  preferredCountryCode: string;
+  setPreferredCountryCode: (code: string) => void;
+  /** Đang tải chuyến đi/quốc gia: màn hình hiện trạng thái chờ thay vì nước tạm (tránh nháy). */
+  isResolving: boolean;
+  /** Quốc gia có được suy ra từ chuyến đi hay không (Cài đặt dùng để giải thích). */
+  followsTrip: boolean;
 };
 
 const CountryContext = createContext<CountryContextValue | null>(null);
 
 /*
- * Quốc gia hiện tại của người dùng (theo chuyến đi đang diễn ra). Mặc định
- * chọn quốc gia đang hoạt động từ dữ liệu. Đi qua fetchCountries() của lib/data.ts (KHÔNG import
- * thẳng mocks/fixtures) để tôn trọng công tắc EXPO_PUBLIC_USE_MOCKS -- trước
- * B3, file này bỏ qua công tắc đó nên khi bật API thật, context vẫn hiện dữ
- * liệu quốc gia giả lập trong toàn bộ app (bug thực sự, không phải khác biệt
- * cosmetics -- đây là lý do sửa file này dù nó không phải "màn hình").
+ * Quốc gia hiện tại của người dùng, một nguồn duy nhất cho toàn app (BUG-17, quyết định Q3):
+ * chặng hiện tại của chuyến đi chính > quốc gia mặc định trong Cài đặt > nước đầu tiên đang hoạt
+ * động. Bộ lọc của Khám phá/Tìm kiếm là state cục bộ của màn, KHÔNG ghi vào đây. Đi qua
+ * fetchCountries() của lib/data.ts (không import thẳng mocks) để tôn trọng EXPO_PUBLIC_USE_MOCKS.
  */
 export function CountryProvider({ children }: { children: ReactNode }) {
-  const [countryCode, setCountryCode] = useState('');
-  const { isGuest } = useAuth();
+  const { isGuest, isLoading: authLoading } = useAuth();
+  const preferred = useUserStorage<string>('preferred-country', '');
   const tripsQuery = useQuery({ queryKey: ['trips'], queryFn: fetchTrips, enabled: !isGuest });
   const countriesQuery = useQuery({ queryKey: ['countries'], queryFn: fetchCountries });
 
   const available = countriesQuery.data?.data ?? [];
-  const currentTrip = tripsQuery.data?.data.find((trip) => trip.isCurrent);
+  const currentTrip = pickCurrentTrip(tripsQuery.data?.data ?? []);
   const itineraryCode = currentTrip ? activeStop(currentTrip).countryCode : '';
-  const selectedCode = available.find((item) => item.code === countryCode)?.code
-    ?? available.find((item) => item.code === itineraryCode)?.code
+  const hasCode = (code: string) => available.find((item) => item.code === code)?.code;
+  const tripCode = hasCode(itineraryCode);
+  const isResolving = authLoading || countriesQuery.isPending || !preferred.loaded || (!isGuest && tripsQuery.isPending);
+  const resolvedCode = tripCode
+    ?? hasCode(preferred.value)
     ?? available.find((item) => item.status !== 'coming_soon')?.code ?? available[0]?.code ?? '';
+  const selectedCode = isResolving ? '' : resolvedCode;
+  const { update: updatePreferred } = preferred;
 
   const value = useMemo(
     () => ({
       countryCode: selectedCode,
       country: countriesQuery.data?.data.find((c) => c.code === selectedCode),
-      setCountryCode,
+      preferredCountryCode: hasCode(preferred.value) ?? '',
+      setPreferredCountryCode: (code: string) => void updatePreferred(() => code),
+      isResolving,
+      followsTrip: !!tripCode,
     }),
-    [selectedCode, countriesQuery.data],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [selectedCode, countriesQuery.data, preferred.value, isResolving, tripCode],
   );
 
   return <CountryContext.Provider value={value}>{children}</CountryContext.Provider>;

@@ -769,6 +769,8 @@ GET /incidents/:slug   200 | 404 NOT_FOUND (draft hoac khong ton tai)
 `cta.type`: `map` (payload.locationType loc SOS map) · `call` (payload.phone,
 rong = dung SDT dai su quan cua country dang chon) · `ai` (payload.question
 prefill man hinh chat) · `link` (payload.url mo ngoai).
+`cta.payload` LUON la object (co the rong `{}`), backend khong bo field nay; client van
+chuan hoa `payload ?? {}` o adapter phong du lieu cu.
 
 ## 18. ENDPOINT TIEN DO SU CO — `/api/users/incident-progress/:incidentId` (B7, can dang nhap)
 
@@ -849,7 +851,9 @@ khi liệt kê thì ẩn nhưng giữ nguyên bản ghi Favorite trong DB.
 Ngoại lệ lịch sử: bài superseded không hiện hành vẫn giữ bookmark, nhưng
 `article` chỉ có `_id`, `countryCode`, `slug`, `title`, `topicSlug` (không trả
 nội dung pháp lý cũ). Kèm `isOutdated:true` và `currentArticleId` chỉ trỏ tới
-bản published hiện hành; chưa có bản công khai thì null. Các mục hiện hành
+bản published hiện hành; chưa có bản công khai thì null. Kèm `isRemoved:true`
+khi bài đã gỡ khỏi công khai (không còn bản published hiện hành, V-01): client hiện nhãn
+"Đã gỡ", không mở chi tiết, chỉ cho bỏ lưu. Các mục hiện hành
 vẫn trả đối tượng `article`/`location`/`incident` như trước.
 Fixture: `fixtures/favorites.json`.
 

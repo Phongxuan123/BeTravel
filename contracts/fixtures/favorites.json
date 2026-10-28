@@ -14,6 +14,7 @@
         "topicSlug": "test-topic"
       },
       "isOutdated": true,
+      "isRemoved": false,
       "currentArticleId": "000000000000000000000002"
     }
   ]

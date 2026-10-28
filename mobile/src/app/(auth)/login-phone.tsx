@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
+import { enterApp } from '@/lib/navigation';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft, Phone, Lock, Eye, EyeOff, Mail } from 'lucide-react-native';
@@ -39,7 +40,7 @@ export default function LoginPhoneScreen() {
     setLoading(true);
     try {
       await login(normalizePhone(phone), password, remember);
-      router.replace(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
+      enterApp(params.next && params.next.startsWith('/') ? (params.next as never) : '/');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Không thể đăng nhập. Kiểm tra kết nối mạng và thử lại.');
     } finally {
@@ -96,7 +97,7 @@ export default function LoginPhoneScreen() {
 
         {error && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-sm text-danger">{error}</Text>
+            <Text className="text-sm text-danger-strong">{error}</Text>
           </View>
         )}
 

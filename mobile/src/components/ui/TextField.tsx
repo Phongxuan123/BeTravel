@@ -30,7 +30,7 @@ export function TextField({ label, iconLeft, slotRight, helperText, error, style
         {slotRight && <View className="ml-2.5">{slotRight}</View>}
       </View>
       {(helperText || error) && (
-        <Text className={`mt-1.5 text-xs ${error ? 'text-danger' : 'text-subtle'}`}>{error ?? helperText}</Text>
+        <Text className={`mt-1.5 text-xs ${error ? 'text-danger-strong' : 'text-subtle'}`}>{error ?? helperText}</Text>
       )}
     </View>
   );

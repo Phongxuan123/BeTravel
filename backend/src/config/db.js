@@ -26,9 +26,9 @@ const connectDB = async () => {
   const uri = env.MONGODB_URI;
   const safeInfo = sanitizeMongoUriForLog(uri);
 
+  // Không in username (thông tin đăng nhập); production chỉ ghi tên database (V-14).
   console.log("MongoDB connection target:", {
-    username: safeInfo.username,
-    host: safeInfo.host,
+    host: env.NODE_ENV === "production" ? "(hidden)" : safeInfo.host,
     database: safeInfo.database || "(not specified in URI)",
   });
 

@@ -13,7 +13,9 @@ const incidentCtaSchema = new mongoose.Schema(
     // ai: {question?} prefill man hinh chat; link: {url}.
     payload: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
-  { _id: false },
+  // minimize:false de payload rong van duoc tra ve {} (mac dinh Mongoose bo object rong,
+  // client doc cta.payload.phone se nem loi -- BUG-22).
+  { _id: false, minimize: false },
 );
 
 const incidentChecklistItemSchema = new mongoose.Schema(

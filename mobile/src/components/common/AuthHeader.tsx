@@ -13,7 +13,7 @@ export function AuthHeader() {
         className="rounded-full bg-primary-soft px-3.5 py-2"
         style={{ minHeight: 44, justifyContent: 'center' }}
       >
-        <Text className="text-[13px] font-body-bold text-primary">Xem giới thiệu</Text>
+        <Text className="text-[13px] font-body-bold text-primary-strong">Xem giới thiệu</Text>
       </Pressable>
     </View>
   );

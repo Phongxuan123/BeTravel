@@ -20,6 +20,7 @@ import { now, parseISODate } from '@/lib/date';
 import { formatDateIfComplete, formatFullDate, formatWeekday, tripDurationDays } from '@/lib/format';
 import { ItineraryEditor } from '@/features/trips/ItineraryEditor';
 import { itineraryError, tripStops } from '@/features/trips/itinerary';
+import * as Location from 'expo-location';
 import { requestLocationWithExplanation } from '@/lib/locationPermission';
 
 type State = {
@@ -38,6 +39,7 @@ type Action =
   | { type: 'SET_DESTINATION_DETAIL'; value: string }
   | { type: 'SET_RANGE'; range: DateRange }
   | { type: 'TOGGLE_LOCATION' }
+  | { type: 'SET_LOCATION'; value: boolean }
   | { type: 'TOGGLE_REGULATION' };
 
 function reducer(state: State, action: Action): State {
@@ -61,6 +63,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, destinationDetail: action.value };
     case 'SET_RANGE':
       return { ...state, range: action.range };
+    case 'SET_LOCATION':
+      return { ...state, locationAlerts: action.value };
     case 'TOGGLE_LOCATION':
       return { ...state, locationAlerts: !state.locationAlerts };
     case 'TOGGLE_REGULATION':
@@ -158,6 +162,10 @@ export default function TripWizardScreen() {
   }, [query, countries]);
 
   const hasCitySuggestions = (country?.majorCities?.length ?? 0) > 0;
+  // Ví dụ lấy từ dữ liệu quốc gia đang chọn, không gắn cứng một nước (BUG-21).
+  const cityPlaceholder = hasCitySuggestions
+    ? `Ví dụ: ${(country?.majorCities ?? []).slice(0, 3).join(', ')}...`
+    : 'Nhập tên thành phố hoặc khu vực';
 
   // Loc theo tu da go, khong dau -- khong ep nguoi dung phai chon dung trong
   // danh sach, ho van go tu do va gia tri se duoc giu nguyen (BE khong rang
@@ -178,6 +186,22 @@ export default function TripWizardScreen() {
   const stops: TripStop[] = [{ countryCode: state.countryCode ?? '', destinationCity: state.destinationCity.trim(),
     destinationDetail: state.destinationDetail.trim(), startDate: state.range.start ?? '' }, ...followingStops];
   const scheduleError = state.range.start && state.range.end ? itineraryError(stops, state.range.start, state.range.end) : null;
+  // Chuyến mới mặc định BẬT cảnh báo theo vị trí khi máy đã cấp quyền (V-12); chưa cấp quyền thì giữ tắt, người dùng tự bật.
+  useEffect(() => {
+    if (editingTripId) return;
+    let cancelled = false;
+    Location.getForegroundPermissionsAsync()
+      .then((permission) => {
+        if (cancelled || !permission.granted) return;
+        setLocationPermissionGranted(true);
+        dispatch({ type: 'SET_LOCATION', value: true });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [editingTripId]);
+
   const enableLocation = async () => {
     if (state.locationAlerts) { dispatch({ type: 'TOGGLE_LOCATION' }); return; }
     if (requestingPermission) return;
@@ -248,13 +272,15 @@ export default function TripWizardScreen() {
         return;
       }
 
+      // Chỉ đặt chuyến mới làm chuyến chính khi người dùng chưa có chuyến chính (V-18); không giật vị trí của chuyến gần hơn.
+      const hasMainTrip = (await fetchTrips().catch(() => null))?.data.some((trip) => trip.isCurrent) ?? false;
       const created = await createTrip(payload);
 
       // Chuyến vừa tạo vẫn được đặt làm chuyến đi chính theo hành vi hiện tại.
       // Màn Home/Trips sẽ ưu tiên hiển thị chuyến đang diễn ra theo ngày; nếu
       // không có chuyến đang diễn ra thì mới ưu tiên chuyến sắp tới.
       try {
-        await setCurrentTrip(created.data.id);
+        if (!hasMainTrip) await setCurrentTrip(created.data.id);
       } catch (currentError) {
         await queryClient.invalidateQueries({ queryKey: ['trips'] });
         Alert.alert(
@@ -298,7 +324,7 @@ export default function TripWizardScreen() {
       )}
       {editingTripId && !editTripsQuery.isLoading && editTripsQuery.data && !tripToEdit && (
         <View className="px-[18px] pt-5">
-          <Text className="text-center text-sm text-danger">Không tìm thấy chuyến đi cần sửa.</Text>
+          <Text className="text-center text-sm text-danger-strong">Không tìm thấy chuyến đi cần sửa.</Text>
         </View>
       )}
 
@@ -404,7 +430,7 @@ export default function TripWizardScreen() {
                         ? previous.filter((stop) => stop.countryCode !== c.code)
                         : previous.length < 19 ? [...previous, { countryCode: c.code, destinationCity: '', startDate: '' }] : previous)}
                       className={`rounded-full px-3 py-2 ${checked ? 'bg-primary' : 'bg-primary-soft'}`}>
-                      <Text className={checked ? 'text-white' : 'text-primary'}>{c.name}</Text>
+                      <Text className={checked ? 'text-white' : 'text-primary-strong'}>{c.name}</Text>
                     </Pressable>;
                   })}
                 </View>
@@ -428,10 +454,14 @@ export default function TripWizardScreen() {
                     ref={cityInputRef}
                     accessibilityLabel="Thành phố / khu vực"
                     className={`h-14 rounded-md border border-line bg-[#F5F9FF] pl-4 text-base text-ink ${hasCitySuggestions ? 'pr-11' : 'pr-4'}`}
-                    placeholder="Ví dụ: Seoul, Busan, Jeju..."
+                    placeholder={cityPlaceholder}
                     placeholderTextColor={colors.subtle}
                     value={state.destinationCity}
-                    onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_CITY', value })}
+                    onChangeText={(value) => {
+                      dispatch({ type: 'SET_DESTINATION_CITY', value });
+                      // Gõ từ 2 ký tự trở lên thì tự mở danh sách gợi ý, không bắt người dùng bấm mũi tên.
+                      if (hasCitySuggestions && value.trim().length >= 2) setCityListVisible(true);
+                    }}
                     autoCapitalize="words"
                     maxLength={100}
                   />
@@ -470,7 +500,7 @@ export default function TripWizardScreen() {
                 <Text className="mb-2 mt-4 text-[13px] font-body-semibold text-ink">Địa điểm cụ thể (không bắt buộc)</Text>
                 <TextInput
                   className="min-h-[56px] rounded-md border border-line bg-[#F5F9FF] px-4 py-3 text-base text-ink"
-                  placeholder="Ví dụ: Gangnam-gu, tên khách sạn, địa chỉ..."
+                  placeholder="Ví dụ: tên khách sạn, địa chỉ, quận/khu phố..."
                   placeholderTextColor={colors.subtle}
                   value={state.destinationDetail}
                   onChangeText={(value) => dispatch({ type: 'SET_DESTINATION_DETAIL', value })}
@@ -508,13 +538,13 @@ export default function TripWizardScreen() {
                   : 'Chọn ngày đi và ngày về'}
               </Text>
               <Pressable onPress={() => dispatch({ type: 'SET_RANGE', range: { start: null, end: null } })}>
-                <Text className="text-[15px] font-body-bold text-primary" numberOfLines={1}>
+                <Text className="text-[15px] font-body-bold text-primary-strong" numberOfLines={1}>
                   Đặt lại
                 </Text>
               </Pressable>
             </View>
             <ItineraryEditor countries={countries} stops={stops} onChange={(next) => setFollowingStops(next.slice(1))} />
-            {!!scheduleError && <Text className="mt-3 px-[18px] text-danger">{scheduleError}</Text>}
+            {!!scheduleError && <Text className="mt-3 px-[18px] text-danger-strong">{scheduleError}</Text>}
           </View>
         )}
 
@@ -567,7 +597,7 @@ export default function TripWizardScreen() {
                   </Text>
                 </View>
                 <Pressable onPress={() => goStep(1)}>
-                  <Text className="text-[15px] font-body-bold text-primary">Sửa</Text>
+                  <Text className="text-[15px] font-body-bold text-primary-strong">Sửa</Text>
                 </Pressable>
               </View>
 
@@ -598,12 +628,12 @@ export default function TripWizardScreen() {
               </View>
               <View className="mt-2 flex-row justify-end">
                 <Pressable onPress={() => goStep(2)}>
-                  <Text className="text-[15px] font-body-bold text-primary">Sửa</Text>
+                  <Text className="text-[15px] font-body-bold text-primary-strong">Sửa</Text>
                 </Pressable>
               </View>
               <View className="mt-3 flex-row" style={{ gap: 8 }}>
                 <Badge label={`${tripDurationDays(state.range.start, state.range.end)} ngày`} tone="info" />
-                <Badge label={editingTripId ? (tripToEdit?.isCurrent ? 'Chuyến đi chính' : 'Đang chỉnh sửa') : 'Sẽ là chuyến đi chính'} tone="success" />
+                <Badge label={editingTripId ? (tripToEdit?.isCurrent ? 'Chuyến đi chính' : 'Đang chỉnh sửa') : 'Chuyến đi mới'} tone="success" />
               </View>
             </View>
 
@@ -635,7 +665,7 @@ export default function TripWizardScreen() {
         <View className="flex-1">
           {error && (
             <View className="mb-2 rounded-md bg-danger-tint p-3">
-              <Text className="text-sm text-danger">{error}</Text>
+              <Text className="text-sm text-danger-strong">{error}</Text>
             </View>
           )}
           {!!continueHint && editReady && (
@@ -643,7 +673,7 @@ export default function TripWizardScreen() {
               onPress={focusCityInput} className="mb-2">
               <Text className="text-center text-sm text-muted">
                 {continueHint}
-                {missingCity && <Text className="font-body-bold text-primary"> Đến ô nhập</Text>}
+                {missingCity && <Text className="font-body-bold text-primary-strong"> Đến ô nhập</Text>}
               </Text>
             </Pressable>
           )}

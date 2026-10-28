@@ -53,7 +53,7 @@ const OUTPUT_FORMAT = `ĐỊNH DẠNG ĐẦU RA — chỉ trả JSON hợp lệ,
   "needsOfficialHelp": true | false
 }
 "actions" và "avoid" có thể là mảng rỗng khi nguồn không nêu; không bịa cho đủ ý.
-Viết gọn: "actions" và "avoid" mỗi mảng tối đa 3 ý, mỗi ý một câu.`;
+Viết gọn: "actions" và "avoid" mỗi mảng tối đa 3 ý, mỗi ý một câu, không tự đánh số hay gạch đầu dòng trong từng ý.`;
 
 const PERSONAL_ADVICE_RULE =
   "LƯU Ý CÂU HỎI NÀY: người dùng xin đánh giá tình huống cá nhân. Chỉ nêu thông tin chung có trong " +

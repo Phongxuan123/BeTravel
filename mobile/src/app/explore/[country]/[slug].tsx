@@ -92,7 +92,7 @@ export default function ArticleDetailScreen() {
       />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 110 }}>
         <View className="flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
-          <Text className="text-xs font-body-bold text-primary">{countryName(countryCode)}</Text>
+          <Text className="text-xs font-body-bold text-primary-strong">{countryName(countryCode)}</Text>
           {!!topicLabel && <Text className="text-xs text-muted">· {topicLabel}</Text>}
         </View>
         <Text className="mt-3 font-display text-ink" style={{ fontSize: 26 }}>
@@ -137,7 +137,7 @@ export default function ArticleDetailScreen() {
                       point.severity === 'criminal' ? 'bg-danger-soft' : 'bg-primary-soft'
                     }`}
                   >
-                    <Text className={`text-sm font-body-bold ${point.severity === 'criminal' ? 'text-danger' : 'text-primary'}`}>
+                    <Text className={`text-sm font-body-bold ${point.severity === 'criminal' ? 'text-danger-strong' : 'text-primary-strong'}`}>
                       {i + 1}
                     </Text>
                   </View>

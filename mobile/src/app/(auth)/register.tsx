@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Pressable, ScrollView } from 'react-native';
 import { router } from 'expo-router';
+import { enterApp } from '@/lib/navigation';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { User, Mail, Phone, Lock, Eye, EyeOff, Check, ArrowRight } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
@@ -62,7 +63,7 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register(name, email, password, phone.trim());
-      router.replace('/trips/new?step=1');
+      enterApp('/trips/new?step=1' as never);
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -133,11 +134,11 @@ export default function RegisterScreen() {
         <Pressable className="flex-row items-start" style={{ gap: 10 }} onPress={() => setAgree((v) => !v)}>
           <Checkbox checked={agree} onChange={setAgree} accessibilityLabel="Đồng ý điều khoản" />
           <Text className="flex-1 text-sm leading-5 text-[#334E68]">
-            Tôi đồng ý với <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Điều khoản sử dụng')}>
+            Tôi đồng ý với <Text className="font-body-bold text-primary-strong" onPress={() => openPendingLegalText('Điều khoản sử dụng')}>
               Điều khoản sử dụng
             </Text>{' '}
             và{' '}
-            <Text className="font-body-bold text-primary" onPress={() => openPendingLegalText('Chính sách bảo vệ dữ liệu')}>
+            <Text className="font-body-bold text-primary-strong" onPress={() => openPendingLegalText('Chính sách bảo vệ dữ liệu')}>
               Chính sách bảo vệ dữ liệu
             </Text>
             .
@@ -146,7 +147,7 @@ export default function RegisterScreen() {
 
         {error && (
           <View className="rounded-md bg-danger-tint p-3">
-            <Text className="text-sm text-danger">{error}</Text>
+            <Text className="text-sm text-danger-strong">{error}</Text>
           </View>
         )}
 
@@ -162,7 +163,7 @@ export default function RegisterScreen() {
       <View className="mt-8 flex-row items-center justify-center" style={{ gap: 4 }}>
         <Text className="text-muted">Đã có tài khoản Be.Travel?</Text>
         <Pressable accessibilityRole="button" onPress={() => router.push('/login')}>
-          <Text className="font-body-bold text-primary">Đăng nhập</Text>
+          <Text className="font-body-bold text-primary-strong">Đăng nhập</Text>
         </Pressable>
       </View>
     </ScrollView>

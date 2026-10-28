@@ -77,7 +77,7 @@ export function VoiceTools({ locale, disabled }: { locale: string | null; disabl
           }}
           className="min-h-12 justify-center"
         >
-          <Text className="text-primary">{busy ? 'Đang chuẩn bị…' : 'Chuẩn bị micro offline'}</Text>
+          <Text className="text-primary-strong">{busy ? 'Đang chuẩn bị…' : 'Chuẩn bị micro offline'}</Text>
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -87,7 +87,7 @@ export function VoiceTools({ locale, disabled }: { locale: string | null; disabl
           }}
           className="min-h-12 justify-center"
         >
-          <Text className="text-primary">Cài giọng đọc / quyền</Text>
+          <Text className="text-primary-strong">Cài giọng đọc / quyền</Text>
         </Pressable>
       </View>
     </View>

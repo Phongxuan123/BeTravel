@@ -34,7 +34,7 @@ import { useDocumentStatus, type DocumentKey } from '@/features/profile/useDocum
 
 // Liên hệ khẩn cấp và ghi chú giấy tờ chỉ nằm trong AsyncStorage của máy (quyết định B6, B7 ngày
 // 08/10/2026): không đồng bộ server, nên phải nói rõ để người dùng không tưởng đã sao lưu.
-const LOCAL_ONLY_NOTE = 'Chỉ lưu trên điện thoại này; có thể mất khi xoá dữ liệu hoặc cài lại ứng dụng.';
+const LOCAL_ONLY_NOTE = 'Chỉ lưu trên điện thoại này; có thể mất khi xóa dữ liệu hoặc cài lại ứng dụng.';
 
 const DOCUMENTS: { key: DocumentKey; label: string; icon: typeof IdCard }[] = [
   { key: 'passport', label: 'Hộ chiếu', icon: IdCard },
@@ -157,7 +157,7 @@ export default function ProfileScreen() {
               style={{ gap: 6 }}
             >
               <Pencil size={14} color={colors.primary} />
-              <Text className="text-[13px] font-body-bold text-primary">Sửa hồ sơ</Text>
+              <Text className="text-[13px] font-body-bold text-primary-strong">Sửa hồ sơ</Text>
             </Pressable>
           </View>
 
@@ -194,7 +194,7 @@ export default function ProfileScreen() {
               {contacts.map((contact) => (
                 <View key={contact.id} className="flex-row items-center" style={{ gap: 12 }}>
                   <View className="h-[50px] w-[50px] items-center justify-center rounded-md bg-danger-soft">
-                    <Text className="font-body-bold text-danger">{contact.name.slice(0, 2).toUpperCase()}</Text>
+                    <Text className="font-body-bold text-danger-strong">{contact.name.slice(0, 2).toUpperCase()}</Text>
                   </View>
                   <View className="flex-1">
                     <Text className="text-[17px] font-body-bold text-ink">{contact.name}</Text>
@@ -203,12 +203,12 @@ export default function ProfileScreen() {
                     </Text>
                   </View>
                   <IconButton accessibilityLabel={`Gọi ${contact.name}`} variant="soft" icon={<Phone size={18} color={colors.primary} />} onPress={() => void openPhone(contact.phone)} />
-                  <IconButton accessibilityLabel={`Xoá ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
+                  <IconButton accessibilityLabel={`Xóa ${contact.name}`} variant="outline" icon={<Trash2 size={16} color={colors.danger} />} onPress={() => removeContact(contact.id)} />
                 </View>
               ))}
             </View>
             <Pressable onPress={openAddContact} className="mt-3 h-14 items-center justify-center rounded-lg border border-dashed border-[#C9D6EE]">
-              <Text className="font-body-bold text-primary">+ Thêm liên hệ</Text>
+              <Text className="font-body-bold text-primary-strong">+ Thêm liên hệ</Text>
             </Pressable>
           </View>
 
@@ -247,7 +247,7 @@ export default function ProfileScreen() {
         </View>
         {nameError && (
           <View className="mt-3 rounded-md bg-danger-tint p-3">
-            <Text className="text-sm text-danger">{nameError}</Text>
+            <Text className="text-sm text-danger-strong">{nameError}</Text>
           </View>
         )}
         <View className="mt-4">
