@@ -22,9 +22,19 @@ export function buildLocationMessage(location: LocationSnapshot, now = Date.now(
   const coordinates = `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
   return [
     'Tôi chia sẻ vị trí của mình qua BeTravel.',
-    `Thời điểm: ${new Date(timestamp).toISOString()} (UTC).`,
+    `Thời điểm: ${formatShareTime(timestamp)}.`,
     `Tọa độ: ${coordinates}.`, precision,
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(coordinates)}`,
     'Đây là vị trí tại thời điểm đo, không cập nhật trực tiếp.',
   ].join('\n');
+}
+
+// "HH:mm dd/MM/yyyy (giờ máy, UTC±h)" dễ đọc hơn ISO 8601 (V-04); giữ thêm UTC để người nhận đối chiếu.
+function formatShareTime(timestamp: number): string {
+  const date = new Date(timestamp);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const offsetMinutes = -date.getTimezoneOffset();
+  const sign = offsetMinutes >= 0 ? '+' : '-';
+  const offset = `UTC${sign}${pad(Math.floor(Math.abs(offsetMinutes) / 60))}:${pad(Math.abs(offsetMinutes) % 60)}`;
+  return `${pad(date.getHours())}:${pad(date.getMinutes())} ${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} (giờ máy, ${offset})`;
 }

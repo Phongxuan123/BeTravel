@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { useState } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Search } from 'lucide-react-native';
@@ -12,6 +13,11 @@ import type { Incident } from '@/lib/data';
 export default function IncidentsScreen() {
   const { countryCode } = useCountry();
   const incidentsQuery = useQuery({ queryKey: ['incidents', countryCode], queryFn: () => fetchIncidents(countryCode) });
+  // Tìm sự cố: lọc tại chỗ theo tiêu đề, không dấu (V-16).
+  const [searching, setSearching] = useState(false);
+  const [filter, setFilter] = useState('');
+  const fold = (text: string) => text.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/đ/g, 'd').toLowerCase();
+  const incidents = (incidentsQuery.data?.data ?? []).filter((item) => !filter.trim() || fold(item.title).includes(fold(filter.trim())));
 
   return (
     <View className="flex-1 bg-bg">
@@ -23,11 +29,25 @@ export default function IncidentsScreen() {
             accessibilityLabel="Tìm sự cố"
             variant="soft"
             icon={<Search size={18} color={colors.primary} />}
-            onPress={() => router.push({ pathname: '/coming-soon', params: { title: 'Tìm sự cố' } })}
+            onPress={() => {
+              setSearching((open) => !open);
+              setFilter('');
+            }}
           />
         }
       />
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48, gap: 12 }}>
+        {searching && (
+          <TextInput
+            accessibilityLabel="Tìm sự cố"
+            autoFocus
+            value={filter}
+            onChangeText={setFilter}
+            placeholder="Gõ tên sự cố, ví dụ: mất hộ chiếu"
+            placeholderTextColor={colors.subtle}
+            className="h-12 rounded-md border border-line bg-surface px-4 text-base text-ink"
+          />
+        )}
         <Text className="text-sm font-body-bold text-ink">Chọn loại sự cố bạn đang gặp phải:</Text>
 
         {incidentsQuery.isLoading && <Text className="py-6 text-center text-sm text-muted">Đang tải…</Text>}
@@ -39,7 +59,7 @@ export default function IncidentsScreen() {
         )}
 
         <View className="flex-row flex-wrap justify-between" style={{ rowGap: 10 }}>
-          {incidentsQuery.data?.data.map((incident) => (
+          {incidents.map((incident) => (
             <IncidentRow key={incident.slug} incident={incident} />
           ))}
         </View>

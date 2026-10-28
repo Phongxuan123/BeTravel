@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { ChevronDown, ChevronUp } from 'lucide-react-native';
 import { colors } from '@/lib/theme';
+import { openUrl } from '@/lib/openExternal';
+
+const URL_LINE_RE = /^https?:\/\/\S+$/;
 
 export function Accordion({
   items,
@@ -31,7 +34,11 @@ export function Accordion({
                 {item.content.map((line, li) => (
                   <View key={li} className="flex-row items-start gap-2">
                     <View className="mt-2 h-1.5 w-1.5 rounded-full bg-[#9DBBEE]" />
-                    <Text className="flex-1 text-sm leading-5 text-ink">{line}</Text>
+                    {URL_LINE_RE.test(line) ? (
+                      <Text accessibilityRole="link" className="flex-1 text-sm leading-5 text-primary-strong underline" onPress={() => void openUrl(line)}>{line}</Text>
+                    ) : (
+                      <Text className="flex-1 text-sm leading-5 text-ink">{line}</Text>
+                    )}
                   </View>
                 ))}
               </View>

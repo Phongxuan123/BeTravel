@@ -73,7 +73,12 @@ export default function SosHubScreen() {
       const { coords, failure } = await requestLocationDetailed();
       if (!coords) {
         // Người dùng tự chọn "Để sau" thì không làm phiền thêm; các lỗi khác phải nói rõ lý do.
-        if (failure !== 'declined') Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure]);
+        if (failure === 'denied') {
+          Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure], [
+            { text: 'Để sau', style: 'cancel' },
+            { text: 'Mở Cài đặt', onPress: () => void Linking.openSettings() },
+          ]);
+        } else if (failure !== 'declined') Alert.alert('Chưa xác định được vị trí', LOCATION_FAILURE_MESSAGES[failure]);
         return;
       }
 

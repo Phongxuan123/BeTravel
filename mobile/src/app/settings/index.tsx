@@ -13,6 +13,7 @@ import { TextField } from '@/components/ui/TextField';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { notify } from '@/lib/notify';
 import { useCountry } from '@/lib/countryContext';
 import { fetchCountries, fetchPreferences, updatePreferences, listChatSessions, deleteChatSession } from '@/lib/data';
 import type { Preferences } from '@/lib/data';
@@ -45,6 +46,7 @@ export default function SettingsScreen() {
     mutationFn: (patch: PreferencesPatch) => updatePreferences(patch),
     onSuccess: (res) => {
       queryClient.setQueryData(['preferences'], res);
+      notify('Đã lưu');
     },
   });
 

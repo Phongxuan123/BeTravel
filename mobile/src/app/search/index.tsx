@@ -32,6 +32,8 @@ export default function SearchScreen() {
   const topicsQuery = useQuery({ queryKey: ['topics', countryCode], queryFn: () => fetchTopics(countryCode) });
   // Gợi ý lấy theo chủ đề đang có bài, tránh gợi ý một câu mà kho chưa có bài nào trả lời (B16).
   const topicWithArticles = topicsQuery.data?.data.find((topic) => topic.count > 0);
+  // Gợi ý lấy từ chủ đề thật của quốc gia (chỉ chủ đề đã có bài), không cố định trong code (V-17).
+  const suggestionTopics = (topicsQuery.data?.data ?? []).filter((topic) => topic.count > 0).slice(0, 4);
   const searchPlaceholder = topicWithArticles
     ? `Ví dụ: ${topicWithArticles.label.toLowerCase()}`
     : 'Nhập từ khoá cần tìm';
@@ -154,12 +156,16 @@ export default function SearchScreen() {
               <Button label="Xem tất cả chủ đề" variant="secondary" onPress={() => router.push('/explore')} />
             </EmptyState>
 
-            <Text className="mb-3 mt-4 text-sm font-body-bold text-ink">Từ khóa gợi ý</Text>
-            <View className="flex-row flex-wrap" style={{ gap: 8 }}>
-              {['Thuốc mang theo người', 'Hàng cấm nhập cảnh', 'Khai báo hải quan'].map((s) => (
-                <QuickChip key={s} label={s} onPress={() => setQuery(s)} />
-              ))}
-            </View>
+            {suggestionTopics.length > 0 && (
+              <>
+                <Text className="mb-3 mt-4 text-sm font-body-bold text-ink">Từ khóa gợi ý</Text>
+                <View className="flex-row flex-wrap" style={{ gap: 8 }}>
+                  {suggestionTopics.map((topic) => (
+                    <QuickChip key={topic.key} label={topic.label} onPress={() => setQuery(topic.label)} />
+                  ))}
+                </View>
+              </>
+            )}
 
             <Text className="mb-3 mt-5 text-sm font-body-bold text-ink">Chủ đề phổ biến</Text>
             <View className="flex-row flex-wrap" style={{ gap: 8 }}>

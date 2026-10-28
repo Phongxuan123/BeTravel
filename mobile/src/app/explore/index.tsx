@@ -151,6 +151,9 @@ export default function ExploreScreen() {
         {(topicsQuery.isError || articlesQuery.isError) && (
           <View className="rounded-md bg-danger-tint p-3">
             <Text className="text-center text-sm text-danger-strong">Không tải được dữ liệu. Kiểm tra kết nối mạng.</Text>
+            <Pressable accessibilityRole="button" className="mt-1 min-h-[44px] items-center justify-center" onPress={() => { void topicsQuery.refetch(); void articlesQuery.refetch(); }}>
+              <Text className="font-body-bold text-primary-strong">Thử lại</Text>
+            </Pressable>
           </View>
         )}
 
