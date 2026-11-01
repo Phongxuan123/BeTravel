@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { startNewSession } from './api/chat';
 import * as authApi from './api/auth';
 import { getJSON, setJSON, removeKey, StorageKeys } from './storage';
 
@@ -124,11 +123,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const ownerRef = useRef<string | null>(null);
   const setUser = useCallback((next: AuthUser | null) => {
-    // Cache trips/chat không được dùng lại sau khi chuyển tài khoản.
+    // Cache trips không được dùng lại sau khi chuyển tài khoản.
     const owner = next?.email ?? null;
     if (owner !== ownerRef.current) {
       queryClient.clear();
-      startNewSession();
       ownerRef.current = owner;
     }
     setUserState(next);

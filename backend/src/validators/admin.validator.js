@@ -6,8 +6,6 @@ import {
   RiskLevel,
   SourceKind,
   CountryStatus,
-  FeedbackRating,
-  FeedbackStatusValues,
 } from "../core/constants.js";
 
 /*
@@ -271,36 +269,6 @@ export const ragAuLawIndexSchema = z.object({
 });
 
 export const ragAuLawParamSchema = z.object({ titleId: auTitleIdSchema });
-
-// ── FAQ đã duyệt (G6) ──────────────────────────────────────────────────
-const objectIdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/, "ID không hợp lệ");
-
-export const faqCandidatesQuerySchema = z.object({ countryCode: countryCodeSchema.optional() });
-
-export const faqListQuerySchema = z.object({
-  status: z.enum(["active", "needs_review", "retired", "dismissed"]).optional(),
-});
-
-export const faqDecisionSchema = z.object({
-  sourceMessageId: objectIdSchema,
-  decision: z.enum(["approve", "dismiss"]),
-});
-
-export const faqStatusUpdateSchema = z.object({ status: z.enum(["active", "retired"]) });
-
-export const faqParamSchema = z.object({ id: objectIdSchema });
-
-// ── Feedback queue (B5, A08) ────────────────────────────────────────────
-export const feedbackListQuerySchema = paginationQuerySchema.extend({
-  rating: z.enum(Object.values(FeedbackRating)).optional(),
-  status: z.enum(FeedbackStatusValues).optional(),
-  countryCode: countryCodeSchema.optional(),
-});
-
-export const feedbackStatusUpdateSchema = z.object({
-  status: z.enum(FeedbackStatusValues),
-  reviewerNote: z.string().trim().max(1000).optional(),
-});
 
 // ── Analytics (B5, A01 nang cap) ────────────────────────────────────────
 export const analyticsOverviewQuerySchema = z.object({

@@ -10,12 +10,10 @@ import {
 import { chunkArticle } from "../src/rag/chunking.js";
 import { rrf } from "../src/rag/rrf.js";
 import { parsePagination, buildPageMeta } from "../src/core/pagination.js";
-import { guardAnswer, FALLBACK_MESSAGE } from "../src/rag/guard.js";
-import { parseLlmJson, buildUserPrompt } from "../src/rag/prompt.js";
 
 /*
  * Test don vi cho cac ham thuan (khong DB/network): chuan hoa tieng Viet,
- * chunking, RRF, phan trang, guard va parse JSON cua LLM.
+ * chunking, RRF, phan trang.
  */
 
 // --- normalizeVi ---
@@ -147,93 +145,4 @@ test("parsePagination mac dinh, kep gioi han va tinh skip", () => {
   assert.deepEqual(parsePagination({ page: "abc", limit: "0" }), { page: 1, limit: 20, skip: 0 });
   assert.deepEqual(parsePagination({ limit: "-3" }), { page: 1, limit: 1, skip: 0 });
   assert.deepEqual(buildPageMeta({ page: 2, limit: 5 }, 11), { page: 2, limit: 5, total: 11 });
-});
-
-// --- guardAnswer ---
-
-const sourceMap = (text) => new Map([["S1", { marker: "S1", text }]]);
-
-test("guard chan so tien bia dung ky hieu ₫ du co marker hop le", () => {
-  const result = guardAnswer(
-    { answer: "Mức phạt 900.000₫ [S1].", usedSources: ["S1"] },
-    sourceMap("Nguồn chỉ nêu 100.000₫"),
-  );
-  assert.equal(result.fallbackReason, "GUARD_REJECTED");
-  assert.equal(result.answer, FALLBACK_MESSAGE);
-});
-
-test("guard chan so tien bia dung ky hieu $ du co marker hop le", () => {
-  const result = guardAnswer(
-    { answer: "Phí là 500$ [S1].", usedSources: ["S1"] },
-    sourceMap("Phí 50$"),
-  );
-  assert.equal(result.fallbackReason, "GUARD_REJECTED");
-});
-
-test("guard chap nhan so tien khop nguon voi ky hieu ₫ va dinh dang khac nhau", () => {
-  const result = guardAnswer(
-    { answer: "Mức phạt 100.000₫ [S1].", usedSources: ["S1"] },
-    sourceMap("Phạt 100,000₫ theo quy định"),
-  );
-  assert.equal(result.fallbackReason, null);
-  assert.equal(result.citations.length, 1);
-});
-
-test("guard giu nhieu marker lien tiep va gom citation khong trung", () => {
-  const retrieved = new Map([
-    ["S1", { marker: "S1", text: "Phạt 70.000 KRW" }],
-    ["S2", { marker: "S2", text: "khác" }],
-  ]);
-  const result = guardAnswer(
-    { answer: "Vượt đèn đỏ bị phạt 70.000 KRW [S1][S2]. Nhắc lại [S1].", usedSources: [] },
-    retrieved,
-  );
-  assert.equal(result.fallbackReason, null);
-  assert.equal(result.citations.length, 2);
-});
-
-test("guard từ chối mọi câu trả lời không có citation", () => {
-  const result = guardAnswer({ answer: "Hãy giữ bình tĩnh.", usedSources: [] }, new Map());
-  assert.equal(result.fallbackReason, "GUARD_REJECTED");
-  assert.ok(result.violations.includes("MISSING_CITATION"));
-});
-
-// --- parseLlmJson / buildUserPrompt ---
-
-const validJson = {
-  answer: "Trả lời [S1].",
-  usedSources: ["S1"],
-  confidence: "high",
-  needsOfficialHelp: false,
-};
-
-test("parseLlmJson go khoi ```json va tu choi JSON sai schema", () => {
-  assert.deepEqual(parseLlmJson("```json\n" + JSON.stringify(validJson) + "\n```"), validJson);
-  assert.equal(parseLlmJson("khong phai json"), null);
-  assert.equal(parseLlmJson(JSON.stringify({ ...validJson, confidence: "sure" })), null);
-  assert.equal(parseLlmJson(JSON.stringify({ ...validJson, answer: "   " })), null);
-  assert.equal(parseLlmJson(JSON.stringify({ ...validJson, usedSources: [1] })), null);
-  assert.equal(parseLlmJson(JSON.stringify({ ...validJson, needsOfficialHelp: "no" })), null);
-  assert.equal(parseLlmJson("null"), null);
-  assert.equal(parseLlmJson(undefined), null);
-});
-
-test("buildUserPrompt render khoi [Sn] va cau hoi", () => {
-  const prompt = buildUserPrompt({
-    question: "Hỏi gì?",
-    chunks: [
-      {
-        marker: "S1",
-        title: "T",
-        heading: "H",
-        authority: "Bộ",
-        effectiveFrom: null,
-        updatedAt: new Date("2026-01-02T00:00:00Z"),
-        text: "Nội dung",
-      },
-    ],
-  });
-  assert.match(prompt, /^<context>\n\[S1\] Bài: T \| Mục: H/);
-  assert.match(prompt, /Hiệu lực từ: chưa rõ \| Cập nhật: 2026-01-02/);
-  assert.match(prompt, /Câu hỏi: Hỏi gì\?$/);
 });

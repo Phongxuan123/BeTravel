@@ -12,8 +12,6 @@ import Country from "../src/models/Country.js";
 import LegalArticle from "../src/models/LegalArticle.js";
 import LegalChunk from "../src/models/LegalChunk.js";
 import AiQuota from "../src/models/AiQuota.js";
-import AiCache from "../src/models/AiCache.js";
-import AnswerMemory from "../src/models/AnswerMemory.js";
 import Job from "../src/models/Job.js";
 import RefreshToken from "../src/models/RefreshToken.js";
 import { env } from "../src/core/env.js";
@@ -22,10 +20,8 @@ import { checkAndIncrementQuota } from "../src/services/aiUsage.service.js";
 import { issueRefreshToken, refreshAccessToken } from "../src/services/refreshToken.service.js";
 import { registerJobHandler, runNextJob } from "../src/services/job.service.js";
 import { updateArticle } from "../src/services/legalArticle.service.js";
-import { createSession, sendMessage } from "../src/services/chat.service.js";
 import { retrieve } from "../src/rag/retrieval.js";
 import { __setSearchDriverForTest } from "../src/rag/search/index.js";
-import { __setLlmProviderForTest } from "../src/rag/llm/index.js";
 import { __setEmbeddingProviderForTest } from "../src/rag/embedding/index.js";
 import { createMockEmbeddingProvider } from "../src/rag/embedding/mock.embedding.js";
 import { purgeChunksHandler } from "../src/rag/jobs/purgeChunks.job.js";
@@ -209,58 +205,6 @@ test("chunk cũ của draft/superseded không lọt RAG", async () => {
     const result = await retrieve({ question: "test", countryCode: "KR" });
     assert.equal(result.passed, false);
   }
-});
-
-test("cache hết hạn không dùng lại; giữ metadata AI và chunkId thật", async () => {
-  const { chunks } = await seedEvidence();
-  const user = await createUser();
-  let calls = 0;
-  __setLlmProviderForTest({
-    model: "test",
-    complete: async () => {
-      calls += 1;
-      return JSON.stringify({
-        answer: "Hướng dẫn tham khảo [S1].",
-        usedSources: ["S1"],
-        confidence: "high",
-        needsOfficialHelp: true,
-      });
-    },
-  });
-  const session = await createSession(user._id, "KR");
-  const input = { userId: user._id, sessionId: session._id, question: "test" };
-  const first = await sendMessage(input);
-  assert.equal(first.message.needsOfficialHelp, true);
-  assert.equal(first.message.confidence, "high");
-  assert.deepEqual(
-    first.message.retrieval.chunkIds.map(String).sort(),
-    chunks.map((c) => String(c._id)).sort(),
-  );
-  await sendMessage(input);
-  assert.equal(calls, 1);
-  // Hết hạn ở cả hai lớp dùng lại (cache theo nguồn và bộ nhớ câu hỏi lặp lại).
-  await AiCache.updateMany({}, { $set: { expiresAt: new Date(0) } });
-  await AnswerMemory.updateMany({}, { $set: { expiresAt: new Date(0) } });
-  await sendMessage(input);
-  assert.equal(calls, 2);
-});
-
-test("lỗi embedding trở thành fallback và vẫn lưu assistant message", async () => {
-  await seedEvidence();
-  const user = await createUser();
-  __setEmbeddingProviderForTest({
-    model: "broken",
-    embedBatch: async () => {
-      throw new Error("upstream");
-    },
-  });
-  const session = await createSession(user._id, "KR");
-  const { message } = await sendMessage({
-    userId: user._id,
-    sessionId: session._id,
-    question: "test",
-  });
-  assert.equal(message.fallbackReason, "PROVIDER_ERROR");
 });
 
 test("bài đã publish không sửa trực tiếp; hai bản sửa nháp chỉ một bản thắng", async () => {

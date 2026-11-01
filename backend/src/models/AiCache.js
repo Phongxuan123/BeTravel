@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 /*
- * Cache cau tra loi AI theo key = sha256(normalize(q) + countryCode +
- * sortedChunkIds) -- xem services/chat.service.js#buildCacheKey. TTL qua
- * index Mongo (expireAfterSeconds), khong can job don rieng.
+ * Cache ket qua AI theo key (vd tom tat/dich luat Uc, xem
+ * services/australiaLaw*.service.js). TTL qua index Mongo (expireAfterSeconds),
+ * khong can job don rieng.
  */
 const aiCacheSchema = new mongoose.Schema(
   {

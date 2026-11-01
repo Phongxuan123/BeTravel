@@ -1,6 +1,5 @@
 import AiEvent from "../models/AiEvent.js";
 import { FallbackReason } from "../core/constants.js";
-import { countPendingFeedback } from "./feedback.service.js";
 
 const DEFAULT_DAYS = 7;
 const TOP_FALLBACK_LIMIT = 10;
@@ -18,46 +17,38 @@ export const getAnalyticsOverview = async ({ days = DEFAULT_DAYS } = {}) => {
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
   const filter = { createdAt: { $gte: since } };
 
-  const [
-    totalChats,
-    fallbackCount,
-    latencyAgg,
-    costAgg,
-    topFallbackRaw,
-    routeAgg,
-    pendingFeedbackCount,
-  ] = await Promise.all([
-    AiEvent.countDocuments(filter),
-    AiEvent.countDocuments({ ...filter, fallbackReason: KNOWLEDGE_GAP_REASONS }),
-    AiEvent.aggregate([
-      { $match: filter },
-      { $group: { _id: null, avgLatencyMs: { $avg: "$latencyMs" } } },
-    ]),
-    AiEvent.aggregate([
-      { $match: filter },
-      { $group: { _id: null, total: { $sum: "$costEstimateUsd" } } },
-    ]),
-    AiEvent.aggregate([
-      // $exists can $ne "" -- AiEvent tao TRUOC khi them field `question`
-      // (du lieu that tu B4) khong co field nay, $ne "" khong loai duoc
-      // truong hop thieu han field, se lam $first tra ve null.
-      {
-        $match: {
-          ...filter,
-          fallbackReason: KNOWLEDGE_GAP_REASONS,
-          question: { $exists: true, $ne: "" },
+  const [totalChats, fallbackCount, latencyAgg, costAgg, topFallbackRaw, routeAgg] =
+    await Promise.all([
+      AiEvent.countDocuments(filter),
+      AiEvent.countDocuments({ ...filter, fallbackReason: KNOWLEDGE_GAP_REASONS }),
+      AiEvent.aggregate([
+        { $match: filter },
+        { $group: { _id: null, avgLatencyMs: { $avg: "$latencyMs" } } },
+      ]),
+      AiEvent.aggregate([
+        { $match: filter },
+        { $group: { _id: null, total: { $sum: "$costEstimateUsd" } } },
+      ]),
+      AiEvent.aggregate([
+        // $exists can $ne "" -- AiEvent tao TRUOC khi them field `question`
+        // (du lieu that tu B4) khong co field nay, $ne "" khong loai duoc
+        // truong hop thieu han field, se lam $first tra ve null.
+        {
+          $match: {
+            ...filter,
+            fallbackReason: KNOWLEDGE_GAP_REASONS,
+            question: { $exists: true, $ne: "" },
+          },
         },
-      },
-      { $group: { _id: "$questionHash", question: { $first: "$question" }, count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: TOP_FALLBACK_LIMIT },
-    ]),
-    AiEvent.aggregate([
-      { $match: filter },
-      { $group: { _id: { $ifNull: ["$route", DEFAULT_ROUTE] }, count: { $sum: 1 } } },
-    ]),
-    countPendingFeedback(),
-  ]);
+        { $group: { _id: "$questionHash", question: { $first: "$question" }, count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: TOP_FALLBACK_LIMIT },
+      ]),
+      AiEvent.aggregate([
+        { $match: filter },
+        { $group: { _id: { $ifNull: ["$route", DEFAULT_ROUTE] }, count: { $sum: 1 } } },
+      ]),
+    ]);
 
   return {
     days,
@@ -68,7 +59,6 @@ export const getAnalyticsOverview = async ({ days = DEFAULT_DAYS } = {}) => {
     costEstimateUsd: costAgg[0]?.total ?? 0,
     // Số lượt theo luồng phân loại (legal, emergency, out_of_scope, greeting, personal_advice).
     routeCounts: Object.fromEntries(routeAgg.map((row) => [row._id, row.count])),
-    pendingFeedbackCount,
     topFallbackQuestions: topFallbackRaw.map((row) => ({
       question: row.question,
       count: row.count,

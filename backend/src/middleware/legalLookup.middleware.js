@@ -2,8 +2,8 @@ import { env } from "../core/env.js";
 import { AppError, ErrorCode } from "../core/errors.js";
 
 /*
- * Cong chan tam thoi cho moi endpoint tra cuu phap luat (/api/legal/* va
- * /api/chat/*). ErrorCode la enum DONG nen khong them ma moi: dung FORBIDDEN
+ * Cong chan tam thoi cho moi endpoint tra cuu phap luat (/api/legal/*).
+ * ErrorCode la enum DONG nen khong them ma moi: dung FORBIDDEN
  * kem details.reason = "FEATURE_DISABLED" de client phan biet voi loi phan
  * quyen that (client chi phan nhanh theo code + reason, khong theo message).
  * Doc env moi request de bat/tat khong can sua code.

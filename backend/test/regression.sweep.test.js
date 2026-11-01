@@ -3,22 +3,18 @@ import assert from "node:assert/strict";
 import request from "supertest";
 
 import { startTestDb, stopTestDb, clearTestDb } from "./setup.js";
-import { registerAndLogin } from "./helpers.js";
 
 /*
  * Hoi quy cho cac loi tim ra trong dot viet test toan du an (28/09):
  * - tim kiem khong dau voi chu "đ" (ca du lieu moi lan du lieu cu con "đ")
  * - dang nhap Google voi email co phan truoc "@" ngan hon 3 ky tu
- * - chat tu choi nham khi ten nuoc khac la chuoi con cua tu thuong ("Lào"/"lao động")
  */
 
 let app;
 let Country;
 let LegalTopic;
 let LegalArticle;
-let ChatSession;
 let authService;
-let chatService;
 
 before(async () => {
   await startTestDb();
@@ -26,9 +22,7 @@ before(async () => {
   ({ default: Country } = await import("../src/models/Country.js"));
   ({ default: LegalTopic } = await import("../src/models/LegalTopic.js"));
   ({ default: LegalArticle } = await import("../src/models/LegalArticle.js"));
-  ({ default: ChatSession } = await import("../src/models/ChatSession.js"));
   authService = await import("../src/services/auth.service.js");
-  chatService = await import("../src/services/chat.service.js");
 });
 
 after(stopTestDb);
@@ -100,25 +94,4 @@ test("dang nhap Google voi email 'ab@gmail.com' tao duoc tai khoan (username >= 
     fullName: "A B",
   });
   assert.notEqual(other.user.username, session.user.username);
-});
-
-test("chat khong tu choi nham cau hoi 'lao động' khi co quoc gia 'Lào' trong DB", async () => {
-  await seedKr();
-  await Country.create({ code: "LA", name: "Lào", language: "Tiếng Lào", status: "coming_soon" });
-  const { user } = await registerAndLogin(app);
-  const session = await ChatSession.create({ userId: user.id, countryCode: "KR" });
-
-  const { message } = await chatService.sendMessage({
-    userId: user.id,
-    sessionId: session._id,
-    question: "Luật lao động ở Hàn Quốc quy định giờ làm thế nào?",
-  });
-  assert.doesNotMatch(message.text, /Để xem thông tin về Lào/);
-
-  const { message: laosMessage } = await chatService.sendMessage({
-    userId: user.id,
-    sessionId: session._id,
-    question: "Đi Lào có cần visa không?",
-  });
-  assert.match(laosMessage.text, /Để xem thông tin về Lào/);
 });

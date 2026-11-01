@@ -353,7 +353,7 @@ export async function retrieveLexical({
   focusArticleId,
   keywords,
 }) {
-  // chat.service đã lấy từ khoá (để so FAQ) thì dùng lại, khỏi tra cache lần nữa.
+  // Nơi gọi đã lấy từ khoá sẵn thì dùng lại, khỏi tra cache lần nữa.
   const { vi, en } = keywords ?? (await getQuestionKeywords(question));
   const driver = getSearchDriver();
   const searches = [uniqueTerms(vi), uniqueTerms(en)].map((terms) =>

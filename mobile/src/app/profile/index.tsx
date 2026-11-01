@@ -10,7 +10,6 @@ import {
   Phone,
   Calendar,
   Bookmark,
-  MessageCircle,
   Settings,
   ChevronRight,
   Check,
@@ -226,8 +225,6 @@ export default function ProfileScreen() {
               count={favoritesQuery.isLoading ? '…' : String(favoritesQuery.data?.data.length ?? 0)}
               onPress={() => router.push('/favorites' as never)}
             />
-            <View className="h-px bg-line" />
-            <MenuRow icon={<MessageCircle size={20} color={colors.primary} />} label="Lịch sử hỏi AI" onPress={() => router.push('/chat')} />
             <View className="h-px bg-line" />
             <MenuRow icon={<Settings size={20} color={colors.muted} />} label="Cài đặt" onPress={() => router.push('/settings')} />
           </View>

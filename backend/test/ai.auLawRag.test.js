@@ -41,9 +41,6 @@ const BLOCKS = [
 
 let LegalChunk;
 let Country;
-let AiEvent;
-let User;
-let chat;
 let indexService;
 let retrieval;
 let llmIndex;
@@ -56,9 +53,6 @@ before(async () => {
   await startTestDb();
   LegalChunk = (await import("../src/models/LegalChunk.js")).default;
   Country = (await import("../src/models/Country.js")).default;
-  AiEvent = (await import("../src/models/AiEvent.js")).default;
-  User = (await import("../src/models/User.js")).default;
-  chat = await import("../src/services/chat.service.js");
   indexService = await import("../src/services/auLawIndex.service.js");
   retrieval = await import("../src/rag/retrieval.js");
   llmIndex = await import("../src/rag/llm/index.js");
@@ -181,7 +175,7 @@ test("indexAuLaw: lỗi embedding không làm mất chunk đang dùng", async ()
   assert.equal(await LegalChunk.countDocuments({ titleId: TITLE_ID }), 3);
 });
 
-// ── truy hồi + chat ────────────────────────────────────────────────────────
+// ── truy hồi ───────────────────────────────────────────────────────────────
 
 const seedAustralia = async () => {
   await Country.create({
@@ -191,34 +185,18 @@ const seedAustralia = async () => {
     emergencyNumbers: { police: "000" },
   });
   await indexService.indexAuLaw(TITLE_ID, fakeDeps());
-  return User.create({
-    username: "au_rag",
-    fullName: "AU RAG",
-    email: "au_rag@example.test",
-    password: "khong-dung-toi",
-    role: "user",
-  });
 };
 
-const askAu = async (user, question) => {
-  const session = await chat.createSession(user._id, "AU");
-  const { message } = await chat.sendMessage({
-    userId: user._id,
-    sessionId: session._id,
-    question,
-  });
-  return message;
-};
+const retrieveAu = (question, countryCode = "AU") => retrieval.retrieve({ question, countryCode });
 
 const QUESTION = "The Minister may cancel a visa if the holder has breached a condition?";
 
-test("chat Úc: trả lời có trích dẫn điều luật gốc, gắn nhãn chưa kiểm chứng và URL chính thức", async () => {
-  const user = await seedAustralia();
-  const message = await askAu(user, QUESTION);
+test("retrieval Úc: trả chunk điều luật gốc kèm nhãn nguồn và URL chính thức", async () => {
+  await seedAustralia();
+  const result = await retrieveAu(QUESTION);
 
-  assert.equal(message.fallbackReason, null, message.text);
-  assert.ok(message.citations.length >= 1);
-  const [citation] = message.citations;
+  assert.equal(result.passed, true);
+  const [citation] = result.chunks;
   assert.equal(citation.sourceType, "au_legislation");
   assert.equal(citation.title, LAW_NAME);
   assert.match(citation.heading, /^116 Cancellation of visas/);
@@ -226,24 +204,23 @@ test("chat Úc: trả lời có trích dẫn điều luật gốc, gắn nhãn c
   assert.ok(!citation.articleId);
 });
 
-test("chat Úc: bản biên soạn đã bị thay thế hoặc không tra được thì không dùng (fail-closed)", async () => {
-  const user = await seedAustralia();
+test("retrieval Úc: bản biên soạn đã bị thay thế hoặc không tra được thì không dùng (fail-closed)", async () => {
+  await seedAustralia();
 
   retrieval.__setAuRegisterLookupForTest(async () => "REGISTER-NEWER");
-  const stale = await askAu(user, QUESTION);
-  assert.equal(stale.fallbackReason, "INSUFFICIENT_EVIDENCE");
-  assert.equal(stale.citations.length, 0);
+  const stale = await retrieveAu(QUESTION);
+  assert.equal(stale.passed, false);
+  assert.equal(stale.chunks.length, 0);
 
   retrieval.__setAuRegisterLookupForTest(async () => {
     throw new Error("UPSTREAM_DOWN");
   });
-  const unreachable = await askAu(user, QUESTION);
-  assert.equal(unreachable.fallbackReason, "INSUFFICIENT_EVIDENCE");
+  assert.equal((await retrieveAu(QUESTION)).passed, false);
 });
 
 test("retrieval Úc: nguồn chập chờn sau một lần tra thành công vẫn dùng mã đã xác minh gần đây", async () => {
   await seedAustralia();
-  const verified = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
+  const verified = await retrieveAu(QUESTION);
   assert.equal(verified.passed, true);
 
   let liveCalls = 0;
@@ -253,7 +230,7 @@ test("retrieval Úc: nguồn chập chờn sau một lần tra thành công vẫ
   };
   // Đổi hàm tra mà không xoá bộ nhớ (hàm test xoá), mô phỏng nguồn sập giữa chừng.
   retrieval.__swapAuRegisterLookupKeepMemoryForTest(upstreamDown);
-  const whileDown = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
+  const whileDown = await retrieveAu(QUESTION);
   assert.equal(whileDown.passed, true);
   assert.ok(liveCalls >= 1, "vẫn phải thử tra lại ở nền");
 });
@@ -266,13 +243,13 @@ test("retrieval Úc: mã đã xác minh lưu DB, khởi động lại khi nguồ
     save: async (titleId, registerId, verifiedAt) => saved.set(titleId, { registerId, verifiedAt }),
   };
   retrieval.__setAuRegisterLookupForTest(async () => "REGISTER-1", { store });
-  assert.equal((await retrieval.retrieve({ question: QUESTION, countryCode: "AU" })).passed, true);
+  assert.equal((await retrieveAu(QUESTION)).passed, true);
 
   retrieval.__forgetAuRegisterMemoryForTest();
   retrieval.__swapAuRegisterLookupKeepMemoryForTest(async () => {
     throw new Error("UPSTREAM_DOWN");
   });
-  assert.equal((await retrieval.retrieve({ question: QUESTION, countryCode: "AU" })).passed, true);
+  assert.equal((await retrieveAu(QUESTION)).passed, true);
 });
 
 test("retrieval Úc: nguồn chậm quá ngân sách thì không giữ người dùng chờ (fail-closed)", async () => {
@@ -281,7 +258,7 @@ test("retrieval Úc: nguồn chậm quá ngân sách thì không giữ người 
     () => new Promise((resolve) => setTimeout(() => resolve("REGISTER-1"), 1500)),
   );
   const startedAt = Date.now();
-  const result = await retrieval.retrieve({ question: QUESTION, countryCode: "AU" });
+  const result = await retrieveAu(QUESTION);
   assert.equal(result.passed, false);
   assert.ok(Date.now() - startedAt < 1000, "phải trả về sau khoảng AU_REGISTER_LOOKUP_BUDGET_MS");
 });
@@ -301,48 +278,18 @@ test("retrieval Úc: câu không đủ điểm bị từ chối ngay, không ch�
   assert.equal(lookups, 0);
 });
 
-test("chat Úc: câu luật giao thông bang trả lời ngay lời từ chối có hướng dẫn, không gọi AI", async () => {
-  const user = await seedAustralia();
-  const message = await askAu(user, "Lái xe ở Sydney đi sai làn thì bị phạt thế nào?");
-  assert.equal(message.fallbackReason, "INSUFFICIENT_EVIDENCE");
-  assert.match(message.text, /từng bang/);
-  assert.match(message.text, /https:\/\/www\.nsw\.gov\.au\//);
-  const event = await AiEvent.findOne({ messageId: message._id }).lean();
-  assert.equal(event.model, "none");
-});
-
-test("chat Úc: tai nạn khi lái xe là ca khẩn cấp, vẫn nhận số khẩn cấp", async () => {
-  const user = await seedAustralia();
-  const message = await askAu(user, "Tôi bị tai nạn khi lái xe ở Sydney, phải làm gì?");
-  assert.equal(message.route, "emergency");
-  assert.match(message.text, /000/);
-});
-
-test("chat Úc: chunk của luật ngoài danh sách tuyển chọn bị loại dù nằm trong DB", async () => {
-  const user = await seedAustralia();
+test("retrieval Úc: chunk của luật ngoài danh sách tuyển chọn bị loại dù nằm trong DB", async () => {
+  await seedAustralia();
   await LegalChunk.updateMany({ titleId: TITLE_ID }, { $set: { titleId: "C0000A00000" } });
   memoryDriver.invalidateMemorySearchCache();
 
-  const message = await askAu(user, QUESTION);
-  assert.equal(message.fallbackReason, "INSUFFICIENT_EVIDENCE");
+  assert.equal((await retrieveAu(QUESTION)).passed, false);
 });
 
-test("chunk luật Úc không lọt sang phiên của quốc gia khác", async () => {
+test("chunk luật Úc không lọt sang truy hồi của quốc gia khác", async () => {
   await seedAustralia();
   await Country.create({ code: "KR", name: "Hàn Quốc", status: "active" });
-  const user = await User.create({
-    username: "kr_user",
-    fullName: "KR",
-    email: "kr_user@example.test",
-    password: "khong-dung-toi",
-    role: "user",
-  });
-  const session = await chat.createSession(user._id, "KR");
-  const { message } = await chat.sendMessage({
-    userId: user._id,
-    sessionId: session._id,
-    question: QUESTION,
-  });
-  assert.equal(message.fallbackReason, "INSUFFICIENT_EVIDENCE");
-  assert.equal(message.citations.length, 0);
+  const result = await retrieveAu(QUESTION, "KR");
+  assert.equal(result.passed, false);
+  assert.equal(result.chunks.length, 0);
 });

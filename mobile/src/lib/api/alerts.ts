@@ -1,8 +1,8 @@
 /**
  * Noi man hinh Alerts + banner AppShell vao API that (B8). CUNG CHU KY mock
  * (fetchAlerts khong tham so, markAlertRead/markAllAlertsRead theo id) --
- * quoc gia/vi tri hien tai duoc set truoc qua setAlertsContext() (cung mau
- * voi activeSessionId cua lib/api/chat.ts), khong truyen tham so truc tiep.
+ * quoc gia/vi tri hien tai duoc set truoc qua setAlertsContext(), khong
+ * truyen tham so truc tiep.
  */
 import { apiRequest } from './http';
 import { StorageKeys, getJSON, setJSON } from '@/lib/storage';

@@ -25,8 +25,6 @@ before(async () => {
     "/api/users/incident-progress": await load("incidentProgress"),
     "/api/users/favorites": await load("favorites"),
     "/api/users/preferences": await load("preferences"),
-    "/api/chat": await load("chat"),
-    "/api/feedback": await load("feedback"),
     "/api/translate": await load("translate"),
     "/api/auth": await load("auth"),
   });

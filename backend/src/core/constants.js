@@ -72,46 +72,14 @@ export const UserRole = Object.freeze({
   ADMIN: "admin",
 });
 
-// Ly do chat tra ve fallback thay vi cau tra loi that (B4, xem rag/guard.js).
+// Ly do AI tra ve fallback thay vi cau tra loi that (ghi vao ai_events, dung cho thong ke admin).
 export const FallbackReason = Object.freeze({
   // Retrieval khong dat nguong TRUOC KHI goi LLM (rag/retrieval.js).
   INSUFFICIENT_EVIDENCE: "INSUFFICIENT_EVIDENCE",
-  // LLM da tra loi nhung hau kiem bang code phat hien vi pham (rag/guard.js).
+  // LLM da tra loi nhung hau kiem bang code phat hien vi pham.
   GUARD_REJECTED: "GUARD_REJECTED",
   // Provider loi (mang, parse JSON that bai...) -- khong phai loi nghiep vu.
   PROVIDER_ERROR: "PROVIDER_ERROR",
-  // Câu hỏi ngoài phạm vi pháp lý + an toàn du lịch (rag/scope.js hoặc AI báo inScope=false).
+  // Câu hỏi ngoài phạm vi pháp lý + an toàn du lịch.
   OUT_OF_SCOPE: "OUT_OF_SCOPE",
 });
-
-// Nguồn của câu trả lời chat: AI từ kho, FAQ admin đã duyệt, hoặc AI tra trang web chính phủ
-// (chưa kiểm chứng, rag/webAnswer.js).
-export const AnswerSource = Object.freeze({
-  AI: "ai",
-  APPROVED_FAQ: "approved_faq",
-  OFFICIAL_WEB: "official_web",
-});
-
-export const ChatRole = Object.freeze({
-  USER: "user",
-  ASSISTANT: "assistant",
-});
-
-// Module feedback (B5) -- rieng voi ChatMessage.feedback (thumbs nhanh, khong
-// note). Feedback co note dung cho "Bao sai" -> vao hang doi A08 cho admin xu ly.
-export const FeedbackTargetType = Object.freeze({
-  CHAT_MESSAGE: "chat_message",
-});
-
-export const FeedbackRating = Object.freeze({
-  UP: "up",
-  DOWN: "down",
-});
-
-export const FeedbackStatus = Object.freeze({
-  PENDING: "pending",
-  RESOLVED: "resolved",
-  DISMISSED: "dismissed",
-});
-
-export const FeedbackStatusValues = Object.values(FeedbackStatus);

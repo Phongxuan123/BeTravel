@@ -165,78 +165,6 @@ export type RagArticleStatus = {
   updatedAt: string;
 };
 
-// B5 -- module feedback (A08). Rieng voi ChatMessage.feedback (thumbs nhanh).
-export type FeedbackRating = 'up' | 'down';
-export type FeedbackStatus = 'pending' | 'resolved' | 'dismissed';
-
-export type Feedback = {
-  _id: string;
-  userId: string;
-  targetType: 'chat_message';
-  targetId: string;
-  rating: FeedbackRating;
-  note: string;
-  context: { countryCode: string; question: string };
-  status: FeedbackStatus;
-  reviewerId: string | null;
-  reviewerNote: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type ChatCitation = {
-  marker: string;
-  articleId: string;
-  articleSlug: string;
-  title: string;
-  heading: string;
-};
-
-// G6 -- cau tra loi da duyet cho cau hoi lap lai (contracts/README.md muc 10b).
-export type FaqStatus = 'active' | 'needs_review' | 'retired' | 'dismissed';
-
-export type FaqCitation = ChatCitation & { sourceType?: 'article' | 'au_legislation'; officialUrl?: string };
-
-export type FaqSections = { answer: string; actions: string[]; avoid: string[] } | null;
-
-export type FaqCandidate = {
-  countryCode: string;
-  count: number;
-  // Cau dau la cau goc; minSimilarity = diem trung lap noi dung thap nhat AI cham trong nhom (0-1).
-  questions: string[];
-  minSimilarity: number;
-  keywordTerms: string[];
-  answers: { messageId: string; text: string; sections: FaqSections; citations: FaqCitation[]; createdAt: string }[];
-  feedback: { up: number; down: number };
-};
-
-export type ApprovedFaq = {
-  _id: string;
-  countryCode: string;
-  question: string;
-  answer: string;
-  sections: FaqSections;
-  citations: FaqCitation[];
-  status: FaqStatus;
-  statusReason: string;
-  decidedAt: string;
-  servedCount: number;
-  feedback: { up: number; down: number };
-  warning: boolean;
-};
-
-export type FeedbackDetail = {
-  feedback: Feedback;
-  message: {
-    text: string;
-    citations: ChatCitation[];
-    retrieval: { topScore: number; chunkIds: string[]; passed: boolean };
-    fallbackReason: string | null;
-    model: string;
-    createdAt: string;
-  } | null;
-};
-
 // B5 -- A01 Dashboard nang cap, tu ai_events (backend/src/services/analytics.service.js).
 export type AnalyticsOverview = {
   days: number;
@@ -245,7 +173,6 @@ export type AnalyticsOverview = {
   fallbackRate: number;
   avgLatencyMs: number;
   costEstimateUsd: number;
-  pendingFeedbackCount: number;
   // Số lượt theo luồng phân loại: legal, emergency, out_of_scope, greeting, personal_advice.
   routeCounts: Record<string, number>;
   topFallbackQuestions: { question: string; count: number }[];

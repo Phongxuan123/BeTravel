@@ -69,7 +69,7 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   PASSWORD_NO_NUMBER: [ErrorCode.VALIDATION_ERROR, "Mật khẩu cần ít nhất 1 chữ số"],
   PASSWORD_SAME_AS_OLD: [ErrorCode.VALIDATION_ERROR, "Mật khẩu mới không được trùng mật khẩu cũ"],
 
-  // Chat AI (B4)
+  // Hạn mức AI (dùng chung cho các tính năng gọi LLM)
   QUOTA_EXCEEDED_USER: [
     ErrorCode.QUOTA_EXCEEDED,
     "Bạn đã dùng hết lượt hỏi AI hôm nay. Vui lòng thử lại vào ngày mai.",
@@ -77,32 +77,6 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   QUOTA_EXCEEDED_GLOBAL: [
     ErrorCode.QUOTA_EXCEEDED,
     "Hệ thống đang quá tải lượt hỏi AI. Vui lòng thử lại sau ít phút.",
-  ],
-  CHAT_SESSION_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy phiên chat"],
-  CHAT_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy tin nhắn"],
-
-  // FAQ đã duyệt (G6)
-  FAQ_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy FAQ"],
-  FAQ_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy câu trả lời nguồn"],
-  FAQ_MESSAGE_NOT_ELIGIBLE: [
-    ErrorCode.VALIDATION_ERROR,
-    "Chỉ duyệt được câu trả lời pháp lý của AI có trích dẫn nguồn",
-  ],
-  FAQ_SOURCES_CHANGED: [
-    ErrorCode.CONFLICT,
-    "Nguồn luật của câu trả lời này đã đổi hoặc bị gỡ, không thể duyệt",
-  ],
-  FAQ_DUPLICATE: [ErrorCode.CONFLICT, "Đã có FAQ cho nhóm câu hỏi này"],
-  FAQ_SIMILARITY_UNAVAILABLE: [
-    ErrorCode.UPSTREAM_ERROR,
-    "AI chưa chấm được mức trùng lặp với FAQ đã có, thử lại sau ít phút",
-  ],
-
-  // Feedback (B5)
-  FEEDBACK_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy feedback"],
-  FEEDBACK_TARGET_NOT_FOUND: [
-    ErrorCode.NOT_FOUND,
-    "Không tìm thấy tin nhắn được báo cáo, hoặc bạn không có quyền báo cáo tin nhắn này",
   ],
 
   // Incidents (B7)
