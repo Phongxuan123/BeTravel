@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import request from "supertest";
 
 import { startTestDb, stopTestDb } from "./setup.js";
-import { registerAndLogin } from "./helpers.js";
 
 /*
  * Cong chan tam thoi tra cuu phap luat: env.js dong bang gia tri luc nap lan
@@ -33,17 +32,6 @@ test("khi tat, moi endpoint /api/legal/* tra FORBIDDEN + FEATURE_DISABLED", asyn
   assertFeatureDisabled(await request(app).get("/api/legal/articles?country=KR"));
   assertFeatureDisabled(await request(app).get("/api/legal/articles/KR/visa-nhap-canh"));
   assertFeatureDisabled(await request(app).get("/api/legal/search?q=visa&country=KR"));
-});
-
-test("khi tat, /api/chat/* bi chan ngay ca khi chua dang nhap va khi da dang nhap", async () => {
-  assertFeatureDisabled(await request(app).get("/api/chat/sessions"));
-
-  const { accessToken } = await registerAndLogin(app);
-  const res = await request(app)
-    .post("/api/chat/sessions")
-    .set("Authorization", `Bearer ${accessToken}`)
-    .send({ countryCode: "KR" });
-  assertFeatureDisabled(res);
 });
 
 test("khi tat, cac tinh nang khac van hoat dong (health, quoc gia, SOS)", async () => {

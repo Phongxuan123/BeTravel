@@ -94,8 +94,6 @@ const envSchema = z.object({
   QUERY_REWRITE_MODEL: z.string().optional().default(""),
   // Model dự phòng cho các bước phụ (tạo từ khoá, chấm chủ đề, chấm trùng câu); rỗng = tắt.
   QUERY_REWRITE_FALLBACK_MODEL: z.string().optional().default(""),
-  // Trần token đầu ra của câu trả lời chat: câu trả lời ngắn hơn thì model trả nhanh hơn.
-  LLM_MAX_OUTPUT_TOKENS: numeric(1500),
   EMBEDDING_PROVIDER: z.enum(["gemini", "openai", "mock"]).default("mock"),
   EMBEDDING_MODEL: z.string().default("gemini-embedding-001"),
   EMBEDDING_DIMS: numeric(768),
@@ -118,43 +116,9 @@ const envSchema = z.object({
   // Ngưỡng cho điểm phủ từ khoá (0-1) của RETRIEVAL_MODE=lexical, thay cho ngưỡng cosine ở trên.
   RAG_MIN_KEYWORD_TOP_SCORE: numeric(0.4),
   RAG_MIN_KEYWORD_SOFT_SCORE: numeric(0.3),
-  // FAQ đã duyệt (G6): độ giống từ khoá (Jaccard 0-1) để phát FAQ thay cho AI -- chặt hơn ngưỡng gom nhóm
-  // đề xuất, vì trả nhầm FAQ cho câu khác ý tệ hơn để AI tự trả lời.
-  FAQ_MATCH_MIN_SIMILARITY: numeric(0.85),
-  // Đề xuất cho admin: lọc sơ bộ bằng từ khoá chung (rẻ), rồi AI chấm trùng lặp nội dung; chỉ câu đạt
-  // FAQ_AI_MIN_SIMILARITY (0-1) mới vào nhóm.
-  FAQ_PREFILTER_MIN_OVERLAP: numeric(0.4),
-  FAQ_AI_MIN_SIMILARITY: numeric(0.85),
-  FAQ_MIN_REPEAT: numeric(3),
-  FAQ_WINDOW_DAYS: numeric(15),
   AI_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
-  // Hạn dùng lại câu trả lời đã sinh (cache theo nguồn và bộ nhớ câu hỏi lặp lại), mặc định 5 ngày.
-  AI_CACHE_TTL_HOURS: numeric(120),
-  // Câu hỏi khác chữ nhưng cùng từ khoá (Jaccard 0-1) từ ngưỡng này thì dùng lại câu trả lời trước.
-  // Cao hơn ngưỡng FAQ vì không có người duyệt: trả nhầm câu trái nghĩa tệ hơn gọi lại AI.
-  ANSWER_REPEAT_MIN_SIMILARITY: numeric(0.9),
-  // Tầng 2 (BUG-24): câu có Jaccard từ ngưỡng này trở lên được AI chấm trùng ý; điểm 0-100 từ
-  // ANSWER_REPEAT_AI_MIN_SCORE trở lên mới dùng lại câu trả lời. Gọi AI chấm rẻ hơn nhiều so với tra web.
-  ANSWER_REPEAT_CANDIDATE_SIMILARITY: numeric(0.5),
-  ANSWER_REPEAT_AI_MIN_SCORE: numeric(85),
   AI_DAILY_QUOTA_USER: numeric(40),
   AI_DAILY_QUOTA_GLOBAL: numeric(800),
-  // Tầng tra web (rag/webAnswer.js): chỉ chạy khi kho không đủ bằng chứng, chỉ trong tên miền
-  // chính phủ của quốc gia (Country.officialWebDomains). Cần provider openai có Responses API.
-  WEB_SEARCH_ENABLED: booleanish(false),
-  // Rỗng = dùng LLM_MODEL.
-  WEB_SEARCH_MODEL: z.string().optional().default(""),
-  WEB_SEARCH_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
-  WEB_SEARCH_MAX_OUTPUT_TOKENS: numeric(1500),
-  // Mỗi câu tra web tốn gấp 5-8 lần câu trả lời từ kho: trần riêng theo người và theo ngân sách ngày.
-  WEB_SEARCH_DAILY_LIMIT_USER: numeric(5),
-  WEB_SEARCH_DAILY_BUDGET_VND: numeric(2000),
-  // Đơn giá LLM_MODEL (cũng là model tra web mặc định), VND / 1 triệu token: ước tính chi phí ghi
-  // vào ai_events và chặn tra web theo ngân sách ngày. Đổi model thì cập nhật theo bảng giá nhà cung cấp.
-  LLM_PRICE_INPUT_VND_PER_M: numeric(4000),
-  LLM_PRICE_OUTPUT_VND_PER_M: numeric(24000),
-  // Bước chấm nhanh "có thuộc chủ đề pháp lý du lịch" trước khi tra web; quá hạn thì không tra web.
-  WEB_TOPIC_GATE_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
 
   // Lớp địa điểm bổ sung (CHƯA xác minh, tách khỏi support_locations).
   // osm: OpenStreetMap qua Overpass, miễn phí, không cần key. serpapi: Google Maps qua SerpApi, tốn quota.

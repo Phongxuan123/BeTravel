@@ -343,6 +343,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 
 ## 7. LICH SU CAP NHAT
 
+- 01/11/2026: go tang tra loi AI (chat, guard, scope, FAQ, feedback, tra web, bo nho cau lap lai) cung bien env, rate limit, ErrorCode noi bo va test di kem; giu tang nen RAG. Backend 277 test, mobile 246 test, admin 22 test.
 - 28/10/2026: sua loi theo ke hoach kiem dinh (phan luong khan cap 2 tang, model buoc phu du phong, bo so thu tu trong y, nguon quoc gia duy nhat, ban phim khong che o nhap, the loi chat, token tuong phan); backend 413 test (+golden scope-vi 44 cau), mobile 272 test.
 - 26/10/2026: tầng tra web trang chính phủ (gov.au) khi kho thiếu dữ liệu, chặn câu lạc đề trước khi tra, trả lời lặp lại 5 ngày; backend 409, mobile 256, admin 22 tests.
 

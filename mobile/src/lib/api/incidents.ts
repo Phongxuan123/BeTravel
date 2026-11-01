@@ -1,7 +1,7 @@
 /**
  * Nối incidents/[slug].tsx và incidents/index.tsx vào API thật (B7). CÙNG
- * chữ ký cơ bản với mock, thêm object tham số optional (giống pattern sos.ts,
- * chat.ts) -- xem lib/data.ts cho công tắc mock/thật.
+ * chữ ký cơ bản với mock, thêm object tham số optional (giống pattern sos.ts)
+ * -- xem lib/data.ts cho công tắc mock/thật.
  */
 import { apiRequest, ApiError } from './http';
 import type { Incident } from '@/mocks/schemas';

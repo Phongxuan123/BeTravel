@@ -10,7 +10,7 @@ export const AU_LAW_TOPICS = Object.freeze([
   {
     slug: "giao-thong",
     label: "Giao thông",
-    // Gợi ý ngắn trong lời từ chối của AI (rag/noEvidence.js), tránh hiểu nhầm là có luật đường bộ.
+    // Gợi ý ngắn về phạm vi mục khi AI không đủ dữ liệu, tránh hiểu nhầm là có luật đường bộ.
     aiScopeHint: "tiêu chuẩn phương tiện, hàng không, hàng hải; không gồm luật đường bộ của bang",
     note:
       "Quy tắc giao thông đường bộ (tốc độ, bằng lái, mức phạt) do từng bang và vùng lãnh thổ " +

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, ScrollView, Pressable, ToastAndroid, Platform, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Globe, Flag, ChevronRight, LogOut, Check, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { Globe, Flag, ChevronRight, LogOut, Check, ShieldCheck } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { IconTile } from '@/components/ui/IconTile';
@@ -15,7 +15,7 @@ import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { notify } from '@/lib/notify';
 import { useCountry } from '@/lib/countryContext';
-import { fetchCountries, fetchPreferences, updatePreferences, listChatSessions, deleteChatSession } from '@/lib/data';
+import { fetchCountries, fetchPreferences, updatePreferences } from '@/lib/data';
 import type { Preferences } from '@/lib/data';
 import type { PreferencesPatch } from '@/lib/api/preferences';
 import { changePassword } from '@/lib/api/auth';
@@ -55,29 +55,6 @@ export default function SettingsScreen() {
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' });
   const [pwError, setPwError] = useState<string | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [deletingHistory, setDeletingHistory] = useState(false);
-
-  const onDeleteChatHistory = () => {
-    Alert.alert('Xóa lịch sử hỏi AI', 'Toàn bộ cuộc trò chuyện với AI sẽ bị xóa vĩnh viễn. Không thể hoàn tác.', [
-      { text: 'Hủy', style: 'cancel' },
-      {
-        text: 'Xóa tất cả',
-        style: 'destructive',
-        onPress: async () => {
-          setDeletingHistory(true);
-          try {
-            const { data: sessions } = await listChatSessions();
-            await Promise.all(sessions.map((s) => deleteChatSession(s._id)));
-            toast('Đã xóa lịch sử hỏi AI');
-          } catch {
-            toast('Không xóa được toàn bộ lịch sử. Kiểm tra kết nối mạng và thử lại.');
-          } finally {
-            setDeletingHistory(false);
-          }
-        },
-      },
-    ]);
-  };
 
   const onLogout = () => {
     Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
@@ -186,12 +163,6 @@ export default function SettingsScreen() {
             onValueChange={(v) => preferencesMutation.mutate({ locationConsent: v })}
           />
           <SettingsRow label="Chia sẻ vị trí với người thân" onPress={() => router.push('/sos/share-location')} />
-          <View className="h-px bg-line" />
-          <SettingsRow
-            icon={<Trash2 size={18} color={colors.danger} />}
-            label={deletingHistory ? 'Đang xóa…' : 'Xóa lịch sử hỏi AI'}
-            onPress={onDeleteChatHistory}
-          />
         </SettingsGroup>
 
         <SettingsGroup title="TÀI KHOẢN">

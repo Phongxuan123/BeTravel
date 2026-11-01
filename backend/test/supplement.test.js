@@ -136,35 +136,3 @@ test("legacy workflow không có ID: ID ổn định qua lần đọc và tick c
   );
   assert.deepEqual(await service.getProgress(user.id, id), []);
 });
-
-test("pipeline chặn bí danh nước khác trước khi gọi LLM và đánh dấu từ chối", async () => {
-  const Country = (await import("../src/models/Country.js")).default;
-  const { createSession, sendMessage } = await import("../src/services/chat.service.js");
-  const llm = await import("../src/rag/llm/index.js");
-  const { createMockLlmProvider } = await import("../src/rag/llm/mock.llm.js");
-  let calls = 0;
-  llm.__setLlmProviderForTest({
-    model: "spy",
-    complete: async () => {
-      calls += 1;
-      throw new Error("must-not-call");
-    },
-  });
-  try {
-    await Country.create([
-      { code: "KR", name: "Hàn Quốc", status: "active" },
-      { code: "JP", name: "Nhật Bản", status: "coming_soon" },
-    ]);
-    const { user } = await registerAndLogin(app);
-    const session = await createSession(user.id, "KR");
-    for (const question of ["Ở Nhật thì sao?", "Đi Tokyo thì sao?", "Japan visa?"]) {
-      const { message } = await sendMessage({ userId: user.id, sessionId: session._id, question });
-      assert.match(message.text, /đổi quốc gia/);
-      assert.equal(message.fallbackReason, "INSUFFICIENT_EVIDENCE");
-      assert.equal(message.citations.length, 0);
-    }
-    assert.equal(calls, 0);
-  } finally {
-    llm.__setLlmProviderForTest(createMockLlmProvider());
-  }
-});

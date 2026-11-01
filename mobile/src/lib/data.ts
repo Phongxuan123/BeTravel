@@ -6,7 +6,7 @@
  * có vòng đời riêng: token, refresh, khôi phục phiên).
  * B3: countries/topics/legal articles/search/trips đã nối API thật -- đổi
  * theo EXPO_PUBLIC_USE_MOCKS.
- * B5: chat + feedback đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
+ * B5: chat AI đã gỡ (01/11/2026) để xây lại; mock chat trong src/mocks/ giữ nguyên.
  * B6: SOS support-locations đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
  * B7: incidents + translator đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
  * B8: alerts + favorites + preferences đã nối API thật -- đổi theo
@@ -16,8 +16,6 @@
  */
 import * as mock from '@/mocks/client';
 import * as content from '@/lib/api/content';
-import * as chatApi from '@/lib/api/chat';
-import * as feedbackApi from '@/lib/api/feedback';
 import * as sosApi from '@/lib/api/sos';
 import type { SupportLocation } from '@/mocks/schemas';
 import * as incidentsApi from '@/lib/api/incidents';
@@ -41,19 +39,6 @@ export const createTrip = USE_MOCKS ? mock.createTrip : content.createTrip;
 export const updateTrip = USE_MOCKS ? mock.updateTrip : content.updateTrip;
 export const setCurrentTrip = USE_MOCKS ? mock.setCurrentTrip : content.setCurrentTrip;
 export const deleteTrip = USE_MOCKS ? mock.deleteTrip : content.deleteTrip;
-
-export const askLegalAssistant = USE_MOCKS ? mock.askLegalAssistant : chatApi.askLegalAssistant;
-export const listChatSessions = USE_MOCKS ? mock.listChatSessions : chatApi.listChatSessions;
-export const createChatSession = USE_MOCKS ? mock.createChatSession : chatApi.createChatSession;
-export const deleteChatSession = USE_MOCKS ? mock.deleteChatSession : chatApi.deleteChatSession;
-export const renameChatSession = USE_MOCKS ? mock.renameChatSession : chatApi.renameChatSession;
-export const loadChatSessionMessages = USE_MOCKS ? mock.loadChatSessionMessages : chatApi.loadChatSessionMessages;
-export const setChatMessageFeedback = USE_MOCKS ? mock.setChatMessageFeedback : chatApi.setChatMessageFeedback;
-export const reportWrongAnswer = USE_MOCKS ? mock.reportWrongAnswer : feedbackApi.reportWrongAnswer;
-export const startNewChatSession = USE_MOCKS ? (): void => {} : chatApi.startNewSession;
-export const setActiveChatSession = USE_MOCKS ? (_sessionId: string, _countryCode: string): void => {} : chatApi.setActiveSession;
-export const getActiveChatSessionId = USE_MOCKS ? mock.getActiveSessionId : chatApi.getActiveSessionId;
-export const getLastChatMessageId = USE_MOCKS ? mock.getLastMessageId : chatApi.getLastMessageId;
 
 export const fetchSupportLocations = USE_MOCKS ? mock.fetchSupportLocations : sosApi.fetchSupportLocations;
 export const fetchNearbyLocations = USE_MOCKS ? mock.fetchNearbyLocations : sosApi.fetchNearbyLocations;
@@ -92,7 +77,6 @@ export const removeFavorite = USE_MOCKS ? mock.removeFavorite : favoritesApi.rem
 export const fetchPreferences = USE_MOCKS ? mock.fetchPreferences : preferencesApi.fetchPreferences;
 export const updatePreferences = USE_MOCKS ? mock.updatePreferences : preferencesApi.updatePreferences;
 
-export type { ChatAnswer, ChatSession, ChatUiMessage } from '@/mocks/client';
 // Man hinh chi import tu @/lib/data, ke ca kieu du lieu -- khong tro thang
 // vao @/mocks (dau hieu hoan thanh B8 trong CLAUDE.md, detector D25).
 export type {

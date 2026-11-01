@@ -26,7 +26,7 @@ const aiEventSchema = new mongoose.Schema(
     // true = lượt này đã gọi tra web (tốn tiền dù câu trả lời có bị guard hạ cấp hay không).
     webSearch: { type: Boolean, default: false },
     fallbackReason: { type: String, default: null },
-    // Luồng phân loại bởi rag/scope.js (emergency, out_of_scope, ...) -- thống kê theo luồng.
+    // Luồng phân loại câu hỏi (emergency, out_of_scope, ...) -- thống kê theo luồng.
     route: { type: String, default: "legal" },
     cacheHit: { type: Boolean, default: false },
     // G6: từ khoá đã chuẩn hoá của câu hỏi (gom nhóm câu cùng ý) và câu trả lời tương ứng.

@@ -3,7 +3,6 @@ import { createMockLlmProvider } from "./mock.llm.js";
 import { createClaudeLlmProvider } from "./claude.llm.js";
 import { createGeminiLlmProvider } from "./gemini.llm.js";
 import { createOpenAiLlmProvider } from "./openai.llm.js";
-import { createOpenAiWebSearchProvider } from "./openai.webSearch.js";
 
 let cachedProvider = null;
 
@@ -73,23 +72,6 @@ export function getRewriteProvider() {
   const fallbackModel = env.QUERY_REWRITE_FALLBACK_MODEL;
   if (!fallbackModel) return primary;
   return withAuxiliaryFallback(primary, buildAuxiliaryProvider(fallbackModel));
-}
-
-let webSearchProviderOverride;
-
-// Tầng tra web cần Responses API, chỉ có ở provider openai; provider khác --> null (không tra web).
-export function getWebSearchProvider() {
-  if (webSearchProviderOverride !== undefined) return webSearchProviderOverride;
-  if (env.LLM_PROVIDER !== "openai") return null;
-  return createOpenAiWebSearchProvider({
-    apiKey: env.OPENAI_API_KEY,
-    model: env.WEB_SEARCH_MODEL || env.LLM_MODEL,
-  });
-}
-
-// undefined = trả về hành vi thật.
-export function __setWebSearchProviderForTest(provider) {
-  webSearchProviderOverride = provider;
 }
 
 // Dịch dùng model riêng, không thay đổi cấu hình AI pháp lý; quota dự án vẫn chung.

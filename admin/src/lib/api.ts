@@ -10,10 +10,6 @@ import type {
   ContentStatus,
   RagArticleStatus,
   AuLawRagStatus,
-  Feedback,
-  FeedbackDetail,
-  FeedbackRating,
-  FeedbackStatus,
   AnalyticsOverview,
   LocationBulkImportResult,
   IncidentType,
@@ -25,9 +21,6 @@ import type {
   AuLawDetail,
   AuLawVersion,
   AuLawContent,
-  FaqCandidate,
-  ApprovedFaq,
-  FaqStatus,
 } from './types';
 
 export const countriesApi = createAdminResource<Country>('/admin/countries');
@@ -85,25 +78,6 @@ export const ragApi = {
     apiRequest<{ queued: string[]; skipped: string[] }>('/admin/rag/au-laws/index', { method: 'POST', body: { titleIds } }),
   removeAuLaw: (titleId: string) =>
     apiRequest<{ titleId: string; deleted: number }>(`/admin/rag/au-laws/${titleId}`, { method: 'DELETE' }),
-};
-
-export const feedbackApi = {
-  list: (query?: { rating?: FeedbackRating; status?: FeedbackStatus; countryCode?: string; page?: number; limit?: number }) =>
-    apiRequest<Feedback[]>('/admin/feedback', { query }),
-
-  get: (id: string) => apiRequest<FeedbackDetail>(`/admin/feedback/${id}`),
-
-  updateStatus: (id: string, payload: { status: FeedbackStatus; reviewerNote?: string }) =>
-    apiRequest<Feedback>(`/admin/feedback/${id}`, { method: 'PATCH', body: payload }),
-};
-
-export const faqApi = {
-  candidates: (countryCode?: string) => apiRequest<FaqCandidate[]>('/admin/faq/candidates', { query: { countryCode } }),
-  list: (status?: FaqStatus) => apiRequest<ApprovedFaq[]>('/admin/faq', { query: { status } }),
-  decide: (sourceMessageId: string, decision: 'approve' | 'dismiss') =>
-    apiRequest<ApprovedFaq>('/admin/faq', { method: 'POST', body: { sourceMessageId, decision } }),
-  setStatus: (id: string, status: 'active' | 'retired') =>
-    apiRequest<ApprovedFaq>(`/admin/faq/${id}`, { method: 'PATCH', body: { status } }),
 };
 
 export const analyticsApi = {

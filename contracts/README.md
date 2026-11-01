@@ -1,5 +1,14 @@
 # BE.TRAVEL — CONTRACT API
 
+## Gỡ tầng trả lời AI — 01/11/2026
+
+Đã gỡ toàn bộ endpoint chat AI và các module đi kèm để xây lại bản mới:
+`/api/chat/*` (mục 9 và 23 cũ), `/api/admin/faq/*` (10b), `/api/feedback` (11),
+`/api/admin/feedback/*` (12). Các route này nay trả `404 NOT_FOUND`. `GET
+/admin/analytics/overview` bỏ field `pendingFeedbackCount`. Giữ nguyên tầng nền
+RAG (index, truy hồi, `/api/admin/rag/*`) để bản mới dùng lại. Mobile mở `/chat`
+thấy màn chờ "Trợ lý AI sắp ra mắt".
+
 ## Dịch trên máy — 12/10/2026
 
 Mobile có chế độ offline mặc định: ML Kit native, gói tải chủ động, tối đa 5.000
@@ -409,13 +418,13 @@ khong ap dung Rule "8 bai co nguon that" vi day khong phai noi dung phap ly.
 Rong (`[]`) la hop le, UI chi an phan goi y neu vay.
 
 `officialWebDomains: string[]` — ten mien chinh phu (vd `"gov.au"`, khop ca ten mien con) ma AI duoc tra web
-khi kho chua du du lieu (muc chat, "Tang tra web"). Rong = quoc gia nay khong co tang tra web. Admin sua qua
+khi kho chua du du lieu (tang tra web, chua dung sau khi go chat 01/11/2026). Rong = quoc gia nay khong co tang tra web. Admin sua qua
 `PATCH /admin/countries/:id`.
 
 ### 8.2. Legal content
 
 [!] **Cong chan tam thoi (`LEGAL_LOOKUP_ENABLED`, mac dinh `false`)**: khi tat, moi
-`/api/legal/*` va `/api/chat/*` tra `403 FORBIDDEN` kem `error.details.reason =
+`/api/legal/*` tra `403 FORBIDDEN` kem `error.details.reason =
 "FEATURE_DISABLED"` (khong them ErrorCode moi -- enum dong). Client phan biet loi nay
 voi loi phan quyen that qua `details.reason`, khong qua message. `/api/countries`,
 SOS, incidents, dich, canh bao khong bi anh huong. Bat lai: `LEGAL_LOOKUP_ENABLED=true`.
@@ -470,92 +479,6 @@ voi `LegalArticle`), cong voi logic tuan tu o service layer. Goi
 `:id` khong thuoc ve user dang goi --> `404 NOT_FOUND` (khong lo ra `403`
 de tranh do thong tin ID cua nguoi khac ton tai).
 
-## 9. ENDPOINT CHAT AI — `/api/chat/*` (B4 backend + B5 mobile, can dang nhap)
-
-Mobile noi qua `mobile/src/lib/api/chat.ts` (xem `mobile/src/app/chat/index.tsx`).
-Toan bo pipeline (retrieval + guard chong ao giac) xem `backend/src/rag/`,
-`docs/atlas-indexes.md`.
-
-```
-GET    /chat/sessions                              200, danh sach phien CUA CHINH user
-POST   /chat/sessions            {countryCode}      201, tao phien moi
-DELETE /chat/sessions/:id                           200 { deleted: true }
-GET    /chat/sessions/:id/messages                  200, lich su tin nhan cua phien
-POST   /chat/sessions/:id/messages {question, focusArticleId?, regenerate?}  201 { sessionId, message } --
-                                                      [!] TRA MOT LAN, KHONG STREAMING (master plan B.7).
-                                                      focusArticleId (B5): CTA "Hoi AI ve bai nay" tu man
-                                                      hinh chi tiet bai luat -- uu tien chunk cua bai do
-                                                      trong RRF (xem rag/retrieval.js FOCUS_ARTICLE_WEIGHT).
-                                                      regenerate (nut "Tao lai"): true --> bo qua cache cau tra loi
-                                                      va bo nho cau hoi lap lai, goi lai LLM, van tinh luot quota.
-POST   /chat/sessions/:id/messages/:messageId/feedback {feedback:'up'|'down'}  200
-```
-
-`message` (role='assistant') co dang:
-```jsonc
-{
-  "text": "cau tra loi da qua guard.js, kem [S1][S2]... va disclaimer (markdown, da ghep tu sections)",
-  "route": "legal",       // "legal" | "emergency" | "personal_advice" | "out_of_scope" | "greeting"
-  "sections": { "answer": "...", "actions": ["... [S1]"], "avoid": ["... [S1]"] },  // null neu khong co AI tra loi
-  "citations": [{ "marker":"S1", "articleId", "articleSlug", "title", "heading",
-                  "sourceType": "article",   // hoac "au_legislation" (van ban luat goc, CHUA duoc Be.Travel kiem chung)
-                                             // hoac "official_web" (trang web chinh phu AI da doc khi tra web, CHUA kiem chung)
-                  "officialUrl": "" }],      // co voi au_legislation va official_web; bai noi bo mo trong app theo articleSlug
-  "retrieval": { "topScore": 0.63, "chunkIds": [...], "passed": true },
-  "fallbackReason": null,  // hoac "INSUFFICIENT_EVIDENCE" | "GUARD_REJECTED" | "PROVIDER_ERROR" | "OUT_OF_SCOPE"
-                           // INSUFFICIENT_EVIDENCE: text do CODE soan (rag/noEvidence.js), markdown: neu cau hoi
-                           // thuoc chu de kho chua co (core/aiCoverageGaps.js) thi neu ly do + link trang chinh thuc;
-                           // khong thi loi tu choi chuan + danh sach chu de AI tra loi duoc. Shape khong doi.
-  "confidence": "medium",
-  "needsOfficialHelp": false,
-  "answerSource": "ai",    // hoac "approved_faq": tra tu cau tra loi admin da duyet (muc 10b), khong goi LLM
-                           // hoac "official_web": AI tra trang web chinh phu vi kho khong du du lieu (CHUA kiem chung)
-  "repeated": false,       // true = dung lai cau tra loi cua cau hoi trung lap (khong goi AI, khong tru luot)
-  "faqId": null            // id FAQ khi answerSource="approved_faq"
-}
-```
-
-[!] **Tra loi lap lai** (`services/answerMemory.service.js`): voi luong `legal`, khong `regenerate`, khong
-`focusArticleId`, cau hoi trung CHINH XAC (bo khac biet hoa/thuong, dau tieng Viet, dau cau, khoang trang; cung
-quoc gia) voi cau da tra loi trong `AI_CACHE_TTL_HOURS` (mac dinh 120 = 5 ngay) duoc tra NGAY, truoc ca buoc tao
-tu khoa. Cau khac chu nhung cung tu khoa (Jaccard >= `ANSWER_REPEAT_MIN_SIMILARITY`) duoc tra sau buoc tao tu
-khoa. Ca hai: `repeated:true`, khong goi LLM, khong tru luot quota. Cau tra loi tu kho chi duoc dung lai khi moi
-nguon con dung phien ban (bai `published`+`isCurrent`, cung `version` va `updatedAt`; luat Uc cung `registerId`),
-khong thi bi xoa va tra loi lai. Chi luu cau tra loi khong co `fallbackReason`. FAQ admin da duyet duoc uu tien.
-
-[!] **Tang tra web** (`rag/webAnswer.js`, bat bang `WEB_SEARCH_ENABLED`): voi luong `legal`, khi kho khong du bang
-chung (truy hoi duoi nguong, AI bao `answerable:false`, hoac chu de kho chua co trong `core/aiCoverageGaps.js`),
-backend tra web CHI tren `Country.officialWebDomains` (vd `gov.au`, khop ca ten mien con). Truoc khi tra: con tran
-`WEB_SEARCH_DAILY_LIMIT_USER` cau/nguoi/ngay va ngan sach `WEB_SEARCH_DAILY_BUDGET_VND`, va model nho xac nhan cau
-hoi thuoc chu de phap ly du lich (`rag/webTopicGate.js`). Code chi giu nguon la URL https thuoc danh sach ten mien
-VA nam trong tap trang cong cu tim kiem thuc su tra ve; moi khoi co so lieu bat buoc co marker toi nguon hop le.
-Thanh cong: `answerSource:"official_web"`, citations `sourceType:"official_web"`, disclaimer rieng ("Be.Travel chua
-kiem chung"). Khong ra cau tra loi dung duoc: van la `INSUFFICIENT_EVIDENCE` nhu truoc. Thoi gian 15-50 giay.
-
-[!] **Cau tra loi da duyet (FAQ, muc 10b)**: voi luong `legal`, khong `regenerate`, khong `focusArticleId`,
-backend so tu khoa cau hoi voi FAQ `active` cung quoc gia; khop du nguong `FAQ_MATCH_MIN_SIMILARITY` va nguon
-con hieu luc thi tra nguyen van FAQ (`answerSource:"approved_faq"`), van tinh luot quota. Nut "Tao lai"
-(`regenerate:true`) luon bo qua FAQ. Client hien nhan "Da duoc Be.Travel duyet".
-
-[!] **Phan luong cau hoi bang code** (`backend/src/rag/scope.js`, chay TRUOC retrieval, khong goi LLM):
-`out_of_scope` va `greeting` tra loi do code soan, `fallbackReason:"OUT_OF_SCOPE"`, **khong ton quota**.
-`emergency`: khoi so khan cap lay tu `Country.emergencyNumbers` + `Country.embassy.phone` dung DAU
-`text`, `needsOfficialHelp:true`; neu het luot AI trong ngay van nhan duoc khoi nay (khong bi 429).
-`personal_advice`: van tra thong tin nhung `text` them cau ranh gioi co dinh. `sections` gom 3 phan do
-LLM sinh; phan "Nguon" cua UI dung `citations`, KHONG phai do LLM viet. `text` van la ban ghep san
-(co tieu de `**Tra loi ngan**`, `**Viec nen lam**`, `**Dieu can tranh**`) de client cu khong vo.
-
-[!] **Cau hoi nhac ten mot quoc gia KHAC voi `countryCode` cua session** duoc
-chan o tang service (`chat.service.js#detectOtherCountryMention`) TRUOC ca
-retrieval -- tra loi co dinh moi nguoi dung doi quoc gia, khong bao gio de
-LLM tu quyet dinh (deterministic, khong ton chi phi goi LLM).
-
-[!] **Quota 2 lop** (CLAUDE.md muc 4.1): `express-rate-limit` RAM (20
-req/15p/IP, lop 1) + quota luu DB `users.aiUsage` theo ngay (`AI_DAILY_QUOTA_USER`,
-mac dinh 40/ngay/user; van an toan he thong `AI_DAILY_QUOTA_GLOBAL`, mac dinh
-800/ngay) -- vuot quota --> `429 QUOTA_EXCEEDED`. Day la lop THAT SU bao ve
-chi phi vi khong reset khi server restart.
-
 ## 10. ENDPOINT ADMIN RAG — `/api/admin/rag/*` (B4, role admin)
 
 ```
@@ -574,58 +497,6 @@ Chunk luat goc (`sourceType:"au_legislation"`) nam trong CUNG collection `legal_
 `vec_idx`/`txt_idx` (filter `countryCode:"AU"`), nen khong can them Atlas index. CLI tuong duong:
 `npm run index-au-laws -- <titleId...> | --topic <slug> | --list | --remove <titleId>`.
 
-## 10b. ENDPOINT ADMIN FAQ — `/api/admin/faq/*` (G6, role admin)
-
-Gom nhom de xuat: loc so bo bang tu khoa chung (`FAQ_PREFILTER_MIN_OVERLAP`), roi **AI cham muc trung lap noi dung**
-giua cac cau hoi (0-100); chi cau dat `FAQ_AI_MIN_SIMILARITY` (mac dinh 85%) moi vao nhom. Nhom duoc hoi >=
-`FAQ_MIN_REPEAT` lan trong `FAQ_WINDOW_DAYS` ngay moi hien la de xuat. AI cham loi --> nhom KHONG hien (khong dua nhom
-chua kiem len). Admin chi DUYET NGUYEN VAN mot cau tra loi AI da sinh (khong sua noi dung).
-
-```
-GET   /admin/faq/candidates?countryCode=   200, [{ countryCode, count, questions[] (cau goc dau tien), minSimilarity, keywordTerms[],
-                                              answers:[{ messageId, text, sections, citations, createdAt }],
-                                              feedback:{ up, down } }]
-GET   /admin/faq?status=                   200, [{ _id, countryCode, question, answer, sections, citations, status,
-                                              statusReason, approvedAt, servedCount, feedback:{up,down}, warning }]
-                                              status: active | needs_review | retired | dismissed
-POST  /admin/faq {sourceMessageId, decision:'approve'|'dismiss'}   201 FAQ vua tao.
-                                              approve: tin nhan phai la cau tra loi AI khong fallback, co trich dan,
-                                              nguon con hieu luc (khong --> 409 CONFLICT); AI cham trung FAQ dang mo
-                                              >= 85% --> 409; AI cham loi --> 502 UPSTREAM_ERROR.
-                                              dismiss: luu de nhom do khong con hien la de xuat.
-PATCH /admin/faq/:id {status:'active'|'retired'}  200. Kich hoat lai phai qua kiem nguon (khong --> 409).
-```
-
-[!] Moi lan phat FAQ, backend kiem lai nguon: bai `published`+`isCurrent` dung version, luat Uc dung `registerId`
-hien hanh. Nguon doi --> FAQ tu chuyen `needs_review` va khong phat. Collection `approvedfaqs` la MongoDB thuong,
-khong them Atlas Search index.
-
-## 11. ENDPOINT FEEDBACK — `/api/feedback` (B5, can dang nhap)
-
-Rieng voi thumbs nhanh o muc 9 (`ChatMessage.feedback`, khong note). Day la
-feedback CO NOTE, sinh tu nut "Bao sai" trong AnswerCard.tsx, vao hang doi A08
-cho admin xu ly. `targetId` phai la 1 `ChatMessage` role=assistant CUA CHINH
-user goi (backend xac minh qua `sessionId.userId`, khong tin client).
-
-```
-POST /feedback {targetType:'chat_message', targetId, rating:'up'|'down', note?, context?:{countryCode,question}}
-     201, { ..., status:'pending', reviewerId:null, reviewerNote:'' }
-```
-
-## 12. ENDPOINT ADMIN FEEDBACK — `/api/admin/feedback/*` (B5, A08, role admin)
-
-```
-GET   /admin/feedback?rating=&status=&countryCode=&page=&limit=   200, {data:[...], meta:{page,limit,total}}
-GET   /admin/feedback/:id                                          200, { feedback, message } --
-                                                                     message la ChatMessage lien quan
-                                                                     (text, citations, retrieval, model)
-                                                                     de reviewer thay LY DO AI tra loi vay
-PATCH /admin/feedback/:id {status:'pending'|'resolved'|'dismissed', reviewerNote?}  200
-```
-
-[!] Feedback KHONG tu dong sua knowledge base -- doi trang thai chi de theo doi,
-sua bai luat (neu can) van la thao tac rieng qua `/admin/legal/articles/:id`.
-
 ## 13. ENDPOINT ADMIN ANALYTICS — `/api/admin/analytics/overview` (B5, A01 nang cap, role admin)
 
 ```
@@ -639,8 +510,7 @@ GET /admin/analytics/overview?days=7   200
   "fallbackRate": 0.238,
   "avgLatencyMs": 1450,
   "costEstimateUsd": 0,  // [!] luon 0 -- provider Gemini/OpenAI chua tra usage tokens, xem docs/PROGRESS.md muc "No ky thuat"
-  "pendingFeedbackCount": 3,
-  "routeCounts": { "legal": 30, "emergency": 3, "out_of_scope": 8, "greeting": 1 },  // theo luong phan loai (rag/scope.js)
+  "routeCounts": { "legal": 30, "emergency": 3, "out_of_scope": 8, "greeting": 1 },  // theo luong phan loai
   "topFallbackQuestions": [{ "question": "...", "count": 4 }]
 }
 ```
@@ -791,7 +661,7 @@ Việt–Anh hai chiều độc lập với quốc gia. `from`/`to` nhận mã
 `vi/en/ko/ja/th/zh/fr/de`, mã vùng như `en-US`, hoặc tên hiển thị tương ứng
 của client cũ. Ngôn ngữ khác trả VALIDATION_ERROR. Cùng ngôn ngữ trả nguyên
 văn, không gọi AI. `text` dịch đầy đủ; `phrase` ưu tiên cách nói tự nhiên,
-lịch sự nhưng không bỏ thông tin. Lượt gọi AI tính quota DB chung với chat.
+lịch sự nhưng không bỏ thông tin. Lượt gọi AI tính quota DB chung (`AI_DAILY_QUOTA_*`).
 Response giữ nguyên. Bộ câu mẫu mở offline: `docs/TRANSLATION.md` (mục 1).
 
 ```
@@ -868,16 +738,6 @@ PUT /users/preferences {locale?, alerts?{legal?,safety?,tripReminder?}, location
 ```
 Gia tri mac dinh (user moi dang ky): `{locale:'vi', alerts:{legal:true,
 safety:true, tripReminder:false}, locationConsent:true}`.
-
-## 23. ĐỔI TÊN PHIÊN CHAT — `PATCH /api/chat/sessions/:id` (B8 muc 16)
-
-```
-PATCH /chat/sessions/:id {title}   200 -- title 1-100 ky tu, khong duoc rong.
-     Chi doi ten phien CUA CHINH MINH -- phien cua user khac tra 404
-     (khong phai 403, tranh lo phien do co ton tai hay khong).
-```
-
----
 
 ## 24. LUAT LIEN BANG UC — `/api/laws/australia/*` (cong khai, chi doc)
 

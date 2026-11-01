@@ -17,7 +17,7 @@ let runNextJob;
 let embeddingIndex;
 let llmIndex;
 let memoryDriver;
-let env;
+let retrieve;
 
 before(async () => {
   await startTestDb();
@@ -34,7 +34,7 @@ before(async () => {
   embeddingIndex = await import("../src/rag/embedding/index.js");
   llmIndex = await import("../src/rag/llm/index.js");
   memoryDriver = await import("../src/rag/search/memory.driver.js");
-  ({ env } = await import("../src/core/env.js"));
+  ({ retrieve } = await import("../src/rag/retrieval.js"));
 });
 
 after(stopTestDb);
@@ -101,20 +101,10 @@ async function publish(adminToken, id) {
   await drainJobs();
 }
 
-async function ask(userToken, question) {
-  const session = await request(app)
-    .post("/api/chat/sessions")
-    .set(as(userToken))
-    .send({ countryCode: "KR" });
-  const res = await request(app)
-    .post(`/api/chat/sessions/${session.body.data._id}/messages`)
-    .set(as(userToken))
-    .send({ question });
-  assert.equal(res.status, 201, JSON.stringify(res.body));
-  return res.body.data.message;
-}
+// Bang chung AI se dung: truy hoi that (cung loc published + isCurrent nhu RAG).
+const evidenceFor = (question) => retrieve({ question, countryCode: "KR" });
 
-test("E2E-Q1 vong doi bai luat: nhap --> publish --> index --> cong khai + AI trich dan --> phien ban moi thay the", async () => {
+test("E2E-Q1 vong doi bai luat: nhap --> publish --> index --> cong khai + truy hoi RAG --> phien ban moi thay the", async () => {
   const admin = await registerAndLogin(app, { role: "admin" });
   const user = await registerAndLogin(app);
   await setupCountry(admin.accessToken);
@@ -125,17 +115,14 @@ test("E2E-Q1 vong doi bai luat: nhap --> publish --> index --> cong khai + AI tr
     .send(ARTICLE);
   // Nhap: chua cong khai, AI chua biet.
   assert.equal((await request(app).get("/api/legal/articles/KR/vuot-den-do")).status, 404);
-  assert.equal(
-    (await ask(user.accessToken, "Vượt đèn đỏ bị phạt bao nhiêu?")).fallbackReason,
-    "INSUFFICIENT_EVIDENCE",
-  );
+  assert.equal((await evidenceFor("Vượt đèn đỏ bị phạt bao nhiêu?")).passed, false);
 
   await publish(admin.accessToken, draft.body.data._id);
   assert.ok((await m.LegalChunk.countDocuments({ articleId: draft.body.data._id })) > 0);
   assert.equal((await request(app).get("/api/legal/articles/KR/vuot-den-do")).status, 200);
-  const answered = await ask(user.accessToken, "Vượt đèn đỏ bị phạt bao nhiêu?");
-  assert.equal(answered.fallbackReason, null);
-  assert.ok(answered.citations.every((c) => c.articleSlug === "vuot-den-do"));
+  const evidence = await evidenceFor("Vượt đèn đỏ bị phạt bao nhiêu?");
+  assert.equal(evidence.passed, true);
+  assert.ok(evidence.chunks.every((c) => c.articleSlug === "vuot-den-do"));
 
   // Nguoi dung luu bai v1.
   await request(app)
@@ -167,9 +154,8 @@ test("E2E-Q1 vong doi bai luat: nhap --> publish --> index --> cong khai + AI tr
   );
 });
 
-test("E2E-Q2 luu tru bai: purge chunk, cong khai 404, AI tu choi", async () => {
+test("E2E-Q2 luu tru bai: purge chunk, cong khai 404, truy hoi RAG khong con bang chung", async () => {
   const admin = await registerAndLogin(app, { role: "admin" });
-  const user = await registerAndLogin(app);
   await setupCountry(admin.accessToken);
   const draft = await request(app)
     .post("/api/admin/legal/articles")
@@ -187,10 +173,7 @@ test("E2E-Q2 luu tru bai: purge chunk, cong khai 404, AI tu choi", async () => {
   assert.equal((await request(app).get("/api/legal/articles/KR/vuot-den-do")).status, 404);
   const search = await request(app).get("/api/legal/search").query({ q: "den do", country: "KR" });
   assert.equal(search.body.data.length, 0);
-  assert.equal(
-    (await ask(user.accessToken, "Vượt đèn đỏ bị phạt bao nhiêu?")).fallbackReason,
-    "INSUFFICIENT_EVIDENCE",
-  );
+  assert.equal((await evidenceFor("Vượt đèn đỏ bị phạt bao nhiêu?")).passed, false);
 });
 
 test("E2E-Q3 diem SOS: chua xac minh khong luu duoc --> admin xac minh --> luu duoc, hien o nearby", async () => {
@@ -268,29 +251,4 @@ test("E2E-Q4 workflow su co: nhap an --> publish --> nguoi dung ghi tien do --> 
     (await request(app).get(`/api/users/incident-progress/${id}`).set(as(user.accessToken))).status,
     404,
   );
-});
-
-test("E2E-Q5 het quota ngay: 429 QUOTA_EXCEEDED, khong tao tin nhan tra loi", async () => {
-  const admin = await registerAndLogin(app, { role: "admin" });
-  const user = await registerAndLogin(app);
-  await setupCountry(admin.accessToken);
-  const today = new Date().toISOString().slice(0, 10);
-  await m.User.updateOne(
-    { _id: user.user.id },
-    { $set: { aiUsage: { date: today, count: env.AI_DAILY_QUOTA_USER } } },
-  );
-  const session = await request(app)
-    .post("/api/chat/sessions")
-    .set(as(user.accessToken))
-    .send({ countryCode: "KR" });
-  const res = await request(app)
-    .post(`/api/chat/sessions/${session.body.data._id}/messages`)
-    .set(as(user.accessToken))
-    .send({ question: "Vượt đèn đỏ bị phạt bao nhiêu?" });
-  assert.equal(res.status, 429);
-  assert.equal(res.body.error.code, "QUOTA_EXCEEDED");
-  const messages = await request(app)
-    .get(`/api/chat/sessions/${session.body.data._id}/messages`)
-    .set(as(user.accessToken));
-  assert.equal(messages.body.data.length, 0);
 });

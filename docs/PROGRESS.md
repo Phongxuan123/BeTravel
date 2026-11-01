@@ -1,5 +1,20 @@
 # TIEN DO BE.TRAVEL
 
+## Go tang tra loi AI de xay lai — 01/11/2026
+
+Theo quyet dinh cua nguoi dung (phan hoi nguoi dung ve chat AI rat xau: tra loi mot khoi lon, lap lung,
+tu choi qua nhieu), da go toan bo tang tra loi: chat.service, prompt, guard, scope, noEvidence, webAnswer,
+webTopicGate, answerMemory, questionSimilarity, FAQ da duyet (G6), feedback "Bao sai" (A08), route
+`/api/chat/*`, `/api/feedback`, `/api/admin/faq/*`, `/api/admin/feedback/*`, trang admin FAQ + Feedback,
+man hinh chat mobile (ChatScreen, AnswerCard...). `/chat` tren mobile hien man cho "Tro ly AI sap ra mat".
+GIU tang nen de ban moi dung lai: kho chunk + embedding + Atlas index, retrieval (loc published + isCurrent,
+xac minh ban bien soan luat Uc), queryRewrite, provider LLM/embedding, index luat Uc, `/api/admin/rag/*`,
+quota AI (dich van dung), ai_events + thong ke admin, bo cau hoi `backend/test/golden/*.json`.
+[!] B4/B5 chuyen sang `xong mot phan`: dau hieu `rag/guard.js` trong CLAUDE.md muc 2.2 khong con la co chu dich.
+Du lieu cu tren Atlas (chatsessions, chatmessages, approvedfaqs, feedbacks, answermemories,
+questionsimilaritycaches) CHUA xoa -- can nguoi quyet. Nguoi dung khong con nut "Xoa lich su hoi AI".
+Test chung minh draft/superseded/khong hien hanh khong lot RAG duoc giu, chuyen sang goi thang retrieval.
+
 ## Sua loi toan dien theo ke hoach kiem dinh — 28/10/2026
 
 Da sua BUG-01, 04, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 va V-01 den V-10,

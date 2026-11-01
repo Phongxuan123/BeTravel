@@ -37,26 +37,8 @@ export const resetRateLimit = buildRateLimit({
   message: "Quá nhiều yêu cầu khôi phục mật khẩu. Vui lòng thử lại sau.",
 });
 
-/*
- * Lop 1 bao ve chi phi AI (B4) -- chong spam burst trong 15 phut. Lop 2 (that
- * su bao ve chi phi, khong reset khi restart) la quota luu DB, xem
- * services/aiUsage.service.js.
- */
-export const chatRateLimit = buildRateLimit({
-  limit: 20,
-  message: "Bạn đang hỏi quá nhanh. Vui lòng chờ một chút rồi thử lại.",
-});
-
-// Chong spam nut "Bao sai" -- khong tinh chi phi AI nhung van co the lam ngap
-// hang doi A08 neu khong gioi han.
-export const feedbackRateLimit = buildRateLimit({
-  limit: 30,
-  message: "Bạn đang gửi báo cáo quá nhanh. Vui lòng chờ một chút rồi thử lại.",
-});
-
-// Dich (B7) cung goi LLM nhu chat nen can lop 1 chong spam burst tuong tu.
-// Khong co quota DB rieng nhu chat vi cau dich ngan (<=500 ky tu, khong co
-// nguy co retrieval/embedding ton kem) -- rate limit RAM la du cho MVP.
+// Dich (B7) goi LLM nen can lop 1 chong spam burst; lop 2 (khong reset khi
+// restart) la quota luu DB, xem services/aiUsage.service.js.
 export const translateRateLimit = buildRateLimit({
   limit: 30,
   message: "Bạn đang dịch quá nhanh. Vui lòng chờ một chút rồi thử lại.",

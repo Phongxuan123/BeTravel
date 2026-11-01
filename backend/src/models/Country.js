@@ -65,8 +65,8 @@ const countrySchema = new mongoose.Schema(
     // nay chi goi y de gom nhanh, khong rang buoc gia tri destinationCity.
     majorCities: { type: [String], default: [] },
 
-    // Tên miền chính phủ mà AI được phép tra web khi kho chưa đủ dữ liệu (rag/webAnswer.js), vd
-    // "gov.au" (khớp cả tên miền con). Rỗng = quốc gia này không có tầng tra web.
+    // Tên miền chính phủ mà AI được phép tra web khi kho chưa đủ dữ liệu, vd "gov.au" (khớp cả
+    // tên miền con). Rỗng = quốc gia này không có tầng tra web.
     officialWebDomains: { type: [String], default: [] },
 
     status: {

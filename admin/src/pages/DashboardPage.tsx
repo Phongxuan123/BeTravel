@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { FileText, Globe2, MapPin, AlertOctagon, MessagesSquare, TriangleAlert, Clock, MessageSquareWarning } from 'lucide-react';
+import { FileText, Globe2, MapPin, AlertOctagon, MessagesSquare, TriangleAlert, Clock } from 'lucide-react';
 import { dashboardApi, analyticsApi } from '../lib/api';
 import { PageHeader } from '../components/ui/PageHeader';
 import { LoadingState, ErrorState } from '../components/ui/Feedback';
@@ -91,7 +90,7 @@ export default function DashboardPage() {
 
             {analytics.data && (
               <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   <StatCard icon={MessagesSquare} label="Lượt chat" value={analytics.data.totalChats} />
                   <StatCard
                     icon={TriangleAlert}
@@ -100,14 +99,6 @@ export default function DashboardPage() {
                     tone={analytics.data.fallbackRate > 0.3 ? 'danger' : 'brand'}
                   />
                   <StatCard icon={Clock} label="Độ trễ TB (ms)" value={analytics.data.avgLatencyMs} />
-                  <Link to="/feedback">
-                    <StatCard
-                      icon={MessageSquareWarning}
-                      label="Feedback chờ xử lý"
-                      value={analytics.data.pendingFeedbackCount}
-                      tone={analytics.data.pendingFeedbackCount > 0 ? 'danger' : 'brand'}
-                    />
-                  </Link>
                 </div>
 
                 {Object.keys(analytics.data.routeCounts ?? {}).length > 0 && (
