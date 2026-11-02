@@ -172,6 +172,41 @@ test("publish bai luat hop le -> published, isCurrent=true, enqueue reindex_arti
   assert.equal(jobs[0].payload.articleId, articleId);
 });
 
+test("publish: nguon chi co accessedAt (trang chinh phu khong ghi ngay) van hop le", async () => {
+  const { accessToken } = await registerAndLogin(app, { role: "admin" });
+  await seedCountryAndTopic(accessToken);
+  const createArticle = (slug, source) =>
+    request(app)
+      .post("/api/admin/legal/articles")
+      .set("Authorization", auth(accessToken))
+      .send({
+        countryCode: "KR",
+        topicSlug: "giao-thong",
+        slug,
+        title: "Bai",
+        summaryVi: "Tom tat.",
+        effectiveFrom: "2026-11-02",
+        sources: [
+          { title: "Nguon", url: "https://law.go.kr/example", authority: "Co quan", ...source },
+        ],
+      });
+  const publish = async (articleId) => {
+    for (const status of ["pending_review", "published"]) {
+      const res = await request(app)
+        .post(`/api/admin/legal/articles/${articleId}/status`)
+        .set("Authorization", auth(accessToken))
+        .send({ status });
+      if (status === "published") return res;
+    }
+  };
+
+  const withAccessed = await createArticle("co-ngay-truy-cap", { accessedAt: "2026-11-02" });
+  assert.equal((await publish(withAccessed.body.data._id)).status, 200);
+
+  const withoutDate = await createArticle("khong-co-ngay", {});
+  assert.equal((await publish(withoutDate.body.data._id)).status, 409);
+});
+
 test("publish version 2 -> version 1 tu dong superseded + isCurrent=false", async () => {
   const { accessToken } = await registerAndLogin(app, { role: "admin" });
   await seedCountryAndTopic(accessToken);
