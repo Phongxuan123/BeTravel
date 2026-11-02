@@ -1,8 +1,10 @@
 /*
  * Xoa du lieu cua tang tra loi AI ban 1 (da go 01/11/2026), theo quyet dinh H3 trong
  * docs/AI_V2_PLAN.md. Mac dinh chi DEM (khong xoa); them --confirm de xoa that.
- * Dung: npm run purge-legacy-chat            (dem)
- *       npm run purge-legacy-chat -- --confirm (xoa, khong hoan tac duoc)
+ * Dung: npm run purge-legacy-chat                     (dem)
+ *       node scripts/purge-legacy-chat.js --confirm   (xoa, khong hoan tac duoc)
+ * PowerShell nuot dau "--" cua "npm run x -- --confirm" nen goi thang node.
+ * Da chay --confirm ngay 02/11/2026 (18 phien, 136 tin nhan, 1 feedback, 15 cache).
  */
 import mongoose from "mongoose";
 
