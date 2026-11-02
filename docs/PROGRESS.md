@@ -1,5 +1,13 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- giai doan 2 xong -- 02/11/2026 (chieu)
+
+7 bai hai quan soan bang cach doc trang ABF/AUSTRAC/TGA/DAFF qua Claude in Chrome (nguoi dung cho
+phep). Tong 25 bai AU da XUAT BAN theo yeu cau nguoi dung (dang nhap admin qua script, effectiveFrom
+= 02/11/2026 = ngay doi chieu nguon). Luat xuat ban noi long: nguon chap nhan `accessedAt` khi trang
+chinh phu khong ghi ngay xuat ban (nguoi dung chot). Bai `san-pham-dong-vat-hoang-da` doi thanh
+`thuoc-dong-y-thao-duoc` (trang DCCEEW bi chan). G2: APIZ, xem AI_V2_PLAN muc 3.
+
 ## Tro ly AI ban 2 -- giai doan 2 (bai cam nang Uc) -- 02/11/2026
 
 4 agent song song soan bai theo `backend/scripts/data/au-articles/BRIEF.md` (moi su that co trich

@@ -135,19 +135,21 @@ export const createNewVersion = async (id, actorId) => {
 
 /*
  * Dieu kien cung de duoc 'published' (validate o BACKEND, khong chi an nut
- * phia admin UI) -- theo CLAUDE.md B.10: >=1 source du url+authority+publishedAt,
+ * phia admin UI) -- theo CLAUDE.md B.10: >=1 source du url+authority+ngay,
  * summaryVi khong rong, effectiveFrom co gia tri, topicSlug ton tai.
+ * Ngay cua nguon: publishedAt, hoac accessedAt khi trang chinh phu khong ghi ngay xuat ban
+ * (nguoi dung chot 02/11/2026) -- van chung minh duoc nguon da duoc doi chieu luc nao.
  */
 const findMissingPublishFields = (article) => {
   const missing = [];
 
   const hasCompleteSource = (article.sources ?? []).some(
-    (source) => source.url && source.authority && source.publishedAt,
+    (source) => source.url && source.authority && (source.publishedAt || source.accessedAt),
   );
   if (!hasCompleteSource) {
     missing.push({
       path: "sources",
-      message: "Cần ít nhất 1 nguồn đủ url, authority, publishedAt",
+      message: "Cần ít nhất 1 nguồn đủ url, authority và ngày xuất bản hoặc ngày truy cập",
     });
   }
 
