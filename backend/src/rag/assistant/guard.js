@@ -78,7 +78,13 @@ function renumberMarkers(text) {
  */
 export function guardAnswer({ answer, allowedNumbers, language = "vi" }) {
   const violations = [];
-  const withKnownMarkers = stripUnknownMarkers(answer, allowedNumbers, violations);
+  // Mo hinh hay dat marker SAU dau cham ("48 gio. [1]"): keo marker vao truoc dau cham de no thuoc
+  // dung cau chua con so -- neu khong, cau co nguon bi xem la khong nguon va bi go nham.
+  const markersInside = answer.replace(
+    /([.!?])[ \t]*((?:\[\d{1,2}\][ \t]*)+)/g,
+    (_, mark, markers) => ` ${markers.trim()}${mark}`,
+  );
+  const withKnownMarkers = stripUnknownMarkers(markersInside, allowedNumbers, violations);
   const { text: withoutUnsourced, stripped } = stripUnsourcedNumbers(withKnownMarkers, violations);
   const note = VERIFY_NOTE[language] ?? VERIFY_NOTE.vi;
   const withNote = stripped ? `${withoutUnsourced}\n${note}`.trim() : withoutUnsourced;

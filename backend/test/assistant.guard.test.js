@@ -32,6 +32,18 @@ test("guard: so dien thoai va so khan cap khong bi coi la con so can nguon", () 
   assert.equal(result.violations.length, 0);
 });
 
+test("guard: marker dat sau dau cham van bao lanh con so cua cau do (loi hoi quy 02/11)", () => {
+  const result = guardAnswer({
+    answer: "Tối đa 48 giờ mỗi hai tuần khi đang học. [1]\n- Kỳ nghỉ không giới hạn.[1]",
+    allowedNumbers: new Set([1]),
+  });
+  assert.equal(
+    result.text,
+    "Tối đa 48 giờ mỗi hai tuần khi đang học [1].\n- Kỳ nghỉ không giới hạn [1].",
+  );
+  assert.equal(result.violations.length, 0);
+});
+
 test("guard: marker khong hop le khong duoc 'bao lanh' cho con so", () => {
   const result = guardAnswer({
     answer: "Bị phạt 500 AUD [7].",
