@@ -1,5 +1,16 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- giai doan 2 (bai cam nang Uc) -- 02/11/2026
+
+4 agent song song soan bai theo `backend/scripts/data/au-articles/BRIEF.md` (moi su that co trich
+nguyen van tu trang chinh thuc da tai). Xong 18/25 bai (nhap canh, lam viec, y te, giao thong, noi
+cong cong, khan cap, nha o), da seed len Atlas o trang thai `draft` + 8 chu de AU
+(`node scripts/seed-au-articles.js --apply`). Trich dan va diem chua xac minh nam trong
+`reviewNote` de nguoi duyet doi chieu. `/api/legal/topics` nay an chu de chua co bai published.
+Dang vuong: 7 bai hai quan (tien mat, thuoc, thuc pham, mien thue, vape, dong vat hoang da, hoan
+thue) -- abf/austrac/tga/agriculture.gov.au chan cong cu tai trang tu dong; can nguoi dung chon cach
+lay nguon. Nguoi dung can duyet va xuat ban 18 bai trong Admin Portal.
+
 ## Tro ly AI ban 2 -- giai doan 1 (ke hoach) -- 02/11/2026
 
 Nguoi dung chot 56/58 cau trac nghiem (`docs/ai-plan.html`, khong commit). Ban chot:

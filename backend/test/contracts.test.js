@@ -244,7 +244,16 @@ test("response cua GET /api/countries khop fixture public.country.json", async (
 test("response cua GET /api/legal/topics khop fixture public.legalTopic.json", async () => {
   const fixture = readFixture("public.legalTopic.json");
   const LegalTopic = (await import("../src/models/LegalTopic.js")).default;
+  const LegalArticle = (await import("../src/models/LegalArticle.js")).default;
   await LegalTopic.create({ countryCode: "KR", slug: "giao-thong", label: "Giao thông", order: 2 });
+  // Chu de chi hien khi co it nhat mot bai published.
+  await LegalArticle.create({
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bai-mau",
+    status: "published",
+    title: "Bài mẫu",
+  });
 
   const res = await request(app).get("/api/legal/topics").query({ country: "KR" });
 

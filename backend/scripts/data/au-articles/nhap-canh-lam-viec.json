@@ -1,0 +1,296 @@
+[
+  {
+    "topicSlug": "nhap-canh",
+    "slug": "giay-to-nhap-canh",
+    "title": "Giấy tờ cần mang khi nhập cảnh Úc",
+    "summaryVi": "Khi đến sân bay Úc, bạn đi qua kiểm soát nhập cảnh (immigration) rồi hải quan và kiểm dịch (customs and quarantine); nhân viên sẽ kiểm tra giấy tờ đi lại và thị thực (visa) của bạn. Hãy mang hộ chiếu còn hạn, giấy tờ visa trong hành lý xách tay, và điền Thẻ nhập cảnh (Incoming Passenger Card) thường được phát trên máy bay.",
+    "keyPoints": [
+      { "text": "Study Australia khuyên kiểm tra hộ chiếu còn hạn ít nhất 6 tháng tính đến ngày bạn đến Úc.", "severity": "normal" },
+      { "text": "Mang theo toàn bộ giấy tờ visa trên chuyến bay (du học sinh mang cả Xác nhận nhập học - Confirmation of Enrolment, eCoE).", "severity": "normal" },
+      { "text": "Khi đến sân bay, bạn đi qua kiểm soát nhập cảnh và hải quan trước; nhân viên kiểm tra giấy tờ đi lại và visa của bạn.", "severity": "normal" },
+      { "text": "Bạn phải điền Thẻ nhập cảnh (Incoming Passenger Card), thường được phát trên máy bay, và thẻ có hỏi địa chỉ chỗ ở của bạn tại Úc.", "severity": "normal" },
+      { "text": "Khai báo không trung thực hàng hóa an toàn sinh học (biosecurity) tại biên giới Úc sẽ bị phạt.", "severity": "normal" },
+      { "text": "Mỗi visa có ngày Không được đến sau (Must not arrive after); đây là ngày cuối cùng bạn được nhập cảnh hoặc tái nhập cảnh Úc.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Chỉ có một cơ quan chính phủ Úc cấp visa là Bộ Nội vụ (Department of Home Affairs); hãy cảnh giác với dịch vụ hứa hẹn bảo đảm có visa để lấy tiền.",
+      "Việc nhập cảnh Úc để làm việc bằng visa du lịch hoặc visa quá cảnh là bất hợp pháp; người vi phạm sẽ bị từ chối nhập cảnh và đưa về nơi đã khởi hành.",
+      "Nên đặt trước chỗ ở đêm đầu tiên để có địa chỉ ghi vào Thẻ nhập cảnh."
+    ],
+    "sources": [
+      { "title": "Preparing to travel", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/preparing-to-travel", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "How to prepare for your flight to Australia", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/how-to-prepare-for-your-flight-to-australia", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Frequently Asked Questions", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Stay safe from visa scams", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/HomeAffairs14Nov25.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["nhập cảnh", "hộ chiếu", "visa", "incoming passenger card", "sân bay", "kiểm soát biên giới"],
+    "verification": [
+      { "claim": "Hộ chiếu còn hạn ít nhất 6 tháng", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/preparing-to-travel", "quote": "Check that your passport is valid for at least six months prior to your arrival in Australia." },
+      { "claim": "Mang giấy tờ visa (kể cả eCoE) trên chuyến bay", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/preparing-to-travel", "quote": "that you have all your visa documentation (including Confirmation of Enrolment, or eCoE) with you on your flight." },
+      { "claim": "Đi qua nhập cảnh và hải quan trước khi rời sân bay", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/preparing-to-travel", "quote": "When you arrive at an Australian airport, you will first need to go through immigration and customs." },
+      { "claim": "Nhân viên kiểm tra giấy tờ đi lại và visa", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/how-to-prepare-for-your-flight-to-australia", "quote": "A clearance officer will check your travel document and visa" },
+      { "claim": "Điền Thẻ nhập cảnh, thường phát trên máy bay", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/preparing-to-travel", "quote": "You will need to complete an incoming passenger card which is usually given to you on board your flight." },
+      { "claim": "Phạt khi khai báo không trung thực hàng biosecurity", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/preparing-to-travel", "quote": "penalties will apply if you fail to truthfully declare biosecurity goods at the Australian border." },
+      { "claim": "Ý nghĩa ngày Must not arrive after", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "Must not arrive after date refers to the last date you may enter (or re-enter) into Australia." },
+      { "claim": "Chỉ Bộ Nội vụ Úc cấp visa", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/HomeAffairs14Nov25.html", "quote": "There is only one official Australian Government provider of visas – the Department of Home Affairs." },
+      { "claim": "Làm việc bằng visa du lịch/quá cảnh là bất hợp pháp, bị từ chối nhập cảnh", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/HomeAffairs14Nov25.html", "quote": "Scammers often claim you can enter Australia for work on a visitor visa or transit visa – this is illegal and you will be refused entry and returned to the country you came from." }
+    ],
+    "unverified": [
+      "Điều kiện dùng cổng tự động SmartGate (độ tuổi, ePassport, chiều cao, người dưới 16 tuổi cần người giám hộ): trang ABF trả về 403 khi fetch, chỉ thấy qua kết quả tìm kiếm.",
+      "Thẻ nhập cảnh điện tử / Digital Passenger Declaration hoặc Australia Travel Declaration: không fetch được trang ABF/Home Affairs.",
+      "Danh sách đồ phải khai báo (thực phẩm, tiền mặt từ 10.000 AUD, thuốc...) và mức phạt cụ thể: không lấy từ trang đã fetch trong bài này.",
+      "Hộ chiếu Việt Nam không đủ điều kiện ETA/eVisitor: không xác minh trực tiếp."
+    ]
+  },
+  {
+    "topicSlug": "nhap-canh",
+    "slug": "visa-du-lich-dieu-kien",
+    "title": "Visa du lịch Úc: được ở bao lâu, có được làm việc không",
+    "summaryVi": "Thời gian bạn được ở Úc và các điều kiện của visa du lịch (Visitor visa, subclass 600) được ghi trên thư cấp visa và có tính ràng buộc pháp lý. Không được nhập cảnh Úc để làm việc bằng visa du lịch. Hãy kiểm tra chi tiết visa của mình qua dịch vụ miễn phí VEVO (Visa Entitlement Verification Online).",
+    "keyPoints": [
+      { "text": "Điều kiện ghi trên visa lúc được cấp có tính ràng buộc pháp lý và không thể thay đổi; nếu hoàn cảnh thay đổi, bạn có thể phải nộp hồ sơ visa mới.", "severity": "normal" },
+      { "text": "Thời gian lưu trú (Length of stay) là thời gian tối đa cho mỗi lần nhập cảnh: nếu ghi một ngày cụ thể thì chỉ được ở đến ngày đó, nếu ghi một khoảng thời gian thì tính từ lần nhập cảnh gần nhất.", "severity": "normal" },
+      { "text": "Ngày Không được đến sau (Must not arrive after) là ngày cuối cùng bạn được nhập cảnh hoặc tái nhập cảnh Úc.", "severity": "normal" },
+      { "text": "Nhập cảnh Úc để làm việc bằng visa du lịch là bất hợp pháp, người vi phạm bị từ chối nhập cảnh và đưa về nước.", "severity": "normal" },
+      { "text": "Visa du lịch có thể cho phép học một khóa ngắn, tùy theo điều kiện ghi trên visa.", "severity": "normal" },
+      { "text": "Dùng dịch vụ VEVO miễn phí và bảo mật để xem chi tiết và điều kiện visa của bạn.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Một số visa du lịch dài hạn có thể kèm điều kiện chỉ được ở Úc tối đa 12 tháng trong mỗi 18 tháng; vi phạm có thể bị hủy visa và bị cấm quay lại tới 3 năm (theo trang của Tổng Lãnh sự quán Úc tại TP.HCM, cập nhật năm 2016, cần đối chiếu với thư cấp visa của bạn).",
+      "Chỉ nộp hồ sơ qua Bộ Nội vụ Úc (Department of Home Affairs), Đại sứ quán Úc hoặc đại diện di trú có đăng ký; cảnh giác dịch vụ hứa bảo đảm visa.",
+      "Quy định về quyền làm việc ở Úc do Fair Work Ombudsman giám sát; trước khi nhận bất kỳ việc gì, hãy kiểm tra điều kiện visa."
+    ],
+    "sources": [
+      { "title": "Frequently Asked Questions", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Stay safe from visa scams", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/HomeAffairs14Nov25.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Longer Visitor visas", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/LongerVisitorVisas.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Other types of visas", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/other-types-of-visas", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["visa du lịch", "subclass 600", "visitor visa", "VEVO", "điều kiện visa", "làm việc chui"],
+    "verification": [
+      { "claim": "Điều kiện visa ràng buộc pháp lý, không thay đổi được", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "Visa conditions placed on a visa at the time of grant are legally binding and cannot be changed." },
+      { "claim": "Hoàn cảnh thay đổi có thể nộp hồ sơ mới", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "Should an applicant's circumstances change, that person may decide to lodge a new visa application." },
+      { "claim": "Ý nghĩa Length of stay", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "If there is a specific date in this field, the visa only allows you to stay up until that date. Otherwise you may stay until the period allowed in this field from when you last arrived" },
+      { "claim": "Ý nghĩa Must not arrive after", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "Must not arrive after date refers to the last date you may enter (or re-enter) into Australia." },
+      { "claim": "VEVO miễn phí, bảo mật", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "visit the free and secure online VEVO service (Visa Entitlement Verification Online) to check your visa details." },
+      { "claim": "Làm việc bằng visa du lịch là bất hợp pháp", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/HomeAffairs14Nov25.html", "quote": "Scammers often claim you can enter Australia for work on a visitor visa or transit visa – this is illegal and you will be refused entry and returned to the country you came from." },
+      { "claim": "Visa du lịch cho phép học ngắn hạn tùy điều kiện", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/other-types-of-visas", "quote": "can allow you to study in Australia for a short period, subject to your visa conditions." },
+      { "claim": "Điều kiện 12 tháng trong 18 tháng", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/LongerVisitorVisas.html", "quote": "a condition may be placed on long validity visas that restricts the time you spend in Australia to 12 months in every 18 months." },
+      { "claim": "Vi phạm có thể bị hủy visa, cấm quay lại tới 3 năm", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/LongerVisitorVisas.html", "quote": "Breach of this condition may result in cancellation of your visa and a subsequent exclusion period, preventing further travel to Australia for up to 3 years." },
+      { "claim": "Quyền làm việc do Fair Work Ombudsman giám sát", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "More information is also available on workplace rights in Australia, which is also overseen by the Fair Work Ombudsman." }
+    ],
+    "unverified": [
+      "Mã điều kiện 8101 (không được làm việc) trên visa 600: trang Home Affairs trả 403, không xác minh được mã số.",
+      "Giới hạn học tối đa 3 tháng trên visa du lịch: trang Study Australia đã fetch chỉ ghi short period, không có con số.",
+      "Điều kiện 8501 (bảo hiểm y tế) và 8503 (không được ở thêm) cho visa du lịch: không xác minh được.",
+      "Lệ phí visa 600, thời hạn lưu trú thông thường (3, 6, 12 tháng) và các luồng (Tourist, Business, Sponsored Family) theo trang Home Affairs: không fetch được.",
+      "Trang Longer Visitor visas ghi cập nhật lần cuối năm 2016; quy định hiện hành có thể đã khác."
+    ]
+  },
+  {
+    "topicSlug": "nhap-canh",
+    "slug": "o-qua-han-visa",
+    "title": "Lỡ ở quá hạn visa tại Úc: nên làm gì",
+    "summaryVi": "Nếu visa của bạn sắp hết hạn hoặc đã hết hạn, hãy kiểm tra ngay tình trạng visa qua VEVO và liên hệ dịch vụ hỗ trợ miễn phí, bảo mật của Chính phủ Úc (Status Resolution Support Service) để biết bạn có thể xin visa khác hay cần lên kế hoạch rời Úc. Người bị hủy visa có thể bị hạn chế xin visa khác và có thể bị cấm quay lại (exclusion period).",
+    "keyPoints": [
+      { "text": "Dùng VEVO (Visa Entitlement Verification Online) để kiểm tra chi tiết và điều kiện visa hiện tại của bạn.", "severity": "normal" },
+      { "text": "Chính phủ Úc có dịch vụ hỗ trợ miễn phí và bảo mật (Status Resolution Support Service, SRSS) cho người có visa đã hoặc sắp hết hạn.", "severity": "normal" },
+      { "text": "Dịch vụ này bảo mật và tách biệt với Lực lượng Biên phòng Úc (Australian Border Force).", "severity": "normal" },
+      { "text": "Bạn được hướng dẫn xem mình có thể xin visa khác không, hoặc cách lên kế hoạch rời Úc.", "severity": "normal" },
+      { "text": "Người bị hủy visa không còn visa hợp lệ để đi Úc và có thể bị hạn chế cấp visa khác; Úc có áp dụng lệnh cấm tái nhập cảnh (exclusion periods).", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Đừng chờ đến khi visa hết hạn: thời gian lưu trú ghi trên visa là giới hạn bạn phải tuân thủ; kiểm tra ngày này trên VEVO.",
+      "Với visa du lịch dài hạn có điều kiện 12 tháng trong 18 tháng, vi phạm có thể dẫn đến hủy visa và bị cấm quay lại Úc tới 3 năm (theo trang Tổng Lãnh sự quán Úc tại TP.HCM).",
+      "Chỉ làm việc với Bộ Nội vụ Úc hoặc đại diện di trú có đăng ký; không tin dịch vụ hứa hẹn hợp thức hóa visa để lấy tiền."
+    ],
+    "sources": [
+      { "title": "What to do if your visa has expired or is expiring", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/what-to-do-if-your-visa-has-expired-or-is-expiring", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Frequently Asked Questions", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Longer Visitor visas", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/LongerVisitorVisas.html", "authority": "Australian Consulate-General Ho Chi Minh City", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "danger",
+    "tags": ["quá hạn visa", "overstay", "exclusion period", "cấm nhập cảnh", "VEVO", "SRSS"],
+    "verification": [
+      { "claim": "Dùng VEVO kiểm tra visa", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/what-to-do-if-your-visa-has-expired-or-is-expiring", "quote": "Use Visa Entitlement Verification Online (VEVO) to check your current visa details and conditions." },
+      { "claim": "SRSS miễn phí và bảo mật", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/what-to-do-if-your-visa-has-expired-or-is-expiring", "quote": "The Australian Government offers free and confidential assistance through the Status Resolution Support Service (SRSS)." },
+      { "claim": "Tách biệt với ABF", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/what-to-do-if-your-visa-has-expired-or-is-expiring", "quote": "The service is confidential and separate from the Australian Border Force." },
+      { "claim": "Hỗ trợ cả khi visa đã hết hạn", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/what-to-do-if-your-visa-has-expired-or-is-expiring", "quote": "If your visa has already expired, support is still available." },
+      { "claim": "Hướng dẫn xin visa hoặc lên kế hoạch rời Úc", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/what-to-do-if-your-visa-has-expired-or-is-expiring", "quote": "receive guidance on whether you may be able to apply for a visa, or how to plan your departure from Australia" },
+      { "claim": "Bị hủy visa thì không còn visa hợp lệ, có thể bị hạn chế visa khác", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "If a person's visa is cancelled, they will no longer have a valid visa to travel to Australia ... may be restricted from being granted another visa." },
+      { "claim": "Có lệnh cấm tái nhập cảnh (exclusion periods)", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/FAQs.html", "quote": "More information is available on re-entry bans (exclusion periods)." },
+      { "claim": "Vi phạm điều kiện 12/18 tháng có thể bị cấm tới 3 năm", "url": "https://hcmc.vietnam.embassy.gov.au/hchi/LongerVisitorVisas.html", "quote": "Breach of this condition may result in cancellation of your visa and a subsequent exclusion period, preventing further travel to Australia for up to 3 years." }
+    ],
+    "unverified": [
+      "Ở quá hạn trên 28 ngày có thể bị cấm tái nhập cảnh tới 3 năm: chỉ thấy trong kết quả tìm kiếm trang Home Affairs (re-entry ban), fetch bị 403.",
+      "Visa bắc cầu E (Bridging visa E, subclass 050) để ở hợp pháp trong lúc thu xếp rời Úc: trang Home Affairs bị 403.",
+      "Ở Úc không có visa hợp lệ là bất hợp pháp (unlawful non-citizen), có thể bị tạm giữ và trục xuất, phát sinh nợ chi phí trục xuất: không fetch được Home Affairs/Migration Act.",
+      "Người không có visa hợp lệ không được làm việc, đi học, dùng Medicare: chỉ thấy trong kết quả tìm kiếm.",
+      "Số điện thoại/cách liên hệ Status Resolution Service: không có trên trang đã fetch."
+    ]
+  },
+  {
+    "topicSlug": "hoc-tap-lam-viec",
+    "slug": "du-hoc-sinh-lam-them",
+    "title": "Du học sinh Úc được làm thêm bao nhiêu giờ",
+    "summaryVi": "Người có visa du học (Student visa, subclass 500) được làm tối đa 48 giờ mỗi hai tuần (fortnight) khi khóa học đang diễn ra, kể cả mùa thi. Trong kỳ nghỉ theo lịch của khóa học, bạn được làm không giới hạn giờ. Bạn không được làm việc trước khi khóa học bắt đầu, trừ khi có visa khác cho phép.",
+    "keyPoints": [
+      { "text": "Được làm tối đa 48 giờ mỗi hai tuần trong thời gian học kỳ, kể cả mùa thi.", "severity": "normal" },
+      { "text": "Trong kỳ nghỉ giữa học kỳ, nếu bạn đang học một khóa khác được tính vào khóa chính thì vẫn áp dụng giới hạn 48 giờ mỗi hai tuần.", "severity": "normal" },
+      { "text": "Được làm không giới hạn giờ trong các kỳ nghỉ theo lịch của khóa học (scheduled course breaks).", "severity": "normal" },
+      { "text": "Học thạc sĩ nghiên cứu hoặc tiến sĩ thì được làm không giới hạn giờ sau khi khóa học bắt đầu.", "severity": "normal" },
+      { "text": "Không được làm việc trước khi khóa học bắt đầu, trừ khi bạn có visa khác cho phép làm việc.", "severity": "normal" },
+      { "text": "Kiểm tra điều kiện visa của bạn, gồm quyền làm việc, trên hệ thống VEVO.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [
+      "Giờ làm thuộc yêu cầu bắt buộc của khóa học được đăng ký trên CRICOS không tính vào giới hạn 48 giờ."
+    ],
+    "foreignerNotes": [
+      "Từ 1/7/2024, luật mới cho phép du học sinh báo cáo bị bóc lột tại nơi làm việc mà không làm rủi ro cho visa; visa sẽ không bị hủy khi bạn khiếu nại chính đáng về điều kiện làm việc (theo Study Australia).",
+      "Chủ lao động ép du học sinh làm vượt điều kiện visa có thể bị phạt.",
+      "Theo điều kiện visa 8533, bạn phải báo địa chỉ cư trú cho cơ sở đào tạo trong vòng 7 ngày sau khi đến Úc."
+    ],
+    "sources": [
+      { "title": "Student visa (subclass 500)", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "New employment protections for international students", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/new-employment-protections-for-international-students", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Your work rights explained", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Your first week in Australia", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-first-week-in-australia", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["du học sinh", "visa 500", "làm thêm", "48 giờ", "fortnight", "quyền làm việc"],
+    "verification": [
+      { "claim": "48 giờ mỗi hai tuần khi khóa học đang diễn ra, kể cả mùa thi", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "quote": "You can work up to 48 hours per fortnight: while your course is in session; during study terms and semesters, including exam periods" },
+      { "claim": "Kỳ nghỉ giữa kỳ khi học khóa phụ tính vào khóa chính; ngoại lệ CRICOS", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "quote": "during a term break if you are taking another course that counts towards your main course ... unless it is a mandatory requirement listed on CRICOS" },
+      { "claim": "Không giới hạn trong kỳ nghỉ theo lịch", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "quote": "You can work unlimited hours ... during scheduled course breaks" },
+      { "claim": "Thạc sĩ nghiên cứu/tiến sĩ không giới hạn", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "quote": "after your course starts, if you are studying a master's degree by research or a doctoral degree." },
+      { "claim": "Không làm trước khi khóa học bắt đầu", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "quote": "You cannot work before your course starts unless you hold another visa that allows you to work." },
+      { "claim": "VEVO hiển thị điều kiện visa", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "quote": "the Visa Entitlement Verification Online system, known as VEVO, show the conditions that apply to you" },
+      { "claim": "Luật mới từ 1/7/2024, báo cáo bóc lột không rủi ro visa", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/new-employment-protections-for-international-students", "quote": "These laws will enable international students to report workplace exploitation without risking their visa." },
+      { "claim": "Visa không bị hủy khi khiếu nại chính đáng", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/new-employment-protections-for-international-students", "quote": "Your visa will not be cancelled if you come forward with genuine complaints about your working conditions." },
+      { "claim": "Điều kiện 8533: báo địa chỉ trong 7 ngày", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-first-week-in-australia", "quote": "you must inform your education provider of your residential address within seven (7) days of arriving in Australia." }
+    ],
+    "unverified": [
+      "Mã điều kiện 8105 cho giới hạn giờ làm và hậu quả pháp lý cụ thể khi làm quá 48 giờ (hủy visa...): trang Home Affairs bị 403, trang Study Australia không nêu.",
+      "Cách tính một fortnight (14 ngày bắt đầu từ thứ Hai): trang đã fetch không định nghĩa.",
+      "Bộ Nội vụ không hủy visa vì báo cáo bóc lột ngay cả khi đã làm quá giờ cho phép: chỉ thấy trong kết quả tìm kiếm, không fetch được trang nguồn.",
+      "Ngày bắt đầu khóa học do cơ sở đào tạo xác định và quy định cho người đi kèm (dependants): không xác minh."
+    ]
+  },
+  {
+    "topicSlug": "hoc-tap-lam-viec",
+    "slug": "quyen-nguoi-lao-dong-co-visa",
+    "title": "Quyền lợi khi đi làm ở Úc với visa tạm thời",
+    "summaryVi": "Người có visa, kể cả du học sinh, có cùng các quyền và chế độ tối thiểu tại nơi làm việc như mọi người lao động khác ở Úc. Tiền lương phải theo quy định lương tối thiểu và bạn phải nhận phiếu lương (payslip) trong vòng một ngày làm việc sau khi được trả lương. Nếu gặp vấn đề, bạn có thể liên hệ Thanh tra Lao động Công bằng (Fair Work Ombudsman).",
+    "keyPoints": [
+      { "text": "Mọi người ở Úc, kể cả du học sinh có visa, đều có cùng chế độ và sự bảo vệ tối thiểu tại nơi làm việc.", "severity": "normal" },
+      { "text": "Tiền lương phải phù hợp với luật lương tối thiểu của Úc; lương tối thiểu được xem xét lại hằng năm và phụ thuộc loại công việc.", "severity": "normal" },
+      { "text": "Bạn phải nhận phiếu lương trong vòng một ngày làm việc kể từ khi được trả lương.", "severity": "normal" },
+      { "text": "Nếu đủ điều kiện, chủ lao động bắt buộc phải đóng quỹ hưu trí (superannuation) cho bạn theo luật.", "severity": "normal" },
+      { "text": "Bị sa thải bất công thì nộp đơn lên Ủy ban Lao động Công bằng (Fair Work Commission) trong vòng 21 ngày kể từ khi bị sa thải.", "severity": "normal" },
+      { "text": "Từ 1/7/2024, du học sinh có thể báo cáo bị bóc lột tại nơi làm việc mà không làm rủi ro cho visa.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Dùng công cụ tra lương và điều kiện làm việc (Pay and Conditions Tool) của Fair Work Ombudsman để kiểm tra bạn có được trả đúng lương không.",
+      "Theo Study Australia, bạn sẽ không gặp rắc rối khi báo cho Fair Work Ombudsman việc bị trả thiếu lương, và việc xin giúp đỡ không ảnh hưởng đến tình trạng visa.",
+      "Bạn có quyền làm việc trong môi trường an toàn và được bảo vệ khỏi phân biệt đối xử (chủng tộc, giới tính, tuổi, tôn giáo...).",
+      "Ở NSW và VIC, cơ quan nhà nước (NSW Government, VRQA) cũng xác nhận lao động có visa có cùng quyền như mọi người lao động; các bang khác cùng áp dụng luật lao động liên bang."
+    ],
+    "sources": [
+      { "title": "Working in Australia: Your rights explained", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/working-in-australia-your-rights-explained", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Your work rights explained", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "New employment protections for international students", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/new-employment-protections-for-international-students", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "If you're a visa holder and lose your job", "url": "https://nsw.gov.au/life-events/jobs-and-career/if-you-lose-your-job/understand-your-rights/if-youre-a-visa-holder", "authority": "NSW Government", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Workplace rights for international students", "url": "https://www2.vrqa.vic.gov.au/workplace-rights-international-students", "authority": "Victorian Registration and Qualifications Authority (VRQA)", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["quyền lao động", "visa", "lương tối thiểu", "payslip", "fair work", "bóc lột lao động"],
+    "verification": [
+      { "claim": "Cùng chế độ tối thiểu, kể cả du học sinh", "url": "https://www2.vrqa.vic.gov.au/workplace-rights-international-students", "quote": "Everyone in Australia has the same minimum entitlements and protections at work, including international students on a visa." },
+      { "claim": "Lao động nhập cư có cùng quyền", "url": "https://nsw.gov.au/life-events/jobs-and-career/if-you-lose-your-job/understand-your-rights/if-youre-a-visa-holder", "quote": "Migrant workers have the same rights and protections as all other employees under Australian workplace and immigration laws." },
+      { "claim": "Du học sinh cùng quyền làm việc", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/working-in-australia-your-rights-explained", "quote": "As an international student, you have the same working rights as all other workers in Australia." },
+      { "claim": "Lương theo luật lương tối thiểu", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/working-in-australia-your-rights-explained", "quote": "This payment must be in line with Australian minimum wage laws." },
+      { "claim": "Lương tối thiểu xem xét hằng năm", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "quote": "The minimum wage is reviewed every year and is based on the type of work you do." },
+      { "claim": "Phiếu lương trong một ngày làm việc", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/working-in-australia-your-rights-explained", "quote": "receive a payslip (documenting your pay) within one working day of receiving your pay." },
+      { "claim": "Công cụ tra lương của Fair Work", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/working-in-australia-your-rights-explained", "quote": "Use the Fair Work Ombudsman's pay and conditions tool to determine if you're being paid the correct wage." },
+      { "claim": "Xin giúp đỡ không ảnh hưởng visa", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/working-in-australia-your-rights-explained", "quote": "You are always allowed to ask for help and this will not affect your visa status." },
+      { "claim": "Không gặp rắc rối khi báo trả thiếu lương", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "quote": "you will not be in trouble if you inform the Fair Work Ombudsmen" },
+      { "claim": "Superannuation nếu đủ điều kiện", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "quote": "your employer must, by law, make superannuation contributions for you if you are eligible." },
+      { "claim": "Môi trường làm việc an toàn", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "quote": "a work environment that is safe and without risk to your health" },
+      { "claim": "Sa thải bất công: nộp đơn trong 21 ngày", "url": "https://www.studyaustralia.gov.au/en/work-in-australia/work-rights-and-responsibilities/your-work-rights-explained", "quote": "file an application ... within 21 days of your dismissal" },
+      { "claim": "Luật mới từ 1/7/2024 báo cáo bóc lột không rủi ro visa", "url": "https://www.studyaustralia.gov.au/en/tools-and-resources/tips-and-advice-for-students/new-employment-protections-for-international-students", "quote": "From 1 July 2024, new laws have been introduced ... These laws will enable international students to report workplace exploitation without risking their visa." }
+    ],
+    "unverified": [
+      "Toàn bộ trang fairwork.gov.au bị timeout khi fetch, nên bài không dùng nguồn Fair Work Ombudsman trực tiếp.",
+      "Mức lương tối thiểu quốc gia 26,44 AUD/giờ hoặc 1.004,90 AUD/tuần từ 1/7/2026: chỉ thấy trong kết quả tìm kiếm.",
+      "Số Fair Work Infoline 13 13 94 và dịch vụ phiên dịch TIS: chỉ thấy trong kết quả tìm kiếm.",
+      "Có thể báo cáo ẩn danh (anonymous report) với Fair Work Ombudsman: không xác minh.",
+      "Quyền lợi lao động vẫn áp dụng kể cả khi người lao động vi phạm điều kiện visa; chủ lao động không có quyền hủy visa: chỉ thấy trong kết quả tìm kiếm.",
+      "Assurance Protocol đang tạm dừng, thay bằng các chương trình thí điểm (Workplace Justice Visa...): không fetch được trang Fair Work.",
+      "Quy định phiếu lương phải gồm những nội dung gì: không xác minh."
+    ]
+  },
+  {
+    "topicSlug": "y-te",
+    "slug": "bao-hiem-y-te-khach-va-du-hoc-sinh",
+    "title": "Bảo hiểm y tế khi du lịch và du học ở Úc",
+    "summaryVi": "Du học sinh bắt buộc duy trì Bảo hiểm y tế du học sinh (Overseas Student Health Cover, OSHC) suốt thời hạn visa. Khách có visa tạm thời nói chung không được dùng hệ thống y tế công Medicare, và một số visa có điều kiện bắt buộc giữ bảo hiểm y tế (ví dụ visa có điều kiện 8501). Danh sách các nước có hiệp định y tế đối ứng với Úc không có Việt Nam.",
+    "keyPoints": [
+      { "text": "Với du học sinh, duy trì OSHC trong suốt thời hạn visa là một điều kiện của visa.", "severity": "normal" },
+      { "text": "OSHC chi trả chi phí khám chữa bệnh và nằm viện, gồm cả xe cứu thương và một phần tiền thuốc (tối đa 50 AUD mỗi loại thuốc, 500 AUD mỗi năm với gói một người).", "severity": "normal" },
+      { "text": "OSHC không chi trả các dịch vụ bổ sung như nha khoa, mắt, vật lý trị liệu.", "severity": "normal" },
+      { "text": "Khách có visa tạm thời nói chung không đủ điều kiện dùng Medicare; với một số visa, giữ bảo hiểm y tế cho khách nước ngoài (Overseas Visitors Health Cover, OVHC) là điều kiện của visa, ví dụ visa có điều kiện 8501.", "severity": "normal" },
+      { "text": "Chi phí bệnh viện cho khách nước ngoài, kể cả bệnh viện công, thường trên 1.000 AUD mỗi ngày.", "severity": "normal" },
+      { "text": "Hiệp định y tế đối ứng (Reciprocal Health Care Agreement) chỉ áp dụng cho 11 nước, không có Việt Nam.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [
+      "Có quyền dùng Medicare theo hiệp định đối ứng cũng không miễn yêu cầu mua OSHC cho du học sinh."
+    ],
+    "foreignerNotes": [
+      "Không có bảo hiểm, bạn có thể phải tự trả toàn bộ chi phí điều trị, vốn có thể rất đắt.",
+      "Phần lớn hãng bảo hiểm áp dụng thời gian chờ 12 tháng cho bệnh có sẵn (pre-existing conditions); hãy đọc kỹ hợp đồng.",
+      "Các nước có hiệp định đối ứng theo trang privatehealth.gov.au: Anh, Thụy Điển, Bỉ, Phần Lan, Ý, Malta, Hà Lan, Slovenia, Ireland, Na Uy, New Zealand."
+    ],
+    "sources": [
+      { "title": "Overseas Student Health Cover", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "authority": "privatehealth.gov.au (Commonwealth Ombudsman, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Overseas Visitors Health Cover", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_visitors_health_cover.htm", "authority": "privatehealth.gov.au (Commonwealth Ombudsman, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Health insurance for overseas visitors", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/", "authority": "privatehealth.gov.au (Commonwealth Ombudsman, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Student visa (subclass 500)", "url": "https://www.studyaustralia.gov.au/en/plan-your-move/your-guide-to-visas/student-visa-subclass-500", "authority": "Study Australia (Austrade, Australian Government)", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["bảo hiểm y tế", "OSHC", "OVHC", "Medicare", "8501", "du học sinh", "khách du lịch"],
+    "verification": [
+      { "claim": "Duy trì OSHC là điều kiện visa", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "quote": "it is a condition of your visa to maintain Overseas Student Health Cover (OSHC) for the duration of your visa." },
+      { "claim": "OSHC chi trả khám chữa bệnh, nằm viện", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "quote": "OSHC assists international students to meet the costs of medical and hospital care they may need while in Australia." },
+      { "claim": "OSHC gồm xe cứu thương và một phần tiền thuốc", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "quote": "OSHC also includes ambulance cover and limited pharmaceuticals." },
+      { "claim": "Giới hạn 50 AUD/loại thuốc, 500 AUD/năm", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "quote": "limited to $50 per pharmaceutical item to a maximum of $500 a year for single membership" },
+      { "claim": "OSHC không trả nha khoa, mắt, vật lý trị liệu", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "quote": "OSHC does not pay for general treatment (ancillary, or extras cover) such as dental, optical or physiotherapy." },
+      { "claim": "Medicare đối ứng không miễn OSHC", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_student_health_cover.htm", "quote": "Having reciprocal access to Medicare does not exempt you from needing to take out OSHC." },
+      { "claim": "Khách visa tạm thời nói chung không dùng Medicare", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_visitors_health_cover.htm", "quote": "overseas visitors who hold temporary visas are not generally eligible to use Medicare." },
+      { "claim": "Một số visa bắt buộc có OVHC", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_visitors_health_cover.htm", "quote": "In some cases, it may be a condition of your visa to hold a form of OVHC." },
+      { "claim": "Visa có điều kiện 8501 thuộc nhóm cần OVHC", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/", "quote": "Any visa with condition 8501" },
+      { "claim": "Chi phí bệnh viện trên 1.000 AUD/ngày", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/", "quote": "Remember that hospital costs for overseas visitors, even in a public hospital, are generally higher than $1,000 per day." },
+      { "claim": "Không có bảo hiểm có thể tự trả toàn bộ", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/", "quote": "you could find yourself responsible for the full cost of treatment, which can be very expensive." },
+      { "claim": "Thời gian chờ 12 tháng cho bệnh có sẵn", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/", "quote": "Most insurers will impose a 12 month waiting period for cover on pre-existing conditions" },
+      { "claim": "Danh sách 11 nước có hiệp định đối ứng, không có Việt Nam", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_visitors_health_cover.htm", "quote": "United Kingdom, Sweden, Belgium, Finland, Italy, Malta, the Netherlands, Slovenia, the Republic of Ireland, Norway, New Zealand (Vietnam not named on the page)" },
+      { "claim": "Hiệp định đối ứng không chi trả điều trị như bệnh nhân tư", "url": "https://www.privatehealth.gov.au/health_insurance/overseas/overseas_visitors_health_cover.htm", "quote": "However, reciprocal Medicare benefits do not cover you for treatment as a private patient in hospital" }
+    ],
+    "unverified": [
+      "Nội dung cụ thể của điều kiện 8501 (giữ bảo hiểm y tế phù hợp suốt thời gian ở Úc) và việc visa du lịch 600 nào bị gắn 8501: trang Home Affairs bị 403.",
+      "Trang Services Australia về hiệp định đối ứng và trang health.gov.au về OSHC: fetch bị timeout, danh sách 11 nước chỉ đối chiếu từ privatehealth.gov.au.",
+      "Chi tiết miễn OSHC (exemption) cho một số quốc tịch: trang Study Australia chỉ ghi unless an exemption applies, không nêu đối tượng.",
+      "Hậu quả nếu du học sinh để OSHC hết hạn (hủy visa...): không xác minh."
+    ]
+  }
+]

@@ -1,0 +1,330 @@
+[
+  {
+    "topicSlug": "giao-thong",
+    "slug": "lai-xe-bang-nuoc-ngoai",
+    "title": "Lái xe ở Úc bằng bằng lái nước ngoài khi đi du lịch",
+    "summaryVi": "Ở Úc xe chạy bên trái đường. Tại New South Wales (NSW), khách du lịch và khách tạm trú được lái xe bằng bằng lái nước ngoài còn hạn tối đa 6 tháng nếu mang theo bằng; tại Victoria (VIC), bạn được dùng bằng lái nước ngoài nếu chỉ định cư trú và lái xe ở VIC dưới 6 tháng. Nếu bằng không viết bằng tiếng Anh, cả hai bang yêu cầu mang kèm bản dịch tiếng Anh hoặc Giấy phép lái xe quốc tế (International Driving Permit). Quy định do từng bang ban hành, các bang khác có thể khác.",
+    "keyPoints": [
+      { "text": "Ở Úc xe chạy bên trái; tại VIC, Transport Victoria nhắc khách du lịch luôn lái xe bên trái.", "severity": "normal" },
+      { "text": "NSW: khách du lịch hoặc khách tạm trú được lái bằng bằng lái nước ngoài còn hạn tối đa 6 tháng, với điều kiện mang theo bằng khi lái và chưa bị tước quyền lái ở NSW hay bất kỳ nơi nào khác.", "severity": "normal" },
+      { "text": "VIC: bằng lái nước ngoài dùng được nếu còn hạn, đúng loại xe, và bạn chỉ định cư trú và lái xe ở VIC dưới 6 tháng, tính từ ngày bắt đầu sống ở VIC (ra khỏi bang rồi quay lại vẫn tính từ lần đến đầu tiên).", "severity": "normal" },
+      { "text": "Bằng lái không viết bằng tiếng Anh: NSW và VIC đều yêu cầu mang kèm bản dịch tiếng Anh hoặc Giấy phép lái xe quốc tế (International Driving Permit).", "severity": "normal" },
+      { "text": "VIC: không được dùng bằng lái nước ngoài nếu bạn đang bị tước hoặc tạm đình chỉ quyền lái ở bất kỳ nước nào, đã trượt một bài thi lái tại VIC, hoặc đã có bằng lái của một bang khác ở Úc.", "severity": "normal" },
+      { "text": "NSW: Transport for NSW có thể thu hồi vĩnh viễn quyền lái xe bằng bằng nước ngoài nếu bạn tích đủ 13 điểm trừ (demerit points) hoặc bị kết án lỗi lái xe liên quan rượu, ma túy hay lỗi lái xe nghiêm trọng.", "severity": "criminal" }
+    ],
+    "penalties": [],
+    "exceptions": [
+      "NSW: người có thị thực tạm thời định sống ở NSW từ 6 tháng trở lên phải đổi sang bằng lái NSW trong vòng 6 tháng nếu muốn tiếp tục lái xe.",
+      "VIC: muốn lái xe ở VIC quá 6 tháng thì phải đổi bằng lái nước ngoài sang bằng lái VIC."
+    ],
+    "foreignerNotes": [
+      "Bằng lái Việt Nam không viết bằng tiếng Anh, nên bạn cần mang kèm bản dịch tiếng Anh hoặc Giấy phép lái xe quốc tế cùng với bằng gốc.",
+      "Bạn phải tuân thủ luật giao thông của bang nơi bạn lái xe; trên đường có biển 'Keep left unless overtaking' hoặc tốc độ giới hạn trên 80 km/h ở NSW, không được chạy ở làn bên phải trừ khi vượt, rẽ phải, quay đầu hoặc tránh chướng ngại.",
+      "Các bang và vùng lãnh thổ khác có thể có thời hạn và điều kiện khác, hãy kiểm tra trang của cơ quan giao thông bang đó trước khi lái."
+    ],
+    "sources": [
+      { "title": "Driving with an overseas or interstate licence in NSW", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Driving with an overseas licence in NSW from 1 July 2023 (FAQs)", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate/new-rules-faqs", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Overtaking safely", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/roads-safety-and-rules/sharing-road-overtaking-and-merging/overtaking-safely", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Road Rules 2014 (NSW)", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "authority": "NSW Legislation", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Driving with your overseas licence in Victoria", "url": "https://www.vicroads.vic.gov.au/licences/convert-your-licence/driving-with-your-overseas-licence", "authority": "VicRoads", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Tourists driving in Victoria", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/tourists-driving-in-victoria", "authority": "Transport Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Driving in Australia", "url": "https://www.australia.com/en/facts-and-planning/getting-around/driving-in-australia.html", "authority": "Tourism Australia", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["lai-xe", "bang-lai-nuoc-ngoai", "international-driving-permit", "nsw", "vic", "giao-thong"],
+    "verification": [
+      { "claim": "Ở Úc xe chạy bên trái", "url": "https://www.australia.com/en/facts-and-planning/getting-around/driving-in-australia.html", "quote": "The most important thing you need to know about driving in Australia is that we drive on the left." },
+      { "claim": "VIC: luôn lái xe bên trái", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/tourists-driving-in-victoria", "quote": "Drive on the left always." },
+      { "claim": "NSW: luật yêu cầu lái sát bên trái (đường không nhiều làn)", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "quote": "A driver on a road (except a multi-lane road) must drive as near as practicable to the far left side of the road." },
+      { "claim": "NSW: lái bằng bằng nước ngoài tối đa 6 tháng", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate", "quote": "you can drive in NSW using your overseas licence for up to six months as long as you:" },
+      { "claim": "NSW: mang theo bằng lái", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate", "quote": "carry your overseas driver or rider licence with you." },
+      { "claim": "NSW: chưa bị tước quyền lái", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate", "quote": "have not been disqualified from driving in NSW or anywhere else" },
+      { "claim": "NSW: bằng không tiếng Anh cần bản dịch hoặc IDP", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate", "quote": "If your licence is not written in English, you must also carry an English translation, or an International Driving Permit." },
+      { "claim": "NSW: thu hồi quyền lái khi tích 13 điểm hoặc bị kết án lỗi rượu/ma túy, lỗi nghiêm trọng", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate/new-rules-faqs", "quote": "accrue 13 demerit points ... convicted of a drug or alcohol-related driving offence ... convicted of a serious driving offence" },
+      { "claim": "NSW: thị thực tạm thời sống từ 6 tháng phải đổi bằng trong 6 tháng", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driver-and-rider-licences/visiting-or-moving-to-nsw/visiting-from-overseas-or-interstate/new-rules-faqs", "quote": "will need to convert to a NSW licence within 6 months if they wish to continue to drive" },
+      { "claim": "NSW: không chạy làn phải khi có biển Keep left unless overtaking hoặc tốc độ trên 80 km/h", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/roads-safety-and-rules/sharing-road-overtaking-and-merging/overtaking-safely", "quote": "you must not drive in the right lane, unless you're:" },
+      { "claim": "VIC: điều kiện dùng bằng nước ngoài, dưới 6 tháng, tính từ ngày bắt đầu sống ở VIC", "url": "https://www.vicroads.vic.gov.au/licences/convert-your-licence/driving-with-your-overseas-licence", "quote": "you only plan to reside and drive in Victoria for less than 6 months. The 6 months starts from the day you start living in Victoria." },
+      { "claim": "VIC: quá 6 tháng phải đổi bằng", "url": "https://www.vicroads.vic.gov.au/licences/convert-your-licence/driving-with-your-overseas-licence", "quote": "If you want to drive in Victoria for more than 6 months, you'll need to convert your overseas licence." },
+      { "claim": "VIC: các trường hợp không được dùng bằng nước ngoài", "url": "https://www.vicroads.vic.gov.au/licences/convert-your-licence/driving-with-your-overseas-licence", "quote": "you've been disqualified or suspended from driving ... you've failed any kind of driving test in Victoria" },
+      { "claim": "VIC: mang theo bằng; bằng không tiếng Anh cần bản dịch hoặc IDP tiếng Anh", "url": "https://www.vicroads.vic.gov.au/licences/convert-your-licence/driving-with-your-overseas-licence", "quote": "an English translation of your licence, or an international driving permit in English." }
+    ],
+    "unverified": [
+      "Tourism Australia ghi khách được lái bằng bằng nước ngoài tối đa 3 tháng nếu bằng bằng tiếng Anh; con số này mâu thuẫn với trang NSW và VIC (6 tháng) nên không đưa vào bài.",
+      "Ai được cấp bản dịch được chấp nhận (NAATI, lãnh sự quán) khi lái xe ở VIC: chỉ thấy qua kết quả tìm kiếm, không đọc được trên trang đã mở.",
+      "Quy định về giờ nghỉ, hook turn ở Melbourne và tốc độ giới hạn: không mở trang chi tiết nên không đưa vào."
+    ]
+  },
+  {
+    "topicSlug": "giao-thong",
+    "slug": "day-an-toan-va-dien-thoai",
+    "title": "Thắt dây an toàn và dùng điện thoại khi lái xe",
+    "summaryVi": "Tại New South Wales (NSW) và Victoria (VIC), tài xế và mọi hành khách phải thắt dây an toàn; tài xế có thể bị phạt nếu chính mình hoặc hành khách không thắt, và hành khách từ 16 tuổi trở lên cũng có thể bị phạt. Tài xế có bằng đầy đủ chỉ được dùng điện thoại khi gắn trên giá đỡ cố định hoặc rảnh tay, cho một số chức năng như gọi thoại, nghe nhạc, chỉ đường; nhắn tin, xem mạng xã hội, gọi video đều bị cấm. Quy định do từng bang ban hành, các bang khác có thể khác.",
+    "keyPoints": [
+      { "text": "NSW và VIC: tài xế phải thắt dây an toàn và bảo đảm mọi hành khách thắt đúng cách; hành khách trên 16 tuổi (NSW) hoặc từ 16 tuổi (VIC) cũng có thể bị phạt.", "severity": "normal" },
+      { "text": "Mỗi dây an toàn chỉ dùng cho một người; không được bế trẻ trên đùi dùng chung dây với người lớn.", "severity": "normal" },
+      { "text": "NSW: tài xế bằng đầy đủ chỉ được dùng điện thoại theo 2 cách là rảnh tay hoặc đặt trong giá đỡ sản xuất thương mại gắn cố định trên xe; không được cầm trên tay, để trên đùi hay kẹp giữa vai và tai.", "severity": "normal" },
+      { "text": "VIC: tài xế bằng đầy đủ không được chạm vào điện thoại không gắn giá khi lái; với thiết bị đã gắn, chỉ được chạm nhanh để nhận hoặc từ chối cuộc gọi, chỉnh âm lượng, phát âm thanh, dùng chỉ đường.", "severity": "normal" },
+      { "text": "Cả hai bang cấm nhắn tin, xem tin nhắn, mạng xã hội, email, gọi video khi lái; tài xế bằng học (learner) và bằng tạm (P1, P2) không được dùng điện thoại dưới mọi hình thức, kể cả rảnh tay.", "severity": "normal" },
+      { "text": "NSW có camera phát hiện dùng điện thoại và không thắt dây an toàn; lỗi dây an toàn và điện thoại bị áp dụng điểm trừ gấp đôi vào các kỳ nghỉ lễ.", "severity": "normal" }
+    ],
+    "penalties": [
+      { "behavior": "NSW: không thắt dây an toàn (mỗi lỗi)", "amountText": "423 AUD và 3 điểm trừ (6 điểm trong kỳ điểm trừ gấp đôi)", "currency": "AUD", "note": "nguồn: thông cáo của Chính phủ NSW ngày 20/07/2025; mức phạt có thể đã được điều chỉnh, hãy kiểm tra lại trên trang NSW Government" },
+      { "behavior": "VIC: dùng điện thoại cầm tay khi lái xe", "amountText": "phạt tại chỗ và 4 điểm trừ (trang không ghi số tiền)", "currency": "AUD", "note": "nguồn: Victoria Police" }
+    ],
+    "exceptions": [
+      "NSW: mọi tài xế được dùng điện thoại cho mọi chức năng khi đã đỗ xe ngoài luồng giao thông.",
+      "VIC: không bắt buộc thắt dây khi lùi xe, khi là hành khách xe cảnh sát hoặc xe cấp cứu, hoặc có giấy chứng nhận y tế miễn trừ còn hạn mang theo trên xe."
+    ],
+    "foreignerNotes": [
+      "Ở NSW, luật cấm dùng điện thoại (ngoài các cách được phép) cả khi xe đang chạy lẫn khi xe dừng nhưng chưa đỗ.",
+      "Ở VIC, không được đưa điện thoại cho hành khách hoặc nhận điện thoại từ hành khách khi đang lái.",
+      "Nếu bạn lái xe bằng bằng nước ngoài ở NSW, tích đủ 13 điểm trừ có thể khiến bạn mất vĩnh viễn quyền lái bằng bằng nước ngoài tại NSW."
+    ],
+    "sources": [
+      { "title": "Seatbelts", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/seatbelts", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Mobile phones, digital screens and GPS", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/mobiles-screens-and-gps", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Buckle up: NSW seatbelt offences slashed under Minns Labor Government safety drive", "url": "https://www.nsw.gov.au/ministerial-releases/buckle-up-nsw-seatbelt-offences-slashed-under-minns-labor-government-safety-drive", "authority": "NSW Government", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "How demerit points work", "url": "https://www.nsw.gov.au/driving-boating-and-transport/demerits-penalties-and-offences/how-demerit-points-work", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Road Rules 2014 (NSW)", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "authority": "NSW Legislation", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Seat belts", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/seat-belts", "authority": "Transport Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Device rules for drivers with a full licence", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/mobile-phones-and-devices/device-rules-for-drivers-with-a-full-licence", "authority": "Transport Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Impaired, distracted, dangerous and high-risk driving", "url": "https://www.police.vic.gov.au/impaired-distracted-dangerous-and-high-risk-driving", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["day-an-toan", "dien-thoai", "lai-xe", "diem-tru", "nsw", "vic", "giao-thong"],
+    "verification": [
+      { "claim": "NSW: hành khách trên 16 tuổi bị phạt khi không thắt dây", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/seatbelts", "quote": "In addition to the driver, passengers aged over 16 will get a fine for not wearing a seatbelt." },
+      { "claim": "NSW: tài xế bị phạt tiền và trừ điểm; áp dụng điểm trừ gấp đôi", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/seatbelts", "quote": "will get a fine and demerit points ... Double demerit points also apply." },
+      { "claim": "NSW: camera phát hiện dây an toàn từ 1/7/2024", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/seatbelts", "quote": "phone and seatbelt detection cameras have been detecting drivers and passengers" },
+      { "claim": "NSW: phạt 423 AUD và 3 điểm (6 điểm kỳ gấp đôi) cho lỗi dây an toàn", "url": "https://www.nsw.gov.au/ministerial-releases/buckle-up-nsw-seatbelt-offences-slashed-under-minns-labor-government-safety-drive", "quote": "Each offence attracts a $423 fine and three demerit points, or six during double demerit periods." },
+      { "claim": "NSW: lỗi dây an toàn và điện thoại thuộc nhóm điểm trừ gấp đôi kỳ nghỉ lễ", "url": "https://www.nsw.gov.au/driving-boating-and-transport/demerits-penalties-and-offences/how-demerit-points-work", "quote": "Some driving offences attract twice the number of demerit points during holiday periods." },
+      { "claim": "NSW: chỉ 2 cách dùng điện thoại; giá đỡ phải sản xuất thương mại và gắn cố định", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/mobiles-screens-and-gps", "quote": "There are only 2 ways you can use a mobile phone while driving. ... Phone holders must be commercially manufactured and fixed to your vehicle" },
+      { "claim": "NSW: bằng học, P1, P2 không được dùng điện thoại kể cả khi dừng", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/mobiles-screens-and-gps", "quote": "You must not use a mobile phone while driving, even when you're stationary" },
+      { "claim": "NSW: luật cấm dùng điện thoại khi xe chạy hoặc dừng chưa đỗ", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "quote": "The driver of a vehicle must not use a mobile phone while the vehicle is moving, or is stationary but not parked, unless" },
+      { "claim": "NSW: có camera phát hiện dùng điện thoại", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/safe-driving/mobiles-screens-and-gps", "quote": "Mobile phone detection cameras target illegal mobile phone use in vehicles anywhere, anytime." },
+      { "claim": "VIC: tài xế bị phạt nếu mình hoặc hành khách không thắt; hành khách từ 16 tuổi bị phạt", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/seat-belts", "quote": "Passengers aged 16 years and over can also be fined if they do not wear a seat belt." },
+      { "claim": "VIC: mỗi dây chỉ dùng cho một người", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/seat-belts", "quote": "Each seat belt can only be used for one person. They can't be shared." },
+      { "claim": "VIC: trường hợp miễn thắt dây (lùi xe, xe cảnh sát/cấp cứu, giấy y tế)", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/seat-belts", "quote": "You don't have to wear a seat belt if you are: reversing a vehicle" },
+      { "claim": "VIC: bằng đầy đủ không được chạm điện thoại không gắn giá; cấm nhắn tin, xem mạng xã hội, gọi video", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/mobile-phones-and-devices/device-rules-for-drivers-with-a-full-licence", "quote": "Fully licensed drivers must not touch or use an unmounted mobile phone or device while driving or riding." },
+      { "claim": "VIC: không được đưa/nhận điện thoại với hành khách", "url": "https://transport.vic.gov.au/road-and-active-transport/road-rules-and-safety/mobile-phones-and-devices/device-rules-for-drivers-with-a-full-licence", "quote": "pass a device to a passenger or take a device from a passenger." },
+      { "claim": "VIC: bằng học, P1, P2 không được dùng điện thoại cầm tay hay rảnh tay", "url": "https://www.police.vic.gov.au/impaired-distracted-dangerous-and-high-risk-driving", "quote": "Learner, P1 and P2 drivers are not permitted to use a hand-held or hands-free mobile phone while driving." },
+      { "claim": "VIC: phạt tại chỗ và 4 điểm trừ khi dùng điện thoại cầm tay", "url": "https://www.police.vic.gov.au/impaired-distracted-dangerous-and-high-risk-driving", "quote": "Drivers who break this law in Victoria face an on-the-spot fine and incur four demerit points." }
+    ],
+    "unverified": [
+      "Mức phạt tiền và số điểm trừ cho lỗi dùng điện thoại ở NSW (kết quả tìm kiếm nêu 434 AUD, 577 AUD trong khu vực trường học, 5 điểm trừ) không đọc được trên trang chính thức đã mở.",
+      "Số tiền phạt cụ thể cho lỗi dùng điện thoại và lỗi dây an toàn ở VIC: các trang đã mở không ghi số tiền.",
+      "Mức phạt dây an toàn NSW 423 AUD lấy từ thông cáo tháng 7/2025; chưa xác minh được mức đang áp dụng tại thời điểm 11/2026."
+    ]
+  },
+  {
+    "topicSlug": "giao-thong",
+    "slug": "di-bo-va-xe-dap",
+    "title": "Đi bộ qua đường và đội mũ bảo hiểm khi đi xe đạp",
+    "summaryVi": "Tại New South Wales (NSW) và Victoria (VIC), người đi bộ không được băng qua đường trong phạm vi 20 mét quanh một vạch qua đường dành cho người đi bộ, trừ khi đi trên chính vạch đó, và phải chờ đèn tín hiệu dành cho người đi bộ. Người đi xe đạp ở cả hai bang bắt buộc đội mũ bảo hiểm đạt chuẩn và cài quai chắc chắn. Quy định do từng bang ban hành, các bang khác có thể khác.",
+    "keyPoints": [
+      { "text": "NSW và VIC: không được băng qua đường trong phạm vi 20 mét quanh vạch qua đường dành cho người đi bộ, trừ khi đi trên vạch đó.", "severity": "normal" },
+      { "text": "NSW: khi đèn người đi bộ đỏ và bạn chưa bắt đầu qua đường thì không được bắt đầu qua; VIC: không được qua đường khi đèn giao thông hoặc đèn người đi bộ đang vàng hoặc đỏ.", "severity": "normal" },
+      { "text": "VIC: người đi bộ phải đi theo đường ngắn nhất, trực tiếp nhất khi qua đường và tuân theo biển 'no pedestrian'; NSW liệt kê 'jay walking' (băng qua đường sai quy định) là một lỗi của người đi bộ.", "severity": "normal" },
+      { "text": "Nếu không có vỉa hè, NSW và VIC yêu cầu đi bộ ngược chiều xe đang tới.", "severity": "normal" },
+      { "text": "NSW và VIC: người đi xe đạp phải đội mũ bảo hiểm đạt chuẩn, đội vừa và cài quai chắc chắn; ở VIC quy định này cũng áp dụng khi đi xe scooter và e-scooter.", "severity": "normal" }
+    ],
+    "penalties": [
+      { "behavior": "NSW: đi bộ qua đường trong phạm vi 20 mét quanh vạch qua đường, hoặc không tuân thủ đèn người đi bộ", "amountText": "tối đa 20 penalty units (mức tối đa theo luật, không phải mức phạt tại chỗ)", "currency": "AUD", "note": "nguồn: Road Rules 2014 (NSW) rule 231, 234; giá trị penalty unit không ghi trên trang" },
+      { "behavior": "NSW: đi xe đạp không đội mũ bảo hiểm đạt chuẩn", "amountText": "tối đa 20 penalty units (mức tối đa theo luật, không phải mức phạt tại chỗ)", "currency": "AUD", "note": "nguồn: Road Rules 2014 (NSW) rule 256" }
+    ],
+    "exceptions": [
+      "NSW: quy tắc 20 mét có một số ngoại lệ, ví dụ khi băng qua phần đường giữa đường ray tàu điện và lề trái để lên hoặc sau khi xuống tàu điện, xe buýt.",
+      "Có thể được miễn đội mũ bảo hiểm theo một luật khác của bang (NSW) hoặc có văn bản miễn trừ (VIC)."
+    ],
+    "foreignerNotes": [
+      "Ở VIC, người đẩy xe đạp hoặc dùng ván trượt, giày trượt được xem là người đi bộ và phải theo luật dành cho người đi bộ.",
+      "Thuê xe đạp hoặc e-scooter ở VIC vẫn phải đội mũ bảo hiểm; không đội có thể bị phạt."
+    ],
+    "sources": [
+      { "title": "Road Rules 2014 (NSW)", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "authority": "NSW Legislation", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Minor traffic and driving offences", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/demerits-penalties-and-offences/offences/minor-traffic-and-driving-offences", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Sharing the road with pedestrians", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/roads-safety-and-rules/sharing-road-overtaking-and-merging/sharing-roads-pedestrians", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Penalties for bicycle offences", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/bicycle-safety-and-rules/cyclist-penalties", "authority": "NSW Government / Transport for NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Road rules for pedestrians", "url": "https://transport.vic.gov.au/road-and-active-transport/active-transport/pedestrians-and-walking/road-rules-for-pedestrians", "authority": "Transport Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Bicycle helmet rules and safety standards in Victoria", "url": "https://transport.vic.gov.au/road-and-active-transport/active-transport/bicycles/bicycle-helmets", "authority": "Transport Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Cycling and skating", "url": "https://www.legalaid.vic.gov.au/cycling-and-skating", "authority": "Victoria Legal Aid", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["di-bo", "qua-duong", "jaywalking", "xe-dap", "mu-bao-hiem", "nsw", "vic", "giao-thong"],
+    "verification": [
+      { "claim": "NSW: không qua đường trong phạm vi 20 mét quanh vạch qua đường", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "quote": "A pedestrian must not cross a road, or part of a road, within 20 metres of a crossing on the road, except at the crossing or another crossing" },
+      { "claim": "NSW: ngoại lệ khi lên/xuống tàu điện, xe buýt", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "quote": "an area of the road between tram tracks and the far left side of the road to get on, or after getting off, a tram or public bus" },
+      { "claim": "NSW: đèn người đi bộ đỏ thì không bắt đầu qua; tối đa 20 penalty units", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "quote": "If the pedestrian lights show a red pedestrian light and the pedestrian has not already started crossing ... must not start to cross" },
+      { "claim": "NSW: lỗi người đi bộ gồm jay walking", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/demerits-penalties-and-offences/offences/minor-traffic-and-driving-offences", "quote": "Offences include jay walking, crossing a road before a tram stop and disobeying a 'no pedestrian' sign." },
+      { "claim": "NSW: không có vỉa hè thì đi ngược chiều xe tới", "url": "https://www.nsw.gov.au/driving-boating-and-transport/driving-nsw/roads-safety-and-rules/sharing-road-overtaking-and-merging/sharing-roads-pedestrians", "quote": "walk in the direction of oncoming traffic, if practical" },
+      { "claim": "NSW: bắt buộc đội mũ bảo hiểm đạt chuẩn; tối đa 20 penalty units", "url": "https://legislation.nsw.gov.au/view/whole/html/inforce/current/sl-2014-0758", "quote": "The rider of a bicycle must wear an approved bicycle helmet securely fitted and fastened on the rider's head ... Maximum penalty—20 penalty units." },
+      { "claim": "NSW: trang chính thức nhắc nghĩa vụ đội mũ", "url": "https://www.nsw.gov.au/driving-boating-and-transport/roads-safety-and-rules/bicycle-safety-and-rules/cyclist-penalties", "quote": "You are required by law to wear an approved helmet securely fitted and fastened on your head when riding a bicycle." },
+      { "claim": "VIC: không qua đường khi đèn vàng/đỏ; không qua trong 20 mét quanh vạch, phải dùng vạch", "url": "https://transport.vic.gov.au/road-and-active-transport/active-transport/pedestrians-and-walking/road-rules-for-pedestrians", "quote": "cross the road within 20 metres of a pedestrian crossing - they must use the crossing" },
+      { "claim": "VIC: đi đường ngắn nhất, tuân biển no pedestrian, đi ngược chiều xe khi không có vỉa hè", "url": "https://transport.vic.gov.au/road-and-active-transport/active-transport/pedestrians-and-walking/road-rules-for-pedestrians", "quote": "use the shortest or most direct way to cross a road" },
+      { "claim": "VIC: người đẩy xe đạp, đi ván trượt được xem là người đi bộ", "url": "https://transport.vic.gov.au/road-and-active-transport/active-transport/pedestrians-and-walking/road-rules-for-pedestrians", "quote": "on wheeled devices such as skateboards, rollerblades ... pushing a bicycle." },
+      { "claim": "VIC: bắt buộc đội mũ khi đi xe đạp, scooter, e-scooter; có thể bị phạt", "url": "https://transport.vic.gov.au/road-and-active-transport/active-transport/bicycles/bicycle-helmets", "quote": "You must wear a bicycle helmet if you're using a bicycle, scooter or e-scooter ... If you don't follow these rules, you can be fined." },
+      { "claim": "VIC: mũ phải cài quai chắc chắn; có thể miễn theo văn bản của VicRoads", "url": "https://www.legalaid.vic.gov.au/cycling-and-skating", "quote": "You (and any passengers, if you have them) must wear an approved helmet and it must be done up securely." }
+    ],
+    "unverified": [
+      "Mức phạt tại chỗ bằng tiền cho lỗi đi bộ sai quy định và không đội mũ bảo hiểm ở NSW (kết quả tìm kiếm nêu bảng phạt cũ) và ở VIC: không có trên các trang đã mở.",
+      "Giá trị tiền của một penalty unit ở NSW: không có trên trang đã mở."
+    ]
+  },
+  {
+    "topicSlug": "noi-cong-cong",
+    "slug": "uong-ruou-noi-cong-cong",
+    "title": "Uống rượu bia nơi công cộng và tuổi được mua rượu",
+    "summaryVi": "Tại New South Wales (NSW) và Victoria (VIC), bạn phải từ 18 tuổi trở lên mới được mua hoặc uống rượu bia, và có thể bị yêu cầu xuất trình giấy tờ chứng minh tuổi như hộ chiếu. Việc uống rượu ngoài đường, công viên, bãi biển do chính quyền địa phương (council) quy định: ở NSW có khu vực cấm rượu (alcohol-free zones, alcohol prohibited areas), ở VIC nhiều council có luật địa phương riêng. Quy định khác nhau theo bang và theo từng council.",
+    "keyPoints": [
+      { "text": "NSW và VIC: tuổi được mua và uống rượu bia là 18; bán hoặc đưa rượu cho người dưới 18 tuổi là vi phạm.", "severity": "normal" },
+      { "text": "Hộ chiếu (kể cả hộ chiếu nước ngoài) là giấy tờ chứng minh tuổi được chấp nhận ở NSW và VIC; ở VIC, bằng lái nước ngoài không tiếng Anh phải kèm bản dịch chính thức.", "severity": "normal" },
+      { "text": "NSW: council có thể lập khu cấm rượu trên đường, vỉa hè, bãi đỗ xe (alcohol-free zones) và tại công viên (alcohol prohibited areas); ở City of Sydney, cảnh sát có thể tịch thu rượu trong các khu này.", "severity": "normal" },
+      { "text": "VIC: say rượu nơi công cộng không còn là tội hình sự từ ngày 7/11/2023, nhưng luật địa phương của council về uống rượu nơi công cộng vẫn có thể áp dụng và cảnh sát có thể phạt hoặc yêu cầu bạn rời đi.", "severity": "normal" },
+      { "text": "VIC: đưa tên, địa chỉ giả hoặc từ chối xuất trình giấy tờ chứng minh tuổi là vi phạm và có thể bị phạt; NSW: dùng giấy tờ giả để chứng minh tuổi là bất hợp pháp.", "severity": "criminal" }
+    ],
+    "penalties": [
+      { "behavior": "NSW: dùng giấy tờ giả để chứng minh tuổi", "amountText": "tối đa 2200 AUD hoặc phạt tại chỗ 220 AUD", "currency": "AUD", "note": "nguồn: Liquor & Gaming NSW (nsw.gov.au)" },
+      { "behavior": "NSW: người dưới 18 tuổi lấy, uống hoặc mang rượu ra khỏi cơ sở có giấy phép bán rượu", "amountText": "từ 220 đến 2200 AUD", "currency": "AUD", "note": "nguồn: Liquor & Gaming NSW, Underage drinking laws (s118 Liquor Act 2007)" },
+      { "behavior": "NSW: người lớn cho người dưới 18 tuổi dùng giấy tờ của mình", "amountText": "tối đa 3300 AUD hoặc phạt tại chỗ 330 AUD", "currency": "AUD", "note": "nguồn: Liquor & Gaming NSW (nsw.gov.au)" }
+    ],
+    "exceptions": [
+      "NSW (City of Sydney): khu cấm rượu không liên quan đến cơ sở có giấy phép bán rượu; một số hạn chế chỉ áp dụng vào giờ nhất định hoặc dịp sự kiện đặc biệt."
+    ],
+    "foreignerNotes": [
+      "Hãy mang theo hộ chiếu hoặc giấy tờ có ảnh khi vào quán bar, mua rượu; nhân viên có thể yêu cầu xuất trình.",
+      "Quy định uống rượu ngoài trời khác nhau giữa các council, hãy chú ý biển báo tại công viên, bãi biển và hỏi council nơi bạn ở.",
+      "Theo City of Sydney, ở khu cấm rượu của thành phố không có tiền phạt nhưng cảnh sát có thể tịch thu rượu."
+    ],
+    "sources": [
+      { "title": "Underage drinking - Liquor and gaming", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking", "authority": "Liquor & Gaming NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Underage drinking laws", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking-laws", "authority": "Liquor & Gaming NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Alcohol free zones and alcohol prohibited areas", "url": "https://www.olg.nsw.gov.au/councils/council-infrastructure/services-to-communities/alcohol-free-zones-alcohol-prohibited-areas/", "authority": "Office of Local Government NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Outdoor alcohol restrictions in Sydney", "url": "https://www.cityofsydney.nsw.gov.au/public-health-safety-programs/outdoor-alcohol-restrictions", "authority": "City of Sydney", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Alcohol and the law", "url": "https://www.betterhealth.vic.gov.au/health/healthyliving/alcohol-and-the-law", "authority": "Better Health Channel, Victorian Department of Health", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Checking IDs before supplying alcohol", "url": "https://www.vic.gov.au/checking-IDs-before-supplying-alcohol", "authority": "Liquor Control Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Public intoxication", "url": "https://www.legalaid.vic.gov.au/public-intoxication", "authority": "Victoria Legal Aid", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["ruou-bia", "noi-cong-cong", "alcohol-free-zone", "tuoi-mua-ruou", "giay-to-tuy-than", "nsw", "vic"],
+    "verification": [
+      { "claim": "NSW: phải từ 18 tuổi để mua hoặc uống rượu", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking", "quote": "In NSW you must be at least 18 years old to:" },
+      { "claim": "NSW: bán hoặc đưa rượu cho người dưới 18 là bất hợp pháp", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking", "quote": "It's also illegal for anyone to sell or give alcohol to someone under 18." },
+      { "claim": "NSW: hộ chiếu Úc hoặc nước khác là giấy chứng minh tuổi", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking", "quote": "Australian or other passport" },
+      { "claim": "NSW: dùng giấy tờ giả bị phạt tối đa 2200 AUD hoặc tại chỗ 220 AUD", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking", "quote": "Using a fake ID can result in a fine up to $2200 or an on-the-spot penalty of $220." },
+      { "claim": "NSW: người lớn cho trẻ vị thành niên dùng giấy tờ bị phạt tối đa 3300 AUD hoặc tại chỗ 330 AUD", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking", "quote": "Adults who let a minor use their ID can be fined up to $3300 or given an on-the-spot fine of $330." },
+      { "claim": "NSW: người dưới 18 không được lấy, uống, mang rượu ra khỏi cơ sở có phép; phạt 220 đến 2200 AUD", "url": "https://www.nsw.gov.au/business-and-economy/liquor-and-gaming/liquor-licensing/licence-responsibilities/underage-drinking-laws", "quote": "A minor must not obtain, consume or carry liquor away from a licensed premises." },
+      { "claim": "NSW: định nghĩa AFZ và APA", "url": "https://www.olg.nsw.gov.au/councils/council-infrastructure/services-to-communities/alcohol-free-zones-alcohol-prohibited-areas/", "quote": "AFZs apply to road-related public areas (e.g. public road, footpath or carpark). APAs apply to non-road-related public places (e.g. parks)." },
+      { "claim": "City of Sydney: cảnh sát tịch thu rượu, không phạt tiền; khu cấm không liên quan cơ sở có phép; một số chỉ áp dụng giờ nhất định", "url": "https://www.cityofsydney.nsw.gov.au/public-health-safety-programs/outdoor-alcohol-restrictions", "quote": "Police can confiscate alcohol in these areas but there are no fines for the offence." },
+      { "claim": "VIC: tuổi uống rượu hợp pháp là 18", "url": "https://www.betterhealth.vic.gov.au/health/healthyliving/alcohol-and-the-law", "quote": "The legal drinking age in Victoria is 18." },
+      { "claim": "VIC: có thể bị yêu cầu chứng minh tuổi; đưa thông tin giả hoặc từ chối xuất trình có thể bị phạt", "url": "https://www.betterhealth.vic.gov.au/health/healthyliving/alcohol-and-the-law", "quote": "It's an offence to give a false name and address, or to refuse to show proof of age, and you can be fined." },
+      { "claim": "VIC: hộ chiếu nước ngoài và bằng lái nước ngoài kèm bản dịch được chấp nhận", "url": "https://www.vic.gov.au/checking-IDs-before-supplying-alcohol", "quote": "Australian or foreign passport" },
+      { "claim": "VIC: bằng lái nước ngoài không tiếng Anh phải kèm bản dịch chính thức", "url": "https://www.vic.gov.au/checking-IDs-before-supplying-alcohol", "quote": "Foreign driver licence. If not in English, it must be accompanied by an official English translation" },
+      { "claim": "VIC: say rượu nơi công cộng không còn là tội từ 7/11/2023", "url": "https://www.betterhealth.vic.gov.au/health/healthyliving/alcohol-and-the-law", "quote": "Public drunkenness is no longer a criminal offence in Victoria (from 7 November 2023)." },
+      { "claim": "VIC: luật council về uống rượu nơi công cộng vẫn áp dụng; cảnh sát có thể phạt, yêu cầu rời đi", "url": "https://www.legalaid.vic.gov.au/public-intoxication", "quote": "Other laws about drinking alcohol in public may still apply. ... For example, local council laws." }
+    ],
+    "unverified": [
+      "Giờ cấm và mức phạt cụ thể của từng council ở VIC (ví dụ Port Phillip, Whitehorse): trang Port Phillip trả lỗi 429, không đọc được.",
+      "Mức phạt 2200 AUD khi cản trở cảnh sát tịch thu rượu ở khu cấm rượu NSW (s660 Local Government Act): chỉ thấy qua kết quả tìm kiếm.",
+      "Mức phạt người dưới 18 mua rượu ở VIC (kết quả tìm kiếm nêu 105 AUD): không mở được trang vic.gov.au liquor offences."
+    ]
+  },
+  {
+    "topicSlug": "noi-cong-cong",
+    "slug": "hut-thuoc-noi-cong-cong",
+    "title": "Hút thuốc và thuốc lá điện tử ở nơi công cộng",
+    "summaryVi": "Tại New South Wales (NSW) và Victoria (VIC), hút thuốc và hút thuốc lá điện tử (vaping) đều bị cấm ở nhiều khu vực ngoài trời như khu ăn uống ngoài trời của quán, trong phạm vi 10 mét quanh thiết bị sân chơi trẻ em, và tại trạm, sân ga phương tiện công cộng. Ở VIC, lệnh cấm còn áp dụng giữa hai cờ cứu hộ trên bãi biển có người trực. Quy định do từng bang ban hành, các bang khác có thể khác.",
+    "keyPoints": [
+      { "text": "NSW và VIC: cấm hút thuốc và vaping trong khu ăn uống ngoài trời mang tính thương mại (quán cà phê, nhà hàng, quán rượu).", "severity": "normal" },
+      { "text": "NSW và VIC: cấm hút thuốc và vaping trong phạm vi 10 mét quanh thiết bị sân chơi trẻ em ở nơi công cộng ngoài trời.", "severity": "normal" },
+      { "text": "NSW: cấm tại trạm và sân ga phương tiện công cộng, kể cả bến phà và điểm đón taxi; VIC: cấm tại ga tàu, sân ga tàu điện, nhà chờ xe buýt và tàu điện, và trên tàu, tàu điện, xe buýt.", "severity": "normal" },
+      { "text": "NSW: còn cấm tại hồ bơi công cộng, khán đài sự kiện thể thao có tổ chức, và trong phạm vi 4 mét quanh lối vào tòa nhà công cộng.", "severity": "normal" },
+      { "text": "VIC: cấm giữa hai cờ cứu hộ và trong bán kính 50 mét quanh mỗi cờ tại mọi bãi biển có người trực, và trong phạm vi 4 mét quanh lối vào trường học, nhà trẻ.", "severity": "normal" }
+    ],
+    "penalties": [
+      { "behavior": "NSW: hút thuốc hoặc vaping tại khu vực cấm", "amountText": "phạt tại chỗ 300 AUD", "currency": "AUD", "note": "nguồn: NSW Health" },
+      { "behavior": "VIC: hút thuốc hoặc vaping trong khu ăn uống ngoài trời hoặc trong 10 mét quanh sân chơi trẻ em", "amountText": "phạt tại chỗ 1 penalty unit, tối đa 5 penalty units nếu ra tòa", "currency": "AUD", "note": "nguồn: Victorian Department of Health; giá trị penalty unit được điều chỉnh mỗi năm tài chính" }
+    ],
+    "exceptions": [
+      "VIC: khu uống ngoài trời nằm trong 4 mét quanh khu ăn uống cũng bị cấm, trừ khi có tường ngăn cao ít nhất 2,1 mét."
+    ],
+    "foreignerNotes": [
+      "Thuốc lá điện tử bị đối xử như thuốc lá thông thường ở các khu vực cấm nêu trên.",
+      "Ở NSW, các lệnh cấm trên bãi biển (nếu có) do council địa phương quy định; hãy chú ý biển báo tại chỗ."
+    ],
+    "sources": [
+      { "title": "Smoke-free laws", "url": "https://www.health.nsw.gov.au/tobacco/Pages/smoke-free-laws.aspx", "authority": "NSW Health", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Smoke-free and vape-free areas", "url": "https://www.health.vic.gov.au/tobacco-reform/smoke-free-and-vape-free-areas", "authority": "Victorian Department of Health", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Outdoor dining: smoke-free and vape-free", "url": "https://www.health.vic.gov.au/tobacco-reform/outdoor-dining-smoke-free-and-vape-free", "authority": "Victorian Department of Health", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Playground equipment: smoke-free and vape-free", "url": "https://www.health.vic.gov.au/tobacco-reform/playground-equipment-smoke-free-and-vape-free", "authority": "Victorian Department of Health", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["hut-thuoc", "thuoc-la-dien-tu", "vaping", "noi-cong-cong", "nsw", "vic"],
+    "verification": [
+      { "claim": "NSW: hút thuốc và vaping bị cấm ở các khu ngoài trời liệt kê", "url": "https://www.health.nsw.gov.au/tobacco/Pages/smoke-free-laws.aspx", "quote": "Smoking and vaping are banned in the following outdoor public areas:" },
+      { "claim": "NSW: 10 mét quanh thiết bị sân chơi", "url": "https://www.health.nsw.gov.au/tobacco/Pages/smoke-free-laws.aspx", "quote": "Within 10 metres of children's play equipment in outdoor public places" },
+      { "claim": "NSW: trạm, sân ga, bến phà, điểm taxi", "url": "https://www.health.nsw.gov.au/tobacco/Pages/smoke-free-laws.aspx", "quote": "Public transport stops and platforms, including ferry wharves and taxi ranks" },
+      { "claim": "NSW: hồ bơi, khán đài thể thao, 4 mét quanh lối vào tòa nhà công cộng, khu ăn uống ngoài trời", "url": "https://www.health.nsw.gov.au/tobacco/Pages/smoke-free-laws.aspx", "quote": "Within 4 metres of a pedestrian access point to a public building" },
+      { "claim": "NSW: phạt tại chỗ 300 AUD", "url": "https://www.health.nsw.gov.au/tobacco/Pages/smoke-free-laws.aspx", "quote": "can issue cautions or on-the-spot fines of $300 to people who break the smoking and vaping bans." },
+      { "claim": "VIC: cấm ở mọi khu ăn uống ngoài trời", "url": "https://www.health.vic.gov.au/tobacco-reform/outdoor-dining-smoke-free-and-vape-free", "quote": "Smoking and the use of e-cigarettes (vaping) is banned in all commercial outdoor dining areas in Victoria." },
+      { "claim": "VIC: khu uống trong 4 mét quanh khu ăn uống; tường 2,1 mét", "url": "https://www.health.vic.gov.au/tobacco-reform/outdoor-dining-smoke-free-and-vape-free", "quote": "Smoking and vaping is banned in an outdoor drinking area if any part of that area is within 4 metres" },
+      { "claim": "VIC: phạt tại chỗ 1 penalty unit (khu ăn uống)", "url": "https://www.health.vic.gov.au/tobacco-reform/outdoor-dining-smoke-free-and-vape-free", "quote": "An on-the-spot fine of one penalty unit may apply to an individual who smokes or vapes in an outdoor dining area." },
+      { "claim": "VIC: 10 mét quanh sân chơi; tối đa 5 penalty units, phạt 1 penalty unit", "url": "https://www.health.vic.gov.au/tobacco-reform/playground-equipment-smoke-free-and-vape-free", "quote": "The maximum penalty for someone breaking this law is five penalty units, with an infringement penalty of one penalty unit." },
+      { "claim": "VIC: phương tiện công cộng", "url": "https://www.health.vic.gov.au/tobacco-reform/smoke-free-and-vape-free-areas", "quote": "at train stations, tram-stop platforms, tram and bus shelters, and on trains, trams and buses" },
+      { "claim": "VIC: bãi biển có người trực, giữa cờ và bán kính 50 mét", "url": "https://www.health.vic.gov.au/tobacco-reform/smoke-free-and-vape-free-areas", "quote": "between the lifesaving flags, and within a 50-metre radius of each flag, at all patrolled beaches" },
+      { "claim": "VIC: trường học, nhà trẻ và 4 mét quanh lối vào", "url": "https://www.health.vic.gov.au/tobacco-reform/smoke-free-and-vape-free-areas", "quote": "on the grounds of, and within 4 metres of entrances to, childcare centres, kindergartens, preschools, and primary and secondary schools" }
+    ],
+    "unverified": [
+      "Ngoại lệ quanh sân chơi ở VIC (nhà ở, xe chạy ngang, cách bởi con đường) chỉ thấy trong kết quả tìm kiếm của trang health.vic.gov.au, chưa trích được nguyên văn khi fetch; không đưa vào bài.",
+      "Lệnh cấm hút thuốc trên bãi biển ở NSW do council quy định: không có trang chính thức cấp bang xác nhận.",
+      "Giá trị tiền của một penalty unit ở VIC năm tài chính hiện tại: trang không ghi."
+    ]
+  },
+  {
+    "topicSlug": "khan-cap",
+    "slug": "an-toan-bai-bien",
+    "title": "An toàn ở bãi biển Úc: cờ đỏ vàng và dòng rip",
+    "summaryVi": "Theo Surf Life Saving Australia (SLSA), dòng chảy xa bờ (rip current) là một trong những mối nguy lớn và phổ biến nhất trên bãi biển Úc. Hãy bơi ở bãi biển có người trực, giữa hai cờ đỏ và vàng. Nếu bị cuốn vào dòng rip, hãy giữ bình tĩnh, giơ tay gọi trợ giúp, thả nổi theo dòng hoặc bơi song song với bờ; khi có người gặp nạn, gọi 000.",
+    "keyPoints": [
+      { "text": "Cờ đỏ và vàng đánh dấu khu vực có nhân viên cứu hộ giám sát; hãy bơi giữa hai cờ này.", "severity": "normal" },
+      { "text": "Cờ đỏ nghĩa là cấm bơi; cờ vàng là cần thận trọng; cờ đỏ trắng là phải rời khỏi nước ngay.", "severity": "normal" },
+      { "text": "Dấu hiệu dòng rip: nước sâu hoặc sẫm màu hơn, ít sóng vỡ, nước màu cát kéo ra xa bờ, rác hoặc rong biển trôi, nước chuyển động mạnh.", "severity": "normal" },
+      { "text": "Bị cuốn vào dòng rip: giữ bình tĩnh, giơ tay và kêu cứu, thả nổi theo dòng (có thể đưa bạn về bãi cạn), hoặc bơi song song với bờ hay về phía sóng vỡ.", "severity": "normal" },
+      { "text": "Khi thấy người gặp nạn: gọi 000, tìm vật nổi ném cho họ và tránh tự lao xuống nước cứu nếu không có dụng cụ nổi.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Nếu không thấy cờ đỏ vàng, SLSA khuyên hỏi nhân viên cứu hộ, và nếu không chắc chắn thì đừng xuống nước.",
+      "Dòng rip có thể đổi hình dạng và vị trí nhanh, khó nhìn thấy; hãy đọc biển báo an toàn trước khi xuống bãi biển.",
+      "Ở Victoria, hút thuốc và vaping bị cấm giữa hai cờ cứu hộ và trong bán kính 50 mét quanh mỗi cờ tại bãi biển có người trực.",
+      "Nên bơi cùng bạn bè hoặc người thân để trông chừng nhau."
+    ],
+    "sources": [
+      { "title": "Rip Currents", "url": "https://beachsafe.org.au/surf-safety/ripcurrents", "authority": "Surf Life Saving Australia (Beachsafe)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Flags & Signs", "url": "https://beachsafe.org.au/surf-safety/flags-and-signs", "authority": "Surf Life Saving Australia (Beachsafe)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Lifeguard Top Tips", "url": "https://beachsafe.org.au/surf-safety/lifeguards-top-tips", "authority": "Surf Life Saving Australia (Beachsafe)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Bystander Rescue", "url": "https://beachsafe.org.au/surf-safety/bystander-rescue", "authority": "Surf Life Saving Australia (Beachsafe)", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Smoke-free and vape-free areas", "url": "https://www.health.vic.gov.au/tobacco-reform/smoke-free-and-vape-free-areas", "authority": "Victorian Department of Health", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "danger",
+    "tags": ["bai-bien", "rip-current", "co-do-vang", "cuu-ho", "000", "khan-cap"],
+    "verification": [
+      { "claim": "Rip là mối nguy lớn và phổ biến nhất trên bãi biển Úc", "url": "https://beachsafe.org.au/surf-safety/ripcurrents", "quote": "Rip currents are one of the greatest, and most common, hazards on Australian beaches." },
+      { "claim": "Tránh rip bằng cách bơi ở bãi có người trực giữa cờ đỏ vàng", "url": "https://beachsafe.org.au/surf-safety/ripcurrents", "quote": "Avoid rips by swimming at a patrolled beach between the red and yellow flags." },
+      { "claim": "Dấu hiệu nhận biết rip", "url": "https://beachsafe.org.au/surf-safety/ripcurrents", "quote": "Deeper and/or darker water ... Fewer breaking waves ... Sandy coloured water extending beyond the surf zone" },
+      { "claim": "Rip đổi hình dạng, vị trí nhanh", "url": "https://beachsafe.org.au/surf-safety/ripcurrents", "quote": "Rips can change shape and location quickly and may be difficult to see." },
+      { "claim": "Cách thoát rip", "url": "https://beachsafe.org.au/surf-safety/ripcurrents", "quote": "Float with the current. It may return you to a shallow sandbank ... Swim parallel to the beach or towards the breaking waves." },
+      { "claim": "Ý nghĩa cờ đỏ vàng và khi không có cờ", "url": "https://beachsafe.org.au/surf-safety/flags-and-signs", "quote": "If there are no red and yellow flags, check with the lifeguards and if unsure don't go in the water." },
+      { "claim": "Cờ đỏ, cờ vàng, cờ đỏ trắng", "url": "https://beachsafe.org.au/surf-safety/flags-and-signs", "quote": "RED FLAG No swimming ... Yellow Flag Caution required. ... Red & White Flag Evacuate the water" },
+      { "claim": "Đọc biển báo, bơi cùng bạn, giơ tay vẫy khi cần trợ giúp", "url": "https://beachsafe.org.au/surf-safety/lifeguards-top-tips", "quote": "stay calm, raise your arm in the air and wave it from side to side." },
+      { "claim": "Gọi 000, dùng vật nổi, không nhảy xuống", "url": "https://beachsafe.org.au/surf-safety/bystander-rescue", "quote": "Dial 000 on your mobile or go to get help" },
+      { "claim": "VIC: cấm hút thuốc giữa cờ và 50 mét quanh cờ ở bãi có người trực", "url": "https://www.health.vic.gov.au/tobacco-reform/smoke-free-and-vape-free-areas", "quote": "between the lifesaving flags, and within a 50-metre radius of each flag, at all patrolled beaches" }
+    ],
+    "unverified": [
+      "Số liệu thống kê đuối nước do rip (ít nhất 21 ca tử vong mỗi năm) có trên trang Beachsafe nhưng không đưa vào bài để giữ bài ngắn.",
+      "Trang Triple Zero chính thức của Chính phủ Úc (infrastructure.gov.au/triple-zero) bị hết thời gian chờ khi fetch; số 000 chỉ được xác minh qua trang Beachsafe.",
+      "Không tìm được trang an toàn bãi biển riêng của chính quyền NSW hoặc VIC trong phiên này."
+    ]
+  }
+]

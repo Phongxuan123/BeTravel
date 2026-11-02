@@ -407,6 +407,9 @@ GET /countries              200, tra active va coming_soon (KHONG tra 'hidden') 
 GET /countries/:code        200, hoac 404 NOT_FOUND (ca khi quoc gia dang 'hidden')
 ```
 
+`GET /legal/topics` chi tra chu de co it nhat mot bai published + isCurrent (them 02/11/2026):
+chu de chi co ban nhap cho duyet khong hien cho nguoi dung.
+
 `status: 'hidden'` (them 02/11/2026) chi co o Admin API: quoc gia bi go khoi
 moi duong doc cong khai -- khong co trong `/countries`, `/countries/:code` tra 404,
 `/legal/topics|articles|search` tra rong, `/legal/articles/:country/:slug` tra 404,

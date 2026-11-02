@@ -64,10 +64,11 @@ export const listTopics = async (countryCode) => {
   ]);
   const countBySlug = new Map(counts.map((row) => [row._id, row.total]));
 
-  return topics.map((topic) => ({
-    ...topic.toObject(),
-    articleCount: countBySlug.get(topic.slug) ?? 0,
-  }));
+  // Chu de chua co bai published (vd chi co ban nhap dang cho duyet) khong hien cho nguoi dung:
+  // bam vao chi ra danh sach rong.
+  return topics
+    .map((topic) => ({ ...topic.toObject(), articleCount: countBySlug.get(topic.slug) ?? 0 }))
+    .filter((topic) => topic.articleCount > 0);
 };
 
 export const listArticles = async (query) => {
