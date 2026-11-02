@@ -85,3 +85,21 @@ export const FallbackReason = Object.freeze({
   // Câu hỏi ngoài phạm vi pháp lý + an toàn du lịch.
   OUT_OF_SCOPE: "OUT_OF_SCOPE",
 });
+
+// Trợ lý AI bản 2 (docs/AI_V2_PLAN.md): loại câu trả lời mà giao diện hiển thị khác nhau.
+export const AssistantKind = Object.freeze({
+  ANSWER: "answer",
+  EMERGENCY: "emergency",
+  CLARIFY: "clarify",
+  REFUSE_SCOPE: "refuse_scope",
+  REFUSE_HARM: "refuse_harm",
+});
+
+// Tầng nguồn của câu trả lời -- do CODE gán theo nguồn thật đã dùng, không do LLM tự khai.
+export const SourceTier = Object.freeze({
+  OFFICIAL: "official",
+  WEB: "web",
+  GENERAL: "general",
+});
+
+export const AssistantRole = Object.freeze({ USER: "user", ASSISTANT: "assistant" });

@@ -240,6 +240,7 @@ function toCitation(chunk, article, marker) {
     effectiveFrom: article.effectiveFrom ?? null,
     updatedAt: article.updatedAt,
     sourceType: "article",
+    officialUrl: primarySource?.url ?? "",
   };
 }
 

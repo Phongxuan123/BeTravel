@@ -1,5 +1,17 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- giai doan 3 (backend) -- 02/11/2026
+
+`/api/assistant/*` (contracts muc 25): phan loai + tu khoa (mo hinh re) --> kho da kiem chung -->
+tra web (Responses API, tat mac dinh) --> kien thuc chung --> hau kiem bang code
+(`rag/assistant/guard.js`) --> nhan tang nguon do code gan. Hoi thoai luu DB, TTL 90 ngay, quota DB,
+ai_events. Test: 289/289. Chay that bo 50 cau (gpt-6.1-sol, co tra web): dung loai 48/50, tu choi
+sai 0%, 0 vi pham guard, 1 loi het gio (tra web cham), p50 13,5 s / p90 25,5 s (vuot muc 10 s).
+So sanh 8 cau: claude-sonnet-5-5 p50 10 s, chat luong tot nhat; gemini-3.8-flash 13 s;
+gpt-6.1-sol 13 s + 1 loi. Ha ASSISTANT_WEB_TIMEOUT_MS mac dinh xuong 15 s. Truy hoi tu khoa con
+truot vai cau (vape, moc tui) --> de xuat bat embedding Gemini (hybrid). Ket qua chi tiet:
+`docs/local/eval/` (khong commit).
+
 ## Tro ly AI ban 2 -- giai doan 2 xong -- 02/11/2026 (chieu)
 
 7 bai hai quan soan bang cach doc trang ABF/AUSTRAC/TGA/DAFF qua Claude in Chrome (nguoi dung cho

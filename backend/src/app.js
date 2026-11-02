@@ -12,6 +12,7 @@ import adminRoutes from "./routes/admin.routes.js";
 import publicRoutes from "./routes/public.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
 import translateRoutes from "./routes/translate.routes.js";
+import assistantRoutes from "./routes/assistant.routes.js";
 import incidentProgressRoutes from "./routes/incidentProgress.routes.js";
 import favoritesRoutes from "./routes/favorites.routes.js";
 import preferencesRoutes from "./routes/preferences.routes.js";
@@ -64,6 +65,7 @@ app.use("/api/users/incident-progress", incidentProgressRoutes);
 app.use("/api/users/favorites", favoritesRoutes);
 app.use("/api/users/preferences", preferencesRoutes);
 app.use("/api/translate", translateRoutes);
+app.use("/api/assistant", assistantRoutes);
 app.use("/api/laws", lawsRoutes);
 app.use("/api", publicRoutes);
 
