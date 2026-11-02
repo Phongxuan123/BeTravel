@@ -47,7 +47,8 @@ export const COUNTRIES = [
     code: "KR",
     name: "Hàn Quốc",
     language: "Tiếng Hàn",
-    status: CountryStatus.ACTIVE,
+    // Ẩn từ 02/11/2026: sản phẩm chỉ nhắm Úc. Giữ dữ liệu để mở lại bằng Admin Portal.
+    status: CountryStatus.HIDDEN,
     emergencyNumbers: { police: "112", ambulance: "119", fire: "119", marine: "122" },
     // Nguon: trang lien he chinh thuc https://vnembassy-seoul.mofa.gov.vn/lien-he (doi chieu
     // 08/10/2026: dien thoai +82 2 720 5124, fax 7204684 -- khong dung so fax de goi ho tro).

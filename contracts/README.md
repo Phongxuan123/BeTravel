@@ -400,12 +400,17 @@ Khong can `Authorization`. Moi truy van `legal_articles` o day BAT BUOC loc
 ### 8.1. Countries
 
 ```
-GET /countries              200, tra CA active lan coming_soon kem articleCount va federalLawCount
+GET /countries              200, tra active va coming_soon (KHONG tra 'hidden') kem articleCount va federalLawCount
                             (so luat lien bang tuyen chon, chi AU > 0; mobile cong vao "so quy dinh").
                             emergencyNumbers co them extra: [{label, number, group:'police'|'ambulance'}] (so huu ich khac, co the rong;
                             group = o nao o trang chu: Canh sat hay Cap cuu)
-GET /countries/:code        200, hoac 404 NOT_FOUND
+GET /countries/:code        200, hoac 404 NOT_FOUND (ca khi quoc gia dang 'hidden')
 ```
+
+`status: 'hidden'` (them 02/11/2026) chi co o Admin API: quoc gia bi go khoi
+moi duong doc cong khai -- khong co trong `/countries`, `/countries/:code` tra 404,
+`/legal/topics|articles|search` tra rong, `/legal/articles/:country/:slug` tra 404,
+tao chuyen di toi nuoc do bi tu choi. Du lieu giu nguyen de mo lai.
 
 `status: 'coming_soon'` nghia la da co du lieu trong DB nhung chua mo cho
 nguoi dung — client phai TU hien trang thai ro rang (vi du "Sap ra mat"),

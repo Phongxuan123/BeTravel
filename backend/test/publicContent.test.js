@@ -55,6 +55,34 @@ test("GET /api/countries tra ve ca active lan coming_soon, khong bi loi", async 
   assert.equal(jp.status, "coming_soon");
 });
 
+test("quoc gia 'hidden' bien mat khoi moi duong doc cong khai, ke ca bai da published", async () => {
+  await seedKrBasics();
+  await Country.updateOne({ code: "KR" }, { status: "hidden" });
+  await LegalArticle.create({
+    countryCode: "KR",
+    topicSlug: "giao-thong",
+    slug: "bai-an",
+    version: 1,
+    isCurrent: true,
+    status: "published",
+    title: "Bài của nước đã ẩn",
+    summaryVi: "Tóm tắt",
+    sources: validSource(),
+    effectiveFrom: new Date("2024-01-01"),
+  });
+
+  const countries = await request(app).get("/api/countries");
+  assert.deepEqual(
+    countries.body.data.map((c) => c.code),
+    ["JP"],
+  );
+  assert.equal((await request(app).get("/api/countries/KR")).status, 404);
+  assert.deepEqual((await request(app).get("/api/legal/topics?country=KR")).body.data, []);
+  assert.deepEqual((await request(app).get("/api/legal/articles?country=KR")).body.data, []);
+  assert.deepEqual((await request(app).get("/api/legal/search?country=KR&q=bai")).body.data, []);
+  assert.equal((await request(app).get("/api/legal/articles/KR/bai-an")).status, 404);
+});
+
 test("GET /api/legal/articles CHI tra ve bai published+isCurrent -- draft/superseded khong duoc lot ra", async () => {
   await seedKrBasics();
 

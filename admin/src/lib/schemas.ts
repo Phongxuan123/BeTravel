@@ -15,7 +15,7 @@ export const countryFixtureSchema = z.object({
   language: z.string().optional(),
   emergencyNumbers: z.record(z.string(), z.string()).optional(),
   embassy: z.record(z.string(), z.unknown()).optional(),
-  status: z.enum(['active', 'coming_soon']),
+  status: z.enum(['active', 'coming_soon', 'hidden']),
   createdBy: z.string(),
   updatedBy: z.string(),
   createdAt: z.string(),
