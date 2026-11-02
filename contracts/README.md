@@ -288,6 +288,9 @@ Moi file trong `fixtures/` la **mot response that**, khong them bot gi.
 | `auth.me.json` | `GET /auth/me` — 200 |
 | `admin.country.json` | `POST/GET/PATCH /admin/countries` — 200/201 |
 | `admin.legalArticle.json` | `GET /admin/legal/articles/:id` (đã published) — 200 |
+| `admin.assistantSettings.json` | `GET/PATCH /admin/assistant/settings` — 200 (muc 26) |
+| `admin.assistantMessages.json` | `GET /admin/assistant/messages` — 200 (muc 26) |
+| `admin.assistantMetrics.json` | `GET /admin/assistant/metrics` — 200 (muc 26) |
 | `error.validation.json` | bat ky endpoint nao — 400 |
 | `error.unauthorized.json` | bat ky endpoint nao — 401 |
 | `error.forbidden.json` | bat ky endpoint `/admin/*` khi khong phai admin — 403 |
@@ -883,3 +886,58 @@ DELETE /assistant/conversations            200 { deleted: true }  (xoa toan bo l
 | `tripContext` | Ngu canh chuyen di da dung (hien cho nguoi dung thay), hoac null |
 
 Lich su tu xoa sau `ASSISTANT_HISTORY_TTL_DAYS` ngay (mac dinh 90).
+
+## 26. ADMIN TRO LY AI — `/api/admin/assistant/*` (role admin, 02/11/2026, H1/F5)
+
+RBAC nhu muc 7 (`401` chua dang nhap, `403 FORBIDDEN` khong phai admin). Khong co danh gia
+"huu ich" (F4 da chot). Ngay trong bieu do tinh theo **UTC**, giong han muc ngay (`aiUsage`).
+
+```
+GET   /admin/assistant/settings                    200 settings
+PATCH /admin/assistant/settings  { enabled }       200 settings   409 bat khi env dang tat
+GET   /admin/assistant/messages?sourceTier=&kind=&page=&limit=   200 [qaItem], meta {page,limit,total}
+GET   /admin/assistant/metrics?days=               200 metrics   (days 1-90, mac dinh 30)
+```
+
+**`settings`** (fixture `fixtures/admin.assistantSettings.json`):
+
+| Truong | Y nghia |
+|---|---|
+| `enabled` | Cong tac trong DB do Admin bat/tat (chua tung dat = `true`) |
+| `envEnabled` | `ASSISTANT_ENABLED` cua server -- khoa chinh, Admin khong ghi de duoc |
+| `active` | `envEnabled && enabled` -- tro ly co dang nhan cau hoi khong |
+| `updatedAt` | Lan doi cong tac gan nhat, hoac `null` |
+
+Doi cong tac co hieu luc ngay tren tien trinh nhan PATCH (xoa cache RAM); tien trinh khac cham toi
+da `ASSISTANT_SETTINGS_CACHE_MS`. Khi tat, `POST /api/assistant/messages*` tra `UPSTREAM_ERROR`
+(muc 25). `PATCH { enabled: true }` khi `envEnabled=false` --> `409 CONFLICT`,
+`details: { reason: "ENV_DISABLED" }`. Moi lan doi ghi nhat ky (muc 7.4,
+`entityType: "AssistantSettings"`, action `UPDATE`, diff before/after).
+
+**`qaItem`** (fixture `fixtures/admin.assistantMessages.json`) -- moi cau tra loi cua tro ly, ghep
+voi cau hoi lien truoc trong cung cuoc tro chuyen, moi nhat truoc:
+
+| Truong | Y nghia |
+|---|---|
+| `id` | id tin nhan tro ly |
+| `question`, `answer` | Van ban da **an thong tin ca nhan o backend**: email, so dien thoai, so ho chieu, day so dai (>= 8 chu so). So khan cap/so dich vu ngan (000, 112, 13 11 14, 1300/1800 ...) giu nguyen |
+| `countryCode`, `kind`, `sourceTier`, `detailed`, `createdAt` | Nhu `message` o muc 25 |
+| `citations` | `[{ n, title }]` |
+| `telemetry` | `{ latencyMs, promptTokens, completionTokens, costEstimateVnd, guardViolations }` cua lan sinh gan nhat, hoac `null` neu khong co ai_event |
+
+[!] KHONG bao gio tra ten, email, `userId` hay `conversationId` cua nguoi hoi.
+
+**`metrics`** (fixture `fixtures/admin.assistantMetrics.json`), chi tinh ai_event cua tro ly ban 2:
+
+```jsonc
+{ "days": 30, "from": "2026-10-04", "to": "2026-11-02",
+  "totals": { "questions": 12, "costEstimateVnd": 41.5, "p50LatencyMs": 7200,
+              "p90LatencyMs": 9800, "refusals": 1, "refusalRate": 0.083, "guardViolations": 2 },
+  "daily": [{ "date": "2026-11-02", "questions": 3, "costEstimateVnd": 10.2,
+              "p50LatencyMs": 7000, "p90LatencyMs": 9100, "refusals": 0, "refusalRate": 0 }] }
+```
+
+`daily` co du `days` phan tu (ngay khong co cau hoi = 0), tang dan theo ngay. `refusals` = so luot
+`kind` la `refuse_scope` hoac `refuse_harm`. Chi phi uoc tinh = token vao/ra cong don moi buoc goi
+mo hinh trong luot x `ASSISTANT_PRICE_INPUT_VND_PER_M` / `ASSISTANT_PRICE_OUTPUT_VND_PER_M`;
+bang 0 neu chua cau hinh gia.

@@ -10,6 +10,7 @@ import ArticlesListPage from './pages/ArticlesListPage';
 import ArticleEditorPage from './pages/ArticleEditorPage';
 import AuditPage from './pages/AuditPage';
 import RagIndexPage from './pages/RagIndexPage';
+import AssistantPage from './pages/AssistantPage';
 import IncidentsPage from './pages/IncidentsPage';
 import IncidentEditorPage from './pages/IncidentEditorPage';
 import QuickPhrasesPage from './pages/QuickPhrasesPage';
@@ -45,6 +46,7 @@ export default function App() {
       />
       <Route path="/audit" element={<ProtectedRoute><AuditPage /></ProtectedRoute>} />
       <Route path="/rag" element={<ProtectedRoute><RagIndexPage /></ProtectedRoute>} />
+      <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
       <Route path="/incidents" element={<ProtectedRoute><IncidentsPage /></ProtectedRoute>} />
       <Route path="/incidents/new" element={<ProtectedRoute><IncidentEditorPage /></ProtectedRoute>} />
       <Route path="/incidents/:id" element={<ProtectedRoute><IncidentEditorPage /></ProtectedRoute>} />
