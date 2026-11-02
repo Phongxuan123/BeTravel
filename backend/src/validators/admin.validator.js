@@ -4,6 +4,7 @@ import {
   ContentStatusValues,
   KeyPointSeverity,
   RiskLevel,
+  RiskZoneCategory,
   SourceKind,
   CountryStatus,
 } from "../core/constants.js";
@@ -384,4 +385,70 @@ export const geoAlertUpdateSchema = geoAlertBaseSchema.partial().extend({
 export const geoAlertListQuerySchema = paginationQuerySchema.extend({
   countryCode: countryCodeSchema.optional(),
   status: z.enum(["draft", "published"]).optional(),
+});
+
+// ── Vung nguy co (RiskZone) ──────────────────────────────────────────────
+const riskZonePositionSchema = z.tuple([
+  z.number().min(-180).max(180),
+  z.number().min(-90).max(90),
+]);
+
+// Vong ngoai da giac: >= 4 diem va diem cuoi trung diem dau (GeoJSON yeu cau vong dong kin).
+const riskZoneAreaSchema = z.object({
+  type: z.literal("Polygon").default("Polygon"),
+  coordinates: z
+    .array(z.array(riskZonePositionSchema).min(4, "Đa giác cần tối thiểu 3 đỉnh"))
+    .length(1, "Chỉ hỗ trợ một vòng ngoài")
+    .refine(([ring]) => {
+      const first = ring[0];
+      const last = ring[ring.length - 1];
+      return first[0] === last[0] && first[1] === last[1];
+    }, "Vòng đa giác phải khép kín (điểm cuối trùng điểm đầu)"),
+});
+
+const riskZoneBaseSchema = z.object({
+  countryCode: countryCodeSchema,
+  category: z.enum(Object.values(RiskZoneCategory)),
+  name: z.string().trim().min(1, "Tên vùng không được để trống"),
+  description: z.string().trim().min(1, "Mô tả không được để trống"),
+  severity: z.enum(Object.values(RiskLevel)).optional(),
+  center: geoAlertCenterSchema,
+  area: riskZoneAreaSchema.optional(),
+  radiusM: z.coerce.number().positive().max(100_000).optional(),
+  tips: z.array(z.string().trim().min(1)).optional().default([]),
+  source: z
+    .object({
+      name: z.string().trim().default(""),
+      url: z.string().trim().default(""),
+      period: z.string().trim().default(""),
+    })
+    .optional(),
+  reviewNote: z.string().trim().optional(),
+  status: z.enum(["draft", "published"]).optional(),
+});
+
+// Nguyen tac "khong bia du lieu": chi publish khi co ten nguon, duong dan va ky so lieu.
+export const riskZoneCreateSchema = riskZoneBaseSchema
+  .refine((data) => Boolean(data.area || data.radiusM), {
+    message: "Cần khoanh vùng bằng đa giác (area) hoặc bán kính (radiusM)",
+    path: ["area"],
+  })
+  .refine(
+    (data) =>
+      data.status !== "published" ||
+      Boolean(data.source?.name && data.source?.url && data.source?.period),
+    {
+      message: "Vùng nguy cơ chỉ được xuất bản khi có đủ tên nguồn, đường dẫn và kỳ số liệu",
+      path: ["source"],
+    },
+  );
+
+export const riskZoneUpdateSchema = riskZoneBaseSchema.partial().extend({
+  tips: z.array(z.string().trim().min(1)).optional(),
+});
+
+export const riskZoneListQuerySchema = paginationQuerySchema.extend({
+  countryCode: countryCodeSchema.optional(),
+  status: z.enum(["draft", "published"]).optional(),
+  category: z.enum(Object.values(RiskZoneCategory)).optional(),
 });

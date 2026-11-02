@@ -19,6 +19,7 @@ import * as analyticsController from "../controllers/adminAnalytics.controller.j
 import { incidentsController } from "../controllers/adminIncidents.controller.js";
 import { quickPhrasesController } from "../controllers/adminQuickPhrases.controller.js";
 import { geoAlertsController } from "../controllers/adminGeoAlerts.controller.js";
+import { riskZonesController } from "../controllers/adminRiskZones.controller.js";
 
 import {
   countryCreateSchema,
@@ -51,6 +52,9 @@ import {
   geoAlertCreateSchema,
   geoAlertUpdateSchema,
   geoAlertListQuerySchema,
+  riskZoneCreateSchema,
+  riskZoneUpdateSchema,
+  riskZoneListQuerySchema,
 } from "../validators/admin.validator.js";
 
 const router = express.Router();
@@ -141,5 +145,11 @@ router.post("/geo-alerts", validateBody(geoAlertCreateSchema), geoAlertsControll
 router.get("/geo-alerts/:id", geoAlertsController.get);
 router.patch("/geo-alerts/:id", validateBody(geoAlertUpdateSchema), geoAlertsController.update);
 router.delete("/geo-alerts/:id", geoAlertsController.remove);
+
+router.get("/risk-zones", validateQuery(riskZoneListQuerySchema), riskZonesController.list);
+router.post("/risk-zones", validateBody(riskZoneCreateSchema), riskZonesController.create);
+router.get("/risk-zones/:id", riskZonesController.get);
+router.patch("/risk-zones/:id", validateBody(riskZoneUpdateSchema), riskZonesController.update);
+router.delete("/risk-zones/:id", riskZonesController.remove);
 
 export default router;

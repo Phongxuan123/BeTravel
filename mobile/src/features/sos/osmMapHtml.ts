@@ -58,6 +58,20 @@ export function buildOsmMapHtml({ lat, lng, zoom, tileUrl, maxZoom }: OsmMapOpti
       marker.addTo(layer);
     });
   };
+  // zones: [{ id, lat, lng, polygon?, radiusM?, color }] -- vùng nguy cơ (đa giác hoặc vòng tròn); nằm dưới ghim, nhấn gửi id về app.
+  var zoneLayer = L.layerGroup().addTo(map);
+  window.setZones = function (zones) {
+    zoneLayer.clearLayers();
+    zones.forEach(function (zone) {
+      var style = { color: zone.color, weight: 2, fillColor: zone.color, fillOpacity: 0.2 };
+      // Có đa giác thì khoanh đúng ranh giới; không thì rơi về hình tròn bán kính mét.
+      var shape = zone.polygon && zone.polygon.length >= 3
+        ? L.polygon(zone.polygon, style)
+        : L.circle([zone.lat, zone.lng], Object.assign({ radius: zone.radiusM || 500 }, style));
+      shape.on('click', function () { post({ type: 'zone', id: zone.id }); });
+      shape.addTo(zoneLayer);
+    });
+  };
   // Giữ lâu trên bản đồ (chạm giữ trên điện thoại) để chọn vị trí khi máy không có GPS.
   map.on('contextmenu', function (event) {
     post({ type: 'longpress', lat: event.latlng.lat, lng: event.latlng.lng });

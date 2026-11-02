@@ -11,6 +11,7 @@ import * as locationController from "../controllers/publicSupportLocation.contro
 import * as incidentController from "../controllers/publicIncident.controller.js";
 import * as quickPhraseController from "../controllers/publicQuickPhrase.controller.js";
 import * as alertsController from "../controllers/publicAlerts.controller.js";
+import * as riskZonesController from "../controllers/publicRiskZones.controller.js";
 import {
   topicListQuerySchema,
   articleListQuerySchema,
@@ -22,6 +23,7 @@ import {
   incidentListQuerySchema,
   quickPhraseListQuerySchema,
   alertsApplicableQuerySchema,
+  riskZoneListQuerySchema,
 } from "../validators/publicContent.validator.js";
 
 /*
@@ -83,5 +85,7 @@ router.get(
   validateQuery(alertsApplicableQuerySchema),
   alertsController.applicable,
 );
+
+router.get("/risk-zones", validateQuery(riskZoneListQuerySchema), riskZonesController.list);
 
 export default router;

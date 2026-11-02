@@ -4,6 +4,7 @@ import type MapView from 'react-native-maps';
 import { openUrl } from '@/lib/openExternal';
 import { OSM_MAX_ZOOM, OSM_REFERER, OSM_TILE_URL } from './mapRuntime';
 import { buildOsmMapHtml, zoomForDelta } from './osmMapHtml';
+import type { OsmZone } from './riskZones';
 
 export type OsmMarker = { id: string; lat: number; lng: number; color: string; kind: 'me' | 'picked' | 'place' | 'external' };
 
@@ -14,6 +15,8 @@ type Props = {
   center: { lat: number; lng: number };
   delta: number;
   markers: OsmMarker[];
+  zones?: OsmZone[];
+  onZonePress?: (id: string) => void;
   onReady: () => void;
   onMarkerPress: (id: string) => void;
   // Người dùng giữ lâu trên bản đồ để chọn một vị trí.
@@ -26,7 +29,7 @@ const FIT_PADDING_PX = 48;
 // Google Maps SDK không vẽ nổi ô (Expo Go Android). Trang chỉ nhận lệnh vẽ ghim/bay tới; mọi dữ liệu ghim
 // do app gửi vào, trang không tự gọi API của Be.Travel.
 export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
-  { center, delta, markers, onReady, onMarkerPress, onLongPress },
+  { center, delta, markers, zones, onReady, onMarkerPress, onZonePress, onLongPress },
   ref,
 ) {
   const webRef = useRef<WebView>(null);
@@ -60,6 +63,11 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
     if (ready) run(`window.setMarkers(${markersJson})`);
   }, [ready, markersJson, run]);
 
+  const zonesJson = useMemo(() => JSON.stringify(zones ?? []), [zones]);
+  useEffect(() => {
+    if (ready) run(`window.setZones(${zonesJson})`);
+  }, [ready, zonesJson, run]);
+
   const onMessage = (event: WebViewMessageEvent) => {
     try {
       const message = JSON.parse(event.nativeEvent.data) as { type?: string; id?: unknown; lat?: unknown; lng?: unknown };
@@ -68,6 +76,8 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
         onReady();
       } else if (message.type === 'marker' && typeof message.id === 'string') {
         onMarkerPress(message.id);
+      } else if (message.type === 'zone' && typeof message.id === 'string') {
+        onZonePress?.(message.id);
       } else if (message.type === 'longpress' && typeof message.lat === 'number' && typeof message.lng === 'number') {
         onLongPress?.({ lat: message.lat, lng: message.lng });
       }
