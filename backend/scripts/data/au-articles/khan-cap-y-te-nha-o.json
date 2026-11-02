@@ -1,0 +1,363 @@
+[
+  {
+    "topicSlug": "khan-cap",
+    "slug": "so-dien-thoai-khan-cap",
+    "title": "Các số điện thoại khẩn cấp và hỗ trợ cần biết ở Úc",
+    "summaryVi": "Khi có nguy hiểm đến tính mạng, cháy hoặc tội phạm đang xảy ra, hãy gọi Triple Zero (000), miễn phí từ mọi điện thoại cố định hoặc di động ở Úc; từ điện thoại di động bạn cũng có thể gọi 112. Việc không khẩn cấp thì gọi đường dây cảnh sát 131 444, hỏi ý kiến y tế thì gọi healthdirect 1800 022 222, ngộ độc thì gọi 13 11 26. Không nói được tiếng Anh, bạn vẫn gọi 000 được: tổng đài sẽ sắp xếp thông dịch.",
+    "keyPoints": [
+      { "text": "Gọi 000 khi có người nguy kịch, cháy, hoặc tội phạm đang xảy ra; tổng đài viên sẽ hỏi bạn cần cảnh sát (police), cứu hỏa (fire) hay xe cứu thương (ambulance).", "severity": "normal" },
+      { "text": "Từ điện thoại di động có thể gọi 112 (số khẩn cấp quốc tế), nhưng nếu nơi bạn đứng không có sóng của bất kỳ nhà mạng nào thì không số nào gọi được.", "severity": "normal" },
+      { "text": "Người khiếm thính hoặc khó nói dùng số 106 qua Dịch vụ chuyển tiếp quốc gia (National Relay Service), chỉ dùng được với máy TTY hoặc thiết bị dành cho người khiếm thính.", "severity": "normal" },
+      { "text": "Việc cảnh sát không khẩn cấp (báo mất đồ, báo một vụ đã xảy ra) gọi Police Assistance Line 131 444; ở bang Victoria đường dây này mở 24 giờ và có thể báo trực tuyến.", "severity": "normal" },
+      { "text": "Hỏi y tá khi không chắc nên làm gì: healthdirect 1800 022 222, 24 giờ, 7 ngày (ở Victoria gọi là NURSE-ON-CALL); ngộ độc gọi Poisons Information Centre 13 11 26, 24 giờ.", "severity": "normal" },
+      { "text": "Cần thông dịch cho cuộc gọi không khẩn cấp, gọi TIS National 131 450 rồi nhờ nối máy tới dịch vụ bạn cần (ví dụ healthdirect hoặc Police Assistance Line).", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Medicare không chi trả xe cứu thương; giá cước khác nhau giữa các bang và vùng lãnh thổ, nên kiểm tra bảo hiểm của bạn có bao gồm xe cứu thương hay không.",
+      "Công dân Việt Nam gặp sự cố có thể gọi đường dây nóng bảo hộ công dân của Đại sứ quán Việt Nam tại Úc: 0466 401 665.",
+      "Số 000 là số khẩn cấp chuẩn của Úc; 112 là số khẩn cấp quốc tế. Trong trường hợp khẩn cấp, gọi 000 từ bất kỳ điện thoại nào có sóng, kể cả khi điện thoại đang khóa."
+    ],
+    "sources": [
+      { "title": "Calling triple zero (000)", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Who to call in a crisis", "url": "https://www.betterhealth.vic.gov.au/health/ServicesAndSupport/who-to-call-in-a-crisis", "authority": "Better Health Channel, Victorian Government", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Contact Victoria Police", "url": "https://www.police.vic.gov.au/contact", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Online Police Report and Assistance Line", "url": "https://www.police.vic.gov.au/police-assistance-line-and-online-reporting", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Contact us - healthdirect helpline", "url": "https://www.healthdirect.gov.au/contact-us", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "How healthdirect can help you", "url": "https://www.healthdirect.gov.au/how-healthdirect-can-help-you", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "About ambulances in Australia", "url": "https://www.healthdirect.gov.au/about-ambulances-in-australia", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Đại sứ quán Việt Nam tại Úc - trang chủ", "url": "https://vietnamembassy.org.au/", "authority": "Đại sứ quán Việt Nam tại Úc", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "danger",
+    "tags": ["000", "112", "106", "131 444", "healthdirect", "ngộ độc", "thông dịch", "TIS", "cấp cứu", "cảnh sát"],
+    "verification": [
+      { "claim": "000 gọi miễn phí từ mọi điện thoại cố định hoặc di động ở Úc", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "quote": "call 000 free of charge from any fixed or mobile phone in Australia" },
+      { "claim": "Có thể gọi 112 từ điện thoại di động", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "quote": "You can also call 112 (the international emergency number) from a mobile phone." },
+      { "claim": "Không có sóng của nhà mạng nào thì không số nào gọi được", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "quote": "If you are in a place with no mobile coverage from any provider, none of the numbers will work." },
+      { "claim": "Tổng đài hỏi cần cảnh sát, cứu hỏa hay xe cứu thương", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "quote": "The operator will ask if you want police, fire or ambulance." },
+      { "claim": "Không nói tiếng Anh: dịch vụ khẩn cấp sắp xếp thông dịch miễn phí", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "quote": "Once you're connected to the emergency service, they will arrange a free translator." },
+      { "claim": "106 qua National Relay Service, chỉ dùng với TTY hoặc thiết bị cho người khiếm thính", "url": "https://www.healthdirect.gov.au/calling-triple-zero", "quote": "106 can only be used with a teletypewriter (TTY) or a device for people who are Deaf or hard of hearing." },
+      { "claim": "000 là số chuẩn của Úc, 112 là số quốc tế", "url": "https://www.betterhealth.vic.gov.au/health/ServicesAndSupport/who-to-call-in-a-crisis", "quote": "Triple zero (000) is the Australian standard emergency number, while 112 is an international standard emergency number." },
+      { "claim": "Gọi 000 từ điện thoại có sóng kể cả khi khóa", "url": "https://www.betterhealth.vic.gov.au/health/ServicesAndSupport/who-to-call-in-a-crisis", "quote": "In an emergency, call triple zero (000) on any phone that has reception, even if the phone is locked." },
+      { "claim": "131 444 dành cho việc cảnh sát không khẩn cấp hoặc báo tội phạm đã xảy ra, mở 24 giờ (Victoria)", "url": "https://www.police.vic.gov.au/contact", "quote": "non-urgent police assistance, or to report a crime that has already occurred ... 131 444 (open 24 hours)" },
+      { "claim": "Có thể báo trực tuyến việc không khẩn cấp (Victoria)", "url": "https://www.police.vic.gov.au/contact", "quote": "Report non-urgent crimes and events online anytime, or call 131 444." },
+      { "claim": "healthdirect 1800 022 222, 24 giờ 7 ngày", "url": "https://www.healthdirect.gov.au/contact-us", "quote": "Call healthdirect on 1800 022 222 ... 24 hours a day, 7 days a week" },
+      { "claim": "Ở Victoria đường dây này gọi là NURSE-ON-CALL", "url": "https://www.healthdirect.gov.au/how-healthdirect-can-help-you", "quote": "Call the helpline free* on 1800 022 222 (known as NURSE-ON-CALL in Victoria)." },
+      { "claim": "Poisons Information Centre 13 11 26, 24 giờ 7 ngày", "url": "https://www.betterhealth.vic.gov.au/health/ServicesAndSupport/who-to-call-in-a-crisis", "quote": "Call 13 11 26 ... 24 hours a day, 7 days a week" },
+      { "claim": "Cần thông dịch: gọi TIS National 131 450 và nhờ nối tới helpline", "url": "https://www.healthdirect.gov.au/contact-us", "quote": "call TIS National on 131 450 and ask to be transferred to the helpline" },
+      { "claim": "Gọi TIS 131 450 để báo việc không khẩn cấp với Victoria Police qua thông dịch", "url": "https://www.police.vic.gov.au/police-assistance-line-and-online-reporting", "quote": "You can make a non-urgent report in your language through an interpreter." },
+      { "claim": "Medicare không chi trả xe cứu thương; giá khác nhau theo bang", "url": "https://www.healthdirect.gov.au/about-ambulances-in-australia", "quote": "Medicare does not cover the cost of ambulance services. ... The cost for an ambulance varies between each state and territory." },
+      { "claim": "Đường dây nóng bảo hộ công dân 0466401665", "url": "https://vietnamembassy.org.au/", "quote": "Đường dây nóng Bảo hộ công dân: 0466401665" }
+    ],
+    "unverified": [
+      "Câu 'gọi 112 từ điện thoại cố định không nối tới dịch vụ khẩn cấp và không được ưu tiên hơn 000' chỉ thấy trong kết quả tìm kiếm (trang betterhealth 'calling an ambulance'), chưa tự fetch được trang đó; trang 'who to call in a crisis' đã fetch chỉ nói 112 là số khẩn cấp quốc tế. Ý này đã bỏ khỏi bài.",
+      "Không fetch được triplezero.gov.au / infrastructure.gov.au (chuyển hướng rồi quá thời gian chờ) và ACMA (quá thời gian chờ); các ý về 000/112/106 dựa trên healthdirect và Better Health.",
+      "Police Assistance Line 131 444 ở NSW: trang police.nsw.gov.au trả về 403, chưa xác minh giờ hoạt động và phạm vi ở NSW; bài chỉ ghi giờ 24 giờ cho Victoria.",
+      "TIS National 131 450 hoạt động 24/7: trang tisnational.gov.au đã fetch không ghi giờ; bài không nêu giờ của TIS.",
+      "SES 132 500 và Crime Stoppers 1800 333 000 cho mục này: không đưa vào (Crime Stoppers chỉ được xác minh ở bài lừa đảo)."
+    ]
+  },
+  {
+    "topicSlug": "khan-cap",
+    "slug": "mat-ho-chieu",
+    "title": "Mất hộ chiếu Việt Nam khi đang ở Úc: làm gì trước, làm gì sau",
+    "summaryVi": "Hãy báo cảnh sát để có biên bản hoặc số tham chiếu (reference number), rồi nộp hồ sơ xin cấp lại hộ chiếu tại Đại sứ quán Việt Nam ở Canberra hoặc Tổng lãnh sự quán ở Sydney hay Perth theo đúng khu vực bạn ở. Khi có hộ chiếu mới, báo cho Bộ Nội vụ Úc (Department of Home Affairs) để họ liên kết hộ chiếu mới với thị thực hiện có của bạn.",
+    "keyPoints": [
+      { "text": "Báo mất với cảnh sát: ở Victoria có thể gọi 131 444 hoặc báo trực tuyến và sẽ nhận phiếu Notice to the Victim có số tham chiếu.", "severity": "normal" },
+      { "text": "Hồ sơ cấp lại hộ chiếu bị mất gồm tờ khai trực tuyến trên passport.mofa.gov.vn, ảnh, tờ khai báo mất hộ chiếu, và đơn trình báo mất có xác nhận của cảnh sát (police report) hoặc số tham chiếu do cảnh sát cấp.", "severity": "normal" },
+      { "text": "Nộp hồ sơ đúng khu vực lãnh sự: Đại sứ quán ở Canberra phụ trách ACT, VIC, TAS; Tổng lãnh sự quán Sydney phụ trách NSW, QLD, SA; Tổng lãnh sự quán Perth phụ trách WA, NT.", "severity": "normal" },
+      { "text": "Hộ chiếu đã báo mất với cơ quan đại diện Việt Nam mà sau đó tìm lại được thì không còn giá trị và có thể không nhập cảnh Việt Nam được; hãy gửi lại cho Đại sứ quán để hủy.", "severity": "normal" },
+      { "text": "Có hộ chiếu mới, cập nhật trong ImmiAccount (mục Change of passport details); Bộ Nội vụ liên kết hộ chiếu mới với thị thực hiện có trong khoảng 3 ngày làm việc, còn qua web form New Passport Details là khoảng 14 ngày.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [
+      "Người giữ Electronic Travel Authority (ETA, subclass 601) không chuyển được ETA sang hộ chiếu mới; phải xin ETA mới bằng hộ chiếu mới."
+    ],
+    "foreignerNotes": [
+      "Đại sứ quán Việt Nam tại Úc: 47 Culgoa Circuit, O'Malley ACT 2606 (từ 24/02/2026), điện thoại (02) 6169 4916; tiếp công dân về lãnh sự Thứ Ba, Thứ Tư, Thứ Sáu. Đường dây nóng bảo hộ công dân: 0466 401 665.",
+      "Tổng lãnh sự quán Việt Nam tại Sydney: Suite 205, Level 2, Edgecliff Centre, 203-233 New South Head Road, Edgecliff NSW 2027, điện thoại +61 2 9327 2539 (số theo danh bạ DFAT; website TLSQ ghi số khác, hãy gọi trước khi đến).",
+      "Tổng lãnh sự quán Việt Nam tại Perth: Level 8, 16 St Georges Terrace, Perth WA 6000, điện thoại +61 8 9350 5367.",
+      "Theo quy định, người xin cấp hộ chiếu cần có mặt khi nộp hoặc nhận hồ sơ; nếu ở xa có thể được tạo điều kiện nộp qua bưu điện. Lệ phí trả bằng Money Order hoặc Bank Cheque ghi người thụ hưởng \"The Embassy of Viet Nam\".",
+      "Nếu cơ quan đại diện cần xác minh nhân thân với các cơ quan trong nước, hộ chiếu chỉ được cấp sau khi có ý kiến trả lời, nên hãy chuẩn bị thời gian chờ."
+    ],
+    "sources": [
+      { "title": "Thủ tục cấp, cấp đổi hộ chiếu phổ thông", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "authority": "Đại sứ quán Việt Nam tại Úc", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Đại sứ quán Việt Nam tại Úc - trang chủ", "url": "https://vietnamembassy.org.au/", "authority": "Đại sứ quán Việt Nam tại Úc", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Consulate General of Viet Nam in Perth", "url": "https://vietnam-consulate.org.au/", "authority": "Tổng lãnh sự quán Việt Nam tại Perth", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "You have a new passport", "url": "https://immi.homeaffairs.gov.au/change-in-situation/passport-details", "authority": "Department of Home Affairs", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Online Police Report and Assistance Line", "url": "https://www.police.vic.gov.au/police-assistance-line-and-online-reporting", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Danh bạ cơ quan đại diện Việt Nam tại Úc (dữ liệu ứng dụng, đối chiếu protocol.dfat.gov.au ngày 21/10/2026)", "url": "https://protocol.dfat.gov.au/Public/Consulates/217/State", "authority": "Department of Foreign Affairs and Trade", "kind": "gov", "accessedAt": "2026-10-21" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["mất hộ chiếu", "hộ chiếu", "đại sứ quán", "tổng lãnh sự quán", "ImmiAccount", "thị thực", "báo cảnh sát"],
+    "verification": [
+      { "claim": "Hồ sơ hộ chiếu bị mất cần police report có xác nhận hoặc reference number của cảnh sát", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "Trường hợp hộ chiếu bị mất: nộp đơn trình báo mất hộ chiếu - police report (có xác nhận của cảnh sát) hoặc reference number do cảnh sát cung cấp" },
+      { "claim": "Tờ khai trực tuyến trên passport.mofa.gov.vn và tờ khai báo mất hộ chiếu", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "01 Tờ khai được khai trực tuyến trên website: https://passport.mofa.gov.vn/ ... 01 Tờ khai báo mất hộ chiếu" },
+      { "claim": "Hộ chiếu đã báo mất rồi tìm thấy thì không còn giá trị, cần gửi Đại sứ quán hủy", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "Hộ chiếu bị mất đã thông báo với Cơ quan đại diện Việt Nam ở nước ngoài, sau đó lại tìm thấy, thì không còn giá trị sử dụng" },
+      { "claim": "Cần có mặt khi nộp/nhận; ở xa có thể nộp qua bưu điện", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "người đề nghị cấp hộ chiếu cần có mặt trực tiếp khi nộp hồ sơ hoặc nhận hồ sơ tại Đại sứ quán. Tuy nhiên, công dân có thể được tạo điều kiện nộp qua đường bưu điện" },
+      { "claim": "Lệ phí trả bằng Money Order hoặc Bank Cheque", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "Lệ phí (trả bằng Money Order hoặc Bank Cheque ghi người thụ hưởng là \"The Embassy of Viet Nam\")" },
+      { "claim": "Chỉ cấp hộ chiếu sau khi có ý kiến trả lời của cơ quan liên quan", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "Đại sứ quán chỉ cấp hộ chiếu sau khi có ý kiến trả lời của các cơ quan liên quan." },
+      { "claim": "Khu vực lãnh sự của Đại sứ quán và hai Tổng lãnh sự quán", "url": "https://vietnamembassy.org.au/", "quote": "Khu vực lãnh sự của Đại sứ quán: Thủ đô Ô-xtrây-li-a (ACT), bang Victoria (VIC), bang Tasmania (TAS) - Khu vực lãnh sự của Tổng Lãnh sự quán Việt Nam tại Sydney: bang New South Wales (NSW), bang Queensland (QLD), bang South Australia (SA)" },
+      { "claim": "Địa chỉ mới của Đại sứ quán từ 24/02/2026; ngày tiếp công dân lãnh sự", "url": "https://vietnamembassy.org.au/", "quote": "Từ ngày 24/02/2026, Đại sứ quán chuyển trụ sở sang địa chỉ mới tại 47 Culgoa Circuit, O'Malley, ACT 2606. ... LÃNH SỰ: Thứ Ba, thứ Tư, thứ Sáu" },
+      { "claim": "Điện thoại Đại sứ quán và đường dây nóng bảo hộ công dân", "url": "https://vietnamembassy.org.au/vi/thu-tuc-cap-cap-doi-ho-chieu-pho-thong", "quote": "Điện thoại: (02)61694916 ... Đường dây nóng Bảo hộ công dân: 0466401665" },
+      { "claim": "Địa chỉ Tổng lãnh sự quán Perth", "url": "https://vietnam-consulate.org.au/", "quote": "Add: Level 8, 16 St Georges Terrace, WA 6000 P O Box 3122 East Perth WA 6892" },
+      { "claim": "Báo Home Affairs khi có hộ chiếu mới để liên kết với thị thực hiện có", "url": "https://immi.homeaffairs.gov.au/change-in-situation/passport-details", "quote": "Tell us when you get a new passport so that we can link it to your visa or citizenship application, or your existing visa." },
+      { "claim": "ImmiAccount 3 ngày làm việc; web form 14 ngày", "url": "https://immi.homeaffairs.gov.au/change-in-situation/passport-details", "quote": "ImmiAccount: 3 business days New Passport Details web form: 14 days" },
+      { "claim": "ETA không chuyển được sang hộ chiếu mới", "url": "https://immi.homeaffairs.gov.au/change-in-situation/passport-details", "quote": "Your existing ETA cannot be transferred to a new passport." },
+      { "claim": "Victoria: báo mất đồ qua 131 444/trực tuyến, nhận Notice to the Victim có số tham chiếu", "url": "https://www.police.vic.gov.au/police-assistance-line-and-online-reporting", "quote": "Report any personal lost property. ... a reference number for your insurance purposes" }
+    ],
+    "unverified": [
+      "Địa chỉ và số điện thoại Tổng lãnh sự quán Sydney, số điện thoại Tổng lãnh sự quán Perth: lấy từ backend/scripts/data/auVietnamMissions.js (đối chiếu DFAT ngày 21/10/2026); trong phiên này không fetch được vietnamconsulate.org.au và protocol.dfat.gov.au. Website TLSQ Sydney ghi số 02 9326 1129 / 02 9326 1202 khác DFAT, chưa phân xử.",
+      "Khẳng định 'thị thực không bị mất khi mất hộ chiếu': trang Home Affairs chỉ nói sẽ liên kết hộ chiếu mới với 'your existing visa', không có câu nói thẳng; bài chỉ dùng cách diễn đạt của trang.",
+      "Form 929 cho trường hợp hộ chiếu bị mất/đánh cắp: chỉ thấy trong hướng dẫn ImmiAccount bản năm 2015 (update_passport_details.pdf), trang 929.pdf không tải được; không đưa vào bài.",
+      "Giấy thông hành (travel document) cấp gấp để về nước, thời gian xử lý và mức lệ phí cấp lại hộ chiếu tại Úc: trang Đại sứ quán không nêu cụ thể; không đưa vào bài.",
+      "Thủ tục báo mất với cảnh sát NSW (portal.police.nsw.gov.au): trang police.nsw.gov.au không truy cập được (403/timeout); bài chỉ nêu cách báo ở Victoria.",
+      "Smartraveller: các trang về mất hộ chiếu dành cho công dân Úc ra nước ngoài, không áp dụng cho người Việt ở Úc; không dùng."
+    ]
+  },
+  {
+    "topicSlug": "khan-cap",
+    "slug": "bi-canh-sat-giu-hoi",
+    "title": "Bị cảnh sát Úc giữ hoặc bắt: quyền của bạn",
+    "summaryVi": "Hãy giữ bình tĩnh và hợp tác về mặt cử chỉ. Bạn có quyền im lặng, quyền liên lạc với luật sư và người thân, quyền có thông dịch viên miễn phí nếu không hiểu rõ tiếng Anh, và vì không phải công dân Úc, bạn có thể yêu cầu cảnh sát liên hệ Đại sứ quán Việt Nam. Hãy xin tư vấn pháp lý trước khi trả lời phỏng vấn.",
+    "keyPoints": [
+      { "text": "Ở mọi giai đoạn của quá trình tố tụng bạn có quyền im lặng, nhưng trong một số trường hợp luật bắt buộc bạn cung cấp thông tin như tên và địa chỉ (ví dụ khi đang lái xe), và không cung cấp là phạm tội (NSW).", "severity": "criminal" },
+      { "text": "Cảnh sát có thể bắt bạn khi họ có lý do hợp lý để tin bạn đã vi phạm pháp luật, hoặc khi có lệnh bắt (Victoria).", "severity": "normal" },
+      { "text": "Khi bị tạm giữ ở Victoria, bạn có quyền gọi hai cuộc điện thoại, một cho luật sư và một cho bạn bè hoặc người thân, và cảnh sát phải cho bạn chỗ riêng để gọi.", "severity": "normal" },
+      { "text": "Nếu không hiểu rõ tiếng Anh, bạn có thể yêu cầu thông dịch viên có trình độ, không phải người nhà, và cảnh sát trả tiền thông dịch (Victoria).", "severity": "normal" },
+      { "text": "Nếu bạn không phải công dân hay thường trú nhân Úc, cảnh sát nên mời một viên chức Đại sứ quán của nước bạn đến đồn và cho phép viên chức nói chuyện riêng với bạn (NSW).", "severity": "normal" },
+      { "text": "Ở NSW cảnh sát có trách nhiệm giúp bạn liên lạc luật sư nhưng chỉ phải chờ luật sư hoặc người được gọi tới tối đa hai giờ; LawAccess NSW 1300 888 529 (Thứ Hai đến Thứ Sáu, 9:00-17:00).", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Quy định khác nhau giữa các bang; bài nêu theo hướng dẫn của Legal Aid NSW và Victoria Legal Aid, các bang khác có thể khác.",
+      "Đường dây nóng bảo hộ công dân của Đại sứ quán Việt Nam tại Úc: 0466 401 665. Người thân của bạn cũng có thể gọi số này.",
+      "Ở Victoria cảnh sát chỉ được giữ bạn trong một khoảng thời gian hợp lý trước khi buộc tội; luật không định nghĩa cụ thể bao lâu là hợp lý.",
+      "Bài này là thông tin chung, không thay thế tư vấn pháp lý; hãy liên hệ Legal Aid hoặc luật sư cho trường hợp cụ thể."
+    ],
+    "sources": [
+      { "title": "Police powers: Your rights and responsibilities", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/police-powers", "authority": "Legal Aid NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "BURN: Under 18s and rights in custody", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/burn-a-short-film-and-study-guide/under-18s-and-rights-in-custody", "authority": "Legal Aid NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Being arrested", "url": "https://www.legalaid.vic.gov.au/being-arrested", "authority": "Victoria Legal Aid", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Đại sứ quán Việt Nam tại Úc - trang chủ", "url": "https://vietnamembassy.org.au/", "authority": "Đại sứ quán Việt Nam tại Úc", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "danger",
+    "tags": ["bị bắt", "cảnh sát", "quyền im lặng", "luật sư", "thông dịch", "lãnh sự", "Legal Aid", "tạm giữ"],
+    "verification": [
+      { "claim": "Quyền im lặng ở mọi giai đoạn (NSW)", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/police-powers", "quote": "At every stage of the legal process you have a right to silence." },
+      { "claim": "Không cung cấp thông tin mà luật bắt buộc là phạm tội (NSW)", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/police-powers", "quote": "Generally, it is an offence if you don't provide information you are legally required to." },
+      { "claim": "Quyền liên lạc luật sư và bạn bè/người thân (NSW)", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/police-powers", "quote": "You have a right to contact a lawyer and a friend or family member." },
+      { "claim": "Cảnh sát chỉ phải chờ luật sư hai giờ (NSW)", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/police-powers", "quote": "The police only have to wait for two hours for your lawyer." },
+      { "claim": "LawAccess NSW 1300 888 529, Thứ Hai-Thứ Sáu 9:00-17:00", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/police-powers", "quote": "LawAccess NSW: 1300 888 529 (Monday to Friday, 9am to 5pm)" },
+      { "claim": "Cảnh sát có trách nhiệm giúp liên lạc luật sư (NSW)", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/burn-a-short-film-and-study-guide/under-18s-and-rights-in-custody", "quote": "The Police have a responsibility to help you contact a lawyer." },
+      { "claim": "Không phải công dân/thường trú nhân: cảnh sát nên mời viên chức Đại sứ quán, cho nói chuyện riêng (NSW)", "url": "https://www.legalaid.nsw.gov.au/ways-to-get-help/publications-and-resources/burn-a-short-film-and-study-guide/under-18s-and-rights-in-custody", "quote": "If you are not an Australian citizen or permanent resident, the Police should ask an official from your Embassy ... allow the official to talk with you privately" },
+      { "claim": "Cảnh sát có thể bắt khi có lý do hợp lý tin bạn vi phạm pháp luật hoặc có lệnh bắt (Victoria)", "url": "https://www.legalaid.vic.gov.au/being-arrested", "quote": "reasonably believe you have broken a law" },
+      { "claim": "Hai cuộc gọi: luật sư và bạn bè/người thân, chỗ riêng để gọi (Victoria)", "url": "https://www.legalaid.vic.gov.au/being-arrested", "quote": "You have the right to make two phone calls ... The police must give you a private space to use the phone." },
+      { "claim": "Thông dịch viên có trình độ, cảnh sát trả tiền (Victoria)", "url": "https://www.legalaid.vic.gov.au/being-arrested", "quote": "You do not have to pay for this, the police will pay." },
+      { "claim": "Chỉ được giữ trong thời gian hợp lý trước khi buộc tội (Victoria)", "url": "https://www.legalaid.vic.gov.au/being-arrested", "quote": "The police can only keep you in custody for a reasonable time before they charge you." },
+      { "claim": "Đường dây nóng bảo hộ công dân 0466401665", "url": "https://vietnamembassy.org.au/", "quote": "Đường dây nóng Bảo hộ công dân: 0466401665" }
+    ],
+    "unverified": [
+      "Hướng dẫn DFAT 'Detention or death of a foreign national in Australia' (thực thi Công ước Viên về quan hệ lãnh sự, Điều 36) và quy định riêng với Việt Nam (thông báo cho cơ quan đại diện trong 3 ngày làm việc): chỉ thấy trong kết quả tìm kiếm, dfat.gov.au không truy cập được (timeout) nên không đưa vào bài.",
+      "Câu về Đại sứ quán (NSW) lấy từ trang Legal Aid NSW dành cho người dưới 18 tuổi (BURN); câu này không giới hạn tuổi nhưng người duyệt nên đối chiếu với nguồn cho người lớn trước khi xuất bản.",
+      "Số Legal Help của Victoria Legal Aid (1300 792 387): trang 'Being arrested' không ghi số; không đưa vào bài.",
+      "Quyền có thông dịch viên khi bị giữ ở NSW (Custody Manager sắp xếp): chỉ có trên trang BURN dành cho người dưới 18; bài chỉ nêu quyền thông dịch theo Victoria.",
+      "Smartraveller/DFAT hướng dẫn cho người nước ngoài bị bắt ở Úc: Smartraveller dành cho công dân Úc ra nước ngoài; không dùng."
+    ]
+  },
+  {
+    "topicSlug": "y-te",
+    "slug": "di-kham-benh-o-uc",
+    "title": "Đi khám bệnh ở Úc khi không có Medicare",
+    "summaryVi": "Với việc không khẩn cấp, bác sĩ đa khoa (GP) là nơi nên đến đầu tiên; ngoài giờ có dịch vụ GP ngoài giờ, còn khi không chắc nên làm gì hãy gọi healthdirect 1800 022 222 để nói chuyện với y tá. Khoa cấp cứu (emergency department) dành cho bệnh nặng hoặc chấn thương nghiêm trọng, và trong tình huống khẩn cấp hãy gọi 000. Người Việt Nam không thuộc diện Medicare nên tự trả chi phí, vì vậy cần có bảo hiểm y tế tư nhân.",
+    "keyPoints": [
+      { "text": "Khám không khẩn cấp: đến GP (bác sĩ gia đình); khi đặt lịch hãy hỏi trước phòng khám có bulk bill không, phải trả bao nhiêu.", "severity": "normal" },
+      { "text": "Ngoài giờ: liên hệ dịch vụ GP ngoài giờ (after-hours GP), có nơi khám qua video (telehealth) hoặc đến nhà; phần lớn chuyên gia y tế ngoài giờ có thu phí.", "severity": "normal" },
+      { "text": "healthdirect 1800 022 222 (24/7, ở Victoria gọi là NURSE-ON-CALL): y tá đã đăng ký trả lời, có thể sắp xếp cuộc gọi lại hoặc gọi video với GP; trên web có công cụ kiểm tra triệu chứng (Symptom Checker).", "severity": "normal" },
+      { "text": "Khoa cấp cứu mở 24/7 dành cho người bệnh nặng hoặc chấn thương nghiêm trọng (đau ngực, khó thở, bất tỉnh); người nguy cấp nhất được chữa trước nên bạn có thể phải chờ.", "severity": "normal" },
+      { "text": "Trường hợp y tế khẩn cấp: gọi 000 và yêu cầu xe cứu thương (ambulance).", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [
+      "Úc chỉ có hiệp định chăm sóc y tế tương hỗ (Reciprocal Health Care Agreements) với Bỉ, Phần Lan, Ý, Malta, Hà Lan, New Zealand, Na Uy, Ireland, Slovenia, Thụy Điển và Anh; Việt Nam không nằm trong danh sách này."
+    ],
+    "foreignerNotes": [
+      "Du khách và người tạm trú không thuộc diện Medicare nên mua bảo hiểm y tế tư nhân; bạn kiểm tra hợp đồng bảo hiểm (du lịch, du học) trước khi đi khám.",
+      "Bulk billing nghĩa là bác sĩ chỉ thu đúng mức Medicare chi trả và tự đòi Medicare; điều này dành cho người có Medicare, không có Medicare thì hãy hỏi giá trước.",
+      "Khám miễn phí ở khoa cấp cứu bệnh viện công là dành cho người có thẻ Medicare; ở NSW bệnh viện công không được cấp ngân sách để chữa cho người không có Medicare đến từ nước không có hiệp định tương hỗ.",
+      "Medicare không chi trả xe cứu thương; giá khác nhau giữa các bang.",
+      "Cần thông dịch: gọi TIS National 131 450 rồi nhờ nối tới healthdirect; thông dịch qua điện thoại có thể dùng ngay không cần đặt trước."
+    ],
+    "sources": [
+      { "title": "After-hours health services", "url": "https://www.healthdirect.gov.au/healthcare-and-services/general-health/after-hours-health-services", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Emergency departments", "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/hospital-emergency-departments", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "The role of a GP", "url": "https://www.healthdirect.gov.au/healthcare-and-services/roles-and-specialties/the-role-of-a-gp", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "How healthdirect can help you", "url": "https://www.healthdirect.gov.au/how-healthdirect-can-help-you", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Contact us - healthdirect helpline", "url": "https://www.healthdirect.gov.au/contact-us", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "MBS Note GN.3.9 - Reciprocal Health Care Agreements", "url": "https://www9.health.gov.au/mbs/fullDisplay.cfm?type=note&q=GN.3.9&qt=noteID", "authority": "Department of Health, Disability and Ageing", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "All overseas visitors should have health cover", "url": "https://www.health.nsw.gov.au/news/Pages/20190131_00.aspx", "authority": "NSW Health", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "About ambulances in Australia", "url": "https://www.healthdirect.gov.au/about-ambulances-in-australia", "authority": "healthdirect Australia", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["khám bệnh", "GP", "bác sĩ", "Medicare", "bảo hiểm y tế", "cấp cứu", "healthdirect", "ngoài giờ"],
+    "verification": [
+      { "claim": "GP là người nên gặp cho việc không khẩn cấp", "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/hospital-emergency-departments", "quote": "Your general practitioner (GP) is the best person to see for non-emergency care." },
+      { "claim": "Hỏi phòng khám có bulk bill không, trả bao nhiêu", "url": "https://www.healthdirect.gov.au/healthcare-and-services/roles-and-specialties/the-role-of-a-gp", "quote": "Does the practice bulk bill, or will I have to pay a fee? If so, how much?" },
+      { "claim": "Định nghĩa bulk billing", "url": "https://www.healthdirect.gov.au/healthcare-and-services/roles-and-specialties/the-role-of-a-gp", "quote": "If your GP bulk bills, this means they only charge the amount that Medicare covers." },
+      { "claim": "Thông dịch qua điện thoại không cần đặt trước, TIS 131 450", "url": "https://www.healthdirect.gov.au/healthcare-and-services/roles-and-specialties/the-role-of-a-gp", "quote": "Interpreters are also available by phone without booking in advance." },
+      { "claim": "Liên hệ dịch vụ GP ngoài giờ khi phòng khám đóng cửa", "url": "https://www.healthdirect.gov.au/healthcare-and-services/general-health/after-hours-health-services", "quote": "If your doctor is closed, contact an after-hours GP service and book an appointment directly with them." },
+      { "claim": "GP ngoài giờ có telehealth và khám tại nhà", "url": "https://www.healthdirect.gov.au/healthcare-and-services/general-health/after-hours-health-services", "quote": "offer telehealth appointments and in-home visits" },
+      { "claim": "Phần lớn chuyên gia y tế ngoài giờ thu phí", "url": "https://www.healthdirect.gov.au/healthcare-and-services/general-health/after-hours-health-services", "quote": "Most after-hours health professionals will charge a fee." },
+      { "claim": "Khoa cấp cứu mở 24/7", "url": "https://www.healthdirect.gov.au/healthcare-and-services/general-health/after-hours-health-services", "quote": "Emergency departments are open 24 hours a day, 7 days a week." },
+      { "claim": "Y tá đăng ký trả lời cuộc gọi healthdirect", "url": "https://www.healthdirect.gov.au/healthcare-and-services/general-health/after-hours-health-services", "quote": "A registered nurse will answer your call and talk to you about your symptoms." },
+      { "claim": "healthdirect 1800 022 222, NURSE-ON-CALL ở Victoria, y tá 24/7", "url": "https://www.healthdirect.gov.au/how-healthdirect-can-help-you", "quote": "Our registered nurses are available 24 hours a day, 7 days a week" },
+      { "claim": "Có thể được gọi lại hoặc gọi video với GP", "url": "https://www.healthdirect.gov.au/how-healthdirect-can-help-you", "quote": "They may offer you a call back or a video call from a GP." },
+      { "claim": "Symptom Checker hướng dẫn qua các câu hỏi", "url": "https://www.healthdirect.gov.au/how-healthdirect-can-help-you", "quote": "It will guide you through a set of easy questions to help you understand your symptoms" },
+      { "claim": "Đến cấp cứu khi bệnh nặng/chấn thương nghiêm trọng", "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/hospital-emergency-departments", "quote": "You should visit the ED if you or your child are seriously ill or injured." },
+      { "claim": "Phân loại: người cần nhất được chữa trước", "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/hospital-emergency-departments", "quote": "EDs use a triage system. This ensures the people who need help most urgently are treated first." },
+      { "claim": "Cấp cứu y tế: gọi 000, yêu cầu ambulance", "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/hospital-emergency-departments", "quote": "In any emergency medical situation, call triple zero (000) and ask for an ambulance." },
+      { "claim": "Khoa cấp cứu bệnh viện công miễn phí cho người có Medicare", "url": "https://www.healthdirect.gov.au/healthcare-and-services/emergency-and-urgent-care/hospital-emergency-departments", "quote": "Visits to public hospital EDs are free for Medicare card holders." },
+      { "claim": "Danh sách nước có hiệp định tương hỗ; người khác không thuộc diện Medicare, nên mua bảo hiểm tư", "url": "https://www9.health.gov.au/mbs/fullDisplay.cfm?type=note&q=GN.3.9&qt=noteID", "quote": "Other visitors and temporary residents are not eligible for Medicare and should arrange private health insurance cover." },
+      { "claim": "Bệnh viện công NSW không được cấp ngân sách chữa cho người không có Medicare từ nước không có hiệp định", "url": "https://www.health.nsw.gov.au/news/Pages/20190131_00.aspx", "quote": "NSW public hospitals are not funded to treat Medicare-ineligible patients from countries not covered by reciprocal agreements." },
+      { "claim": "Medicare không chi trả xe cứu thương", "url": "https://www.healthdirect.gov.au/about-ambulances-in-australia", "quote": "Medicare does not cover the cost of ambulance services." }
+    ],
+    "unverified": [
+      "Mức phí cụ thể khi khám GP, khám cấp cứu bệnh viện công hoặc phòng khám Medicare Urgent Care Clinic cho người không có Medicare: không có trang chính thức nào đã fetch nêu con số; không đưa vào bài.",
+      "Medicare Urgent Care Clinics có nhận người không có Medicare và tính phí ra sao: trang healthdirect chỉ nói 'bulk-billed', không đưa vào bài.",
+      "Điều kiện bảo hiểm y tế bắt buộc theo thị thực (condition 8501, OSHC cho du học sinh, OVHC): trang Home Affairs 'adequate health insurance' trả về 403; không đưa vào bài.",
+      "Số liệu NSW Health (16.000 bệnh nhân/năm, 100 triệu AUD hóa đơn, bảo hiểm khoảng 120 AUD/tháng) là thông cáo năm 2019; không đưa vào bài vì đã cũ.",
+      "Danh sách hiệp định tương hỗ lấy từ ghi chú MBS 'As at 1 February 2024'; trang Services Australia hiện hành không fetch được (timeout), người duyệt nên kiểm tra lại."
+    ]
+  },
+  {
+    "topicSlug": "nha-o",
+    "slug": "tien-coc-thue-nha",
+    "title": "Tiền cọc thuê nhà (bond) ở NSW và Victoria: nộp ở đâu, lấy lại thế nào",
+    "summaryVi": "Ở NSW và Victoria, tiền cọc thuê nhà (rental bond) không nằm trong túi chủ nhà mà phải được nộp vào cơ quan nhà nước: NSW Fair Trading (qua Rental Bonds Online) hoặc Residential Tenancies Bond Authority (RTBA) ở Victoria. Khi hết hợp đồng, bạn có thể tự yêu cầu hoàn cọc; nếu chủ nhà không đồng ý, tranh chấp được đưa ra NCAT (NSW) hoặc RDRV/VCAT (Victoria). Các bang khác có thể có quy định khác.",
+    "keyPoints": [
+      { "text": "NSW: mỗi hợp đồng chỉ được thu 1 khoản cọc, tối đa 4 tuần tiền thuê; chủ nhà tự quản lý phải nộp vào NSW Fair Trading trong 10 ngày làm việc, hoặc bạn trả thẳng cho Fair Trading qua Rental Bonds Online.", "severity": "normal" },
+      { "text": "Victoria: trong đa số trường hợp tiền cọc không được quá một tháng tiền thuê (trừ khi tiền thuê trên 900 AUD/tuần hoặc VCAT cho phép); RTBA gửi biên nhận cho mọi người thuê trong khoảng 7 ngày, quá 15 ngày chưa nhận thì gọi RTBA 1300 137 164.", "severity": "normal" },
+      { "text": "NSW: khi trả nhà, bạn có thể tự yêu cầu hoàn cọc trên Rental Bonds Online mà không cần chờ chủ nhà; chủ nhà hoặc đại lý có tối đa 14 ngày để chấp nhận, và tiền về khoảng hai ngày làm việc sau khi được chấp nhận.", "severity": "normal" },
+      { "text": "Victoria: người thuê có tên trên khoản cọc có thể tự yêu cầu hoàn cọc sau khi hợp đồng kết thúc; bên kia có 14 ngày để phản đối bằng cách nộp đơn lên VCAT hoặc RDRV, nếu không RTBA sẽ trả cọc theo yêu cầu.", "severity": "normal" },
+      { "text": "Chủ nhà ở Victoria muốn trừ cọc phải đưa bằng chứng (hóa đơn, biên lai, báo giá, ảnh) cho bạn ít nhất 3 ngày làm việc trước khi nộp yêu cầu, và bằng chứng không được mâu thuẫn với biên bản tình trạng nhà (condition report).", "severity": "normal" },
+      { "text": "Chủ nhà không đồng ý trả cọc: ở NSW đưa tranh chấp ra NSW Civil and Administrative Tribunal (NCAT), ở Victoria nhờ Rental Dispute Resolution Victoria (RDRV) và nếu cần thì xin VCAT ra quyết định.", "severity": "normal" }
+    ],
+    "penalties": [
+      { "behavior": "Chủ nhà ở NSW bắt buộc người thuê phải dùng Rental Bonds Online", "amountText": "có thể bị phạt 2.200 AUD", "currency": "AUD", "note": "nguồn: nsw.gov.au, Rental Bonds Online for self-managing landlords" }
+    ],
+    "exceptions": [
+      "NSW: nếu tiền cọc trả cho đại lý (agent), đại lý phải nộp cho NSW Fair Trading trong 10 ngày làm việc sau cuối tháng nhận tiền cọc.",
+      "NSW: khoản cọc nộp bằng giấy thì yêu cầu hoàn bằng mẫu 'Claim for Bond Refund' của NSW Fair Trading."
+    ],
+    "foreignerNotes": [
+      "Ở Victoria bạn có thể yêu cầu trả tiền cọc trực tiếp cho RTBA; ở NSW bạn có thể trả thẳng cho NSW Fair Trading qua Rental Bonds Online. Cách này giúp tránh việc tiền cọc bị giữ ngoài hệ thống.",
+      "Lưu biên nhận, số khoản cọc (bond number), hợp đồng và ảnh chụp tình trạng nhà lúc nhận và lúc trả; đây là bằng chứng khi có tranh chấp.",
+      "NSW: Tenants' Union of NSW tư vấn pháp lý cho người thuê; nên hỏi Tenants Advice and Advocacy Service trước phiên NCAT.",
+      "Victoria: nếu đã có đơn VCAT liên quan đến căn nhà, yêu cầu hoàn cọc sẽ bị hủy trong lúc chờ kết quả."
+    ],
+    "sources": [
+      { "title": "Getting your bond back at the end of a tenancy", "url": "https://www.nsw.gov.au/housing-and-construction/renting-a-place-to-live/getting-your-bond-back", "authority": "NSW Fair Trading", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Rental Bonds Online for self-managing landlords", "url": "https://www.nsw.gov.au/housing-and-construction/landlords/rental-bonds-online-for-landlords", "authority": "NSW Fair Trading", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Landlord Information Statement (March 2020)", "url": "https://www.nsw.gov.au/sites/default/files/noindex/2024-01/landlord-information-statement.pdf", "authority": "NSW Fair Trading", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Tenancy for renters", "url": "https://www.legalaid.nsw.gov.au/my-problem-is-about/my-housing/tenancy", "authority": "Legal Aid NSW", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Bond amounts and paying a bond", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/bond-amounts-and-paying-a-bond", "authority": "Consumer Affairs Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Lodging the bond with the RTBA", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/lodging-the-bond-with-the-rtba", "authority": "Consumer Affairs Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Bond claims and refunds", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/bond-claims-and-refunds", "authority": "Consumer Affairs Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Resolving bond issues and disputes", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/resolving-bond-disputes", "authority": "Consumer Affairs Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "How to get your bond back in Victoria", "url": "https://www.rdrv.vic.gov.au/how-get-your-bond-back-victoria", "authority": "Rental Dispute Resolution Victoria", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["tiền cọc", "bond", "thuê nhà", "RTBA", "Rental Bonds Online", "NCAT", "VCAT", "NSW", "Victoria"],
+    "verification": [
+      { "claim": "NSW: chỉ 1 khoản cọc, tối đa 4 tuần tiền thuê", "url": "https://www.nsw.gov.au/sites/default/files/noindex/2024-01/landlord-information-statement.pdf", "quote": "Only 1 bond (maximum 4 weeks rent) can be taken for a tenancy agreement." },
+      { "claim": "NSW: chủ nhà nộp cọc vào Fair Trading trong 10 ngày làm việc; đại lý trong 10 ngày làm việc sau cuối tháng", "url": "https://www.nsw.gov.au/sites/default/files/noindex/2024-01/landlord-information-statement.pdf", "quote": "You must deposit any bond your tenant pays you with NSW Fair Trading within 10 working days." },
+      { "claim": "NSW: chủ nhà hoặc đại lý phải nộp cọc vào NSW Fair Trading", "url": "https://www.legalaid.nsw.gov.au/my-problem-is-about/my-housing/tenancy", "quote": "Your landlord or agent must lodge the bond with NSW Fair Trading." },
+      { "claim": "NSW: người thuê trả cọc trực tiếp cho NSW Fair Trading qua RBO", "url": "https://www.nsw.gov.au/housing-and-construction/landlords/rental-bonds-online-for-landlords", "quote": "Tenant creates a user account and pays the bond directly to NSW Fair Trading." },
+      { "claim": "NSW: phạt 2.200 AUD nếu bắt buộc dùng RBO", "url": "https://www.nsw.gov.au/housing-and-construction/landlords/rental-bonds-online-for-landlords", "quote": "Landlords cannot require a tenant to use Rental Bonds Online. Landlords who do can be fined $2,200." },
+      { "claim": "NSW: không cần chờ chủ nhà, chủ nhà có tối đa 14 ngày", "url": "https://www.nsw.gov.au/housing-and-construction/renting-a-place-to-live/getting-your-bond-back", "quote": "You don't need to wait for the landlord to release the bond. ... Your landlord or agent has up to 14 days to accept your claim." },
+      { "claim": "NSW: tiền về hai ngày làm việc sau khi được chấp nhận", "url": "https://www.nsw.gov.au/housing-and-construction/renting-a-place-to-live/getting-your-bond-back", "quote": "you should get your bond back in two business days after your claim is accepted by your landlord or agent" },
+      { "claim": "NSW: tranh chấp đưa ra NCAT; Tenants' Union tư vấn", "url": "https://www.nsw.gov.au/housing-and-construction/renting-a-place-to-live/getting-your-bond-back", "quote": "take the dispute to the NSW Civil and Administrative Tribunal (NCAT)" },
+      { "claim": "NSW: cọc giấy dùng mẫu Claim for Bond Refund", "url": "https://www.nsw.gov.au/housing-and-construction/renting-a-place-to-live/getting-your-bond-back", "quote": "you can fill in a 'Claim for Bond Refund' paper form from NSW Fair Trading" },
+      { "claim": "VIC: cọc không quá một tháng tiền thuê trong đa số trường hợp; ngoại lệ trên 900 AUD/tuần hoặc VCAT", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/bond-amounts-and-paying-a-bond", "quote": "In most cases, a bond can't be more than one month's rent." },
+      { "claim": "VIC: biên nhận trong 7 ngày; quá 15 ngày gọi RTBA 1300 137 164", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/lodging-the-bond-with-the-rtba", "quote": "You should receive your bond receipts within 7 days from when the bond is lodged. If you do not receive the receipt within 15 days, call the RTBA on 1300 137 164." },
+      { "claim": "VIC: người thuê có thể trả cọc trực tiếp cho RTBA", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/lodging-the-bond-with-the-rtba", "quote": "Renters have the option to pay their bond directly to the RTBA during a bond lodgement." },
+      { "claim": "VIC: người thuê có tên trên cọc tự yêu cầu hoàn cọc", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/bond-claims-and-refunds", "quote": "Any renter with their name on the bond can start the bond claim themselves after the agreement ends." },
+      { "claim": "VIC: 14 ngày để phản đối bằng đơn lên VCAT hoặc RDRV", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/bond-claims-and-refunds", "quote": "provide other parties with 14 days to contest the claim by making an application to VCAT or RDRV" },
+      { "claim": "VIC: bằng chứng trừ cọc, 3 ngày làm việc trước khi nộp, không mâu thuẫn condition report", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/resolving-bond-disputes", "quote": "they must give the renter evidence that supports the claim at least 3 business days before they lodge it. ... The evidence must not contradict the condition report." },
+      { "claim": "VIC: RDRV hỗ trợ, nếu cần thì xin VCAT quyết định", "url": "https://www.consumer.vic.gov.au/housing/renting/rent-bond-bills-and-condition-reports/bond/resolving-bond-disputes", "quote": "you or the rental provider can apply to Rental Dispute Resolution Victoria (RDRV) for help." },
+      { "claim": "VIC: có đơn VCAT đang chờ thì yêu cầu hoàn cọc bị hủy", "url": "https://www.rdrv.vic.gov.au/how-get-your-bond-back-victoria", "quote": "other renters or the rental provider have 14 days to contest the claim and show evidence of VCAT proceedings, or the RTBA will pay the claim" }
+    ],
+    "unverified": [
+      "Thời hạn chủ nhà ở Victoria phải nộp cọc vào RTBA: trang CAV 'Lodging the bond with the RTBA' (cập nhật 28/09/2026) ghi 'within 14 days', còn kết quả tìm kiếm trích Renters Guide ghi '10 business days'; hai nguồn mâu thuẫn nên bài không nêu số ngày.",
+      "Mức trần 4 tuần tiền thuê và hạn 10 ngày làm việc ở NSW lấy từ Landlord Information Statement bản tháng 3/2020; trang nsw.gov.au 'Paying a rental bond' đã bị gỡ (trang báo 'no longer available'). Người duyệt nên đối chiếu với trang NSW Fair Trading hiện hành.",
+      "Thời hạn nộp đơn lên NCAT khi chủ nhà đòi trừ cọc và lệ phí NCAT: trang ncat.nsw.gov.au trả về 403; không đưa vào bài.",
+      "RDRV có miễn phí hay không: trang RDRV chỉ ghi 'fast, cheap, fair', không nói miễn phí; không đưa vào bài.",
+      "Quy định mới từ 13/10/2026 về bằng chứng khi chủ nhà đòi tiền cọc qua VCAT: chỉ thấy trong kết quả tìm kiếm, trang RDRV đã fetch không có; không đưa vào bài.",
+      "Thời gian hoàn cọc ở Victoria (1 ngày làm việc nếu chủ nhà nộp yêu cầu, 15-20 ngày làm việc nếu người thuê tự nộp) có trên trang RDRV nhưng bài không nêu để tránh nhầm lẫn; có thể bổ sung sau khi duyệt."
+    ]
+  },
+  {
+    "topicSlug": "khan-cap",
+    "slug": "lua-dao-va-mat-cap",
+    "title": "Bị lừa đảo hoặc mất cắp ở Úc: báo ở đâu, làm gì ngay",
+    "summaryVi": "Nếu đã chuyển tiền cho kẻ lừa đảo, việc đầu tiên là gọi ngay ngân hàng để chặn giao dịch, rồi báo qua ReportCyber (lừa đảo trực tuyến) hoặc cảnh sát (mất cắp đồ vật), và gọi IDCARE 1800 595 160 miễn phí để được hỗ trợ khi lộ giấy tờ tùy thân. Hãy cảnh giác với tin rao cho thuê nhà ảo và các cuộc gọi mạo danh cơ quan nhà nước, cảnh sát hay Đại sứ quán đòi tiền.",
+    "keyPoints": [
+      { "text": "Đã mất tiền: gọi ngay ngân hàng hoặc tổ chức tài chính và yêu cầu dừng mọi giao dịch tiếp theo, rồi đổi mật khẩu ngân hàng, email và mua sắm trực tuyến; ReportCyber không thu hồi được tiền cho bạn.", "severity": "normal" },
+      { "text": "Lừa đảo trực tuyến báo qua ReportCyber (công cụ báo tội phạm mạng của Chính phủ Úc) và giữ số tham chiếu; bị lấy cắp thẻ ngân hàng hoặc thiết bị thì báo đồn cảnh sát gần nhất hoặc báo trực tuyến.", "severity": "normal" },
+      { "text": "IDCARE (1800 595 160) là dịch vụ miễn phí của Úc và New Zealand giúp bạn hạn chế thiệt hại và phục hồi sau khi bị lừa; Scamwatch là nơi báo cáo để theo dõi xu hướng lừa đảo.", "severity": "normal" },
+      { "text": "Lừa đảo thuê nhà: kẻ gian đăng nhà trên các trang bất động sản lớn rồi đòi trước một tháng tiền cọc và tiền thuê, viện cớ không cho xem nhà; tránh chuyển tiền qua dịch vụ chuyển tiền hoặc chuyển thẳng vào tài khoản ngân hàng.", "severity": "normal" },
+      { "text": "Ai gọi tự xưng là quan chức nhà nước và nói bạn đang gặp rắc rối pháp lý, đe dọa bắt giữ hay trục xuất, hãy cúp máy và tự liên hệ cơ quan đó bằng số tự tra; Đại sứ quán, Tổng lãnh sự quán Việt Nam không yêu cầu đọc thông tin cá nhân hay chuyển tiền qua điện thoại.", "severity": "normal" },
+      { "text": "Chỉ người đăng ký với OMARA (migration agent) hoặc luật sư Úc mới được nhận tiền để hỗ trợ thủ tục di trú; dính vào gian lận qua 'cò' có thể bị hủy thị thực, bị từ chối nhập cảnh.", "severity": "criminal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": [
+      "Victoria Police khẳng định báo cảnh sát về lừa đảo sẽ không ảnh hưởng đến thị thực của bạn; có thể báo ẩn danh qua Crime Stoppers 1800 333 000.",
+      "Năm 2025 Đại sứ quán Việt Nam cảnh báo kẻ gian giả danh cán bộ Đại sứ quán gọi điện, nói có công văn của Tòa án, Công an, Hải quan rồi yêu cầu cung cấp thông tin hộ chiếu, thẻ tín dụng hoặc chuyển tiền; công dân có thể báo cảnh sát, Scamwatch và đường dây nóng bảo hộ công dân 0466 401 665.",
+      "Ở Victoria bạn có thể yêu cầu trả tiền cọc thuê nhà trực tiếp cho RTBA và nên xác minh người cho thuê với công ty bất động sản; lưu ý kẻ gian có thể dẫn bạn xem một căn nhà mà họ không có quyền cho thuê.",
+      "Nếu ai đó đang gặp nguy hiểm tính mạng, gọi 000 trước."
+    ],
+    "sources": [
+      { "title": "Report cybercrime, scams and online abuse", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Fake ad and classifieds scams", "url": "https://www.police.vic.gov.au/fake-ad-and-classifieds-scams", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Fake authority scams targeting the Chinese community", "url": "https://www.police.vic.gov.au/scams-targeting-mandarin-speaking-community", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Rental scam", "url": "https://www.consumer.vic.gov.au/consumers-and-businesses/scams/consumer-scams/rental-scam", "authority": "Consumer Affairs Victoria", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Visa scams", "url": "https://immi.homeaffairs.gov.au/help-support/visa-scams", "authority": "Department of Home Affairs", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Cybercrime", "url": "https://www.afp.gov.au/crimes/cybercrime", "authority": "Australian Federal Police", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Đại sứ quán Việt Nam tại Úc - trang chủ (cảnh báo lừa đảo)", "url": "https://vietnamembassy.org.au/", "authority": "Đại sứ quán Việt Nam tại Úc", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Online Police Report and Assistance Line", "url": "https://www.police.vic.gov.au/police-assistance-line-and-online-reporting", "authority": "Victoria Police", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["lừa đảo", "mất cắp", "ReportCyber", "Scamwatch", "IDCARE", "ngân hàng", "lừa đảo thuê nhà", "mạo danh"],
+    "verification": [
+      { "claim": "ReportCyber là công cụ báo tội phạm mạng của Chính phủ Úc", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "ReportCyber is the Australian Government's cybercrime reporting tool." },
+      { "claim": "ReportCyber không thu hồi được tiền; gọi ngân hàng ngay", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "ReportCyber are not able to recover any funds you have lost as a result of cybercrime." },
+      { "claim": "IDCARE miễn phí, 1800 595 160", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "This free Australian and New Zealand service can help you limit the damage and recover from the scam." },
+      { "claim": "Scamwatch thuộc National Anti-Scam Centre", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "Scamwatch is a platform set up by the National Anti-Scam Centre to support awareness and reporting of scams." },
+      { "claim": "Mất cắp thẻ/thiết bị báo đồn cảnh sát hoặc trực tuyến", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "Report this to the nearest police station or via online reporting." },
+      { "claim": "Nhận số tham chiếu ReportCyber", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "You will receive a unique report reference number as a proof of your ReportCyber report." },
+      { "claim": "Nguy hiểm tính mạng gọi 000 trước", "url": "https://www.police.vic.gov.au/report-cybercrime-scams-online-abuse", "quote": "If there is an immediate threat to life or risk of harm, always call Triple Zero (000) first." },
+      { "claim": "Gọi ngân hàng dừng giao dịch; đổi mật khẩu", "url": "https://www.police.vic.gov.au/fake-ad-and-classifieds-scams", "quote": "call your bank or financial institution immediately and ask them to stop any further transactions" },
+      { "claim": "Lừa đảo thuê nhà: đăng trên trang bất động sản lớn, đòi một tháng cọc và tiền thuê", "url": "https://www.consumer.vic.gov.au/consumers-and-businesses/scams/consumer-scams/rental-scam", "quote": "Scammers advertise rental properties on well-known property websites. ... asking for a month's bond and rent to secure the property." },
+      { "claim": "Dấu hiệu: viện cớ không cho xem nhà; tránh chuyển tiền qua dịch vụ chuyển tiền hoặc vào tài khoản", "url": "https://www.consumer.vic.gov.au/consumers-and-businesses/scams/consumer-scams/rental-scam", "quote": "Avoid paying via money transfer services, or making a payment directly into a bank account" },
+      { "claim": "Có thể yêu cầu trả cọc trực tiếp cho RTBA; xác minh với công ty", "url": "https://www.consumer.vic.gov.au/consumers-and-businesses/scams/consumer-scams/rental-scam", "quote": "you can request to pay directly to the Residential Tenancies Bond Authority (RTBA)" },
+      { "claim": "Kẻ gian có thể dẫn xem nhà mà không có quyền cho thuê", "url": "https://www.consumer.vic.gov.au/consumers-and-businesses/scams/consumer-scams/rental-scam", "quote": "might also show you through a property, when they have no right to rent it to you" },
+      { "claim": "Cúp máy khi người tự xưng quan chức nói bạn gặp rắc rối; tự liên hệ cơ quan", "url": "https://www.police.vic.gov.au/scams-targeting-mandarin-speaking-community", "quote": "Hang up if someone claiming to be a government official rings you and says that you are in trouble." },
+      { "claim": "Báo cảnh sát không ảnh hưởng thị thực; Crime Stoppers 1800 333 000", "url": "https://www.police.vic.gov.au/scams-targeting-mandarin-speaking-community", "quote": "This will not impact your visa." },
+      { "claim": "Chỉ migration agent đăng ký OMARA hoặc luật sư Úc được nhận tiền hỗ trợ di trú; rủi ro hủy thị thực", "url": "https://immi.homeaffairs.gov.au/help-support/visa-scams", "quote": "it is illegal for a third party to provide paid immigration assistance or help unless they are a registered migration agent ... or an Australian legal practitioner. Penalties apply." },
+      { "claim": "Hậu quả gian lận di trú qua cò", "url": "https://immi.homeaffairs.gov.au/help-support/visa-scams", "quote": "you could risk losing money, having your visa cancelled, be refused entry to Australia" },
+      { "claim": "Cảnh báo giả danh Đại sứ quán; Đại sứ quán không có yêu cầu này", "url": "https://vietnamembassy.org.au/", "quote": "có kẻ xấu gọi điện giả mạo là cán bộ Đại sứ quán ... Đại sứ quán, Tổng Lãnh sự quán không có yêu cầu này." },
+      { "claim": "Báo lừa đảo trực tuyến qua ReportCyber (AFP)", "url": "https://www.afp.gov.au/crimes/cybercrime", "quote": "If you're a victim of cybercrime, report it at" },
+      { "claim": "Victoria: báo trộm cắp đồ vật qua 131 444 hoặc trực tuyến", "url": "https://www.police.vic.gov.au/police-assistance-line-and-online-reporting", "quote": "Report stolen property, such as bicycles, laptops or work tools, including attempts (excluding retail theft)." }
+    ],
+    "unverified": [
+      "Các trang scamwatch.gov.au (what to do if scammed, rental/buying and selling scams, threat scams, report a scam) trả về 403 và moneysmart.gov.au, cyber.gov.au không truy cập được; thông tin về Scamwatch/ReportCyber/IDCARE lấy qua trang Victoria Police.",
+      "Câu 'Home Affairs không bao giờ yêu cầu trả tiền phạt qua điện thoại' và cảnh báo của Bộ trưởng Nội vụ về cuộc gọi mạo danh: chỉ thấy trong kết quả tìm kiếm, không fetch được; không đưa vào bài.",
+      "Hướng dẫn chống lừa đảo thuê nhà của NSW Police (thuê qua đại lý có giấy phép, kiểm tra địa chỉ): police.nsw.gov.au không truy cập được; không đưa vào bài.",
+      "Trang Victoria Police về mạo danh quan chức viết cho cộng đồng nói tiếng Hoa; bài chỉ dùng phần lời khuyên chung (cúp máy, tự liên hệ cơ quan, báo cảnh sát không ảnh hưởng thị thực).",
+      "Đường dây báo cáo Australia's Border Watch (đường link/số điện thoại cụ thể): trang Home Affairs có nhắc tên nhưng không ghi số; không đưa số vào bài."
+    ]
+  }
+]
