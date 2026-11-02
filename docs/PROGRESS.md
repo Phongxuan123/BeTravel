@@ -1,5 +1,15 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- giai doan 1 (ke hoach) -- 02/11/2026
+
+Nguoi dung chot 56/58 cau trac nghiem (`docs/ai-plan.html`, khong commit). Ban chot:
+`docs/AI_V2_PLAN.md`. CLAUDE.md doi: bo "tu choi khi khong du du lieu", thay bang tang nguon co
+nhan (kho --> tra web --> kien thuc chung); disclaimer mot lan tren man chat. Them bo 50 cau
+`backend/eval/au-v2/` + bang cham, script `npm run purge-legacy-chat` (mac dinh chi dem).
+Du lieu chat ban 1 tren Atlas da xoa (nguoi dung tu chay --confirm, 02/11/2026).
+Dang vuong: nha cung cap mo hinh (G2, nguoi dung cung cap); mau thuan F4 voi F5/H1 (nut danh gia).
+Tiep theo: giai doan 2 -- soan nhap 20-30 bai cam nang Uc tu nguon gov.au that.
+
 ## Chi nham Uc, an Han Quoc — 02/11/2026
 
 Them trang thai quoc gia `hidden` (Admin Portal: "An hoan toan"). Quoc gia hidden bien mat khoi moi duong
