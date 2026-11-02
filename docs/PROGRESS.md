@@ -1,5 +1,22 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- tim bai theo muc luc + so mu lan 1 -- 02/11/2026 (toi)
+
+- Tim bai khong embedding: buoc phan loai nhan muc luc bai published + isCurrent va chon toi da 3
+  slug theo nghia (`rag/assistant/articleIndex.js`, `retrieveArticlesBySlug`), chay song song tim
+  theo tu khoa. Vape, moc tui nay ra "Nguon chinh thuc". Khong them tu dong nghia vao bai (phai sua
+  du lieu noi dung).
+- Bo 50 cau voi gpt-6-luna, tra web tat: dung loai 50/50, tu choi sai 0, 0 vi pham hau kiem, nguon
+  chinh thuc 34 / kien thuc chung 9 / khong can nguon 7, p50 8,7 s, p90 13,7 s, ~3,5 d/cau.
+- So mu (F1, tam thoi bang 10 agent dong vai 10 kieu nguoi dung, doi thu gpt-6.1-sol hoi tran,
+  thu tu A/B ngau nhien rieng moi giam khao): vong 1 thang 34% / thang+hoa 37%; sua loi tu nhan xet
+  (JSON hong -> cau rong Q22, sai ngon ngu Q41, "moi bang co the khac" thua, suy dien "duoc mang"
+  Q03) --> vong 2 thang 41% / thang+hoa 44%. **Chua dat nguong 60% (F2).** Thua chu yeu vi qua
+  ngan/thieu chi tiet (gioi han 80 tu, C2) va khong duoc neu con so khi khong co nguon (B5, vd nhiet
+  do, thoi han visa 3/6/12 thang). Doi thu sai nghiem trong 2/2 cau khan cap (dua so 115 cua VN).
+- Xac minh that (Atlas + APIZ): admin 403 voi user thuong, tat cong tac --> /api/assistant 502 ngay,
+  bat lai chay, nhat ky an email/SDT, metrics co chi phi. Ban ghi thu da don.
+
 ## Tro ly AI ban 2 -- giai doan 6 (Admin) -- 02/11/2026
 
 Trang Admin "Tro ly AI" (`/assistant`, contracts muc 26): cong tac tat nhanh luu DB (`appsettings`,
