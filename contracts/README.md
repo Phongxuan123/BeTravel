@@ -849,7 +849,7 @@ dung de dinh huong ban do, khong thay the diem ho tro da xac minh. Cong khai, ra
 `GET /support-locations/external` (muc 14b): Overpass nay co may chu du phong (`PLACES_OVERPASS_FALLBACK_URLS`); neu TAT CA that
 bai thi dung Nominatim (khong co so dien thoai, gio mo cua) thay vi tra `UPSTREAM_ERROR`.
 
-## 21. ENDPOINT RISK ZONES -- `/api/risk-zones`, `/api/admin/risk-zones/*`
+## 26. ENDPOINT RISK ZONES -- `/api/risk-zones`, `/api/admin/risk-zones/*`
 
 ```
 GET /risk-zones?country=&category=      cong khai
@@ -863,3 +863,37 @@ GET/POST/PATCH/DELETE /admin/risk-zones[/:id]   role admin
 Moi item: `{ _id, countryCode, category, name, description, severity, center{Point,[lng,lat]}, radiusM, tips[], source{name,url,period}, status }`.
 Seed: `npm run seed:au-risk-zones` (tat ca o `draft`, nguon can doi chieu truoc khi publish).
 
+## 25. TRO LY AI BAN 2 — `/api/assistant/*` (can dang nhap, 02/11/2026)
+
+Quyet dinh san pham: `docs/AI_V2_PLAN.md`. Moi endpoint can `Authorization`. Hai endpoint goi mo
+hinh (`POST /messages`, `POST /messages/:id/regenerate`) bi tru 1 luot quota/ngay (`QUOTA_EXCEEDED`)
+va co rate limit burst (`RATE_LIMITED`). Cong tac tat (`ASSISTANT_ENABLED=false`) --> `UPSTREAM_ERROR`.
+
+```
+POST   /assistant/messages                 { countryCode, message (1-1000), conversationId?,
+                                              trip?: { city?, startDate?, endDate? } }
+       200 { conversation, userMessage, message }   400 quoc gia khong active   404 conversationId la
+POST   /assistant/messages/:id/regenerate  { detailed?: boolean }  200 { message } (cung id, ghi de)
+GET    /assistant/conversations            200 [conversation]  (moi nhat truoc)
+GET    /assistant/conversations/:id        200 { ...conversation, messages: [message] }  404 khong phai cua minh
+DELETE /assistant/conversations/:id        200 { deleted: true }
+DELETE /assistant/conversations            200 { deleted: true }  (xoa toan bo lich su cua minh)
+```
+
+`conversation`: `{ id, title, countryCode, updatedAt }`
+
+`message` (fixture `fixtures/assistant.message.json`):
+
+| Truong | Y nghia |
+|---|---|
+| `role` | `user` \| `assistant` |
+| `content` | Van ban; chi `**dam**` va dong `- `; trich dan dang `[n]` |
+| `kind` | `answer` \| `emergency` \| `clarify` \| `refuse_scope` \| `refuse_harm` (null voi tin nguoi dung) |
+| `sourceTier` | `official` (kho da kiem chung) \| `web` (tra web) \| `general` (kien thuc chung) \| null -- do CODE gan |
+| `citations` | `[{ n, title, url, authority, articleSlug }]`; `n` khop `[n]` trong content |
+| `clarifyOptions` | Nut chon nhanh khi `kind=clarify` |
+| `emergencyNumber` | So goi khan cap (vd `000`) khi `kind=emergency`, hien nut goi o dau |
+| `detailed` | `true` neu la ban "Giai thich chi tiet hon" |
+| `tripContext` | Ngu canh chuyen di da dung (hien cho nguoi dung thay), hoac null |
+
+Lich su tu xoa sau `ASSISTANT_HISTORY_TTL_DAYS` ngay (mac dinh 90).

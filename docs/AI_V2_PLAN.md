@@ -77,7 +77,15 @@ sua o day truoc.
    "hang cho cau bi danh gia khong huu ich" (H1).
 2. **B2 co "web tong quat".** Dang lam: tra web uu tien gov.au, chap nhan trang khac nhung gan
    nhan "Tra cuu web" va khong dung trang khong phai gov.au lam nguon cho con so (B5).
-3. **G2 nha cung cap mo hinh** -- cho nguoi dung cung cap truoc giai doan 3.
+3. **G2 -- DA CHOT 02/11/2026:** dung APIZ (`OPENAI_BASE_URL=https://api.apiz.vn/v1`, giao thuc
+   OpenAI, `LLM_PROVIDER=openai`). Cau hinh hien tai: `LLM_MODEL=gpt-6.1-sol` (tra loi),
+   `QUERY_REWRITE_MODEL=gpt-6-luna` (buoc phu). `/v1/models` ngay 02/11/2026 co 38 mo hinh, gom ca
+   claude-opus-5-5 / claude-sonnet-5-5 / gemini-3.1-pro-preview -- giai doan 3 so sanh tren bo 50 cau
+   roi chon (G1: manh cho tra loi, re cho buoc phu). APIZ KHONG co mo hinh embedding trong danh sach;
+   `EMBEDDING_PROVIDER` dang `mock` -- can quyet dinh o giai doan 3.
+   **Chot 02/11/2026:** `ASSISTANT_MODEL=gpt-6-luna` (1.200/7.200 d moi 1M token, ~3-4 d/cau; 2 lan
+   chay 8 cau deu 8/8, 0 loi, p50 7-9 s). claude-sonnet-5-5 dat gap ~7,5 lan va lan chay thu hai qua
+   APIZ loi 3/8. Khong dung embedding (APIZ khong co mo hinh embedding): giu tim theo tu khoa.
 
 ## 4. Thay doi so voi CLAUDE.md cu
 

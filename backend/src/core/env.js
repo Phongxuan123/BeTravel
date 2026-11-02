@@ -120,6 +120,24 @@ const envSchema = z.object({
   AI_DAILY_QUOTA_USER: numeric(40),
   AI_DAILY_QUOTA_GLOBAL: numeric(800),
 
+  // Trợ lý AI bản 2 (docs/AI_V2_PLAN.md). false = công tắc tắt nhanh (H1).
+  ASSISTANT_ENABLED: booleanish(true),
+  // Rỗng = LLM_MODEL (trả lời) / QUERY_REWRITE_MODEL (phân loại câu hỏi, bước phụ).
+  ASSISTANT_MODEL: z.string().optional().default(""),
+  ASSISTANT_TRIAGE_MODEL: z.string().optional().default(""),
+  ASSISTANT_TIMEOUT_MS: numeric(25_000),
+  ASSISTANT_MAX_OUTPUT_TOKENS: numeric(700),
+  // Số lượt hội thoại gần nhất gửi kèm để hiểu câu hỏi nối tiếp (D1).
+  ASSISTANT_HISTORY_TURNS: numeric(6),
+  // Lịch sử trò chuyện tự xoá sau N ngày (H2).
+  ASSISTANT_HISTORY_TTL_DAYS: numeric(90),
+  // Tầng tra web (B1-d): Responses API + web_search của dịch vụ tương thích OpenAI (APIZ).
+  ASSISTANT_WEB_SEARCH_ENABLED: booleanish(false),
+  ASSISTANT_WEB_SEARCH_MODEL: z.string().optional().default(""),
+  ASSISTANT_WEB_TIMEOUT_MS: numeric(15_000),
+  // Tên miền ưu tiên khi tra web; rỗng = không giới hạn tên miền (B2 cho phép web tổng quát).
+  ASSISTANT_WEB_DOMAINS: csv("gov.au"),
+
   // Lớp địa điểm bổ sung (CHƯA xác minh, tách khỏi support_locations).
   // osm: OpenStreetMap qua Overpass, miễn phí, không cần key. serpapi: Google Maps qua SerpApi, tốn quota.
   // mock: dữ liệu mẫu cố định, không gọi mạng -- dùng cho test/CI.

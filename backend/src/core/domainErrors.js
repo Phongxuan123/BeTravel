@@ -69,6 +69,22 @@ const DOMAIN_ERROR_MAP = Object.freeze({
   PASSWORD_NO_NUMBER: [ErrorCode.VALIDATION_ERROR, "Mật khẩu cần ít nhất 1 chữ số"],
   PASSWORD_SAME_AS_OLD: [ErrorCode.VALIDATION_ERROR, "Mật khẩu mới không được trùng mật khẩu cũ"],
 
+  // Trợ lý AI bản 2
+  ASSISTANT_DISABLED: [
+    ErrorCode.UPSTREAM_ERROR,
+    "Trợ lý AI đang tạm tắt để bảo trì. Vui lòng thử lại sau.",
+  ],
+  ASSISTANT_COUNTRY_UNAVAILABLE: [
+    ErrorCode.VALIDATION_ERROR,
+    "Trợ lý AI chưa hỗ trợ quốc gia này.",
+  ],
+  ASSISTANT_UPSTREAM_ERROR: [
+    ErrorCode.UPSTREAM_ERROR,
+    "Trợ lý AI đang bận, chưa trả lời được. Vui lòng thử lại.",
+  ],
+  CONVERSATION_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy cuộc trò chuyện"],
+  ASSISTANT_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy câu trả lời"],
+
   // Hạn mức AI (dùng chung cho các tính năng gọi LLM)
   QUOTA_EXCEEDED_USER: [
     ErrorCode.QUOTA_EXCEEDED,

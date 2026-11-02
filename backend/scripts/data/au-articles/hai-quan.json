@@ -1,0 +1,225 @@
+[
+  {
+    "topicSlug": "hai-quan",
+    "slug": "khai-bao-tien-mat",
+    "title": "Mang tiền mặt vào hoặc ra khỏi Úc: khi nào phải khai báo",
+    "summaryVi": "Bạn phải khai báo nếu mang vào hoặc ra khỏi Úc tiền mặt và các loại giấy tờ có giá trị như tiền có tổng giá trị từ 10.000 AUD trở lên (tính cả ngoại tệ quy đổi). Không khai báo có thể bị phạt tiền hoặc phạt tù.",
+    "keyPoints": [
+      { "text": "Ngưỡng khai báo: tổng giá trị từ 10.000 AUD trở lên, gồm tiền Úc và ngoại tệ cộng lại.", "severity": "normal" },
+      { "text": "Ngoài tiền mặt, phải tính cả công cụ vô danh (bearer negotiable instruments) như séc du lịch, séc, lệnh chuyển tiền ghi trả cho người cầm.", "severity": "normal" },
+      { "text": "Khai báo bằng mẫu trực tuyến của AUSTRAC trước khi qua hải quan và giữ biên nhận để xuất trình khi Australian Border Force hoặc cảnh sát yêu cầu; không làm được online thì xin mẫu giấy tại cửa khẩu.", "severity": "normal" },
+      { "text": "Chia nhỏ tiền cho người đi cùng (kể cả trẻ em) để mỗi người dưới 10.000 AUD nhằm tránh khai báo là hành vi structuring, phạm luật.", "severity": "criminal" },
+      { "text": "Mang hộ tiền cho người khác vẫn được, nhưng phải khai báo và ghi thông tin của cả hai người.", "severity": "normal" }
+    ],
+    "penalties": [
+      { "behavior": "Không khai báo tiền từ 10.000 AUD trở lên khi vào hoặc ra khỏi Úc", "amountText": "Phạt tiền hoặc phạt tù (trang AUSTRAC không ghi mức cụ thể)", "currency": "AUD", "note": "nguồn: AUSTRAC, Moving money overseas" }
+    ],
+    "exceptions": ["Chuyển tiền qua ngân hàng hoặc dịch vụ chuyển tiền thì không phải khai báo theo mẫu này."],
+    "foreignerNotes": ["Không có độ tuổi tối thiểu để mang tiền, nhưng không được dùng trẻ em mang hộ để né ngưỡng khai báo."],
+    "sources": [
+      { "title": "Moving money overseas", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "authority": "AUSTRAC", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["tien-mat", "khai-bao", "austrac", "hai-quan"],
+    "verification": [
+      { "claim": "Ngưỡng 10.000 AUD, gồm tiền Úc và ngoại tệ", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "you need to declare if it's $10,000 or more in cash or non-cash forms of money (money). This includes Australian and foreign currency if the combined value is $10,000 or more." },
+      { "claim": "BNI gồm séc du lịch, séc, lệnh chuyển tiền", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "BNIs include: traveller's cheques cheques promissory note bearer bond money order, postal order or similar order" },
+      { "claim": "Khai báo online trước khi qua hải quan, giữ biên nhận", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "you need to fill in the online declaration form before you pass through customs. Keep a copy of your receipt, as you may need to show it to an Australian Border Force or police officer." },
+      { "claim": "Mẫu giấy tại cửa khẩu", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "you can ask for a paper version from an Australian Border Force or police officer" },
+      { "claim": "Structuring là phạm luật, phạt tiền và tù", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "Sharing your money with other travellers to avoid having to declare it is called structuring. It's against the law. ... Penalties for structuring include fines and imprisonment." },
+      { "claim": "Mang hộ phải khai báo", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "You can carry money for someone else, but you must declare it." },
+      { "claim": "Phạt tiền hoặc tù khi không khai báo", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "You may face fines or imprisonment for not declaring money of $10,000 or more when you: enter or leave Australia" },
+      { "claim": "Chuyển qua ngân hàng không phải khai", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "You don't need to declare money if you transfer it through a bank or money transfer business." },
+      { "claim": "Không giới hạn tuổi, không dùng trẻ em né khai báo", "url": "https://www.austrac.gov.au/general-public/moving-money-overseas", "quote": "There's no age limit for carrying money. But you can't use a child to carry money across a border to avoid having to declare $10,000 or more." }
+    ],
+    "unverified": ["Câu 'không giới hạn số tiền được mang' chỉ thấy ở kết quả tìm kiếm (trang ABF cũ); trang AUSTRAC đã đọc không ghi trực tiếp.", "Mức phạt cụ thể bằng tiền."]
+  },
+  {
+    "topicSlug": "hai-quan",
+    "slug": "mang-thuoc-ca-nhan",
+    "title": "Mang thuốc cá nhân vào Úc: giấy tờ và giới hạn 3 tháng",
+    "summaryVi": "Bạn được mang nhiều loại thuốc và thiết bị y tế cho chính mình hoặc người thân trực hệ đi cùng theo diện miễn trừ cho khách (traveller's exemption), tối đa lượng dùng 3 tháng. Thuốc kê đơn cần mang theo đơn thuốc hoặc thư bác sĩ ghi rõ thuốc và số lượng.",
+    "keyPoints": [
+      { "text": "Chỉ mang cho bản thân hoặc người thân trực hệ đi cùng chuyến; mang thuốc vào Úc để đưa cho người khác là phạm luật.", "severity": "criminal" },
+      { "text": "Không mang quá lượng dùng 3 tháng.", "severity": "normal" },
+      { "text": "Thuốc kê đơn: mang đơn thuốc hoặc thư bác sĩ ghi rõ thuốc đang dùng và số lượng mang theo.", "severity": "normal" },
+      { "text": "Để thuốc trong bao bì gốc, còn nhãn của nhà thuốc nếu có, để dễ nhận diện.", "severity": "normal" },
+      { "text": "Không bán hay cho người khác; thuốc còn thừa mang theo khi rời Úc; làm theo yêu cầu của nhân viên hải quan.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": ["Ở Úc lâu hơn 3 tháng: có thể dùng Personal Importation Scheme để nhận thêm thuốc khi đang ở Úc."],
+    "foreignerNotes": ["Thuốc đông y, thảo dược: xem bài riêng về thuốc đông y; thuốc chứa thành phần sinh học phải khai báo và qua kiểm dịch."],
+    "sources": [
+      { "title": "Entering Australia (Travelling with medicines and medical devices)", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "authority": "Therapeutic Goods Administration (TGA)", "kind": "gov", "publishedAt": "2024-03-27", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["thuoc", "hai-quan", "tga"],
+    "verification": [
+      { "claim": "Diện miễn trừ cho bản thân hoặc người thân trực hệ đi cùng", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "The traveller's exemption allows you to bring certain medicines and medical devices into Australia for your personal use or use by an immediate family member travelling with you" },
+      { "claim": "Mang để đưa người khác là phạm luật", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "It is against the law to bring medicines and medical devices into Australia to give to someone else." },
+      { "claim": "Tối đa 3 tháng", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "Do not bring in more than a 3-month supply" },
+      { "claim": "Đơn thuốc hoặc thư bác sĩ", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "For prescription medicines, carry the prescription or letter from your doctor that outlines what you are taking and how much you are bringing" },
+      { "claim": "Bao bì gốc", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "Keep the product in its original packaging with dispensing labels (if possible) so they can be easily identified" },
+      { "claim": "Không bán, mang thuốc thừa về, làm theo hải quan", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "Do not sell or supply the product to another person ... Take any remaining medicines or devices with you when you leave Australia ... Comply with requests and directions from customs officers." },
+      { "claim": "Personal Importation Scheme khi ở lâu", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "once he is in Australia, he can use the Personal Importation Scheme to receive more of his medication" },
+      { "claim": "Thuốc chứa thành phần sinh học phải khai báo", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "Any medicine or medical device that contains a biological ... is subject to quarantine procedures and must be declared at the border." }
+    ],
+    "unverified": ["Danh sách chất cấm cụ thể (prohibited substances) của ABF / Office of Drug Control.", "Cách khai báo thuốc trên thẻ nhập cảnh (Incoming Passenger Card)."]
+  },
+  {
+    "topicSlug": "hai-quan",
+    "slug": "khai-bao-thuc-pham-kiem-dich",
+    "title": "Mang đồ ăn vào Úc: phải khai báo, không khai có thể mất visa",
+    "summaryVi": "Thực phẩm mang vào Úc phải khai báo trên thẻ nhập cảnh (Incoming Passenger Card), kể cả lượng nhỏ hay gia vị nấu ăn. Đã khai báo và xuất trình thì không bị phạt dù món đó không được phép mang vào; không khai báo có thể bị phạt đến 7.280 AUD và bị hủy visa.",
+    "keyPoints": [
+      { "text": "Mọi thực phẩm thuộc diện kiểm soát phải khai báo trên Incoming Passenger Card, kể cả lượng nhỏ hoặc nguyên liệu nấu ăn.", "severity": "normal" },
+      { "text": "Khai báo và xuất trình hàng thì không bị phạt theo Biosecurity Act 2015, kể cả khi hàng không được phép mang vào.", "severity": "normal" },
+      { "text": "Không tuân thủ quy định kiểm dịch có thể bị phạt đến 7.280 AUD và bị hủy visa; đã có du học sinh bị hủy visa vì lý do này.", "severity": "criminal" },
+      { "text": "Nhân viên kiểm dịch có thể kiểm tra hành lý bằng máy soi, chó nghiệp vụ, kiểm tra trực tiếp và đặt câu hỏi.", "severity": "normal" },
+      { "text": "Không chắc món nào được phép: tra hệ thống BICON của Bộ Nông nghiệp hoặc cứ khai báo.", "severity": "normal" }
+    ],
+    "penalties": [
+      { "behavior": "Không tuân thủ quy định kiểm dịch (không khai báo hàng thuộc diện kiểm soát)", "amountText": "Phiếu phạt đến 7.280 AUD, có thể bị hủy visa", "amountMax": 7280, "currency": "AUD", "note": "nguồn: DAFF, Studying in Australia và Biosecurity questions and answers" }
+    ],
+    "exceptions": [],
+    "foreignerNotes": ["Mì gói, khô bò, bánh trung thu, gia vị... đều nên khai báo; hàng được phép sẽ được trả lại sau khi kiểm tra.", "Hầu hết đồ ăn có thể mua dễ dàng ở Úc, không mang thì qua cửa nhanh hơn."],
+    "sources": [
+      { "title": "What food can you bring in?", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/food", "authority": "Australian Border Force", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Studying in Australia (biosecurity)", "url": "https://www.agriculture.gov.au/biosecurity-trade/travelling/to-australia/studying-in-australia", "authority": "Department of Agriculture, Fisheries and Forestry", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Biosecurity questions and answers", "url": "https://www.agriculture.gov.au/biosecurity-trade/policy/faqs", "authority": "Department of Agriculture, Fisheries and Forestry", "kind": "gov", "accessedAt": "2026-11-02" },
+      { "title": "Travelling to Australia", "url": "https://www.agriculture.gov.au/biosecurity-trade/travelling/to-australia", "authority": "Department of Agriculture, Fisheries and Forestry", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["thuc-pham", "kiem-dich", "khai-bao", "hai-quan"],
+    "verification": [
+      { "claim": "Khai báo thực phẩm trên Incoming Passenger Card", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/food", "quote": "Food items brought into Australia need to be declared on your Incoming Passenger Card if you come by plane" },
+      { "claim": "Kể cả lượng nhỏ, nguyên liệu nấu ăn", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/food", "quote": "Certain food items brought into Australia, even small amounts or ingredients for cooking, need to be declared." },
+      { "claim": "BICON", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/food", "quote": "check the Department of Agriculture, Fisheries and Forestry's Biosecurity Import Conditions system (BICON)" },
+      { "claim": "Khai báo thì không bị phạt", "url": "https://www.agriculture.gov.au/biosecurity-trade/policy/faqs", "quote": "You will not be penalised under the [Biosecurity Act 2015] if you declare and present goods, even if they are not allowed" },
+      { "claim": "Phạt đến 7.280 AUD và hủy visa", "url": "https://www.agriculture.gov.au/biosecurity-trade/travelling/to-australia/studying-in-australia", "quote": "If you fail to comply with Australia's biosecurity regulations, you may be given an infringement notice of up to $7,280 and your visa may be cancelled. Students have had their visas cancelled" },
+      { "claim": "Soi chiếu, chó nghiệp vụ, kiểm tra, hỏi", "url": "https://www.agriculture.gov.au/biosecurity-trade/travelling/to-australia", "quote": "We use X-ray machines, detector dogs, physical inspection and questioning." },
+      { "claim": "Không mang đồ ăn thì qua nhanh hơn, mua được ở Úc", "url": "https://www.agriculture.gov.au/biosecurity-trade/travelling/to-australia/studying-in-australia", "quote": "Airport clearance is quicker if you don't bring food, plant material or animal products. Most items can be easily purchased in Australia." }
+    ],
+    "unverified": ["Câu 'hàng được phép sẽ được trả lại sau khi kiểm tra' chỉ thấy ở kết quả tìm kiếm.", "Danh sách cụ thể món nào bị cấm (thịt, trứng, sữa...)."]
+  },
+  {
+    "topicSlug": "hai-quan",
+    "slug": "mien-thue-ruou-thuoc-la",
+    "title": "Hạn mức miễn thuế khi vào Úc: hàng hóa, rượu, thuốc lá",
+    "summaryVi": "Người lớn được mang hàng hóa chung trị giá đến 900 AUD (trẻ em 450 AUD), 2,25 lít đồ uống có cồn và 25 điếu thuốc lá hoặc 25g thuốc lá miễn thuế. Vượt hạn mức thì phải nộp thuế cho toàn bộ hàng cùng loại, không chỉ phần vượt.",
+    "keyPoints": [
+      { "text": "Hàng hóa chung: người lớn 900 AUD, trẻ em 450 AUD.", "severity": "normal" },
+      { "text": "Đồ uống có cồn: 2,25 lít.", "severity": "normal" },
+      { "text": "Thuốc lá: 25 điếu hoặc 25g thuốc lá.", "severity": "normal" },
+      { "text": "Gia đình đi cùng chuyến được cộng gộp hạn mức nếu đi cùng nhau qua hải quan; ví dụ 2 người lớn và 2 trẻ em được tổng 2.700 AUD.", "severity": "normal" },
+      { "text": "Vượt hạn mức: phải nộp thuế cho toàn bộ hàng loại đó, không chỉ phần vượt. Không chắc thì cứ khai báo; không khai báo có thể bị phạt.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": ["Hãng bay có thể có quy định riêng về hành lý xách tay và chất lỏng; kiểm tra trước khi mua."],
+    "sources": [
+      { "title": "What duty free can you bring in?", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/duty-free", "authority": "Australian Border Force", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["mien-thue", "ruou", "thuoc-la", "hai-quan"],
+    "verification": [
+      { "claim": "900/450 AUD, 2,25 lít, 25 điếu hoặc 25g", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/duty-free", "quote": "General Goods: adults - AUD900, kids - AUD450, Alcohol - 2.25 litres, Tobacco - 25 cigarettes or 25g tobacco." },
+      { "claim": "Gia đình gộp hạn mức, ví dụ 2.700 AUD", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/duty-free", "quote": "Families coming back to Australia on the same flight or voyage may combine (pool) their individual duty-free concession limits. To do this, families must stay together when going through Customs clearance. ... a family of two adults and two children would have a combined duty free allowance of AUD 2700." },
+      { "claim": "Vượt hạn mức nộp thuế toàn bộ", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/duty-free", "quote": "If you bring in more than your duty-free allowance for general goods, you'll need to pay duty on all your general goods not just on the excess. The same goes for alcohol and tobacco/cigarettes." },
+      { "claim": "Không chắc thì khai báo, có thể bị phạt", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/duty-free", "quote": "If in doubt, always declare. Penalties may apply if goods are not declared." },
+      { "claim": "Quy định hãng bay", "url": "https://www.abf.gov.au/entering-and-leaving-australia/can-you-bring-it-in/categories/duty-free", "quote": "There may be airline rules about cabin or hold baggage or aviation safety laws that mean you can't take certain items in the cabin or on the plane." }
+    ],
+    "unverified": ["Độ tuổi tối thiểu 18 cho hạn mức rượu và thuốc lá (chỉ thấy ở kết quả tìm kiếm, trang đã đọc không ghi)."]
+  },
+  {
+    "topicSlug": "hai-quan",
+    "slug": "thuoc-la-dien-tu-vape",
+    "title": "Mang vape (thuốc lá điện tử) vào Úc: giới hạn rất chặt",
+    "summaryVi": "Khách nhập cảnh bằng tàu hoặc máy bay chỉ được mang một lượng nhỏ vape dùng cho điều trị của bản thân (hoặc người mình chăm sóc đi cùng chuyến): tối đa 2 vape, 20 phụ kiện và 200 mL dung dịch. Không được đặt mua vape từ nước ngoài, kể cả có đơn thuốc.",
+    "keyPoints": [
+      { "text": "Mục đích: dùng cho điều trị của chính bạn hoặc người bạn chăm sóc đi cùng chuyến.", "severity": "normal" },
+      { "text": "Tối đa: 2 vape, 20 phụ kiện (cartridge, capsule, pod) và 200 mL dung dịch vape.", "severity": "normal" },
+      { "text": "Không được mua vape từ cửa hàng hay website nước ngoài để dùng cá nhân, kể cả có đơn thuốc; hải quan có thể tịch thu và tiêu hủy.", "severity": "criminal" },
+      { "text": "Ở Úc, vape trị liệu chỉ bán ở nhà thuốc tham gia chương trình; tiệm thuốc lá, cửa hàng vape bán vape là bất hợp pháp.", "severity": "normal" },
+      { "text": "Một số bang cấm cá nhân sở hữu vape nicotine không có đơn; vape chứa cần sa có quy định riêng rất nghiêm.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": ["Quy định vape thay đổi nhiều từ năm 2024; trang TGA ghi cập nhật 1/10/2024, nên kiểm tra lại trước khi bay."],
+    "sources": [
+      { "title": "Vapes: information for individuals and patients", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "authority": "Therapeutic Goods Administration (TGA)", "kind": "gov", "publishedAt": "2024-10-01", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["vape", "thuoc-la-dien-tu", "hai-quan", "tga"],
+    "verification": [
+      { "claim": "Diện miễn trừ cho khách đi tàu, máy bay; dùng điều trị", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "quote": "Persons entering Australia by ship or aircraft may bring a small quantity of vapes under a traveller's exemption. The vapes must be for use in the treatment of the traveller or someone the traveller is caring for, who is entering Australia on the same ship or aircraft." },
+      { "claim": "2 vape, 20 phụ kiện, 200 mL", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "quote": "2 vapes 20 vape accessories (including cartridges, capsules or pods), and 200 mL of vape substance in liquid form." },
+      { "claim": "Cấm mua từ nước ngoài kể cả có đơn; tịch thu", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "quote": "Vapes cannot be purchased from overseas retailers or websites for personal use, even with a prescription. ABF officials can seize and destroy goods at the border" },
+      { "claim": "Chỉ nhà thuốc tham gia được bán; cửa hàng khác bán là bất hợp pháp", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "quote": "only available for sale from participating pharmacies ... It is illegal for all other retailers such as tobacconists, vape shops and convenience stores to sell any kind of vape" },
+      { "claim": "Một số bang cấm sở hữu vape nicotine không đơn", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "quote": "Some states and territories prohibit individuals possessing any unprescribed nicotine vapes" },
+      { "claim": "Vape cần sa quy định riêng", "url": "https://www.tga.gov.au/products/unapproved-therapeutic-goods/therapeutic-vaping-goods/vaping-hub/vapes-information-individuals-and-patients", "quote": "Cannabis vapes are subject to separate strict regulations" }
+    ],
+    "unverified": ["Mức phạt cụ thể khi nhập khẩu vape trái phép (trang chỉ ghi 'significant penalties').", "Túi nicotine (nicotine pouches) không còn được miễn trừ: chỉ thấy ở kết quả tìm kiếm."]
+  },
+  {
+    "topicSlug": "hai-quan",
+    "slug": "thuoc-dong-y-thao-duoc",
+    "title": "Mang thuốc đông y, thảo dược vào Úc",
+    "summaryVi": "Trước khi mang thuốc đông y hay thảo dược, hãy kiểm tra xem có được phép theo luật Úc không. Sản phẩm chứa thành phần từ loài thực vật nguy cấp phải có giấy phép; thuốc chứa thành phần sinh học phải khai báo và qua kiểm dịch.",
+    "keyPoints": [
+      { "text": "Kiểm tra trước xem thuốc đông y, thảo dược có được phép theo luật Úc không.", "severity": "normal" },
+      { "text": "Giữ nguyên bao bì gốc để Australian Border Force nhận diện thành phần và xác định có bị hạn chế nhập khẩu không.", "severity": "normal" },
+      { "text": "Sản phẩm chứa thành phần từ thực vật nguy cấp (ví dụ Hoodia và sản phẩm giảm cân từ Hoodia) bị kiểm soát và cần giấy phép.", "severity": "criminal" },
+      { "text": "Thuốc chứa thành phần sinh học (lấy từ tế bào, mô sống) phải khai báo tại cửa khẩu và qua kiểm dịch.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": [],
+    "foreignerNotes": ["Thuốc có thành phần động vật hoang dã (ví dụ cao, mật, xương động vật quý hiếm) thuộc quy định thương mại động vật hoang dã của Bộ Môi trường (DCCEEW); bài này chưa có trích dẫn trực tiếp cho phần đó, hãy hỏi hải quan hoặc không mang."],
+    "sources": [
+      { "title": "Entering Australia (Travelling with medicines and medical devices)", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "authority": "Therapeutic Goods Administration (TGA)", "kind": "gov", "publishedAt": "2024-03-27", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "warn",
+    "tags": ["dong-y", "thao-duoc", "hai-quan"],
+    "verification": [
+      { "claim": "Kiểm tra có được phép", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "To bring any herbal and traditional medicines with you, check they are allowed under Australian law." },
+      { "claim": "Bao bì gốc để ABF nhận diện", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "Keep these medicines in their original packaging so the Australian Border Force can identify what the substances are and can determine if the products are subject to any import restrictions" },
+      { "claim": "Thực vật nguy cấp cần giấy phép, ví dụ Hoodia", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "If they contain ingredients from endangered plants, they are subject to import controls and require a permit. This includes Hoodia and weight loss products derived from Hoodia." },
+      { "claim": "Thành phần sinh học phải khai báo, kiểm dịch", "url": "https://www.tga.gov.au/resources/consumer-information-and-resources/travelling-medicines-and-medical-devices/entering-australia", "quote": "Any medicine or medical device that contains a biological ... is subject to quarantine procedures and must be declared at the border." }
+    ],
+    "unverified": ["Quy định CITES và giấy phép cho sản phẩm động vật hoang dã: trang DCCEEW không mở được trong phiên này.", "Đổi slug từ san-pham-dong-vat-hoang-da sang thuoc-dong-y-thao-duoc vì chỉ xác minh được phần thảo dược."]
+  },
+  {
+    "topicSlug": "hai-quan",
+    "slug": "hoan-thue-tourist-refund",
+    "title": "Hoàn thuế GST khi rời Úc (Tourist Refund Scheme)",
+    "summaryVi": "Khách quốc tế được hoàn thuế GST (và thuế rượu vang WET) cho hàng mua ở Úc rồi mang ra nước ngoài nếu mua từ 300 AUD trở lên ở cùng một nhà bán (cùng ABN) trong vòng 60 ngày trước khi rời Úc. Làm thủ tục trực tiếp tại quầy TRS ở sân bay, chậm nhất 30 phút trước giờ bay.",
+    "keyPoints": [
+      { "text": "Mua tổng từ 300 AUD (đã gồm GST) từ một nhà bán có cùng ABN, trong vòng 60 ngày trước khi rời Úc; được mua nhiều lần qua nhiều ngày.", "severity": "normal" },
+      { "text": "Cần hóa đơn thuế giấy bản gốc bằng tiếng Anh; hóa đơn từ 1.000 AUD phải ghi tên bạn đúng như hộ chiếu. Ảnh chụp, bản photo, bản in lại không được chấp nhận.", "severity": "normal" },
+      { "text": "Đến quầy TRS ngày bay với hộ chiếu, thẻ lên máy bay, hàng hóa và hóa đơn gốc, chậm nhất 30 phút trước giờ bay (cảng biển: 1 đến 4 tiếng trước).", "severity": "normal" },
+      { "text": "Hàng quá khổ hoặc hạn chế phải cho nhân viên ABF xem tại quầy Client Services trước khi ký gửi.", "severity": "normal" },
+      { "text": "Không hoàn thuế cho: rượu (trừ rượu vang dưới 22% cồn), thuốc lá, hàng đã dùng một phần ở Úc (đồ ăn, nước hoa, thực phẩm chức năng), dịch vụ (khách sạn, taxi, tour), và không hoàn bằng tiền mặt.", "severity": "normal" }
+    ],
+    "penalties": [],
+    "exceptions": ["Không làm được ở sân bay nội địa, online, trước ngày bay hoặc sau khi đã rời Úc."],
+    "foreignerNotes": ["Mang lại hàng đã hoàn thuế về Úc thì phải khai báo ở câu 3 của Incoming Passenger Card.", "Tổng đài TRS trong Úc: 1300 555 043 (thứ Hai đến thứ Sáu, 9:00-16:00 giờ miền Đông)."],
+    "sources": [
+      { "title": "Tourist Refund Scheme (TRS)", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "authority": "Australian Border Force", "kind": "gov", "accessedAt": "2026-11-02" }
+    ],
+    "riskLevel": "info",
+    "tags": ["hoan-thue", "gst", "trs", "hai-quan"],
+    "verification": [
+      { "claim": "Hoàn GST và WET", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "allows international travellers to claim a refund on the Goods and Services Tax (GST) and Wine Equalisation Tax (WET)" },
+      { "claim": "300 AUD cùng ABN", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "spend at least AUD300, including GST, in total from a supplier with the same Australian Business Number (ABN)" },
+      { "claim": "60 ngày, nhiều lần mua", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "you can make several purchases over different days, as long as you acquire the goods within 60 days of leaving Australia" },
+      { "claim": "Hóa đơn giấy tiếng Anh, tên khi từ 1.000 AUD, không nhận bản sao", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "get a valid paper tax invoice in English including: your name only, as it appears on your passport, if the invoice is AUD1,000 or more ... we do not accept photographs, photocopies, reprinted or duplicate invoices" },
+      { "claim": "30 phút sân bay, 1-4 giờ cảng biển", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "at least 30 minutes before the scheduled departure of your flight at an airport 1 to 4 hours before your scheduled departure at a seaport" },
+      { "claim": "Hàng quá khổ cho ABF xem trước khi ký gửi", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "have oversized or restricted goods sighted at the ABF Client Services counter before checking in" },
+      { "claim": "Các loại không được hoàn", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "You cannot: get a cash refund ... alcohol, except wine with alcohol content less than 22% tobacco and tobacco products ... goods wholly or partly consumed in Australia, including food, drinks, perfume and health supplements ... services, including accommodation, taxis and tours" },
+      { "claim": "Không làm ở sân bay nội địa, online, trước ngày bay, sau khi rời", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "at a domestic airport online before the day of departure after you leave Australia" },
+      { "claim": "Khai báo câu 3 IPC", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "On returning to Australia, you must declare the goods at Question 3 on your Incoming Passenger Card (IPC)" },
+      { "claim": "Tổng đài 1300 555 043, giờ làm việc", "url": "https://www.abf.gov.au/entering-and-leaving-australia/tourist-refund-scheme", "quote": "Call the TRS from within Australia: 1300 555 043 ... Monday to Friday - 09:00 to 16:00 Australian Eastern Standard Time" }
+    ],
+    "unverified": []
+  }
+]

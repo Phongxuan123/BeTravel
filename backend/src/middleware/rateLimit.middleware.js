@@ -44,6 +44,12 @@ export const translateRateLimit = buildRateLimit({
   message: "Bạn đang dịch quá nhanh. Vui lòng chờ một chút rồi thử lại.",
 });
 
+// Tro ly AI ban 2: lop 1 chong spam burst; lop 2 la quota ngay luu DB (aiUsage.service.js).
+export const assistantRateLimit = buildRateLimit({
+  limit: 20,
+  message: "Bạn đang hỏi quá nhanh. Vui lòng chờ một chút rồi thử lại.",
+});
+
 // Endpoint dia diem Google Maps (SerpApi) ton quota that cua tai khoan -- gioi han burst theo IP.
 export const externalPlacesRateLimit = buildRateLimit({
   limit: 30,
