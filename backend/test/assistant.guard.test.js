@@ -53,3 +53,11 @@ test("guard: marker khong hop le khong duoc 'bao lanh' cho con so", () => {
   assert.ok(!result.text.includes("500"));
   assert.ok(result.text.includes(VERIFY_NOTE.en));
 });
+
+test("dau ra mo hinh: JSON, JSON bi cat, van ban tron deu lay duoc cau tra loi (loi Q22 02/11)", async () => {
+  const { extractAnswer } = await import("../src/rag/assistant/answer.js");
+  assert.equal(extractAnswer('{"answer":"Có [1]."}'), "Có [1].");
+  assert.equal(extractAnswer('{"answer":"Có [1].\\n- Mang'), "Có [1].\n- Mang");
+  assert.equal(extractAnswer("Hãy bình tĩnh.\n- Hỏi lý do."), "Hãy bình tĩnh.\n- Hỏi lý do.");
+  assert.equal(extractAnswer('{"oops":'), "");
+});

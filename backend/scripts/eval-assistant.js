@@ -118,6 +118,8 @@ const run = async () => {
       sourceTier: result.sourceTier ?? null,
       content: result.content,
       citations: result.citations ?? [],
+      clarifyOptions: result.clarifyOptions ?? [],
+      emergencyNumber: result.emergencyNumber ?? null,
       latencyMs: result.latencyMs,
       error: result.error,
       violations: result.meta?.violations?.length ?? 0,

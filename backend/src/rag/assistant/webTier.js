@@ -18,12 +18,20 @@ const normalizeUrl = (url) =>
  * marker cua no bi guard.js xoa. Khong con nguon hop le nao --> null, noi goi chuyen sang tang
  * kien thuc chung. Loi mang/het gio cung tra null (khong lam hong luot hoi).
  */
-export async function runWebTier({ question, history, tripContext, countryName, detailed, usage }) {
+export async function runWebTier({
+  question,
+  history,
+  tripContext,
+  countryName,
+  detailed,
+  usage,
+  language,
+}) {
   const provider = getWebSearchProvider();
   if (!provider) return null;
   try {
     const result = await provider.search({
-      instructions: buildWebSystemPrompt({ countryName, detailed }),
+      instructions: buildWebSystemPrompt({ countryName, detailed, language }),
       input: buildUserPrompt({ question, history, tripContext }),
       allowedDomains: env.ASSISTANT_WEB_DOMAINS,
       maxOutputTokens: env.ASSISTANT_MAX_OUTPUT_TOKENS * 2,
