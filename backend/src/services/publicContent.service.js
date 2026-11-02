@@ -1,7 +1,7 @@
 import Country from "../models/Country.js";
 import LegalTopic from "../models/LegalTopic.js";
 import LegalArticle from "../models/LegalArticle.js";
-import { ContentStatus } from "../core/constants.js";
+import { ContentStatus, CountryStatus } from "../core/constants.js";
 import { AU_CURATED_TITLE_COUNT } from "../core/auLawTopics.js";
 import { parsePagination, buildPageMeta } from "../core/pagination.js";
 import { normalizeVi, toDStrokeInsensitivePattern } from "../utils/textNormalize.js";
@@ -25,10 +25,16 @@ export const INTERNAL_ARTICLE_FIELDS =
 // de hien thi "so quy dinh" thay vi 0.
 const FEDERAL_LAW_COUNT_BY_COUNTRY = { AU: AU_CURATED_TITLE_COUNT };
 
-// Khong loc theo status: mobile can biet ca quoc gia 'coming_soon' de hien
-// trang thai ro rang thay vi 404 (DoD B3 muc 12).
+// Quoc gia 'hidden' bi go khoi moi duong doc cong khai: client khong thay, khong tra cuu duoc.
+const VISIBLE_COUNTRY_FILTER = { status: { $ne: CountryStatus.HIDDEN } };
+
+const isHiddenCountry = (code) =>
+  Country.exists({ code: code.toUpperCase(), status: CountryStatus.HIDDEN });
+
+// Van tra ca quoc gia 'coming_soon': mobile can biet de hien trang thai ro rang thay vi 404
+// (DoD B3 muc 12). Chi 'hidden' moi bi loai.
 export const listCountries = async () => {
-  const countries = await Country.find({}).sort({ status: 1, name: 1 });
+  const countries = await Country.find(VISIBLE_COUNTRY_FILTER).sort({ status: 1, name: 1 });
 
   const counts = await LegalArticle.aggregate([
     { $match: PUBLISHED_CURRENT_FILTER },
@@ -43,10 +49,12 @@ export const listCountries = async () => {
   }));
 };
 
-export const getCountry = async (code) => Country.findOne({ code: code.toUpperCase() });
+export const getCountry = async (code) =>
+  Country.findOne({ ...VISIBLE_COUNTRY_FILTER, code: code.toUpperCase() });
 
 export const listTopics = async (countryCode) => {
   const code = countryCode.toUpperCase();
+  if (await isHiddenCountry(code)) return [];
   const [topics, counts] = await Promise.all([
     LegalTopic.find({ countryCode: code }).sort({ order: 1, label: 1 }),
     LegalArticle.aggregate([
@@ -64,6 +72,8 @@ export const listTopics = async (countryCode) => {
 
 export const listArticles = async (query) => {
   const pagination = parsePagination(query);
+  if (await isHiddenCountry(query.country))
+    return { items: [], meta: buildPageMeta(pagination, 0) };
   const filter = { ...PUBLISHED_CURRENT_FILTER, countryCode: query.country.toUpperCase() };
   if (query.topic) filter.topicSlug = query.topic;
 
@@ -82,6 +92,7 @@ export const listArticles = async (query) => {
 const RELATED_ARTICLES_LIMIT = 4;
 
 export const getArticle = async (countryCode, slug) => {
+  if (await isHiddenCountry(countryCode)) return null;
   const article = await LegalArticle.findOne({
     ...PUBLISHED_CURRENT_FILTER,
     countryCode: countryCode.toUpperCase(),
@@ -114,6 +125,8 @@ const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 export const searchArticles = async (query) => {
   const pagination = parsePagination(query);
+  if (await isHiddenCountry(query.country))
+    return { items: [], meta: buildPageMeta(pagination, 0) };
   // Tach theo tung tu, MOI tu phai xuat hien o titleNorm hoac summaryNorm
   // (khong nhat thiet lien tiep) -- "phat vape" van khop "Muc phat ... vape"
   // du hai tu cach nhau boi cac tu khac.

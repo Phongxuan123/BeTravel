@@ -1,5 +1,14 @@
 # TIEN DO BE.TRAVEL
 
+## Chi nham Uc, an Han Quoc — 02/11/2026
+
+Them trang thai quoc gia `hidden` (Admin Portal: "An hoan toan"). Quoc gia hidden bien mat khoi moi duong
+doc cong khai: `/api/countries` khong tra, `/api/countries/:code` 404, `/api/legal/*` rong/404, tao chuyen
+di bi chan (da co tu truoc: chi nhan `active`). Da dat KR = hidden tren Atlas theo yeu cau nguoi dung; du
+lieu KR (bai luat, chunk, dia diem SOS) giu nguyen de mo lai. Seed doi KR sang hidden. Kiem chung chay that
+tren may ao: bo chon quoc gia chi con Uc + JP/SG/TH "Sap ra mat". Con mo: SOS/su co/canh bao/mau cau theo
+`countryCode=KR` van tra du lieu neu goi thang API (UI khong con loi vao).
+
 ## Go tang tra loi AI de xay lai — 01/11/2026
 
 Theo quyet dinh cua nguoi dung (phan hoi nguoi dung ve chat AI rat xau: tra loi mot khoi lon, lap lung,

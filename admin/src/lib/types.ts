@@ -2,7 +2,7 @@
 // Doi field o day thi doi ca hai phia trong CUNG mot commit (contracts/README.md).
 
 export type ContentStatus = 'draft' | 'pending_review' | 'published' | 'superseded' | 'archived';
-export type CountryStatus = 'active' | 'coming_soon';
+export type CountryStatus = 'active' | 'coming_soon' | 'hidden';
 export type RiskLevel = 'info' | 'warn' | 'danger';
 export type SourceKind = 'gov' | 'news' | 'legal_text' | 'embassy' | 'other';
 export type KeyPointSeverity = 'normal' | 'criminal';

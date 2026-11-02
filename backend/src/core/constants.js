@@ -37,10 +37,12 @@ export const SourceKind = Object.freeze({
   OTHER: "other",
 });
 
-// countries.status: active = hien thi cho nguoi dung, coming_soon = da co du lieu nhung chua mo.
+// countries.status: active = hien thi cho nguoi dung, coming_soon = da co du lieu nhung chua mo,
+// hidden = an han khoi API cong khai (giu du lieu de mo lai ma khong phai nhap lai).
 export const CountryStatus = Object.freeze({
   ACTIVE: "active",
   COMING_SOON: "coming_soon",
+  HIDDEN: "hidden",
 });
 
 export const JobStatus = Object.freeze({

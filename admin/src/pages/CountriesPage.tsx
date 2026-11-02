@@ -34,6 +34,12 @@ const EMPTY_FORM: FormState = {
   officialWebDomainsText: '',
 };
 
+const STATUS_BADGE: Record<CountryStatus, { label: string; tone: 'success' | 'neutral' | 'danger' }> = {
+  active: { label: 'Đang hoạt động', tone: 'success' },
+  coming_soon: { label: 'Sắp mở', tone: 'neutral' },
+  hidden: { label: 'Đã ẩn', tone: 'danger' },
+};
+
 const splitList = (text: string) =>
   text
     .split(',')
@@ -153,8 +159,8 @@ export default function CountriesPage() {
                 <Td className="font-mono">{country.code}</Td>
                 <Td>{country.name}</Td>
                 <Td>
-                  <Badge tone={country.status === 'active' ? 'success' : 'neutral'}>
-                    {country.status === 'active' ? 'Đang hoạt động' : 'Sắp mở'}
+                  <Badge tone={STATUS_BADGE[country.status].tone}>
+                    {STATUS_BADGE[country.status].label}
                   </Badge>
                 </Td>
                 <Td className="text-right">
@@ -197,6 +203,7 @@ export default function CountriesPage() {
           >
             <option value="coming_soon">Sắp mở</option>
             <option value="active">Đang hoạt động</option>
+            <option value="hidden">Ẩn hoàn toàn (người dùng không thấy)</option>
           </Select>
           <Input
             label="Thành phố lớn (gợi ý cho wizard tạo chuyến đi, cách nhau bởi dấu phẩy)"
