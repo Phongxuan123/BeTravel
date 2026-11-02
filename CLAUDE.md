@@ -29,7 +29,7 @@ BƯỚC 4  GHI SỔ    --> Nghiệm thu + quét tối ưu + ghi sổ + commit (P
 Be.Travel là **app mobile** hỗ trợ pháp lý cho người Việt du lịch nước ngoài. Bốn lớp:
 
 1. **Kho tri thức pháp lý đã kiểm chứng** — có nguồn, có version, có ngày hiệu lực
-2. **Trợ lý AI dùng RAG** — luôn trích dẫn nguồn, **từ chối khi không đủ dữ liệu**
+2. **Trợ lý AI dùng RAG** — trích dẫn nguồn thật, **gắn nhãn độ tin cậy** khi phải dùng tra cứu web hoặc kiến thức chung (bản 2, xem `docs/AI_V2_PLAN.md`)
 3. **Hỗ trợ tại chỗ** — SOS map, workflow sự cố, cảnh báo vị trí, dịch khẩn cấp
 4. **Admin Portal** — nơi duy trì dữ liệu của lớp 1
 
@@ -142,7 +142,7 @@ B1 --> B2 --> B3 --> B4 --> B5
 | 6 | B7 | UI đã có, chạy mock vẫn demo được |
 | 7 | B8 | Cắt được đầu tiên |
 
-Màn hình đã dựng sẵn chạy trên mock **vẫn demo được**. Cái không giả được là **AI có nguồn và biết từ chối** — đó là lý do B4 bất khả xâm phạm.
+Màn hình đã dựng sẵn chạy trên mock **vẫn demo được**. Cái không giả được là **AI có nguồn thật và minh bạch độ tin cậy** — đó là lý do B4 bất khả xâm phạm.
 
 ---
 
@@ -184,24 +184,28 @@ Màn hình đã dựng sẵn chạy trên mock **vẫn demo được**. Cái kh�
 
 ## 4.2. Hợp đồng chống ảo giác — bắt buộc với mọi code liên quan AI
 
+Bản 2 (chốt 02/11/2026, chi tiết `docs/AI_V2_PLAN.md`): bỏ "từ chối khi không đủ dữ liệu",
+thay bằng tầng nguồn có nhãn. Chỉ từ chối khi câu hỏi nhằm làm điều nguy hiểm/phạm pháp hoặc
+ngoài phạm vi chuyến đi.
+
 ```
 1. Retrieval: $vectorSearch, filter { countryCode, status:'published' },
    topK=RAG_TOP_K, numCandidates=RAG_NUM_CANDIDATES
 2. [!] $lookup về legal_articles, $match { status:'published', isCurrent:true }
    — KHÔNG tin field status copy trên chunk (job purge có thể đã thất bại)
-3. Ngưỡng: topScore < RAG_MIN_TOP_SCORE
-        || count(score >= RAG_MIN_SOFT_SCORE) < RAG_MIN_CHUNKS
-        --> trả INSUFFICIENT_EVIDENCE, KHÔNG gọi LLM
-4. Prompt: context khối [S1]..[Sn]; LLM trả JSON
-   { answer, usedSources[], confidence, needsOfficialHelp }
+3. Tầng nguồn: kho đủ ngưỡng (RAG_MIN_TOP_SCORE / RAG_MIN_SOFT_SCORE / RAG_MIN_CHUNKS)
+   --> nhãn "Nguồn chính thức". Không đủ --> tra web (ưu tiên gov.au) --> nhãn
+   "Tra cứu web". Vẫn không có --> kiến thức chung của mô hình --> nhãn "Kiến thức chung".
+4. Prompt: context khối [S1]..[Sn]; LLM trả JSON có cấu trúc (answer, usedSources[], ...)
 5. [!] HẬU KIỂM BẰNG CODE (không tin LLM):
-   a. Marker [Sn] không thuộc tập truy hồi --> xóa + log vi phạm
+   a. Marker [Sn] không thuộc tập nguồn đã lấy về --> xóa + log vi phạm
    b. answer chứa tuyên bố định lượng (số tiền + đơn vị, "điều \d+",
-      "\d+ năm tù", "phạt", "cấm") mà KHÔNG có marker nào
-      --> hạ cấp xuống fallback, KHÔNG hiển thị câu trả lời đó
-   c. Luôn gắn disclaimer
+      "\d+ năm tù", mức phạt) mà KHÔNG có marker nào --> bỏ con số, thay bằng
+      câu "cần kiểm tra tại nguồn chính thức" kèm link; KHÔNG hiển thị số không nguồn
+   c. Nhãn tầng nguồn do CODE gán theo nguồn thật đã dùng, không do LLM tự khai
+   d. Disclaimer hiển thị một lần trên màn chat (không lặp mỗi câu trả lời)
 6. Ghi ai_events: questionHash, country, chunkIds, scores, model,
-   latency, tokens, costEstimate, fallbackReason
+   latency, tokens, costEstimate, sourceTier, fallbackReason
 ```
 
 Code đầy đủ ở `docs/03_Contracts_v2.md` mục 7 (system prompt) và mục 8 (guard.js).
