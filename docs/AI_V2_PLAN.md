@@ -71,11 +71,10 @@ sua o day truoc.
 - Chi cho nguoi dung thay man hinh moi sau khi nguoi dung (chu du an) tu thu va dong y (R10).
 - Moi nguong, ten mo hinh, han muc qua env (R9).
 
-## 3. Diem mau thuan can nguoi dung chot
+## 3. Diem mau thuan
 
-1. **F4 vs F5/H1.** F4 chon "khong co nut danh gia", nhung F5 chon theo doi "ty le huu ich" va H1
-   chon "hang cho cau bi danh gia khong huu ich" -- hai muc nay can nut danh gia moi co du lieu.
-   Mac dinh dang lam theo F4: KHONG lam nut, bo hai muc phu thuoc.
+1. **F4 vs F5/H1 -- DA CHOT 02/11/2026:** khong co nut danh gia; bo "ty le huu ich" (F5) va
+   "hang cho cau bi danh gia khong huu ich" (H1).
 2. **B2 co "web tong quat".** Dang lam: tra web uu tien gov.au, chap nhan trang khac nhung gan
    nhan "Tra cuu web" va khong dung trang khong phai gov.au lam nguon cho con so (B5).
 3. **G2 nha cung cap mo hinh** -- cho nguoi dung cung cap truoc giai doan 3.
