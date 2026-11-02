@@ -25,7 +25,8 @@
     "translate-au-laws": "node scripts/translate-au-laws.js",
     "seed:au-missions": "node scripts/seed-au-missions.js",
     "seed:asia-missions": "node scripts/seed-asia-missions.js",
-    "seed:au-places": "node scripts/seed-au-support-places.js"
+    "seed:au-places": "node scripts/seed-au-support-places.js",
+    "seed:au-risk-zones": "node scripts/seed-au-risk-zones.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

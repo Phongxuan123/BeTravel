@@ -45,6 +45,12 @@ Du lieu cu tren Atlas (chatsessions, chatmessages, approvedfaqs, feedbacks, answ
 questionsimilaritycaches) CHUA xoa -- can nguoi quyet. Nguoi dung khong con nut "Xoa lich su hoi AI".
 Test chung minh draft/superseded/khong hien hanh khong lot RAG duoc giu, chuyen sang goi thang retrieval.
 
+## Vùng nguy cơ trên bản đồ Úc — 02/11/2026
+
+- Backend: model `RiskZone`, `GET /api/risk-zones` (chỉ published), CRUD `/api/admin/risk-zones`; không publish được nếu thiếu nguồn/kỳ số liệu. Mobile: lớp vòng tròn (hoặc đa giác nếu vùng có `area`) trên SOS map (Leaflet và native), lọc theo loại, sheet chi tiết kèm nguồn.
+- Dữ liệu: 6 vùng nhỏ seed ở `draft` (`npm run seed:au-risk-zones`): 4 điểm đông khách ở Melbourne (số liệu CSA cấp khu vực, lấy từ trang thứ ba, vị trí điểm do người viết chọn), Kings Cross (BOCSAR 1999-2012, cũ), Princetown trên Great Ocean Road (báo chí 2018-2019). Tâm/bán kính vẽ tay xấp xỉ. `scripts/publish-au-risk-zones-demo.js` chỉ để thử trên máy dev. Cần admin đối chiếu nguồn gốc, điền `source.period` rồi publish.
+- Chưa có: UI admin cho RiskZone (chỉ API); chưa chạy thật với Atlas và thiết bị.
+
 ## Sua loi toan dien theo ke hoach kiem dinh — 28/10/2026
 
 Da sua BUG-01, 04, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24 va V-01 den V-10,

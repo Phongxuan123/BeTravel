@@ -85,3 +85,11 @@ export const FallbackReason = Object.freeze({
   // Câu hỏi ngoài phạm vi pháp lý + an toàn du lịch.
   OUT_OF_SCOPE: "OUT_OF_SCOPE",
 });
+
+// Loai vung nguy co hien tren ban do (RiskZone). Them loai moi = them o day,
+// validator va model tu dong theo.
+export const RiskZoneCategory = Object.freeze({
+  ROAD_CRASH: "road_crash",
+  WRONG_WAY_DRIVING: "wrong_way_driving",
+  THEFT: "theft",
+});
