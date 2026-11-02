@@ -1,6 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit, Siren, Languages, TriangleAlert, Scale } from 'lucide-react';
+import { LayoutDashboard, Globe2, Tags, FileText, MapPin, History, LogOut, BrainCircuit, Siren, Languages, TriangleAlert, Scale, Bot } from 'lucide-react';
 import { useAuth } from '../lib/useAuth';
 
 const NAV_ITEMS = [
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { to: '/australia-laws', label: 'Luật Úc', icon: Scale },
   { to: '/quick-phrases', label: 'Câu dịch sẵn', icon: Languages },
   { to: '/geo-alerts', label: 'Cảnh báo vị trí', icon: TriangleAlert },
+  { to: '/assistant', label: 'Trợ lý AI', icon: Bot },
   { to: '/rag', label: 'RAG Index', icon: BrainCircuit },
   { to: '/audit', label: 'Nhật ký', icon: History },
 ];
@@ -31,6 +32,7 @@ function useBreadcrumb(): string[] {
     'australia-laws': 'Luật Úc',
     'quick-phrases': 'Câu dịch sẵn',
     'geo-alerts': 'Cảnh báo vị trí',
+    assistant: 'Trợ lý AI',
     rag: 'RAG Index',
     audit: 'Nhật ký',
     new: 'Tạo mới',

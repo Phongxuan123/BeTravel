@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "data": {
+    "days": 2,
+    "from": "2026-11-01",
+    "to": "2026-11-02",
+    "totals": {
+      "questions": 4,
+      "costEstimateVnd": 14.2,
+      "p50LatencyMs": 7100,
+      "p90LatencyMs": 9300,
+      "refusals": 1,
+      "refusalRate": 0.25,
+      "guardViolations": 1
+    },
+    "daily": [
+      {
+        "date": "2026-11-01",
+        "questions": 1,
+        "costEstimateVnd": 4,
+        "p50LatencyMs": 6800,
+        "p90LatencyMs": 6800,
+        "refusals": 0,
+        "refusalRate": 0
+      },
+      {
+        "date": "2026-11-02",
+        "questions": 3,
+        "costEstimateVnd": 10.2,
+        "p50LatencyMs": 7200,
+        "p90LatencyMs": 9300,
+        "refusals": 1,
+        "refusalRate": 0.333
+      }
+    ]
+  }
+}

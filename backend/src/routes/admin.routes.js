@@ -16,6 +16,7 @@ import * as auditController from "../controllers/adminAudit.controller.js";
 import * as dashboardController from "../controllers/adminDashboard.controller.js";
 import * as ragController from "../controllers/adminRag.controller.js";
 import * as analyticsController from "../controllers/adminAnalytics.controller.js";
+import * as assistantAdminController from "../controllers/adminAssistant.controller.js";
 import { incidentsController } from "../controllers/adminIncidents.controller.js";
 import { quickPhrasesController } from "../controllers/adminQuickPhrases.controller.js";
 import { geoAlertsController } from "../controllers/adminGeoAlerts.controller.js";
@@ -42,6 +43,9 @@ import {
   ragAuLawIndexSchema,
   ragAuLawParamSchema,
   analyticsOverviewQuerySchema,
+  assistantSettingsUpdateSchema,
+  assistantMessagesQuerySchema,
+  assistantMetricsQuerySchema,
   incidentCreateSchema,
   incidentUpdateSchema,
   incidentListQuerySchema,
@@ -114,6 +118,24 @@ router.get(
   "/analytics/overview",
   validateQuery(analyticsOverviewQuerySchema),
   analyticsController.overview,
+);
+
+// Tro ly AI ban 2 (contracts muc 26): cong tac tat nhanh, nhat ky hoi-dap da an PII, bieu do.
+router.get("/assistant/settings", assistantAdminController.getSettings);
+router.patch(
+  "/assistant/settings",
+  validateBody(assistantSettingsUpdateSchema),
+  assistantAdminController.updateSettings,
+);
+router.get(
+  "/assistant/messages",
+  validateQuery(assistantMessagesQuerySchema),
+  assistantAdminController.listMessages,
+);
+router.get(
+  "/assistant/metrics",
+  validateQuery(assistantMetricsQuerySchema),
+  assistantAdminController.metrics,
 );
 
 router.get("/incidents", validateQuery(incidentListQuerySchema), incidentsController.list);

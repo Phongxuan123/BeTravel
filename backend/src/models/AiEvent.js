@@ -31,7 +31,12 @@ const aiEventSchema = new mongoose.Schema(
     cacheHit: { type: Boolean, default: false },
     // G6: từ khoá đã chuẩn hoá của câu hỏi (gom nhóm câu cùng ý) và câu trả lời tương ứng.
     keywordTerms: { type: [String], default: [] },
-    messageId: { type: mongoose.Schema.Types.ObjectId, ref: "ChatMessage", default: null },
+    // Tro ly ban 2: id tin nhan tro ly (AssistantMessage) de Admin ghep telemetry voi hoi-dap.
+    messageId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    // Tro ly ban 2 (H1/F5): loai cau tra loi, tang nguon do code gan, so vi pham hau kiem.
+    kind: { type: String, default: null },
+    sourceTier: { type: String, default: null },
+    guardViolations: { type: Number, default: 0 },
     answerSource: { type: String, default: "ai" },
     faqId: { type: mongoose.Schema.Types.ObjectId, ref: "ApprovedFaq", default: null },
   },
@@ -39,5 +44,6 @@ const aiEventSchema = new mongoose.Schema(
 );
 
 aiEventSchema.index({ createdAt: -1 });
+aiEventSchema.index({ messageId: 1, createdAt: -1 });
 
 export default mongoose.model("AiEvent", aiEventSchema);

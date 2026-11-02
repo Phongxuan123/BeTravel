@@ -11,6 +11,11 @@ import type {
   RagArticleStatus,
   AuLawRagStatus,
   AnalyticsOverview,
+  AssistantSettings,
+  AssistantQaItem,
+  AssistantMetrics,
+  AssistantKind,
+  AssistantSourceTier,
   LocationBulkImportResult,
   IncidentType,
   QuickPhrase,
@@ -82,6 +87,15 @@ export const ragApi = {
 
 export const analyticsApi = {
   overview: (days?: number) => apiRequest<AnalyticsOverview>('/admin/analytics/overview', { query: { days } }),
+};
+
+export const assistantAdminApi = {
+  settings: () => apiRequest<AssistantSettings>('/admin/assistant/settings'),
+  setEnabled: (enabled: boolean) =>
+    apiRequest<AssistantSettings>('/admin/assistant/settings', { method: 'PATCH', body: { enabled } }),
+  messages: (query: { kind?: AssistantKind; sourceTier?: AssistantSourceTier; page: number; limit: number }) =>
+    apiRequest<AssistantQaItem[]>('/admin/assistant/messages', { query }),
+  metrics: (days: number) => apiRequest<AssistantMetrics>('/admin/assistant/metrics', { query: { days } }),
 };
 
 export const incidentsApi = createAdminResource<IncidentType>('/admin/incidents');

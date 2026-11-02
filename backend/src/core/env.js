@@ -137,6 +137,11 @@ const envSchema = z.object({
   ASSISTANT_WEB_TIMEOUT_MS: numeric(15_000),
   // Tên miền ưu tiên khi tra web; rỗng = không giới hạn tên miền (B2 cho phép web tổng quát).
   ASSISTANT_WEB_DOMAINS: csv("gov.au"),
+  // Công tắc Admin (DB) được nhớ trong RAM tối đa N ms; đổi qua Admin thì xoá ngay ở tiến trình đó.
+  ASSISTANT_SETTINGS_CACHE_MS: z.coerce.number().int().min(0).default(10_000),
+  // Giá ước tính (VND / 1 triệu token) để ghi chi phí từng lượt vào ai_events; 0 = chưa cấu hình.
+  ASSISTANT_PRICE_INPUT_VND_PER_M: numeric(0),
+  ASSISTANT_PRICE_OUTPUT_VND_PER_M: numeric(0),
 
   // Lớp địa điểm bổ sung (CHƯA xác minh, tách khỏi support_locations).
   // osm: OpenStreetMap qua Overpass, miễn phí, không cần key. serpapi: Google Maps qua SerpApi, tốn quota.

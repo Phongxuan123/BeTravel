@@ -1,5 +1,17 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- giai doan 6 (Admin) -- 02/11/2026
+
+Trang Admin "Tro ly AI" (`/assistant`, contracts muc 26): cong tac tat nhanh luu DB (`appsettings`,
+key `assistant.enabled`; env `ASSISTANT_ENABLED=false` van la khoa chinh, Admin khong bat lai duoc,
+409 `ENV_DISABLED`), cache RAM `ASSISTANT_SETTINGS_CACHE_MS` (10 s) bi xoa ngay khi PATCH, moi lan
+doi ghi audit log. Nhat ky hoi-dap ghep cau hoi lien truoc, an email/so dien thoai/so giay to/day
+so >= 8 chu so o backend (`utils/maskPersonalData.js`, giu 000/112/13 11 14/1300/1800), khong tra
+thong tin nguoi hoi. Bieu do chi phi + luot hoi theo ngay (UTC), p50/p90 do tre, ty le tu choi,
+so vi pham hau kiem. ai_events cua tro ly ghi them `messageId`, `kind`, `sourceTier`,
+`guardViolations`, `costEstimateVnd` (gia qua `ASSISTANT_PRICE_*_VND_PER_M`, mac dinh 0 -- can dat
+1200/7200 cho gpt-6-luna tren server). Khong co danh gia huu ich (F4). Chua nghiem thu tren UI that.
+
 ## Tro ly AI ban 2 -- giai doan 3 (backend) -- 02/11/2026
 
 `/api/assistant/*` (contracts muc 25): phan loai + tu khoa (mo hinh re) --> kho da kiem chung -->

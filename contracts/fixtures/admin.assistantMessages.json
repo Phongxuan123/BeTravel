@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "data": [
+    {
+      "id": "6a2f00000000000000000003",
+      "question": "Mang bao nhiêu tiền mặt vào Úc thì phải khai báo? Email tôi là [email đã ẩn]",
+      "answer": "Từ 10.000 AUD trở lên (tính cả ngoại tệ) thì phải khai báo [1].\n**Nên làm gì tiếp:** giữ biên nhận để xuất trình khi được hỏi.",
+      "countryCode": "AU",
+      "kind": "answer",
+      "sourceTier": "official",
+      "detailed": false,
+      "citations": [{ "n": 1, "title": "Mang tiền mặt vào hoặc ra khỏi Úc: khi nào phải khai báo" }],
+      "telemetry": {
+        "latencyMs": 7200,
+        "promptTokens": 1850,
+        "completionTokens": 210,
+        "costEstimateVnd": 3.73,
+        "guardViolations": 0
+      },
+      "createdAt": "2026-11-02T08:00:05.000Z"
+    }
+  ],
+  "meta": { "page": 1, "limit": 20, "total": 1 }
+}
