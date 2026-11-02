@@ -1,0 +1,45 @@
+{
+  "ok": true,
+  "data": {
+    "conversation": {
+      "id": "6a2f00000000000000000001",
+      "title": "Mang bao nhiêu tiền mặt vào Úc thì phải khai báo?",
+      "countryCode": "AU",
+      "updatedAt": "2026-11-02T08:00:00.000Z"
+    },
+    "userMessage": {
+      "id": "6a2f00000000000000000002",
+      "role": "user",
+      "content": "Mang bao nhiêu tiền mặt vào Úc thì phải khai báo?",
+      "kind": null,
+      "sourceTier": null,
+      "citations": [],
+      "clarifyOptions": [],
+      "emergencyNumber": null,
+      "detailed": false,
+      "tripContext": null,
+      "createdAt": "2026-11-02T08:00:00.000Z"
+    },
+    "message": {
+      "id": "6a2f00000000000000000003",
+      "role": "assistant",
+      "content": "Từ 10.000 AUD trở lên (tính cả ngoại tệ) thì phải khai báo [1].\n- Khai báo online trước khi qua hải quan [1].\n**Nên làm gì tiếp:** giữ biên nhận để xuất trình khi được hỏi.",
+      "kind": "answer",
+      "sourceTier": "official",
+      "citations": [
+        {
+          "n": 1,
+          "title": "Mang tiền mặt vào hoặc ra khỏi Úc: khi nào phải khai báo",
+          "url": "https://www.austrac.gov.au/general-public/moving-money-overseas",
+          "authority": "AUSTRAC",
+          "articleSlug": "khai-bao-tien-mat"
+        }
+      ],
+      "clarifyOptions": [],
+      "emergencyNumber": null,
+      "detailed": false,
+      "tripContext": "Sydney, 2026-10-27 - 2026-10-31",
+      "createdAt": "2026-11-02T08:00:05.000Z"
+    }
+  }
+}
