@@ -7,6 +7,7 @@
  * B3: countries/topics/legal articles/search/trips đã nối API thật -- đổi
  * theo EXPO_PUBLIC_USE_MOCKS.
  * B5: chat AI đã gỡ (01/11/2026) để xây lại; mock chat trong src/mocks/ giữ nguyên.
+ *     Trợ lý AI bản 2 (03/11/2026) nối /api/assistant -- đổi theo EXPO_PUBLIC_USE_MOCKS.
  * B6: SOS support-locations đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
  * B7: incidents + translator đã nối API thật -- đổi theo EXPO_PUBLIC_USE_MOCKS.
  * B8: alerts + favorites + preferences đã nối API thật -- đổi theo
@@ -25,6 +26,8 @@ import * as riskZonesApi from '@/lib/api/riskZones';
 import type { RiskZone } from '@/features/sos/riskZones';
 import * as favoritesApi from '@/lib/api/favorites';
 import * as preferencesApi from '@/lib/api/preferences';
+import * as assistantApi from '@/lib/api/assistant';
+import * as assistantMock from '@/mocks/assistant';
 
 // Cung quy uoc voi lib/auth.tsx: chi mock khi dat DUNG 'true', mac dinh la
 // API that (khac voi doc chu thich cu o day, da sua lai cho dung).
@@ -83,6 +86,14 @@ export const removeFavorite = USE_MOCKS ? mock.removeFavorite : favoritesApi.rem
 
 export const fetchPreferences = USE_MOCKS ? mock.fetchPreferences : preferencesApi.fetchPreferences;
 export const updatePreferences = USE_MOCKS ? mock.updatePreferences : preferencesApi.updatePreferences;
+
+const assistant = USE_MOCKS ? assistantMock : assistantApi;
+export const sendAssistantMessage = assistant.sendAssistantMessage;
+export const regenerateAssistantMessage = assistant.regenerateAssistantMessage;
+export const listAssistantConversations = assistant.listAssistantConversations;
+export const getAssistantConversation = assistant.getAssistantConversation;
+export const deleteAssistantConversation = assistant.deleteAssistantConversation;
+export const deleteAllAssistantConversations = assistant.deleteAllAssistantConversations;
 
 // Man hinh chi import tu @/lib/data, ke ca kieu du lieu -- khong tro thang
 // vao @/mocks (dau hieu hoan thanh B8 trong CLAUDE.md, detector D25).

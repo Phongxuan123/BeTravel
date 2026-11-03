@@ -238,7 +238,6 @@ export default function IncidentDetailScreen() {
           {[
             { label: 'Gọi hỗ trợ', icon: Phone, onPress: () => void openPhone(country?.embassy.phone) },
             { label: 'Mở bản đồ', icon: MapPin, onPress: () => router.push('/sos/map') },
-            { label: 'Hỏi AI', icon: MessageCircleQuestion, onPress: () => router.push({ pathname: '/chat', params: { q: incident.title } } as never) },
             { label: 'Dịch câu', icon: Languages, onPress: () => router.push('/translate') },
           ].map(({ label, icon: ToolIcon, onPress }) => (
             <Pressable

@@ -77,8 +77,12 @@ export const buildAnswerSystemPrompt = ({
     FORMAT_RULES(detailed),
     SOURCE_RULES[tier],
     NUMBER_RULES,
+    // Dong dau khan cap theo ngon ngu nguoi hoi: cau mau tieng Viet keo ca cau tra loi sang tieng
+    // Viet du nguoi dung hoi tieng Anh (thu tren may 03/11/2026).
     emergencyNumber
-      ? `Đây là tình huống khẩn cấp: dòng đầu là "**Gọi ${emergencyNumber} ngay.**", sau đó các bước ngắn trong lúc chờ.`
+      ? `Đây là tình huống khẩn cấp: dòng đầu là "**${
+          language === "en" ? `Call ${emergencyNumber} now.` : `Gọi ${emergencyNumber} ngay.`
+        }**", sau đó các bước ngắn trong lúc chờ.`
       : "",
     'Chỉ trả JSON đúng dạng {"answer":"..."}.',
   ]

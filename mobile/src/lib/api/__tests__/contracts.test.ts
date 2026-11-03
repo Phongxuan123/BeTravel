@@ -4,6 +4,8 @@ import refreshFixture from '../../../../../contracts/fixtures/auth.refresh.json'
 import meFixture from '../../../../../contracts/fixtures/auth.me.json';
 import validationErrorFixture from '../../../../../contracts/fixtures/error.validation.json';
 import unauthorizedErrorFixture from '../../../../../contracts/fixtures/error.unauthorized.json';
+import assistantMessageFixture from '../../../../../contracts/fixtures/assistant.message.json';
+import { sendAssistantResponseSchema } from '../assistant';
 import {
   registerResponseSchema,
   sessionResponseSchema,
@@ -37,5 +39,9 @@ describe('contracts fixtures parse duoc bang schema mobile', () => {
 
   it('error.unauthorized.json khop errorEnvelopeSchema', () => {
     expect(errorEnvelopeSchema.parse(unauthorizedErrorFixture.error)).toBeTruthy();
+  });
+
+  it('assistant.message.json khop sendAssistantResponseSchema (tro ly ban 2)', () => {
+    expect(sendAssistantResponseSchema.strict().parse(assistantMessageFixture.data)).toBeTruthy();
   });
 });
