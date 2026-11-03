@@ -1,3 +1,4 @@
+import { env } from "../../core/env.js";
 import { SourceTier } from "../../core/constants.js";
 
 /*
@@ -5,16 +6,14 @@ import { SourceTier } from "../../core/constants.js";
  * dong dau tra loi thang, it gach dau dong, "Nen lam gi tiep", ngan; chi in dam + danh sach.
  * Moi rang buoc nguon/con so van duoc HAU KIEM BANG CODE (guard.js) -- prompt chi la lop dau.
  */
-const WORD_LIMIT = { short: 80, detailed: 220 };
-
 const FORMAT_RULES = (detailed) =>
   [
     "Định dạng bắt buộc:",
     "- Dòng đầu trả lời thẳng câu hỏi (Có / Không / Cần làm gì). Không chào hỏi, không rào đón,",
     "  không nhắc lại câu hỏi.",
-    `- Sau đó ${detailed ? "các" : "tối đa 4"} gạch đầu dòng ngắn bắt đầu bằng "- ".`,
+    `- Sau đó ${detailed ? "các" : "tối đa 5"} gạch đầu dòng ngắn bắt đầu bằng "- ".`,
     '- Dòng cuối bắt đầu bằng "**Nên làm gì tiếp:**" và một việc cụ thể.',
-    `- Tổng dưới ${detailed ? WORD_LIMIT.detailed : WORD_LIMIT.short} từ.`,
+    `- Tổng dưới ${detailed ? env.ASSISTANT_DETAILED_WORD_LIMIT : env.ASSISTANT_WORD_LIMIT} từ.`,
     "- Chỉ dùng **in đậm** và gạch đầu dòng. Không tiêu đề, không bảng, không emoji.",
     '- Gọi người dùng là "bạn", không tự xưng.',
   ].join("\n");
@@ -24,17 +23,32 @@ const SOURCE_RULES = {
     "Nguồn: dùng thông tin trong các khối [1], [2]... bên dưới. Gắn [n] ngay sau câu dùng nguồn đó.",
     "Không tự tạo số [n] không có trong danh sách. Con số cụ thể (tiền, mức phạt, số giờ, số lít,",
     "số năm tù, ngưỡng) CHỈ được nêu khi có trong nguồn và phải kèm [n].",
-    "Nguồn chưa đủ cho một phần câu hỏi thì bổ sung kiến thức chung, nhưng không nêu con số cho phần đó.",
+    "Nguồn chưa đủ cho một phần câu hỏi thì bổ sung kiến thức chung theo quy tắc con số bên dưới.",
     "Chỉ gắn [n] khi khối đó thật sự nói đúng ý của câu; khối không liên quan thì bỏ qua, không trích.",
     'Nguồn chỉ nói "phải khai báo" thì không được suy ra "được mang": nói rõ có thể bị giữ lại/tịch',
-    "  thu và món nào thường bị cấm theo hiểu biết chung (không kèm con số).",
+    "  thu và món nào thường bị cấm theo hiểu biết chung (không kèm con số). Khi đó dòng đầu KHÔNG mở",
+    '  bằng "Có" / "Có thể mang" mà mở bằng "Phải khai báo" và nói món nào dễ bị tịch thu (vd thịt,',
+    "  khô bò, trứng, sữa, đồ có nhân thịt thường bị cấm).",
   ].join("\n"),
   [SourceTier.GENERAL]: [
     "Không có nguồn kiểm chứng cho câu này: trả lời bằng kiến thức chung, chắc chắn ở mức có thể.",
-    "KHÔNG nêu con số cụ thể (tiền, mức phạt, số giờ, ngưỡng); thay vào đó nêu tên cơ quan hoặc trang",
-    "chính thức để người dùng tự kiểm tra.",
+    "Con số pháp lý thì không nêu, thay bằng tên cơ quan hoặc trang chính thức để người dùng tự kiểm tra.",
   ].join("\n"),
 };
+
+/*
+ * Quy tac con so (B5, noi ngay 03/11/2026): so PHAP LY van bat buoc co nguon -- guard.js go cau co
+ * so tien/muc phat/nam tu/han muc/ty le/dieu luat ma khong co [n]. So thong thuong khong phai luat
+ * (nhiet do, thoi gian, khoang cach, thoi han luu tru pho bien) duoc neu theo hieu biet chung.
+ */
+const NUMBER_RULES = [
+  "Quy tắc con số:",
+  "- Con số pháp lý (tiền, mức phạt, số năm tù, ngưỡng khai báo, hạn mức hàng mang theo, giới hạn giờ",
+  "  làm việc, tỉ lệ, số điều luật) CHỈ nêu khi có trong nguồn và kèm [n].",
+  "- Con số thông thường không phải luật (nhiệt độ, giờ bay, khoảng cách, thời hạn lưu trú phổ biến",
+  '  của visa du lịch...) được nêu theo hiểu biết chung, dùng "thường", "khoảng" và nhắc kiểm tra',
+  "  giấy tờ/nguồn chính thức khi con số phụ thuộc trường hợp cụ thể.",
+].join("\n");
 
 const LANGUAGE_NAME = { vi: "tiếng Việt", en: "tiếng Anh (English)" };
 
@@ -62,6 +76,7 @@ export const buildAnswerSystemPrompt = ({
     COMMON_RULES(countryName, language),
     FORMAT_RULES(detailed),
     SOURCE_RULES[tier],
+    NUMBER_RULES,
     emergencyNumber
       ? `Đây là tình huống khẩn cấp: dòng đầu là "**Gọi ${emergencyNumber} ngay.**", sau đó các bước ngắn trong lúc chờ.`
       : "",

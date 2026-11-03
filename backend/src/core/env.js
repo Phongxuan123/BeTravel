@@ -127,6 +127,9 @@ const envSchema = z.object({
   ASSISTANT_TRIAGE_MODEL: z.string().optional().default(""),
   ASSISTANT_TIMEOUT_MS: numeric(25_000),
   ASSISTANT_MAX_OUTPUT_TOKENS: numeric(700),
+  // Gioi han tu cua cau tra loi (C2, nguoi dung noi tu 80 len 120 ngay 03/11/2026).
+  ASSISTANT_WORD_LIMIT: numeric(120),
+  ASSISTANT_DETAILED_WORD_LIMIT: numeric(250),
   // Số lượt hội thoại gần nhất gửi kèm để hiểu câu hỏi nối tiếp (D1).
   ASSISTANT_HISTORY_TURNS: numeric(6),
   // Lịch sử trò chuyện tự xoá sau N ngày (H2).

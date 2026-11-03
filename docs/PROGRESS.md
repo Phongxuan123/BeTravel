@@ -1,5 +1,21 @@
 # TIEN DO BE.TRAVEL
 
+## Tro ly AI ban 2 -- noi gioi han tu va quy tac con so -- 03/11/2026
+
+- Nguoi dung chot: cau tra loi duoi 120 tu (env `ASSISTANT_WORD_LIMIT`, che do chi tiet
+  `ASSISTANT_DETAILED_WORD_LIMIT`=250), toi da 5 gach dau dong. So thong thuong khong phai luat
+  (nhiet do, thoi gian, khoang cach, thoi han luu tru pho bien) duoc neu theo hieu biet chung; so
+  phap ly van bat buoc co nguon, guard.js khong doi. Q03: khong mo dau "Co the mang" khi nguon
+  chi noi phai khai bao.
+- Bo 50 cau: dung loai 49/50 (Q30 sot cao duoc xep khan cap -- hien nut 000, chap nhan), tu choi
+  sai 0, 0 vi pham hau kiem, p50 6,5 s, p90 8,9 s.
+- So mu vong 3 (10 agent): thang 41%, thang+hoa 50% (vong 2: 44%). Chua dat 60%.
+- Loi con lai nam o NOI DUNG bai, can nguoi doi chieu nguon (khong tu sua): Q04/Q50 thieu han muc
+  goi thuoc la da mo, Q02 BNI co cong vao nguong 10.000 AUD khong, Q09 gioi han 6 thang bang lai
+  nuoc ngoai o NSW, Q07 muc phat 7.280 AUD con hien hanh khong, Q25 so duong day nong.
+- Vung nguy co: da chay `npm run seed:au-risk-zones` tren Atlas (6 vung ban moi, 3 vung cu ve
+  draft). Link nguon Victoria Police tra 404 -- can sua link.
+
 ## Tro ly AI ban 2 -- tim bai theo muc luc + so mu lan 1 -- 02/11/2026 (toi)
 
 - Tim bai khong embedding: buoc phan loai nhan muc luc bai published + isCurrent va chon toi da 3
