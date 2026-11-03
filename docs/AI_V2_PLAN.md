@@ -32,14 +32,16 @@ sua o day truoc.
 - Nhan do tin cay 3 muc tren moi cau tra loi: Nguon chinh thuc / Tra cuu web / Kien thuc chung (B4).
   Khong bat buoc tach doan theo nguon (R4 bo).
 - Con so (muc phat, nguong tien, so nam tu): chi neu khi co trich dan; khong co thi noi can kiem
-  tra + dua link (B5). Hau kiem bang code.
+  tra + dua link (B5). Hau kiem bang code. **Noi 03/11/2026:** so thong thuong khong phai luat
+  (nhiet do, thoi gian, khoang cach, thoi han luu tru pho bien) duoc neu theo hieu biet chung;
+  so phap ly van bat buoc co nguon (guard.js khong doi).
 - Luat bang: tra loi chung + ghi chu "moi bang co the khac" (B6).
 - Khong bao gio bia nguon: [n] chi tro toi nguon that da lay ve, code xoa so sai (R3).
 - Chi noi dung published + isCurrent (R5). Khong cam ket "100% chinh xac" (R7).
 
 **Hinh thuc**
 - Dong dau tra loi thang, vai gach dau dong, cuoi la "Nen lam gi tiep" (C1).
-- Ngan duoi 80 tu + nut "Giai thich chi tiet hon" (C2). Chi in dam va danh sach (C3).
+- Ngan duoi 80 tu (**noi len 120 tu ngay 03/11/2026**, env `ASSISTANT_WORD_LIMIT`) + nut "Giai thich chi tiet hon" (C2). Chi in dam va danh sach (C3).
 - Trich dan so nho [1] trong cau, danh sach nguon thu gon cuoi (C4).
 - Loi mien tru: mot lan o man hinh chat, khong lap lai moi cau (C5).
 - Goi "ban", khong xung (C6). Khong goi y cau tiep theo (C7). Khong nut hanh dong (C8),
@@ -107,7 +109,7 @@ sua o day truoc.
 
 **Ket qua so mu tam thoi 02/11/2026** (10 agent, chua phai 3-5 nguoi that): vong 2 thang 41%,
 thang+hoa 44% -- duoi nguong 60%. Chi tiet va nguyen nhan: `docs/PROGRESS.md`. Hai don bay lon nhat
-deu dung vao quyet dinh da chot (C2 duoi 80 tu, B5 khong so khi khong nguon) --> can nguoi chot lai.
+deu dung vao quyet dinh da chot (C2 duoi 80 tu, B5 khong so khi khong nguon) --> nguoi dung da chot noi ca hai ngay 03/11/2026.
 
 Rang buoc ky thuat giu nguyen: contract truoc code (`contracts/README.md`), envelope + ErrorCode
 dong, khong hard-code quoc gia/mo hinh/nguong, chi Uc dang `active` nhung code van country-driven.
