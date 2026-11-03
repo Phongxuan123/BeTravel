@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Dimensions, Keyboard, Platform } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Dimensions, Keyboard, Platform, type View } from 'react-native';
 
 /**
  * Chiều cao bàn phím đang mở (0 khi đóng), tính từ đáy màn hình. Expo SDK 57 chạy edge-to-edge nên
@@ -24,4 +24,34 @@ export function useKeyboardInset(): number {
     };
   }, []);
   return inset;
+}
+
+/**
+ * Phần đáy của một view đang bị bàn phím che, đo theo toạ độ thật trên màn hình. Khác
+ * useKeyboardInset: nếu hệ điều hành đã tự co cửa sổ (adjustResize) thì view đã nằm trên bàn phím
+ * và kết quả là 0, nên không cộng đôi chiều cao bàn phím làm ô nhập bị đẩy sai chỗ.
+ */
+export function useKeyboardOverlap() {
+  const viewRef = useRef<View>(null);
+  const [overlap, setOverlap] = useState(0);
+  const measure = useCallback((keyboardTop: number | null) => {
+    if (keyboardTop === null) {
+      setOverlap(0);
+      return;
+    }
+    viewRef.current?.measureInWindow((_x, y, _width, height) => {
+      setOverlap(Math.max(0, Math.round(y + height - keyboardTop)));
+    });
+  }, []);
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    const show = Keyboard.addListener(showEvent, (event) => measure(event.endCoordinates.screenY));
+    const hide = Keyboard.addListener(hideEvent, () => measure(null));
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, [measure]);
+  return { viewRef, overlap };
 }
