@@ -9,7 +9,7 @@
   tin chuyen di (hien va tat duoc); lich su xem lai/xoa/xoa het; loi mien tru mot lan; bat buoc dang
   nhap. API `lib/api/assistant.ts` + mock demo; contract test voi fixture.
 - E6: go loi vao "Hoi AI" o bai cam nang, su co, tim kiem; con tab Tro ly AI + o "AI phap ly" o Home.
-- R10: man moi chi bat khi `EXPO_PUBLIC_ASSISTANT_ENABLED=true`; mac dinh van la man cho.
+- R10: chu du an dong y 03/11/2026 -> mac dinh bat; `EXPO_PUBLIC_ASSISTANT_ENABLED=false` de quay ve man cho.
 - Thu that tren emulator (Atlas + APIZ): hoi vape (tieng Anh) -> Nguon chinh thuc, mo danh sach nguon;
   khan cap Bondi -> nut Goi 000; tra loi lai; lich su + xoa. Sua loi phat hien khi thu: dong dau khan
   cap luon tieng Viet keo ca cau tra loi tieng Anh sang tieng Viet.
