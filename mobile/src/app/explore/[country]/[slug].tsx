@@ -1,9 +1,8 @@
 import { View, Text, ScrollView, Share, Pressable } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft, Info, MessageCircle, Bookmark, Share as ShareIcon, TriangleAlert, X, ShieldCheck } from 'lucide-react-native';
+import { ChevronLeft, Info, Bookmark, Share as ShareIcon, TriangleAlert, X, ShieldCheck } from 'lucide-react-native';
 import { PageHeaderBare } from '@/components/common/PageHeader';
-import { BottomActionBar } from '@/components/common/BottomActionBar';
 import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { IconButton } from '@/components/ui/IconButton';
 import { Badge } from '@/components/ui/Badge';
@@ -90,7 +89,7 @@ export default function ArticleDetailScreen() {
           </>
         }
       />
-      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 40 }}>
         <View className="flex-row flex-wrap items-center" style={{ columnGap: 6 }}>
           <Text className="text-xs font-body-bold text-primary-strong">{countryName(countryCode)}</Text>
           {!!topicLabel && <Text className="text-xs text-muted">· {topicLabel}</Text>}
@@ -178,17 +177,6 @@ export default function ArticleDetailScreen() {
         </View>
       </ScrollView>
 
-      <BottomActionBar>
-        <Button
-          label="Hỏi AI về chủ đề này"
-          iconLeft={<MessageCircle size={18} color="#fff" />}
-          onPress={() =>
-            router.push(
-              `/chat?country=${countryCode}&focusArticleId=${article.id}&q=${encodeURIComponent(`Giải thích rõ hơn về "${article.title}" giúp mình.`)}` as never,
-            )
-          }
-        />
-      </BottomActionBar>
     </View>
   );
 }

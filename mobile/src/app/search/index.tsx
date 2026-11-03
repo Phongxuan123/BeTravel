@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, MessageCircle, Search as SearchIcon, X, Check, CircleCheck, Sparkles } from 'lucide-react-native';
+import { ArrowUpRight, Search as SearchIcon, X, Check, CircleCheck } from 'lucide-react-native';
 import { PageHeader } from '@/components/common/PageHeader';
 import { ComingSoonScreen } from '@/components/common/ComingSoonScreen';
 import { Button } from '@/components/ui/Button';
@@ -127,21 +127,6 @@ export default function SearchScreen() {
               ))}
             </View>
 
-            <View className="mt-4 flex-row items-center rounded-2xl bg-primary-soft p-4" style={{ gap: 12 }}>
-              <View className="flex-1">
-                <Text className="text-sm font-body-bold text-ink">Cần phân tích tình huống cụ thể của bạn?</Text>
-                <Text className="mt-0.5 text-xs text-muted">Be.Travel AI trả lời kèm trích dẫn nguồn đã kiểm chứng.</Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => router.push(`/chat?q=${encodeURIComponent(query)}` as never)}
-                className="min-h-[44px] flex-row items-center justify-center rounded-2xl bg-primary px-4"
-                style={{ gap: 6 }}
-              >
-                <Sparkles size={16} color="#fff" />
-                <Text className="text-sm font-body-bold text-white">Hỏi AI</Text>
-              </Pressable>
-            </View>
           </>
         )}
 
@@ -150,9 +135,8 @@ export default function SearchScreen() {
             <Text className="mb-3 text-[13px] text-muted">Tìm thấy 0 kết quả phù hợp</Text>
             <EmptyState
               title="Không tìm thấy thông tin phù hợp"
-              description={`Chưa có bài viết cố định khớp với từ khóa "${debounced.trim()}". Hãy thử từ khóa gợi ý bên dưới hoặc hỏi trực tiếp Trợ lý AI pháp lý.`}
+              description={`Chưa có bài viết cố định khớp với từ khóa "${debounced.trim()}". Hãy thử từ khóa gợi ý bên dưới hoặc hỏi Trợ lý AI ở tab Trợ lý AI.`}
             >
-              <Button label="Hỏi AI" iconLeft={<MessageCircle size={18} color="#fff" />} onPress={() => router.push(`/chat?q=${encodeURIComponent(query)}` as never)} />
               <Button label="Xem tất cả chủ đề" variant="secondary" onPress={() => router.push('/explore')} />
             </EmptyState>
 
