@@ -1,6 +1,7 @@
 import { env } from "../../core/env.js";
 import { AssistantKind, SourceTier } from "../../core/constants.js";
-import { retrieve } from "../retrieval.js";
+import { retrieve, retrieveArticlesBySlug } from "../retrieval.js";
+import { getArticleIndex } from "./articleIndex.js";
 import { guardAnswer } from "./guard.js";
 import { buildAnswerSystemPrompt, buildUserPrompt } from "./prompts.js";
 import { getAnswerProvider, getWebSearchProvider } from "./providers.js";
@@ -70,13 +71,39 @@ const chunkToCitation = (chunk) => ({
   articleSlug: chunk.articleSlug ?? "",
 });
 
-async function safeRetrieve(question, countryCode, keywords) {
+// Loi truy hoi khong lam hong luot hoi: ha xuong tang sau (web / kien thuc chung).
+async function safely(label, task, fallback) {
   try {
-    return await retrieve({ question, countryCode, keywords });
+    return await task();
   } catch (error) {
-    console.error("[assistant] truy hoi loi:", String(error?.message ?? error).slice(0, 200));
-    return { passed: false, chunks: [], topScore: 0 };
+    console.error(`[assistant] ${label} loi:`, String(error?.message ?? error).slice(0, 200));
+    return fallback;
   }
+}
+
+const NO_EVIDENCE = { passed: false, chunks: [], topScore: 0 };
+
+/*
+ * Hai duong vao kho, chay song song: (1) bai mo hinh chon tu muc luc, (2) tim theo tu khoa.
+ * Bai duoc chon dung truoc; chunk trung bo bot; tong so chunk giu trong RAG_TOP_K.
+ */
+async function retrieveEvidence({ question, countryCode, keywords, articleSlugs }) {
+  const [picked, lexical] = await Promise.all([
+    safely(
+      "truy hoi theo bai",
+      () => retrieveArticlesBySlug({ countryCode, articleSlugs }),
+      NO_EVIDENCE,
+    ),
+    safely("truy hoi", () => retrieve({ question, countryCode, keywords }), NO_EVIDENCE),
+  ]);
+  const passedLists = [picked, lexical].filter((result) => result.passed);
+  if (passedLists.length === 0) return lexical;
+  const seen = new Set();
+  const chunks = passedLists
+    .flatMap((result) => result.chunks)
+    .filter((chunk) => !seen.has(chunk.chunkId) && seen.add(chunk.chunkId))
+    .slice(0, env.RAG_TOP_K);
+  return { passed: true, chunks, topScore: lexical.topScore ?? 0 };
 }
 
 async function generate({
@@ -89,6 +116,7 @@ async function generate({
   emergencyNumber,
   groups,
   usage,
+  language,
 }) {
   const raw = await getAnswerProvider().complete({
     systemPrompt: buildAnswerSystemPrompt({
@@ -96,6 +124,7 @@ async function generate({
       tier,
       detailed,
       emergencyNumber,
+      language,
     }),
     userPrompt: buildUserPrompt({
       question,
@@ -109,17 +138,49 @@ async function generate({
     timeoutMs: env.ASSISTANT_TIMEOUT_MS,
     onUsage: usage.add,
   });
+  return extractAnswer(raw);
+}
+
+// JSON bi cat ngang (het token) van cuu duoc phan "answer" da viet xong.
+const PARTIAL_ANSWER = /"answer"\s*:\s*"((?:\\.|[^"\\])*)/;
+
+/*
+ * Lay cau tra loi tu dau ra mo hinh. Do 02/11: gpt-6-luna doi khi bo qua yeu cau JSON va tra van
+ * ban tron -- dung luon van ban do (van qua guard.js), thay vi bao "chua soan duoc".
+ */
+export const extractAnswer = (raw) => {
   const parsed = parseJsonObject(raw);
-  return typeof parsed?.answer === "string" ? parsed.answer : "";
+  if (typeof parsed?.answer === "string") return parsed.answer;
+  const partial = raw.match(PARTIAL_ANSWER)?.[1];
+  if (partial) {
+    try {
+      return JSON.parse(`"${partial}"`).trim();
+    } catch {
+      return "";
+    }
+  }
+  const looksLikeJson = raw.trimStart().startsWith("{");
+  return looksLikeJson ? "" : raw.trim();
+};
+
+// Dau ra rong / hong han: thu lai mot lan truoc khi bao "chua soan duoc".
+async function generateWithRetry(params) {
+  const first = await generate(params);
+  return first.trim() ? first : generate(params);
 }
 
 // Chon tang nguon va soan cau tra loi tho (chua hau kiem). sources: danh sach nguon theo so [n].
 async function composeAnswer(params) {
-  const { question, country, usage, keywords } = params;
-  const retrieval = await safeRetrieve(question, country.code, keywords);
+  const { question, country, usage, keywords, articleSlugs } = params;
+  const retrieval = await retrieveEvidence({
+    question,
+    countryCode: country.code,
+    keywords,
+    articleSlugs,
+  });
   if (retrieval.passed) {
     const groups = groupChunksBySource(retrieval.chunks);
-    const answer = await generate({ ...params, tier: SourceTier.OFFICIAL, groups });
+    const answer = await generateWithRetry({ ...params, tier: SourceTier.OFFICIAL, groups });
     const sources = groups.map(({ texts: _texts, ...citation }) => citation);
     return { tier: SourceTier.OFFICIAL, answer, sources, retrieval };
   }
@@ -135,7 +196,7 @@ async function composeAnswer(params) {
       };
     return { tier: SourceTier.WEB, answer: web.answer, sources, retrieval, webSearch: true };
   }
-  const answer = await generate({ ...params, tier: SourceTier.GENERAL, groups: [] });
+  const answer = await generateWithRetry({ ...params, tier: SourceTier.GENERAL, groups: [] });
   return {
     tier: SourceTier.GENERAL,
     answer,
@@ -167,7 +228,8 @@ export async function answerQuestion({
 }) {
   const language = detectLanguage(message);
   const usage = createUsage();
-  const triage = await triageMessage({ message, history });
+  const articleIndex = await safely("muc luc cam nang", () => getArticleIndex(country.code), null);
+  const triage = await triageMessage({ message, history, articleIndex });
   const baseMeta = {
     question: triage.question,
     chunkIds: [],
@@ -201,6 +263,8 @@ export async function answerQuestion({
     emergencyNumber,
     usage,
     keywords: triage.keywords,
+    articleSlugs: triage.articleSlugs,
+    language,
   });
   const allowedNumbers = new Set(
     composed.sources.map((source, index) => (source ? index + 1 : null)).filter(Boolean),

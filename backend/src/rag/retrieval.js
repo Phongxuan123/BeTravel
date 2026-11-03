@@ -109,30 +109,35 @@ const FOCUS_ARTICLE_WEIGHT = 0.5;
 const VECTOR_WEIGHT = 0.7;
 const KEYWORD_WEIGHT = 0.3;
 
-async function fetchFocusArticleChunks(focusArticleId, countryCode) {
-  if (!focusArticleId) return [];
+const toPlainChunk = (c) => ({
+  _id: String(c._id),
+  articleId: String(c.articleId),
+  articleSlug: c.articleSlug,
+  articleVersion: c.articleVersion,
+  heading: c.heading,
+  text: c.text,
+  textNorm: c.textNorm,
+  kind: c.kind,
+  countryCode: c.countryCode,
+  topicSlug: c.topicSlug,
+});
+
+async function fetchArticleChunks(articleIds, countryCode) {
+  if (articleIds.length === 0) return [];
 
   const chunks = await LegalChunk.find({
-    articleId: focusArticleId,
+    articleId: { $in: articleIds },
     countryCode,
     status: ContentStatus.PUBLISHED,
   })
     .sort({ order: 1 })
     .lean();
 
-  return chunks.map((c) => ({
-    _id: String(c._id),
-    articleId: String(c.articleId),
-    articleSlug: c.articleSlug,
-    articleVersion: c.articleVersion,
-    heading: c.heading,
-    text: c.text,
-    textNorm: c.textNorm,
-    kind: c.kind,
-    countryCode: c.countryCode,
-    topicSlug: c.topicSlug,
-  }));
+  return chunks.map(toPlainChunk);
 }
+
+const fetchFocusArticleChunks = (focusArticleId, countryCode) =>
+  focusArticleId ? fetchArticleChunks([focusArticleId], countryCode) : Promise.resolve([]);
 
 /*
  * LOP PHONG THU THU HAI -- KHONG BAO GIO tin field `status` copy tren chunk
@@ -385,6 +390,32 @@ export async function retrieveLexical({
     ...(focusChunks.length ? [{ items: focusChunks, weight: FOCUS_ARTICLE_WEIGHT }] : []),
   ]).slice(0, env.RAG_TOP_K);
   return buildRetrievalResult(fused, countryCode, topScore);
+}
+
+/*
+ * Truy hoi theo BAI do buoc phan loai chon tu muc luc cam nang (tro ly ban 2, khong embedding):
+ * tim theo tu khoa hay truot khi cau hoi dung tu khac van ban ("vape" vs "thuoc la dien tu"),
+ * nen mo hinh re chon slug truc tiep. Slug chi la goi y: van chi lay bai published + isCurrent
+ * va van qua lop xac minh buildRetrievalResult nhu moi nhanh khac.
+ */
+export async function retrieveArticlesBySlug({ countryCode, articleSlugs }) {
+  if (!articleSlugs?.length) return notEnoughEvidence(0);
+  const articles = await LegalArticle.find({
+    countryCode,
+    slug: { $in: articleSlugs },
+    status: ContentStatus.PUBLISHED,
+    isCurrent: true,
+  })
+    .select("_id slug")
+    .lean();
+  const rank = (slug) => articleSlugs.indexOf(slug);
+  const articleIds = articles
+    .sort((a, b) => rank(a.slug) - rank(b.slug))
+    .map((article) => String(article._id));
+  const chunks = await fetchArticleChunks(articleIds, countryCode);
+  // Giu thu tu bai theo muc do lien quan ma mo hinh da xep.
+  const ordered = articleIds.flatMap((id) => chunks.filter((chunk) => chunk.articleId === id));
+  return buildRetrievalResult(ordered.slice(0, env.RAG_TOP_K), countryCode, 0);
 }
 
 async function retrieveHybrid({ question, countryCode, topicSlug, focusArticleId }) {

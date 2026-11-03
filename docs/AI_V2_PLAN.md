@@ -105,5 +105,9 @@ sua o day truoc.
 | 5 | Man hinh chat mobile kieu ChatGPT, loi vao tab + Trang chu, nut 000, sao chep/tra loi lai | Nguoi dung tu thu tren may va dong y (R10) |
 | 6 | Admin: xem hoi-dap, kill switch, bieu do chi phi | Mo cho tat ca |
 
+**Ket qua so mu tam thoi 02/11/2026** (10 agent, chua phai 3-5 nguoi that): vong 2 thang 41%,
+thang+hoa 44% -- duoi nguong 60%. Chi tiet va nguyen nhan: `docs/PROGRESS.md`. Hai don bay lon nhat
+deu dung vao quyet dinh da chot (C2 duoi 80 tu, B5 khong so khi khong nguon) --> can nguoi chot lai.
+
 Rang buoc ky thuat giu nguyen: contract truoc code (`contracts/README.md`), envelope + ErrorCode
 dong, khong hard-code quoc gia/mo hinh/nguong, chi Uc dang `active` nhung code van country-driven.

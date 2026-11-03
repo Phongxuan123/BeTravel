@@ -4,9 +4,10 @@ import { TRIAGE_SYSTEM_PROMPT, buildUserPrompt } from "./prompts.js";
 import { getTriageProvider } from "./providers.js";
 import { parseRewriteJson } from "../queryRewrite.js";
 
-const TRIAGE_MAX_OUTPUT_TOKENS = 300;
+const TRIAGE_MAX_OUTPUT_TOKENS = 400;
 const MAX_OPTIONS = 4;
 const MAX_OPTION_LENGTH = 60;
+const MAX_ARTICLES = 3;
 
 const INTENT_TO_KIND = Object.freeze({
   answer: AssistantKind.ANSWER,
@@ -34,6 +35,12 @@ const toOptions = (value) =>
     .map((item) => item.trim().slice(0, MAX_OPTION_LENGTH))
     .slice(0, MAX_OPTIONS);
 
+// Chi giu slug co that trong muc luc: mo hinh bia slug thi bo, khong de lot xuong truy hoi.
+const toArticleSlugs = (value, knownSlugs) =>
+  [...new Set(Array.isArray(value) ? value : [])]
+    .filter((slug) => typeof slug === "string" && knownSlugs?.has(slug))
+    .slice(0, MAX_ARTICLES);
+
 // Phat hien ngon ngu tho: co dau tieng Viet --> vi, con lai la chu Latin khong dau --> en.
 export const detectLanguage = (text) =>
   /[ăâđêôơưàáạảãèéẹẻẽìíịỉĩòóọỏõùúụủũỳýỵỷỹ]/i.test(text) ? "vi" : "en";
@@ -43,12 +50,18 @@ export const detectLanguage = (text) =>
  * Loi mo hinh KHONG lam hong luot hoi: coi nhu cau hoi binh thuong, giu nguyen van ban goc --
  * nguyen tac ban 2 la khong tu choi sai (R6).
  */
-export async function triageMessage({ message, history }) {
-  const fallback = { kind: AssistantKind.ANSWER, question: message, reply: "", options: [] };
+export async function triageMessage({ message, history, articleIndex = null }) {
+  const fallback = {
+    kind: AssistantKind.ANSWER,
+    question: message,
+    reply: "",
+    options: [],
+    articleSlugs: [],
+  };
   try {
     const raw = await getTriageProvider().complete({
       systemPrompt: TRIAGE_SYSTEM_PROMPT,
-      userPrompt: buildUserPrompt({ question: message, history }),
+      userPrompt: buildUserPrompt({ question: message, history, articleIndex: articleIndex?.text }),
       chunks: [],
       question: message,
       maxOutputTokens: TRIAGE_MAX_OUTPUT_TOKENS,
@@ -67,6 +80,7 @@ export async function triageMessage({ message, history }) {
       keywords: parsed.keywords
         ? (parseRewriteJson(JSON.stringify(parsed.keywords)) ?? undefined)
         : undefined,
+      articleSlugs: toArticleSlugs(parsed.articles, articleIndex?.slugs),
     };
   } catch (error) {
     console.error(

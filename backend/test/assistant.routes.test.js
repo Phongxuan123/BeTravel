@@ -18,25 +18,22 @@ let providers;
 let embeddingIndex;
 let memoryDriver;
 let mockEmbedding;
+let articleIndex;
 
 const auth = (token) => `Bearer ${token}`;
 
 const TRIAGE_RULES = [
+  [/phở/, { intent: "out_of_scope", reply: "Trợ lý chỉ hỗ trợ chủ đề chuyến đi." }],
+  [/giấu thịt/, { intent: "harmful", reply: "Không thể giúp việc này, hãy khai báo." }],
+  [/bất tỉnh/, { intent: "emergency" }],
+  // Tu khong trung chu nao trong bai: chi tim ra nho buoc chon bai tu muc luc.
+  [/vape/, { intent: "answer", articles: ["vuot-den-do"], keywords: { vi: ["zzz"], en: ["zzz"] } }],
   [
-    /phá»Ÿ/,
-    { intent: "out_of_scope", reply: "Trá»£ lĂ½ chá»‰ há»— trá»£ chá»§ Ä‘á» chuyáº¿n Ä‘i." },
-  ],
-  [
-    /giáº¥u thá»‹t/,
-    { intent: "harmful", reply: "KhĂ´ng thá»ƒ giĂºp viá»‡c nĂ y, hĂ£y khai bĂ¡o." },
-  ],
-  [/báº¥t tá»‰nh/, { intent: "emergency" }],
-  [
-    /^cĂ³ bá»‹ pháº¡t khĂ´ng\?$/i,
+    /^có bị phạt không\?$/i,
     {
       intent: "clarify",
-      reply: "Báº¡n há»i vá» hĂ nh vi nĂ o?",
-      options: ["Giao thĂ´ng", "Háº£i quan"],
+      reply: "Bạn hỏi về hành vi nào?",
+      options: ["Giao thông", "Hải quan"],
     },
   ],
 ];
@@ -54,8 +51,8 @@ const fakeAnswer = {
   model: "fake-answer",
   async complete({ chunks }) {
     const answer = chunks.length
-      ? "CĂ³, bá»‹ pháº¡t [1]. Má»©c pháº¡t lĂ  500 AUD. Xem thĂªm [9].\n**NĂªn lĂ m gĂ¬ tiáº¿p:** dá»«ng trÆ°á»›c váº¡ch."
-      : "NĂªn mang Ă¡o áº¥m. PhĂ­ lĂ  50 AUD.\n**NĂªn lĂ m gĂ¬ tiáº¿p:** xem dá»± bĂ¡o.";
+      ? "Có, bị phạt [1]. Mức phạt là 500 AUD. Xem thêm [9].\n**Nên làm gì tiếp:** dừng trước vạch."
+      : "Nên mang áo ấm. Phí là 50 AUD.\n**Nên làm gì tiếp:** xem dự báo.";
     return JSON.stringify({ answer });
   },
 };
@@ -75,6 +72,7 @@ before(async () => {
   embeddingIndex = await import("../src/rag/embedding/index.js");
   memoryDriver = await import("../src/rag/search/memory.driver.js");
   mockEmbedding = await import("../src/rag/embedding/mock.embedding.js");
+  articleIndex = await import("../src/rag/assistant/articleIndex.js");
 });
 
 after(async () => {
@@ -89,13 +87,14 @@ beforeEach(async () => {
   );
   providers.__setAssistantProvidersForTest({ triage: fakeTriage, answer: fakeAnswer, web: null });
   memoryDriver.invalidateMemorySearchCache();
+  articleIndex.__clearArticleIndexForTest();
   await m.Country.create({
     code: "KR",
-    name: "HĂ n Quá»‘c",
+    name: "Hàn Quốc",
     status: "active",
     emergencyNumbers: { police: "112", ambulance: "119" },
   });
-  await m.LegalTopic.create({ countryCode: "KR", slug: "giao-thong", label: "Giao thĂ´ng" });
+  await m.LegalTopic.create({ countryCode: "KR", slug: "giao-thong", label: "Giao thông" });
 });
 
 const indexArticle = async (overrides = {}) => {
@@ -104,18 +103,17 @@ const indexArticle = async (overrides = {}) => {
     topicSlug: "giao-thong",
     slug: "vuot-den-do",
     status: "published",
-    title: "VÆ°á»£t Ä‘Ă¨n Ä‘á» khi lĂ¡i xe",
-    summaryVi: "VÆ°á»£t Ä‘Ă¨n Ä‘á» khi lĂ¡i xe bá»‹ xá»­ pháº¡t",
-    bodyMd:
-      "## Quy Ä‘á»‹nh\nNgÆ°á»i lĂ¡i xe vÆ°á»£t Ä‘Ă¨n Ä‘á» bá»‹ xá»­ pháº¡t theo luáº­t giao thĂ´ng.",
+    title: "Vượt đèn đỏ khi lái xe",
+    summaryVi: "Vượt đèn đỏ khi lái xe bị xử phạt",
+    bodyMd: "## Quy định\nNgười lái xe vượt đèn đỏ bị xử phạt theo luật giao thông.",
     sources: [
-      { title: "Nguá»“n", url: "https://example.org/den-do", authority: "CÆ¡ quan", kind: "gov" },
+      { title: "Nguồn", url: "https://example.org/den-do", authority: "Cơ quan", kind: "gov" },
     ],
     effectiveFrom: new Date("2024-01-01"),
     ...overrides,
   });
   const provider = embeddingIndex.getEmbeddingProvider();
-  const pieces = chunkArticle(article.toObject(), { countryName: "HĂ n Quá»‘c" });
+  const pieces = chunkArticle(article.toObject(), { countryName: "Hàn Quốc" });
   const vectors = await provider.embedBatch(pieces.map((p) => p.textForEmbedding));
   await m.LegalChunk.insertMany(
     pieces.map((p, index) => ({
@@ -149,7 +147,7 @@ test("tang nguon chinh thuc: trich dan that, marker bia va so khong nguon bi go"
   const { accessToken } = await registerAndLogin(app);
 
   const res = await ask(accessToken, {
-    message: "VÆ°á»£t Ä‘Ă¨n Ä‘á» khi lĂ¡i xe cĂ³ bá»‹ xá»­ pháº¡t khĂ´ng?",
+    message: "Vượt đèn đỏ khi lái xe có bị xử phạt không?",
   });
 
   assert.equal(res.status, 200);
@@ -177,52 +175,65 @@ test("bai draft khong bao gio thanh nguon cua tro ly", async () => {
   const { accessToken } = await registerAndLogin(app);
 
   const res = await ask(accessToken, {
-    message: "VÆ°á»£t Ä‘Ă¨n Ä‘á» khi lĂ¡i xe cĂ³ bá»‹ xá»­ pháº¡t khĂ´ng?",
+    message: "Vượt đèn đỏ khi lái xe có bị xử phạt không?",
   });
 
   assert.equal(res.body.data.message.sourceTier, "general");
   assert.deepEqual(res.body.data.message.citations, []);
 });
 
+test("bai chon tu muc luc thanh nguon; bai draft du duoc chon van khong lot ra", async () => {
+  const { accessToken } = await registerAndLogin(app);
+  const article = await indexArticle();
+
+  const picked = await ask(accessToken, { message: "Can I bring my vape?" });
+  assert.equal(picked.body.data.message.sourceTier, "official");
+  assert.equal(picked.body.data.message.citations[0].articleSlug, "vuot-den-do");
+
+  await m.LegalArticle.updateOne({ _id: article._id }, { status: "draft" });
+  articleIndex.__clearArticleIndexForTest();
+  const hidden = await ask(accessToken, { message: "Can I bring my vape?" });
+  assert.equal(hidden.body.data.message.sourceTier, "general");
+  assert.deepEqual(hidden.body.data.message.citations, []);
+});
+
 test("khong co nguon: tang kien thuc chung, khong con so nao lot ra", async () => {
   const { accessToken } = await registerAndLogin(app);
 
-  const res = await ask(accessToken, { message: "ThĂ¡ng 7 thá»i tiáº¿t tháº¿ nĂ o?" });
+  const res = await ask(accessToken, { message: "Tháng 7 thời tiết thế nào?" });
 
   const { message } = res.body.data;
   assert.equal(message.sourceTier, "general");
   assert.ok(!message.content.includes("50 AUD"));
-  assert.ok(message.content.includes("NĂªn lĂ m gĂ¬ tiáº¿p"));
+  assert.ok(message.content.includes("Nên làm gì tiếp"));
 });
 
 test("ngoai pham vi va y do pham phap bi tu choi; khan cap co so goi; mo ho thi hoi lai", async () => {
   const { accessToken } = await registerAndLogin(app);
 
-  const scope = (await ask(accessToken, { message: "Cho tĂ´i cĂ´ng thá»©c náº¥u phá»Ÿ" })).body.data
+  const scope = (await ask(accessToken, { message: "Cho tôi công thức nấu phở" })).body.data
     .message;
-  const harm = (await ask(accessToken, { message: "CĂ¡ch giáº¥u thá»‹t qua háº£i quan" })).body.data
+  const harm = (await ask(accessToken, { message: "Cách giấu thịt qua hải quan" })).body.data
     .message;
-  const urgent = (await ask(accessToken, { message: "Báº¡n tĂ´i báº¥t tá»‰nh rá»“i" })).body.data
-    .message;
-  const vague = (await ask(accessToken, { message: "CĂ³ bá»‹ pháº¡t khĂ´ng?" })).body.data.message;
+  const urgent = (await ask(accessToken, { message: "Bạn tôi bất tỉnh rồi" })).body.data.message;
+  const vague = (await ask(accessToken, { message: "Có bị phạt không?" })).body.data.message;
 
   assert.equal(scope.kind, "refuse_scope");
   assert.equal(harm.kind, "refuse_harm");
   assert.equal(urgent.kind, "emergency");
   assert.equal(urgent.emergencyNumber, "112");
   assert.equal(vague.kind, "clarify");
-  assert.deepEqual(vague.clarifyOptions, ["Giao thĂ´ng", "Háº£i quan"]);
+  assert.deepEqual(vague.clarifyOptions, ["Giao thông", "Hải quan"]);
 });
 
 test("hoi thoai: luu lich su, tra loi lai chi tiet, xoa; nguoi khac khong xem duoc", async () => {
   const owner = await registerAndLogin(app);
   const other = await registerAndLogin(app);
 
-  const first = (await ask(owner.accessToken, { message: "ThĂ¡ng 7 thá»i tiáº¿t tháº¿ nĂ o?" }))
-    .body.data;
+  const first = (await ask(owner.accessToken, { message: "Tháng 7 thời tiết thế nào?" })).body.data;
   await ask(owner.accessToken, {
     conversationId: first.conversation.id,
-    message: "CĂ²n thĂ¡ng 12?",
+    message: "Còn tháng 12?",
   });
 
   const detail = await request(app)
@@ -254,11 +265,11 @@ test("hoi thoai: luu lich su, tra loi lai chi tiet, xoa; nguoi khac khong xem du
 test("bat buoc dang nhap va chi quoc gia dang hoat dong", async () => {
   const anonymous = await request(app)
     .post("/api/assistant/messages")
-    .send({ countryCode: "KR", message: "Xin chĂ o" });
+    .send({ countryCode: "KR", message: "Xin chào" });
   assert.equal(anonymous.status, 401);
 
   const { accessToken } = await registerAndLogin(app);
-  const res = await ask(accessToken, { countryCode: "JP", message: "Xin chĂ o" });
+  const res = await ask(accessToken, { countryCode: "JP", message: "Xin chào" });
   assert.equal(res.status, 400);
   assert.equal(res.body.error.code, "VALIDATION_ERROR");
 });
