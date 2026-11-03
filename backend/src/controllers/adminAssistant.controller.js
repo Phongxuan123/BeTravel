@@ -4,7 +4,7 @@ import { recordAuditLog } from "../services/auditLog.service.js";
 import * as assistantAdminService from "../services/assistantAdmin.service.js";
 import * as assistantSettingsService from "../services/assistantSettings.service.js";
 
-// Admin tro ly AI (contracts/README.md muc 26). Controller mong: goi service, boc envelope.
+// Admin tro ly AI (contracts/README.md muc 27). Controller mong: goi service, boc envelope.
 const SETTINGS_ENTITY = "AssistantSettings";
 const SETTINGS_ENTITY_ID = "assistant";
 

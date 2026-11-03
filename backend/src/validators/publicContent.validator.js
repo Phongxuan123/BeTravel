@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { RiskZoneCategory } from "../core/constants.js";
 import { paginationQuerySchema } from "./admin.validator.js";
 
 /*
@@ -186,6 +187,12 @@ export const alertsApplicableQuerySchema = z.object({
   country: countryCodeSchema,
   lat: z.coerce.number().min(-90).max(90).optional(),
   lng: z.coerce.number().min(-180).max(180).optional(),
+});
+
+// ── Vung nguy co cong khai (/api/risk-zones) ─────────────────────────────
+export const riskZoneListQuerySchema = z.object({
+  country: countryCodeSchema,
+  category: z.enum(Object.values(RiskZoneCategory)).optional(),
 });
 
 // ── Favorites (/api/users/favorites, B8) ─────────────────────────────────

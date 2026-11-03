@@ -21,6 +21,8 @@ import type { SupportLocation } from '@/mocks/schemas';
 import * as incidentsApi from '@/lib/api/incidents';
 import * as translateApi from '@/lib/api/translate';
 import * as alertsApi from '@/lib/api/alerts';
+import * as riskZonesApi from '@/lib/api/riskZones';
+import type { RiskZone } from '@/features/sos/riskZones';
 import * as favoritesApi from '@/lib/api/favorites';
 import * as preferencesApi from '@/lib/api/preferences';
 
@@ -69,6 +71,11 @@ export const fetchAlerts = USE_MOCKS ? mock.fetchAlerts : alertsApi.fetchAlerts;
 export const markAlertRead = USE_MOCKS ? mock.markAlertRead : alertsApi.markAlertRead;
 export const markAllAlertsRead = USE_MOCKS ? mock.markAllAlertsRead : alertsApi.markAllAlertsRead;
 export const setAlertsContext = USE_MOCKS ? (): void => {} : alertsApi.setAlertsContext;
+
+// Mock không có vùng nguy cơ: trả rỗng để bản đồ vẫn chạy khi EXPO_PUBLIC_USE_MOCKS=true.
+export const fetchRiskZones = USE_MOCKS
+  ? async (): Promise<{ ok: true; data: RiskZone[] }> => ({ ok: true, data: [] })
+  : riskZonesApi.fetchRiskZones;
 
 export const fetchFavorites = USE_MOCKS ? mock.fetchFavorites : favoritesApi.fetchFavorites;
 export const addFavorite = USE_MOCKS ? mock.addFavorite : favoritesApi.addFavorite;
