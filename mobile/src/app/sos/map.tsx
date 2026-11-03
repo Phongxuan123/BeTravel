@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, View, Text, ScrollView, Pressable, TextInput, Linking, Platform, Alert, Keyboard, useWindowDimensions } from 'react-native';
 import Constants from 'expo-constants';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Circle, Marker, Polygon, PROVIDER_GOOGLE } from 'react-native-maps';
 import { ChevronLeft, LocateFixed, Navigation, Phone, Search, Copy, BadgeCheck, WifiOff, Globe, MapPin, X, ChevronUp, ChevronDown } from 'lucide-react-native';
 import { IconTile, type Tone } from '@/components/ui/IconTile';
 import { SimpleSheet } from '@/components/common/SimpleSheet';
@@ -13,7 +13,7 @@ import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
 import { openPhone, openUrl } from '@/lib/openExternal';
-import { fetchExternalPlaces, fetchNearbyLocations, fetchSupportLocations, searchPlaces } from '@/lib/data';
+import { fetchExternalPlaces, fetchRiskZones, fetchNearbyLocations, fetchSupportLocations, searchPlaces } from '@/lib/data';
 import {
   LOCATION_FAILURE_MESSAGES,
   MAP_LOCATION_POLICY,
@@ -24,6 +24,7 @@ import type { PlaceSearchResult, SupportLocation } from '@/lib/data';
 import { MAP_RADIUS_OPTIONS, MAP_LOCATION_LIMIT, searchLocations, validCoordinates, directionsUrl } from '@/features/sos/mapHelpers';
 import { mapRuntime, mapTiles, MAP_STARTUP_TIMEOUT_MS } from '@/features/sos/mapRuntime';
 import { OsmWebMap, type MapHandle, type OsmMarker } from '@/features/sos/OsmWebMap';
+import { RISK_SEVERITY_COLOR, RISK_ZONE_LABEL, toOsmZones, type RiskZone, type RiskZoneCategory } from '@/features/sos/riskZones';
 import { useDebouncedValue } from '@/features/sos/useDebouncedValue';
 import { useSheetDrag } from '@/features/sos/useSheetDrag';
 
@@ -135,6 +136,9 @@ export default function SosMapScreen() {
   const [mapType, setMapType] = useState<'standard' | 'hybrid'>('standard');
   const [listOnly, setListOnly] = useState(false);
   const [showExternal, setShowExternal] = useState(false);
+  // Loại vùng nguy cơ đang bị tắt; mặc định hiện hết.
+  const [hiddenZoneCategories, setHiddenZoneCategories] = useState<RiskZoneCategory[]>([]);
+  const [zoneDetail, setZoneDetail] = useState<RiskZone | null>(null);
   const [previousCountry, setPreviousCountry] = useState(country?.code);
   // Một ref cho cả hai chế độ: MapView native và OsmWebMap (Leaflet) cùng có animateToRegion/fitToCoordinates.
   const mapRef = useRef<MapHandle>(null);
@@ -303,6 +307,21 @@ export default function SosMapScreen() {
   // sẽ lọc mất hết. Ô tìm kiếm chỉ dành cho danh sách đã xác minh.
   const externalPlaces = showExternal && externalType ? externalQuery.data?.data ?? [] : [];
   // Ghim cho chế độ OSM (WebView): chỉ gửi dữ liệu tối thiểu, tên/chi tiết vẫn nằm ở app.
+  // Vùng nguy cơ do admin xuất bản kèm nguồn; lỗi tải không chặn bản đồ (chỉ mất lớp phủ).
+  const zonesQuery = useQuery({
+    queryKey: ['riskZones', country?.code],
+    queryFn: () => fetchRiskZones(country!.code),
+    enabled: !!country,
+    staleTime: 10 * 60 * 1000,
+    retry: false,
+  });
+  const allZones = zonesQuery.data?.data ?? [];
+  const zoneCategories = [...new Set(allZones.map((zone) => zone.category))];
+  const visibleZones = allZones.filter((zone) => !hiddenZoneCategories.includes(zone.category));
+  const osmZones = useMemo(() => toOsmZones(visibleZones), [visibleZones]);
+  const toggleZoneCategory = (category: RiskZoneCategory) =>
+    setHiddenZoneCategories((hidden) => (hidden.includes(category) ? hidden.filter((c) => c !== category) : [...hidden, category]));
+
   const osmMarkers: OsmMarker[] = [
     ...(coords ? [{ id: 'me', lat: coords.lat, lng: coords.lng, color: colors.primary, kind: 'me' as const }] : []),
     ...(picked ? [{ id: 'picked', lat: picked.lat, lng: picked.lng, color: PICKED_COLOR, kind: 'picked' as const }] : []),
@@ -352,7 +371,8 @@ export default function SosMapScreen() {
       >
         {osmTiles ? (
           <OsmWebMap ref={mapRef} center={{ lat: latitude, lng: longitude }} delta={delta}
-            markers={osmMarkers} onReady={() => setMapReady(true)}
+            markers={osmMarkers} zones={osmZones}
+            onZonePress={(id) => setZoneDetail(allZones.find((zone) => zone.id === id) ?? null)} onReady={() => setMapReady(true)}
             onLongPress={(point) => pickPoint({ ...point, label: 'Vị trí đã chọn' }, LONG_PRESS_FOCUS_DELTA)}
             onMarkerPress={(id) => setDetail([...locations, ...externalPlaces].find((place) => place.id === id) ?? null)} />
         ) : (
@@ -363,6 +383,20 @@ export default function SosMapScreen() {
             onMapReady={() => setMapReady(true)} showsMyLocationButton={false}
             onLongPress={(event) => pickPoint({ lat: event.nativeEvent.coordinate.latitude,
               lng: event.nativeEvent.coordinate.longitude, label: 'Vị trí đã chọn' }, LONG_PRESS_FOCUS_DELTA)}>
+            {/* Vùng native không nhận chạm: ghim ở tâm vùng mở chi tiết thay thế. */}
+            {visibleZones.map((zone) => zone.polygon ? (
+              <Polygon key={zone.id} coordinates={zone.polygon.map(([latitude, longitude]) => ({ latitude, longitude }))}
+                strokeColor={RISK_SEVERITY_COLOR[zone.severity]} strokeWidth={2}
+                fillColor={`${RISK_SEVERITY_COLOR[zone.severity]}33`} />
+            ) : (
+              <Circle key={zone.id} center={{ latitude: zone.lat, longitude: zone.lng }} radius={zone.radiusM ?? 500}
+                strokeColor={RISK_SEVERITY_COLOR[zone.severity]} strokeWidth={2}
+                fillColor={`${RISK_SEVERITY_COLOR[zone.severity]}33`} />
+            ))}
+            {visibleZones.map((zone) => (
+              <Marker key={`zone-${zone.id}`} coordinate={{ latitude: zone.lat, longitude: zone.lng }}
+                title={zone.name} pinColor={RISK_SEVERITY_COLOR[zone.severity]} onPress={() => setZoneDetail(zone)} />
+            ))}
             {picked && <Marker coordinate={{ latitude: picked.lat, longitude: picked.lng }}
               title={picked.label} pinColor={PICKED_COLOR} />}
             {coords && <Marker coordinate={{ latitude: coords.lat, longitude: coords.lng }}
@@ -512,6 +546,14 @@ export default function SosMapScreen() {
             className={`rounded-full px-3 py-2 ${showExternal ? 'bg-primary' : 'bg-surface'}`}>
             <Text className={showExternal ? 'text-sm text-white' : 'text-sm text-primary-strong'}>Gợi ý thêm (chưa xác minh)</Text>
           </Pressable>}
+          {zoneCategories.map((category) => {
+            const active = !hiddenZoneCategories.includes(category);
+            return <Pressable key={category} accessibilityLabel={`Vùng nguy cơ: ${RISK_ZONE_LABEL[category]}`}
+              accessibilityState={{ selected: active }} onPress={() => toggleZoneCategory(category)}
+              className={`rounded-full px-3 py-2 ${active ? 'bg-danger' : 'bg-surface'}`}>
+              <Text className={active ? 'text-sm text-white' : 'text-sm text-primary-strong'}>{RISK_ZONE_LABEL[category]}</Text>
+            </Pressable>;
+          })}
           {origin && MAP_RADIUS_OPTIONS.map((radius) => <Pressable key={radius}
             accessibilityLabel={`Bán kính ${radius} km`} accessibilityState={{ selected: radiusKm === radius }}
             onPress={() => setRadiusKm(radius)} className={`rounded-full px-3 py-2 ${radiusKm === radius ? 'bg-primary' : 'bg-surface'}`}>
@@ -715,6 +757,23 @@ export default function SosMapScreen() {
           )}
         </ScrollView>
       </Animated.View>}
+
+      <SimpleSheet visible={!!zoneDetail} onClose={() => setZoneDetail(null)} title={zoneDetail?.name ?? ''}>
+        {zoneDetail && (
+          <View style={{ gap: 10 }}>
+            <Text className="text-xs font-body-semibold text-danger">{RISK_ZONE_LABEL[zoneDetail.category]}</Text>
+            <Text className="text-sm text-ink">{zoneDetail.description}</Text>
+            {zoneDetail.tips.map((tip) => <Text key={tip} className="text-sm text-muted">- {tip}</Text>)}
+            <Text className="rounded-md bg-amber-soft p-2.5 text-xs text-warning-strong">
+              Khu vực mang tính tham khảo, không có nghĩa nơi khác an toàn tuyệt đối.
+              Nguồn: {zoneDetail.source.name}{zoneDetail.source.period ? ` (${zoneDetail.source.period})` : ''}.
+            </Text>
+            {!!zoneDetail.source.url && <Pressable onPress={() => void openUrl(zoneDetail.source.url)}>
+              <Text className="text-sm text-primary-strong">Xem nguồn</Text>
+            </Pressable>}
+          </View>
+        )}
+      </SimpleSheet>
 
       <SimpleSheet visible={!!detail} onClose={() => setDetail(null)} title={detail?.name ?? ''}>
         {detail && (

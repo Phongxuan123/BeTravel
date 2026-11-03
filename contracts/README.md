@@ -288,9 +288,9 @@ Moi file trong `fixtures/` la **mot response that**, khong them bot gi.
 | `auth.me.json` | `GET /auth/me` — 200 |
 | `admin.country.json` | `POST/GET/PATCH /admin/countries` — 200/201 |
 | `admin.legalArticle.json` | `GET /admin/legal/articles/:id` (đã published) — 200 |
-| `admin.assistantSettings.json` | `GET/PATCH /admin/assistant/settings` — 200 (muc 26) |
-| `admin.assistantMessages.json` | `GET /admin/assistant/messages` — 200 (muc 26) |
-| `admin.assistantMetrics.json` | `GET /admin/assistant/metrics` — 200 (muc 26) |
+| `admin.assistantSettings.json` | `GET/PATCH /admin/assistant/settings` — 200 (muc 27) |
+| `admin.assistantMessages.json` | `GET /admin/assistant/messages` — 200 (muc 27) |
+| `admin.assistantMetrics.json` | `GET /admin/assistant/metrics` — 200 (muc 27) |
 | `error.validation.json` | bat ky endpoint nao — 400 |
 | `error.unauthorized.json` | bat ky endpoint nao — 401 |
 | `error.forbidden.json` | bat ky endpoint `/admin/*` khi khong phai admin — 403 |
@@ -852,6 +852,20 @@ dung de dinh huong ban do, khong thay the diem ho tro da xac minh. Cong khai, ra
 `GET /support-locations/external` (muc 14b): Overpass nay co may chu du phong (`PLACES_OVERPASS_FALLBACK_URLS`); neu TAT CA that
 bai thi dung Nominatim (khong co so dien thoai, gio mo cua) thay vi tra `UPSTREAM_ERROR`.
 
+## 26. ENDPOINT RISK ZONES -- `/api/risk-zones`, `/api/admin/risk-zones/*`
+
+```
+GET /risk-zones?country=&category=      cong khai
+     200 -- CHI vung status:'published'; khong tra reviewNote/createdBy/updatedBy.
+     category: road_crash | wrong_way_driving | theft (tuy chon).
+GET/POST/PATCH/DELETE /admin/risk-zones[/:id]   role admin
+     Chuyen sang status:'published' BAT BUOC co source.name + source.url +
+     source.period, thieu -> VALIDATION_ERROR (khong bia so lieu).
+```
+
+Moi item: `{ _id, countryCode, category, name, description, severity, center{Point,[lng,lat]}, radiusM, tips[], source{name,url,period}, status }`.
+Seed: `npm run seed:au-risk-zones` (tat ca o `draft`, nguon can doi chieu truoc khi publish).
+
 ## 25. TRO LY AI BAN 2 — `/api/assistant/*` (can dang nhap, 02/11/2026)
 
 Quyet dinh san pham: `docs/AI_V2_PLAN.md`. Moi endpoint can `Authorization`. Hai endpoint goi mo
@@ -887,7 +901,7 @@ DELETE /assistant/conversations            200 { deleted: true }  (xoa toan bo l
 
 Lich su tu xoa sau `ASSISTANT_HISTORY_TTL_DAYS` ngay (mac dinh 90).
 
-## 26. ADMIN TRO LY AI — `/api/admin/assistant/*` (role admin, 02/11/2026, H1/F5)
+## 27. ADMIN TRO LY AI — `/api/admin/assistant/*` (role admin, 02/11/2026, H1/F5)
 
 RBAC nhu muc 7 (`401` chua dang nhap, `403 FORBIDDEN` khong phai admin). Khong co danh gia
 "huu ich" (F4 da chot). Ngay trong bieu do tinh theo **UTC**, giong han muc ngay (`aiUsage`).

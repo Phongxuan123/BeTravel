@@ -7,7 +7,7 @@ import { startTestDb, stopTestDb, clearTestDb } from "./setup.js";
 import { registerAndLogin } from "./helpers.js";
 
 /*
- * Admin tro ly AI (contracts muc 26) qua HTTP that: RBAC, cong tac tat nhanh chan /api/assistant
+ * Admin tro ly AI (contracts muc 27) qua HTTP that: RBAC, cong tac tat nhanh chan /api/assistant
  * ngay lap tuc, nhat ky hoi-dap da an thong tin ca nhan, hinh dang bieu do. Mo hinh thay bang
  * provider gia; cache cong tac dat dai de chung minh PATCH xoa cache chu khong doi het han.
  */

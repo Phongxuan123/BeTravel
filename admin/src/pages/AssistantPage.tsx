@@ -3,7 +3,7 @@ import { KillSwitchCard } from '../components/assistant/KillSwitchCard';
 import { AssistantMetricsPanel } from '../components/assistant/AssistantMetricsPanel';
 import { QaLogTable } from '../components/assistant/QaLogTable';
 
-// Tro ly AI ban 2 -- giai doan 6 (docs/AI_V2_PLAN.md H1, F5; contracts/README.md muc 26).
+// Tro ly AI ban 2 -- giai doan 6 (docs/AI_V2_PLAN.md H1, F5; contracts/README.md muc 27).
 export default function AssistantPage() {
   return (
     <div>

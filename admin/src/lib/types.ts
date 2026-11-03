@@ -178,7 +178,7 @@ export type AnalyticsOverview = {
   topFallbackQuestions: { question: string; count: number }[];
 };
 
-// Tro ly AI ban 2 -- Admin (contracts/README.md muc 26).
+// Tro ly AI ban 2 -- Admin (contracts/README.md muc 27).
 export type AssistantKind = 'answer' | 'emergency' | 'clarify' | 'refuse_scope' | 'refuse_harm';
 export type AssistantSourceTier = 'official' | 'web' | 'general';
 

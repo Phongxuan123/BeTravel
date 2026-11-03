@@ -68,7 +68,7 @@ export const legalArticleFixtureSchema = z.object({
   updatedAt: z.string(),
 });
 
-// Tro ly AI ban 2 -- Admin (contracts/README.md muc 26).
+// Tro ly AI ban 2 -- Admin (contracts/README.md muc 27).
 const assistantKindSchema = z.enum(['answer', 'emergency', 'clarify', 'refuse_scope', 'refuse_harm']);
 const assistantSourceTierSchema = z.enum(['official', 'web', 'general']);
 

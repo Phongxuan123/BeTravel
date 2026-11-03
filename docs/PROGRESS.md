@@ -19,7 +19,7 @@
 
 ## Tro ly AI ban 2 -- giai doan 6 (Admin) -- 02/11/2026
 
-Trang Admin "Tro ly AI" (`/assistant`, contracts muc 26): cong tac tat nhanh luu DB (`appsettings`,
+Trang Admin "Tro ly AI" (`/assistant`, contracts muc 27): cong tac tat nhanh luu DB (`appsettings`,
 key `assistant.enabled`; env `ASSISTANT_ENABLED=false` van la khoa chinh, Admin khong bat lai duoc,
 409 `ENV_DISABLED`), cache RAM `ASSISTANT_SETTINGS_CACHE_MS` (10 s) bi xoa ngay khi PATCH, moi lan
 doi ghi audit log. Nhat ky hoi-dap ghep cau hoi lien truoc, an email/so dien thoai/so giay to/day
@@ -93,6 +93,12 @@ quota AI (dich van dung), ai_events + thong ke admin, bo cau hoi `backend/test/g
 Du lieu cu tren Atlas (chatsessions, chatmessages, approvedfaqs, feedbacks, answermemories,
 questionsimilaritycaches) CHUA xoa -- can nguoi quyet. Nguoi dung khong con nut "Xoa lich su hoi AI".
 Test chung minh draft/superseded/khong hien hanh khong lot RAG duoc giu, chuyen sang goi thang retrieval.
+
+## Vùng nguy cơ trên bản đồ Úc — 02/11/2026
+
+- Backend: model `RiskZone`, `GET /api/risk-zones` (chỉ published), CRUD `/api/admin/risk-zones`; không publish được nếu thiếu nguồn/kỳ số liệu. Mobile: lớp vòng tròn (hoặc đa giác nếu vùng có `area`) trên SOS map (Leaflet và native), lọc theo loại, sheet chi tiết kèm nguồn.
+- Dữ liệu: 6 vùng nhỏ seed ở `draft` (`npm run seed:au-risk-zones`): 4 điểm đông khách ở Melbourne (số liệu CSA cấp khu vực, lấy từ trang thứ ba, vị trí điểm do người viết chọn), Kings Cross (BOCSAR 1999-2012, cũ), Princetown trên Great Ocean Road (báo chí 2018-2019). Tâm/bán kính vẽ tay xấp xỉ. `scripts/publish-au-risk-zones-demo.js` chỉ để thử trên máy dev. Cần admin đối chiếu nguồn gốc, điền `source.period` rồi publish.
+- Chưa có: UI admin cho RiskZone (chỉ API); chưa chạy thật với Atlas và thiết bị.
 
 ## Sua loi toan dien theo ke hoach kiem dinh — 28/10/2026
 
