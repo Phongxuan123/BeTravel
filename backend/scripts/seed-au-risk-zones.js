@@ -7,16 +7,17 @@ import RiskZone from "../src/models/RiskZone.js";
 import { AU_RISK_ZONES, RETIRED_AU_RISK_ZONE_NAMES } from "./data/auRiskZones.js";
 
 /*
- * Nạp vùng nguy cơ ở Úc (scripts/data/auRiskZones.js) vào risk_zones, TẤT CẢ ở trạng thái draft.
- * Upsert theo (countryCode, name); luôn cập nhật hình dạng, KHÔNG ghi đè status/source của vùng admin đã chỉnh. Dùng: `npm run seed:au-risk-zones`.
+ * Nạp vùng nguy cơ ở Úc (scripts/data/auRiskZones.js) vào risk_zones, xuất bản sẵn kèm nguồn và kỳ số liệu (đã ghi rõ phần chưa đối chiếu).
+ * Upsert theo (countryCode, name); luôn cập nhật hình dạng, KHÔNG ghi đè status của vùng admin đã gỡ. Dùng: `npm run seed:au-risk-zones`.
  */
 export const run = async () => {
   for (const zone of AU_RISK_ZONES) {
-    // Hinh dang (tam, ban kinh) luon cap nhat theo file du lieu; status/source do admin chinh thi giu nguyen.
-    const { center, radiusM, ...rest } = zone;
+    // Du lieu trong repo la nguon su that: ghi de noi dung/nguon moi lan seed de ai chay cung co ban moi nhat.
+    // Rieng status chi dat khi tao moi, de admin go vung ve 'draft' thi chay lai seed khong tu bat len.
+    const { status, ...content } = zone;
     const result = await RiskZone.updateOne(
       { countryCode: zone.countryCode, name: zone.name },
-      { $set: { center, radiusM }, $unset: { area: "" }, $setOnInsert: rest },
+      { $set: content, $unset: { area: "" }, $setOnInsert: { status } },
       { upsert: true },
     );
     console.log(`[${result.upsertedCount ? "tao moi" : "giu nguyen"}] ${zone.name}`);

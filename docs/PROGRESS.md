@@ -68,7 +68,7 @@ Test chung minh draft/superseded/khong hien hanh khong lot RAG duoc giu, chuyen 
 ## Vùng nguy cơ trên bản đồ Úc — 02/11/2026
 
 - Backend: model `RiskZone`, `GET /api/risk-zones` (chỉ published), CRUD `/api/admin/risk-zones`; không publish được nếu thiếu nguồn/kỳ số liệu. Mobile: lớp vòng tròn (hoặc đa giác nếu vùng có `area`) trên SOS map (Leaflet và native), lọc theo loại, sheet chi tiết kèm nguồn.
-- Dữ liệu: 6 vùng nhỏ seed ở `draft` (`npm run seed:au-risk-zones`): 4 điểm đông khách ở Melbourne (số liệu CSA cấp khu vực, lấy từ trang thứ ba, vị trí điểm do người viết chọn), Kings Cross (BOCSAR 1999-2012, cũ), Princetown trên Great Ocean Road (báo chí 2018-2019). Tâm/bán kính vẽ tay xấp xỉ. `scripts/publish-au-risk-zones-demo.js` chỉ để thử trên máy dev. Cần admin đối chiếu nguồn gốc, điền `source.period` rồi publish.
+- Dữ liệu: 6 vùng nhỏ (4 điểm đông khách Melbourne, Kings Cross, Princetown) nằm trong `scripts/data/auRiskZones.js`, `npm run seed:au-risk-zones` nạp và xuất bản sẵn cho mọi người chạy seed. Mô tả chỉ nêu điều nguồn đã xác nhận (Melbourne: số liệu cả bang Victoria năm tới 6/2025 từ Victoria Police; Kings Cross: BOCSAR đến 2012, cũ; Princetown: báo chí 2014-2019). Tâm/bán kính vẽ tay xấp xỉ. Chưa đối chiếu được bảng gốc CSA/BOCSAR vì các trang chặn truy cập tự động: cần người tải bảng 'LGA Recorded Offences' của CSA và số liệu BOCSAR mới, rồi chỉnh `reviewNote`/`source.period`.
 - Chưa có: UI admin cho RiskZone (chỉ API); chưa chạy thật với Atlas và thiết bị.
 
 ## Sua loi toan dien theo ke hoach kiem dinh — 28/10/2026
