@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { colors } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useCountry } from '@/lib/countryContext';
-import { useKeyboardInset } from '@/lib/useKeyboardInset';
+import { useKeyboardOverlap } from '@/lib/useKeyboardInset';
 import { fetchTrips } from '@/lib/data';
 import { formatTripRange } from '@/lib/format';
 import type { AssistantTrip } from '@/lib/api/assistant';
@@ -77,7 +77,7 @@ function useTripContext(countryCode: string) {
 
 function ChatBody() {
   const navClearance = useAppShellNavClearance();
-  const keyboardInset = useKeyboardInset();
+  const { viewRef, overlap: keyboardInset } = useKeyboardOverlap();
   const { countryCode } = useCountry();
   const chat = useAssistantChat(countryCode);
   const tripContext = useTripContext(countryCode);
@@ -101,7 +101,7 @@ function ChatBody() {
   const canSend = input.trim().length > 0 && !chat.sending;
 
   return (
-    <View className="flex-1 bg-bg">
+    <View ref={viewRef} collapsable={false} className="flex-1 bg-bg">
       <ChatHeader onHistory={() => setHistoryOpen(true)} onNew={chat.startNew} />
 
       <ScrollView
@@ -148,7 +148,8 @@ function ChatBody() {
 
       <View
         className="border-t border-line bg-surface px-[18px] pt-2.5"
-        style={{ paddingBottom: keyboardInset > 0 ? keyboardInset + 8 : navClearance }}
+        style={{ // Thanh tab luôn hiện: ô nhập phải nằm trên cả thanh tab lẫn bàn phím.
+        paddingBottom: Math.max(navClearance, keyboardInset + 8) }}
       >
         {tripContext ? (
           <View className="mb-2 flex-row items-center" style={{ gap: 8 }}>

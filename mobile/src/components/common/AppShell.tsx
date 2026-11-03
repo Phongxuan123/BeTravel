@@ -5,20 +5,30 @@ import { House, Compass, MessageCircle, User } from 'lucide-react-native';
 import type { ReactNode } from 'react';
 import { colors, shadows } from '@/lib/theme';
 import { AlertBanner, isInlineBanner, useBannerAlert } from './AlertBanner';
+import { NavBarBackground } from './NavBarBackground';
 import { TopInsetProvider } from './screenTopInset';
 
 export type ActiveTab = 'home' | 'explore' | 'sos' | 'chat' | 'profile';
 
 const NAV_HEIGHT = 72;
-const SOS_BUTTON_SIZE = 52;
-// Nhãn "Khẩn cấp" nằm cùng hàng với nhãn các tab khác (cách đáy thanh 8px), nên nút SOS chỉ
-// nhô lên trên mép thanh điều hướng vài px thay vì đè lên nội dung phía trên.
+const SOS_BUTTON_SIZE = 60;
+// Nút SOS nằm trong khuyết cong của thanh (xem NavBarBackground) và nhô lên trên mép thanh
+// SOS_PROTRUSION px; nhãn "Khẩn cấp" nằm cùng hàng với nhãn các tab khác (cách đáy thanh 8px).
 const SOS_LABEL_BOTTOM = 8;
 const SOS_LABEL_HEIGHT = 18;
-const SOS_PROTRUSION = SOS_LABEL_BOTTOM + SOS_LABEL_HEIGHT + SOS_BUTTON_SIZE - NAV_HEIGHT;
+// Khoảng hở giữa đáy nút và nhãn; đáy nút phải nằm trong NOTCH_DEPTH của khuyết.
+const SOS_LABEL_GAP = 12;
+const SOS_PROTRUSION = SOS_LABEL_BOTTOM + SOS_LABEL_HEIGHT + SOS_LABEL_GAP + SOS_BUTTON_SIZE - NAV_HEIGHT;
+// Chừa chỗ giữa hai nhóm tab cho nút SOS + hai bên khuyết.
+const SOS_SPACER_WIDTH = 96;
 const CONTENT_GAP = 16;
 
-const tabs: { key: Exclude<ActiveTab, 'sos'>; label: string; icon: typeof House; href: '/' | '/explore' | '/chat' | '/profile' }[] = [
+const tabs: {
+  key: Exclude<ActiveTab, 'sos'>;
+  label: string;
+  icon: typeof House;
+  href: '/' | '/explore' | '/chat' | '/profile';
+}[] = [
   { key: 'home', label: 'Trang chủ', icon: House, href: '/' },
   { key: 'explore', label: 'Khám phá', icon: Compass, href: '/explore' },
   { key: 'chat', label: 'Trợ lý AI', icon: MessageCircle, href: '/chat' },
@@ -37,24 +47,38 @@ export function AppShell({ active, children }: { active: ActiveTab; children: Re
         <View className="flex-1">{children}</View>
       </TopInsetProvider>
       <View
-        className="absolute inset-x-0 bottom-0 flex-row border-t border-line bg-surface"
-        style={{ height: NAV_HEIGHT + insets.bottom, paddingBottom: insets.bottom }}
+        className="absolute inset-x-0 bottom-0 flex-row"
+        style={{
+          height: NAV_HEIGHT + insets.bottom,
+          paddingBottom: insets.bottom,
+        }}
       >
+        <NavBarBackground height={NAV_HEIGHT + insets.bottom} />
         {tabs.slice(0, 2).map((tab) => (
           <NavItem key={tab.key} tab={tab} active={active === tab.key} />
         ))}
-        <View style={{ width: 60 }} />
+        <View style={{ width: SOS_SPACER_WIDTH }} />
         {tabs.slice(2).map((tab) => (
           <NavItem key={tab.key} tab={tab} active={active === tab.key} />
         ))}
       </View>
-      <View className="absolute inset-x-0 items-center" style={{ bottom: insets.bottom + SOS_LABEL_BOTTOM }}>
+      <View
+        className="absolute inset-x-0 items-center"
+        style={{ bottom: insets.bottom + SOS_LABEL_BOTTOM }}
+        pointerEvents="box-none"
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Khẩn cấp — mở SOS Hub"
           onPress={() => router.push('/sos')}
           className="items-center justify-center rounded-full border-4 border-white"
-          style={{ width: SOS_BUTTON_SIZE, height: SOS_BUTTON_SIZE, backgroundColor: colors.danger, ...shadows.sos }}
+          style={{
+            width: SOS_BUTTON_SIZE,
+            height: SOS_BUTTON_SIZE,
+            marginBottom: SOS_LABEL_GAP,
+            backgroundColor: colors.danger,
+            ...shadows.sos,
+          }}
         >
           <Text className="font-display text-sm text-white">SOS</Text>
         </Pressable>
@@ -70,7 +94,11 @@ function NavItem({
   tab,
   active,
 }: {
-  tab: { label: string; icon: typeof House; href: '/' | '/explore' | '/chat' | '/profile' };
+  tab: {
+    label: string;
+    icon: typeof House;
+    href: '/' | '/explore' | '/chat' | '/profile';
+  };
   active: boolean;
 }) {
   const Icon = tab.icon;
