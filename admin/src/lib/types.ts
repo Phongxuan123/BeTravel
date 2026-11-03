@@ -178,6 +178,56 @@ export type AnalyticsOverview = {
   topFallbackQuestions: { question: string; count: number }[];
 };
 
+// Tro ly AI ban 2 -- Admin (contracts/README.md muc 27).
+export type AssistantKind = 'answer' | 'emergency' | 'clarify' | 'refuse_scope' | 'refuse_harm';
+export type AssistantSourceTier = 'official' | 'web' | 'general';
+
+export type AssistantSettings = {
+  enabled: boolean;
+  envEnabled: boolean;
+  active: boolean;
+  updatedAt: string | null;
+};
+
+export type AssistantQaTelemetry = {
+  latencyMs: number;
+  promptTokens: number;
+  completionTokens: number;
+  costEstimateVnd: number;
+  guardViolations: number;
+};
+
+// question/answer da duoc backend an thong tin ca nhan; khong co thong tin nguoi hoi.
+export type AssistantQaItem = {
+  id: string;
+  question: string;
+  answer: string;
+  countryCode: string | null;
+  kind: AssistantKind | null;
+  sourceTier: AssistantSourceTier | null;
+  detailed: boolean;
+  citations: { n: number; title: string }[];
+  telemetry: AssistantQaTelemetry | null;
+  createdAt: string;
+};
+
+export type AssistantDayMetrics = {
+  questions: number;
+  costEstimateVnd: number;
+  p50LatencyMs: number;
+  p90LatencyMs: number;
+  refusals: number;
+  refusalRate: number;
+};
+
+export type AssistantMetrics = {
+  days: number;
+  from: string;
+  to: string;
+  totals: AssistantDayMetrics & { guardViolations: number };
+  daily: (AssistantDayMetrics & { date: string })[];
+};
+
 // B7 -- A07 Incident Workflow Builder (backend/src/models/IncidentType.js).
 export type IncidentTone = 'blue' | 'red' | 'orange' | 'green';
 export type IncidentCtaType = 'map' | 'call' | 'ai' | 'link';

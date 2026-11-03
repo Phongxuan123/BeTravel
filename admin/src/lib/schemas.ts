@@ -68,6 +68,55 @@ export const legalArticleFixtureSchema = z.object({
   updatedAt: z.string(),
 });
 
+// Tro ly AI ban 2 -- Admin (contracts/README.md muc 27).
+const assistantKindSchema = z.enum(['answer', 'emergency', 'clarify', 'refuse_scope', 'refuse_harm']);
+const assistantSourceTierSchema = z.enum(['official', 'web', 'general']);
+
+export const assistantSettingsFixtureSchema = z.strictObject({
+  enabled: z.boolean(),
+  envEnabled: z.boolean(),
+  active: z.boolean(),
+  updatedAt: z.string().nullable(),
+});
+
+export const assistantQaItemFixtureSchema = z.strictObject({
+  id: z.string(),
+  question: z.string(),
+  answer: z.string(),
+  countryCode: z.string().nullable(),
+  kind: assistantKindSchema.nullable(),
+  sourceTier: assistantSourceTierSchema.nullable(),
+  detailed: z.boolean(),
+  citations: z.array(z.strictObject({ n: z.number(), title: z.string() })),
+  telemetry: z
+    .strictObject({
+      latencyMs: z.number(),
+      promptTokens: z.number(),
+      completionTokens: z.number(),
+      costEstimateVnd: z.number(),
+      guardViolations: z.number(),
+    })
+    .nullable(),
+  createdAt: z.string(),
+});
+
+const assistantDayMetricsShape = {
+  questions: z.number(),
+  costEstimateVnd: z.number(),
+  p50LatencyMs: z.number(),
+  p90LatencyMs: z.number(),
+  refusals: z.number(),
+  refusalRate: z.number(),
+};
+
+export const assistantMetricsFixtureSchema = z.strictObject({
+  days: z.number(),
+  from: z.string(),
+  to: z.string(),
+  totals: z.strictObject({ ...assistantDayMetricsShape, guardViolations: z.number() }),
+  daily: z.array(z.strictObject({ date: z.string(), ...assistantDayMetricsShape })),
+});
+
 export const errorEnvelopeSchema = z.object({
   code: z.enum([
     'VALIDATION_ERROR',

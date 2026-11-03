@@ -82,6 +82,11 @@ const DOMAIN_ERROR_MAP = Object.freeze({
     ErrorCode.UPSTREAM_ERROR,
     "Trợ lý AI đang bận, chưa trả lời được. Vui lòng thử lại.",
   ],
+  ASSISTANT_ENV_DISABLED: [
+    ErrorCode.CONFLICT,
+    "Trợ lý AI đang bị tắt ở cấu hình máy chủ (ASSISTANT_ENABLED), không bật được từ Admin.",
+    { reason: "ENV_DISABLED" },
+  ],
   CONVERSATION_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy cuộc trò chuyện"],
   ASSISTANT_MESSAGE_NOT_FOUND: [ErrorCode.NOT_FOUND, "Không tìm thấy câu trả lời"],
 
@@ -120,7 +125,8 @@ export const toAppError = (error) => {
   const mapped = DOMAIN_ERROR_MAP[error?.message];
 
   if (mapped) {
-    return new AppError(mapped[0], mapped[1]);
+    // Phan tu thu ba (neu co) la `details` co dinh de client phan nhanh theo ly do.
+    return new AppError(mapped[0], mapped[1], mapped[2]);
   }
 
   if (error?.code === 11000) {

@@ -7,6 +7,8 @@ import {
   RiskZoneCategory,
   SourceKind,
   CountryStatus,
+  AssistantKind,
+  SourceTier,
 } from "../core/constants.js";
 
 /*
@@ -274,6 +276,20 @@ export const ragAuLawParamSchema = z.object({ titleId: auTitleIdSchema });
 // ── Analytics (B5, A01 nang cap) ────────────────────────────────────────
 export const analyticsOverviewQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(90).optional(),
+});
+
+// ── Tro ly AI ban 2 (contracts muc 27, H1/F5) ──────────────────────────
+const METRICS_MAX_DAYS = 90;
+
+export const assistantSettingsUpdateSchema = z.object({ enabled: z.boolean() }).strict();
+
+export const assistantMessagesQuerySchema = paginationQuerySchema.extend({
+  sourceTier: z.enum(Object.values(SourceTier)).optional(),
+  kind: z.enum(Object.values(AssistantKind)).optional(),
+});
+
+export const assistantMetricsQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(METRICS_MAX_DAYS).optional(),
 });
 
 // ── IncidentType (B7, A07 Incident Workflow Builder) ────────────────────

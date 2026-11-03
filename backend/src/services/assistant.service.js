@@ -1,5 +1,7 @@
 import crypto from "node:crypto";
 
+import mongoose from "mongoose";
+
 import AiEvent from "../models/AiEvent.js";
 import AssistantConversation from "../models/AssistantConversation.js";
 import AssistantMessage from "../models/AssistantMessage.js";
@@ -9,6 +11,7 @@ import { AssistantRole, CountryStatus } from "../core/constants.js";
 import { answerQuestion } from "../rag/assistant/answer.js";
 import { getAnswerProvider } from "../rag/assistant/providers.js";
 import { checkAndIncrementQuota } from "./aiUsage.service.js";
+import { isAssistantActive } from "./assistantSettings.service.js";
 
 /*
  * Tro ly AI ban 2: luu hoi thoai, tru quota (luu DB), ghi ai_events. Logic tra loi nam o
@@ -19,9 +22,18 @@ const TITLE_LENGTH = 60;
 
 const expiryDate = () => new Date(Date.now() + env.ASSISTANT_HISTORY_TTL_DAYS * DAY_MS);
 
-const ensureEnabled = () => {
-  if (!env.ASSISTANT_ENABLED) throw new Error("ASSISTANT_DISABLED");
+const TOKENS_PER_PRICE_UNIT = 1_000_000;
+
+// Khoa chinh env + cong tac Admin trong DB (H1), xem assistantSettings.service.js.
+const ensureEnabled = async () => {
+  if (!(await isAssistantActive())) throw new Error("ASSISTANT_DISABLED");
 };
+
+// Chi phi uoc tinh theo gia cau hinh (VND / 1 trieu token); 0 khi chua cau hinh gia.
+const estimateCostVnd = ({ inputTokens, outputTokens }) =>
+  (inputTokens * env.ASSISTANT_PRICE_INPUT_VND_PER_M +
+    outputTokens * env.ASSISTANT_PRICE_OUTPUT_VND_PER_M) /
+  TOKENS_PER_PRICE_UNIT;
 
 export const serializeMessage = (message) => ({
   id: String(message._id),
@@ -85,7 +97,7 @@ async function runPipeline(params) {
   }
 }
 
-function logAiEvent({ userId, countryCode, result, latencyMs }) {
+function logAiEvent({ userId, countryCode, result, latencyMs, messageId }) {
   const { meta } = result;
   return AiEvent.create({
     userId,
@@ -98,9 +110,14 @@ function logAiEvent({ userId, countryCode, result, latencyMs }) {
     latencyMs,
     promptTokens: meta.usage.inputTokens,
     completionTokens: meta.usage.outputTokens,
+    costEstimateVnd: estimateCostVnd(meta.usage),
     webSearch: meta.webSearch,
     fallbackReason: result.sourceTier,
     route: result.kind,
+    messageId,
+    kind: result.kind,
+    sourceTier: result.sourceTier,
+    guardViolations: meta.violations?.length ?? 0,
   }).catch((error) => console.error("[assistant] ghi ai_events loi:", error.message));
 }
 
@@ -115,7 +132,15 @@ const answerFields = (result, { detailed, tripContext }) => ({
   tripContext,
 });
 
-async function answerAndLog({ userId, country, message, history, tripContext, detailed }) {
+async function answerAndLog({
+  userId,
+  country,
+  message,
+  history,
+  tripContext,
+  detailed,
+  messageId,
+}) {
   await checkAndIncrementQuota(userId);
   const startedAt = Date.now();
   const result = await runPipeline({ message, history, country, tripContext, detailed });
@@ -124,18 +149,21 @@ async function answerAndLog({ userId, country, message, history, tripContext, de
     countryCode: country.code,
     result,
     latencyMs: Date.now() - startedAt,
+    messageId,
   });
   return result;
 }
 
 export async function sendMessage(userId, { conversationId, countryCode, message, trip }) {
-  ensureEnabled();
+  await ensureEnabled();
   const country = await findActiveCountry(countryCode);
   const conversation = conversationId
     ? await findOwnedConversation(userId, conversationId)
     : new AssistantConversation({ userId, countryCode, title: message.slice(0, TITLE_LENGTH) });
   const history = conversationId ? await loadHistory(conversation._id) : [];
   const tripContext = toTripContext(trip);
+  // Tao truoc id tin nhan tro ly de ai_event (ghi truoc khi luu tin nhan) tro dung ve no.
+  const assistantMessageId = new mongoose.Types.ObjectId();
 
   const result = await answerAndLog({
     userId,
@@ -144,6 +172,7 @@ export async function sendMessage(userId, { conversationId, countryCode, message
     history,
     tripContext,
     detailed: false,
+    messageId: assistantMessageId,
   });
 
   const expireAt = expiryDate();
@@ -157,6 +186,7 @@ export async function sendMessage(userId, { conversationId, countryCode, message
     expireAt,
   });
   const assistantMessage = await AssistantMessage.create({
+    _id: assistantMessageId,
     conversationId: conversation._id,
     userId,
     role: AssistantRole.ASSISTANT,
@@ -172,7 +202,7 @@ export async function sendMessage(userId, { conversationId, countryCode, message
 
 // Tra loi lai hoac "Giai thich chi tiet hon" (C2, E5): ghi de chinh tin nhan tro ly do.
 export async function regenerateMessage(userId, messageId, { detailed }) {
-  ensureEnabled();
+  await ensureEnabled();
   const target = await AssistantMessage.findOne({
     _id: messageId,
     userId,
@@ -196,6 +226,7 @@ export async function regenerateMessage(userId, messageId, { detailed }) {
     history,
     tripContext: target.tripContext,
     detailed,
+    messageId: target._id,
   });
   Object.assign(target, answerFields(result, { detailed, tripContext: target.tripContext }));
   await target.save();
