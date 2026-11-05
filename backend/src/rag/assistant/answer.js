@@ -5,7 +5,8 @@ import { getArticleIndex } from "./articleIndex.js";
 import { guardAnswer } from "./guard.js";
 import { buildAnswerSystemPrompt, buildUserPrompt } from "./prompts.js";
 import { getAnswerProvider, getWebSearchProvider } from "./providers.js";
-import { detectLanguage, parseJsonObject, triageMessage } from "./triage.js";
+import { extractAnswer } from "./modelOutput.js";
+import { detectLanguage, triageMessage } from "./triage.js";
 import { runWebTier } from "./webTier.js";
 
 /*
@@ -140,28 +141,6 @@ async function generate({
   });
   return extractAnswer(raw);
 }
-
-// JSON bi cat ngang (het token) van cuu duoc phan "answer" da viet xong.
-const PARTIAL_ANSWER = /"answer"\s*:\s*"((?:\\.|[^"\\])*)/;
-
-/*
- * Lay cau tra loi tu dau ra mo hinh. Do 02/11: gpt-6-luna doi khi bo qua yeu cau JSON va tra van
- * ban tron -- dung luon van ban do (van qua guard.js), thay vi bao "chua soan duoc".
- */
-export const extractAnswer = (raw) => {
-  const parsed = parseJsonObject(raw);
-  if (typeof parsed?.answer === "string") return parsed.answer;
-  const partial = raw.match(PARTIAL_ANSWER)?.[1];
-  if (partial) {
-    try {
-      return JSON.parse(`"${partial}"`).trim();
-    } catch {
-      return "";
-    }
-  }
-  const looksLikeJson = raw.trimStart().startsWith("{");
-  return looksLikeJson ? "" : raw.trim();
-};
 
 // Dau ra rong / hong han: thu lai mot lan truoc khi bao "chua soan duoc".
 async function generateWithRetry(params) {

@@ -1,7 +1,7 @@
 import { env } from "../../core/env.js";
 import { buildUserPrompt, buildWebSystemPrompt } from "./prompts.js";
 import { getWebSearchProvider } from "./providers.js";
-import { parseJsonObject } from "./triage.js";
+import { parseJsonObject } from "./modelOutput.js";
 
 const MAX_WEB_SOURCES = 6;
 

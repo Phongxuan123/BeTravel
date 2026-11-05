@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { guardAnswer, VERIFY_NOTE } from "../src/rag/assistant/guard.js";
+import { extractAnswer } from "../src/rag/assistant/modelOutput.js";
 
 // Hau kiem bang code cua tro ly ban 2 (CLAUDE.md Phan 4.2 buoc 5) -- phan loi, giu test.
 
@@ -54,8 +55,7 @@ test("guard: marker khong hop le khong duoc 'bao lanh' cho con so", () => {
   assert.ok(result.text.includes(VERIFY_NOTE.en));
 });
 
-test("dau ra mo hinh: JSON, JSON bi cat, van ban tron deu lay duoc cau tra loi (loi Q22 02/11)", async () => {
-  const { extractAnswer } = await import("../src/rag/assistant/answer.js");
+test("dau ra mo hinh: JSON, JSON bi cat, van ban tron deu lay duoc cau tra loi (loi Q22 02/11)", () => {
   assert.equal(extractAnswer('{"answer":"Có [1]."}'), "Có [1].");
   assert.equal(extractAnswer('{"answer":"Có [1].\\n- Mang'), "Có [1].\n- Mang");
   assert.equal(extractAnswer("Hãy bình tĩnh.\n- Hỏi lý do."), "Hãy bình tĩnh.\n- Hỏi lý do.");
