@@ -66,15 +66,28 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
 3. `mobile/eas.json` (profile `preview` = APK nội bộ, `production`) đã trỏ
    `EXPO_PUBLIC_API_URL=https://betravel-backend.onrender.com/api`, tắt mock, bật trợ lý AI.
    Mã gói `com.betravel.app` khai trong `app.json` (bản dev local vẫn là `com.betravel.dev`).
-   Lần build đầu EAS hỏi tạo project trên Expo: chọn Yes, nó ghi `extra.eas.projectId` vào `app.json`
-   -- commit thay đổi đó.
-4. Build APK để nộp bài / demo:
+4. Gắn project Expo (một lần, TRƯỚC lần build đầu): `cd mobile && eas init` --> ghi
+   `extra.eas.projectId` vào `app.json`. Commit + merge thay đổi đó. `app.config.js` tự suy ra
+   `updates.url = https://u.expo.dev/<projectId>`, không cần `eas update:configure`.
+5. Build APK để nộp bài / demo:
    ```bash
    cd mobile
    eas build --platform android --profile preview
    ```
    Build chạy trên máy chủ Expo (không cần máy có Android SDK), xong sẽ có link tải `.apk` trực tiếp.
-5. iOS cần tài khoản Apple Developer (99 USD/năm) để build/ký thật — nếu không có, dùng Expo Go quét QR code với `npx expo start` để demo trên iOS thay vì build.
+6. **Cập nhật không cần cài lại APK (EAS Update)**:
+   - Code JS/TS hoặc hình ảnh trong `mobile/` merge vào `main` --> workflow
+     `.github/workflows/eas-update.yml` chạy `eas update --channel preview`. App đã cài tải bản mới
+     khi mở, áp dụng ở lần mở kế tiếp.
+   - Cần secret GitHub `EXPO_TOKEN` (expo.dev → Account settings → Access tokens). Thiếu secret thì
+     workflow bỏ qua, không lỗi.
+   - `runtimeVersion` theo `version` trong `app.json`. Đổi phần native (thêm thư viện native, quyền,
+     icon, plugin trong `app.json`) --> **tăng `version`** (vd 1.0.0 → 1.1.0)
+     rồi build APK mới; APK cũ không nhận bản cập nhật của runtime mới nên không bị vỡ.
+   - Biến `EXPO_PUBLIC_*` trong `eas.json` (profile preview) được workflow nạp lại mỗi lần phát, đổi
+     chúng không cần build lại.
+   - Không tăng `version` khi đổi native là lỗi nặng: APK cũ nhận JS cần mã native nó không có --> crash.
+7. iOS cần tài khoản Apple Developer (99 USD/năm) để build/ký thật — nếu không có, dùng Expo Go quét QR code với `npx expo start` để demo trên iOS thay vì build.
 
 ## 5. Kiểm tra sau triển khai
 
