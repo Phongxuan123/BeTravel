@@ -1,0 +1,61 @@
+name: EAS Update (mobile)
+
+# Code mobile (JS/TS, hinh anh) merge vao main --> phat ban cap nhat qua EAS Update cho kenh
+# "preview". APK da cai tu tai ban moi khi mo app, ap dung o lan mo ke tiep. Thay doi native
+# (thu vien native, quyen, icon) KHONG di duong nay: tang "version" trong mobile/app.json va build
+# APK moi (runtimeVersion = appVersion), xem docs/DEPLOY.md muc 4.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - "!mobile/**/__tests__/**"
+      - "!mobile/**/*.md"
+  workflow_dispatch: {}
+
+concurrency:
+  group: eas-update-preview
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Kiem tra secret EXPO_TOKEN
+        id: token
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "Thieu secret EXPO_TOKEN -- bo qua phat cap nhat."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.token.outputs.skip != 'true'
+        uses: actions/checkout@v4
+      - if: steps.token.outputs.skip != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - if: steps.token.outputs.skip != 'true'
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - if: steps.token.outputs.skip != 'true'
+        run: npm ci
+      # Bien EXPO_PUBLIC_* lay tu profile preview trong eas.json: mot nguon duy nhat cho ca build lan update.
+      - if: steps.token.outputs.skip != 'true'
+        name: Nap bien moi truong tu eas.json
+        run: jq -r '.build.preview.env | to_entries[] | "\(.key)=\(.value)"' eas.json >> "$GITHUB_ENV"
+      - if: steps.token.outputs.skip != 'true'
+        name: Phat ban cap nhat
+        env:
+          UPDATE_MESSAGE: ${{ github.event.head_commit.message || 'Phat thu cong' }}
+        run: |
+          eas update --channel preview --environment preview \
+            --message "$(printf '%s' "$UPDATE_MESSAGE" | head -n 1)" --non-interactive

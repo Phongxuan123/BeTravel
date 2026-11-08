@@ -1,5 +1,17 @@
 # TIEN DO BE.TRAVEL
 
+## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
+
+- Cai `expo-updates`; `runtimeVersion` theo `version` trong app.json (khong dung fingerprint: build
+  tai tu may Windows CRLF + thu muc android local --> van tay lech voi CI Linux, cap nhat se khong bao
+  gio ap dung). Doi native --> tang `version` + build APK moi.
+- `app.config.js` tu suy ra `updates.url` tu `extra.eas.projectId` (chi can `eas init`).
+- `eas.json`: kenh `preview`/`production`. Workflow `eas-update.yml`: merge code `mobile/` vao main
+  --> `eas update --channel preview`, nap bien EXPO_PUBLIC_* tu eas.json; thieu `EXPO_TOKEN` thi bo qua.
+- Nang 7 goi Expo len ban va dung SDK 57 (`expo install --fix`): expo-doctor 21/21, test 251/251,
+  `expo export` android chay duoc.
+- Can nguoi lam: tai khoan Expo, `eas init` (commit projectId), secret `EXPO_TOKEN`, roi build APK.
+
 ## Da deploy that -- 08/11/2026 (chieu)
 
 - Backend https://betravel-backend.onrender.com (Render Blueprint, region singapore, free): `/api/health`

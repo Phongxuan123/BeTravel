@@ -14,8 +14,15 @@ module.exports = ({ config }) => {
   if (iosGoogleMapsApiKey && !/^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(iosBundleIdentifier ?? '')) {
     throw new Error('Google Maps iOS cần IOS_BUNDLE_IDENTIFIER hợp lệ trước khi build.');
   }
+  // `eas init` chi ghi extra.eas.projectId; suy ra URL may chu cap nhat tu do de khong phai sua tay
+  // hai cho (cap nhat qua EAS Update, xem docs/DEPLOY.md muc 4).
+  const easProjectId = config.extra?.eas?.projectId;
+  const updates = easProjectId
+    ? { ...config.updates, url: `https://u.expo.dev/${easProjectId}` }
+    : config.updates;
   return {
     ...config,
+    updates,
     android: {
       ...config.android,
       ...(process.env.ANDROID_PACKAGE ? { package: process.env.ANDROID_PACKAGE.trim() } : {}),

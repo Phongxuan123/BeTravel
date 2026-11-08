@@ -46,6 +46,13 @@
           "locationWhenInUsePermission": "Be.Travel dùng vị trí để tìm hỗ trợ gần bạn, cảnh báo khu vực hoặc chia sẻ vị trí một lần khi bạn chủ động chọn người nhận."
         }
       ]
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    }
   }
 }
