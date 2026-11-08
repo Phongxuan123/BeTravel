@@ -1,5 +1,17 @@
 # TIEN DO BE.TRAVEL
 
+## Chuan bi deploy -- 08/11/2026
+
+- Sua CI do tren main tu 03/11 (test guard import env.js, CI khong co .env) -- PR #76.
+- `backend/render.yaml` dong bo cau hinh dang chay that: APIZ (`LLM_PROVIDER=openai`), tim theo tu
+  khoa (`RETRIEVAL_MODE=lexical`, `SEARCH_DRIVER=memory`), tro ly AI ban 2 + gia tinh chi phi; bo
+  Gemini. Da mo phong production chi voi bien trong render.yaml + bi mat gia: env hop le.
+- `admin/vercel.json` (tai lai trang con khong 404); `docs/DEPLOY.md` viet lai muc Atlas/Render, sua
+  ten bien admin thanh `VITE_API_BASE_URL`, bo buoc key Google Maps (ban do dung OSM).
+- Do RAM backend sau khi nap 9.025 chunk: ~175 MB (vua goi Render free 512 MB).
+- Con lai can nguoi lam: tao service Render + nhap bi mat, project Vercel, sua URL that trong
+  `mobile/eas.json` roi `eas build`, them secret `BACKEND_HEALTH_URL` tren GitHub.
+
 ## Tro ly AI ban 2 -- giai doan 5 (man chat mobile) -- 03/11/2026
 
 - Man chat moi `features/chat/AssistantChatScreen.tsx` kieu ChatGPT: cau hoi trong bong bong phai,
