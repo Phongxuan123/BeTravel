@@ -3,6 +3,7 @@ import { AssistantKind } from "../../core/constants.js";
 import { TRIAGE_SYSTEM_PROMPT, buildUserPrompt } from "./prompts.js";
 import { getTriageProvider } from "./providers.js";
 import { parseRewriteJson } from "../queryRewrite.js";
+import { parseJsonObject } from "./modelOutput.js";
 
 const TRIAGE_MAX_OUTPUT_TOKENS = 400;
 const MAX_OPTIONS = 4;
@@ -16,18 +17,6 @@ const INTENT_TO_KIND = Object.freeze({
   out_of_scope: AssistantKind.REFUSE_SCOPE,
   harmful: AssistantKind.REFUSE_HARM,
 });
-
-// Lay object JSON dau tien trong van ban (mo hinh co the boc them chu hoac ```json).
-export const parseJsonObject = (rawText) => {
-  const start = rawText.indexOf("{");
-  const end = rawText.lastIndexOf("}");
-  if (start < 0 || end <= start) return null;
-  try {
-    return JSON.parse(rawText.slice(start, end + 1));
-  } catch {
-    return null;
-  }
-};
 
 const toOptions = (value) =>
   (Array.isArray(value) ? value : [])
