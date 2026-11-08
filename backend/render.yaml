@@ -17,14 +17,14 @@ services:
       - key: AUTH_TRANSPORT
         value: body
       - key: LEGAL_LOOKUP_ENABLED
-        value: true
+        value: "true"
       # Mo hinh qua APIZ (giao thuc OpenAI), xem docs/AI_V2_PLAN.md muc G2.
       - key: LLM_PROVIDER
         value: openai
       - key: OPENAI_BASE_URL
         value: https://api.apiz.vn/v1
       - key: OPENAI_JSON_MODE
-        value: false
+        value: "false"
       - key: LLM_MODEL
         value: gpt-6.1-sol
       - key: QUERY_REWRITE_MODEL
@@ -38,17 +38,20 @@ services:
         value: mock
       - key: TRANSLATION_PROVIDER
         value: default
+      # Mac dinh 30s de cat ngang cau tra loi cham cua mo hinh qua APIZ.
+      - key: AI_PROVIDER_TIMEOUT_MS
+        value: 60000
       - key: AI_DAILY_QUOTA_USER
         value: 40
       - key: AI_DAILY_QUOTA_GLOBAL
         value: 800
       # Tro ly AI ban 2: tra web tat, gia de tinh chi phi tren trang Admin.
       - key: ASSISTANT_ENABLED
-        value: true
+        value: "true"
       - key: ASSISTANT_MODEL
         value: gpt-6-luna
       - key: ASSISTANT_WEB_SEARCH_ENABLED
-        value: false
+        value: "false"
       - key: ASSISTANT_PRICE_INPUT_VND_PER_M
         value: 1200
       - key: ASSISTANT_PRICE_OUTPUT_VND_PER_M
@@ -56,9 +59,9 @@ services:
       - key: PLACES_PROVIDER
         value: osm
       - key: AU_LAW_DEEP_SUMMARY_AUTOGEN
-        value: false
+        value: "false"
       - key: AU_LAW_TITLE_TRANSLATION
-        value: true
+        value: "true"
       # Bi mat: KHONG khai gia tri o day -- nhap tren Render Dashboard (Environment), xem docs/DEPLOY.md.
       - key: MONGODB_URI
         sync: false
@@ -80,7 +83,4 @@ services:
         sync: false
       - key: SMTP_PASSWORD
         sync: false
-      - key: SEED_ADMIN_EMAIL
-        sync: false
-      - key: SEED_ADMIN_PASSWORD
-        sync: false
+      # SEED_ADMIN_* khong khai: chi `npm run seed` doc, server production khong chay seed.

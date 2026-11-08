@@ -13,15 +13,21 @@
         "simulator": false
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REPLACE_WITH_RENDER_BACKEND_URL/api",
-        "EXPO_PUBLIC_USE_MOCKS": "false"
+        "EXPO_PUBLIC_API_URL": "https://betravel-backend.onrender.com/api",
+        "EXPO_PUBLIC_USE_MOCKS": "false",
+        "EXPO_PUBLIC_ASSISTANT_ENABLED": "true",
+        "EXPO_PUBLIC_MAP_TILES": "osm",
+        "EXPO_PUBLIC_MAP_REFERER": "https://betravel-admin.vercel.app"
       }
     },
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REPLACE_WITH_RENDER_BACKEND_URL/api",
-        "EXPO_PUBLIC_USE_MOCKS": "false"
+        "EXPO_PUBLIC_API_URL": "https://betravel-backend.onrender.com/api",
+        "EXPO_PUBLIC_USE_MOCKS": "false",
+        "EXPO_PUBLIC_ASSISTANT_ENABLED": "true",
+        "EXPO_PUBLIC_MAP_TILES": "osm",
+        "EXPO_PUBLIC_MAP_REFERER": "https://betravel-admin.vercel.app"
       }
     }
   },

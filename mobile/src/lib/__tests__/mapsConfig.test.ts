@@ -43,9 +43,13 @@ test('Google Maps iOS nhận key riêng và không đưa key vào extra', () => 
 });
 
 test('không build Google Maps với key nhưng thiếu định danh ứng dụng', () => {
+  // app.json đã khai mã gói (08/11/2026); bỏ đi để kiểm tra đúng nhánh thiếu định danh.
+  const { package: _androidPackage, ...android } = config.android;
+  const { bundleIdentifier: _bundleIdentifier, ...ios } = config.ios;
+  const bareConfig = { ...config, android, ios };
   process.env.GOOGLE_MAPS_ANDROID_API_KEY = `AIza${'z'.repeat(35)}`;
-  expect(() => configure({ config })).toThrow('ANDROID_PACKAGE');
+  expect(() => configure({ config: bareConfig })).toThrow('ANDROID_PACKAGE');
   delete process.env.GOOGLE_MAPS_ANDROID_API_KEY;
   process.env.GOOGLE_MAPS_IOS_API_KEY = `AIza${'z'.repeat(35)}`;
-  expect(() => configure({ config })).toThrow('IOS_BUNDLE_IDENTIFIER');
+  expect(() => configure({ config: bareConfig })).toThrow('IOS_BUNDLE_IDENTIFIER');
 });

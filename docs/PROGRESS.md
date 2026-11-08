@@ -1,5 +1,20 @@
 # TIEN DO BE.TRAVEL
 
+## Da deploy that -- 08/11/2026 (chieu)
+
+- Backend https://betravel-backend.onrender.com (Render Blueprint, region singapore, free): `/api/health`
+  tra `db: connected`; CORS cho phep domain admin; API cong khai tra bai AU published.
+- Admin https://betravel-admin.vercel.app (Vercel, root `admin`): build co dung URL backend, tai lai
+  trang con khong 404.
+- Chong ngu: UptimeRobot ping `/api/health` moi 5 phut (chinh); secret `BACKEND_HEALTH_URL` cho workflow
+  keepalive (du phong -- lich cron GitHub do that cach nhau 3-7 gio, khong du mot minh).
+- Them `AI_PROVIDER_TIMEOUT_MS=60000` (Render + render.yaml); bo `SEED_ADMIN_*` khoi render.yaml (server
+  khong chay seed); gia tri boolean trong render.yaml dat trong ngoac kep.
+- Mobile: `eas.json` tro backend that, tat mock, bat tro ly, ep ban do OSM + Referer domain admin (may
+  chu o OSM tra 200 voi Referer nay); `app.json` khai ma goi `com.betravel.app`.
+- Chua chay that: dang nhap Admin va hoi tro ly tren production (khong tao tai khoan thu tren DB that),
+  APK (can tai khoan Expo + `eas-cli`).
+
 ## Chuan bi deploy -- 08/11/2026
 
 - Sua CI do tren main tu 03/11 (test guard import env.js, CI khong co .env) -- PR #76.
