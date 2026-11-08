@@ -26,8 +26,10 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
+      # Buoc nay chay truoc checkout nen thu muc mobile/ chua ton tai: chay o goc workspace.
       - name: Kiem tra secret EXPO_TOKEN
         id: token
+        working-directory: .
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
             echo "Thieu secret EXPO_TOKEN -- bo qua phat cap nhat."
