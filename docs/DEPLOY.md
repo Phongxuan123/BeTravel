@@ -4,10 +4,13 @@ Hướng dẫn này giả định chưa có gì ngoài source code. Thứ tự b
 **Atlas → backend (Render) → admin (Vercel) → mobile (EAS)**, vì admin và
 mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backend đã chạy.
 
-> [!] Không có bước nào ở đây được tự động hoá bởi AI — cần tài khoản thật
-> (MongoDB Atlas, Render, Vercel, Expo/EAS, APIZ)
-> và người có quyền truy cập các dịch vụ đó thực hiện. Tài liệu này là bản
-> hướng dẫn từng bước, không phải nhật ký đã thực thi.
+> [!] Đã triển khai thật ngày 08/11/2026:
+> - Backend: https://betravel-backend.onrender.com (Render, Blueprint `backend/render.yaml`)
+> - Admin: https://betravel-admin.vercel.app (Vercel, project `betravel-admin`, root `admin`)
+> - Chống ngủ: UptimeRobot ping `/api/health` mỗi 5 phút + workflow `keepalive.yml` dự phòng
+> - Mobile: `mobile/eas.json` đã trỏ backend thật; APK build bằng EAS (mục 4)
+>
+> Các bước dưới đây giữ lại để dựng lại từ đầu khi cần.
 
 ## 1. MongoDB Atlas
 
@@ -34,13 +37,15 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
    | `CLIENT_URL` | nên có | domain admin, dùng trong link email đặt lại mật khẩu |
    | `GOOGLE_CLIENT_ID` | tuỳ chọn | đăng nhập Google |
    | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | tuỳ chọn | gửi email quên mật khẩu |
-   | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | không cần nếu dùng lại Atlas chung | chỉ dùng khi tạo admin đầu tiên |
 
 3. Deploy. Kiểm tra `GET https://<service>.onrender.com/api/health` trả `db: "connected"`.
    Log khởi động phải có dòng `[search] đã nạp ... chunk vào RAM`.
-4. **Chống ngủ**: GitHub repo → **Settings → Secrets and variables → Actions** → thêm
-   `BACKEND_HEALTH_URL = https://<service>.onrender.com/api/health`. Hiện workflow `keepalive.yml`
-   đang báo "success" nhưng thực chất bỏ qua vì thiếu secret này.
+4. **Chống ngủ** (Render free ngủ sau ~15 phút không có request):
+   - Chính: UptimeRobot (gói free) monitor HTTP(s) `https://<service>.onrender.com/api/health`,
+     chu kỳ 5 phút. Kèm email báo khi backend sập.
+   - Dự phòng: secret GitHub `BACKEND_HEALTH_URL` cho workflow `keepalive.yml`. Lịch cron của GitHub
+     thực tế chạy cách nhau 3-7 giờ (đo 06-08/11/2026) nên KHÔNG đủ để giữ backend thức một mình.
+   - 750 giờ free/tháng của Render chỉ đủ cho MỘT service chạy liên tục.
 5. Tắt nhanh trợ lý AI khi cần: trang Admin → **Trợ lý AI** → công tắc (có hiệu lực ngay), hoặc đặt
    `ASSISTANT_ENABLED=false` trên Render (khoá chính, cần redeploy).
 
@@ -56,8 +61,13 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
 ## 4. Mobile — build bằng EAS
 
 1. Cài `eas-cli`: `npm install -g eas-cli`, đăng nhập `eas login` bằng tài khoản Expo.
-2. Bản đồ dùng OpenStreetMap (`EXPO_PUBLIC_MAP_TILES=auto`), không cần key Google Maps.
-3. `mobile/eas.json` đã có profile `preview` (APK nội bộ) và `production` — sửa `EXPO_PUBLIC_API_URL` trong cả hai profile thành domain Render thật (hiện đang là placeholder).
+2. Bản đồ: `eas.json` ép `EXPO_PUBLIC_MAP_TILES=osm` (Leaflet trong WebView), không cần key Google
+   Maps; `EXPO_PUBLIC_MAP_REFERER` là domain admin vì máy chủ ô OSM chặn request không có Referer.
+3. `mobile/eas.json` (profile `preview` = APK nội bộ, `production`) đã trỏ
+   `EXPO_PUBLIC_API_URL=https://betravel-backend.onrender.com/api`, tắt mock, bật trợ lý AI.
+   Mã gói `com.betravel.app` khai trong `app.json` (bản dev local vẫn là `com.betravel.dev`).
+   Lần build đầu EAS hỏi tạo project trên Expo: chọn Yes, nó ghi `extra.eas.projectId` vào `app.json`
+   -- commit thay đổi đó.
 4. Build APK để nộp bài / demo:
    ```bash
    cd mobile
@@ -70,16 +80,16 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
 
 ```
 □ GET /api/health trả db:"connected"
-□ Admin đăng nhập được, đổi mật khẩu mặc định
+□ Admin đăng nhập được
 □ Mobile (build APK hoặc Expo Go) trỏ đúng EXPO_PUBLIC_API_URL, KHÔNG dùng mock
 □ Log backend có "[search] đã nạp ... chunk vào RAM"; hỏi thử Trợ lý AI trên app ra nhãn nguồn
 □ Trang Admin "Trợ lý AI": công tắc bật, biểu đồ có chi phí
-□ Keepalive workflow đã chạy ít nhất 1 lần thành công (tab Actions)
+□ UptimeRobot báo Up; keepalive workflow có log trả {"ok":true,...}
 □ CORS_ORIGINS khớp đúng domain admin thật -- không còn localhost trong prod
 ```
 
 ## 6. Phương án dự phòng khi demo
 
 - Trợ lý AI trả lời lỗi giữa buổi demo (APIZ trục trặc): tắt bằng công tắc trên Admin; tab Trợ lý AI báo tạm ngưng, các phần khác của app vẫn chạy.
-- Backend Render chưa "thức dậy" kịp: mở `/api/health` vài lần trước khi demo 5-10 phút.
+- Backend Render chưa "thức dậy" kịp (UptimeRobot tạm dừng/hết giờ free): mở `/api/health` trước khi demo 5-10 phút.
 - Mạng demo yếu / API lỗi: đặt `EXPO_PUBLIC_USE_MOCKS=true` trong build mobile dự phòng, app chạy lại bằng dữ liệu giả lập.
