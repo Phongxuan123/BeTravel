@@ -2,58 +2,61 @@
 
 Hướng dẫn này giả định chưa có gì ngoài source code. Thứ tự bắt buộc:
 **Atlas → backend (Render) → admin (Vercel) → mobile (EAS)**, vì admin và
-mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_URL` trỏ tới backend đã chạy.
+mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backend đã chạy.
 
 > [!] Không có bước nào ở đây được tự động hoá bởi AI — cần tài khoản thật
-> (MongoDB Atlas, Render, Vercel, Expo/EAS, Google Cloud cho Gemini + Maps)
+> (MongoDB Atlas, Render, Vercel, Expo/EAS, APIZ)
 > và người có quyền truy cập các dịch vụ đó thực hiện. Tài liệu này là bản
 > hướng dẫn từng bước, không phải nhật ký đã thực thi.
 
 ## 1. MongoDB Atlas
 
-1. Tạo cluster free tier (M0) tại [cloud.mongodb.com](https://cloud.mongodb.com).
-2. **Database Access** → tạo user riêng cho backend (không dùng tài khoản Atlas chính), quyền `readWrite` trên database dự án.
-3. **Network Access** → thêm `0.0.0.0/0` (Render dùng IP động) hoặc dải IP tĩnh nếu Render cung cấp.
-4. Lấy connection string dạng `mongodb+srv://<user>:<password>@<cluster-host>/<database>`.
-5. **Atlas Search + Vector Search** (bắt buộc cho RAG B4, không có trên MongoDB local/self-host): làm theo **`docs/atlas-indexes.md`** — tạo `vec_idx` (Vector Search) và `txt_idx` (Atlas Search) trên collection `legal_chunks`. **Chờ cả hai ở trạng thái `ACTIVE`** trước khi reindex (đôi khi mất vài phút, xem mục 3 của tài liệu đó).
-6. Ngân sách 3 index/M0: đã dùng 2 (`vec_idx` + `txt_idx`), còn 1 dự phòng — không tạo thêm ở collection khác (CLAUDE.md mục 4.1).
+1. Dự án đang dùng một cluster Atlas M0 chung cho cả nhóm (dữ liệu thật đã có: 25 bài cẩm nang Úc,
+   luật liên bang Úc, vùng nguy cơ). Deploy dùng lại cluster này, **không cần seed lại**.
+2. **Database Access** → tạo user riêng cho backend production, quyền `readWrite` trên database dự án.
+3. **Network Access** → thêm `0.0.0.0/0` (Render dùng IP động).
+4. Atlas Search/Vector index **không cần** với cấu hình hiện tại (`RETRIEVAL_MODE=lexical`,
+   `SEARCH_DRIVER=memory`): backend nạp các đoạn luật vào RAM lúc khởi động (~175 MB, đo 08/11/2026).
 
 ## 2. Backend lên Render
 
-1. Đăng nhập [render.com](https://render.com), **New → Web Service**, kết nối repo GitHub.
-2. Render đọc **`backend/render.yaml`** (Blueprint) — hoặc cấu hình thủ công:
-   - Root directory: `backend`
-   - Build command: `npm install`
-   - Start command: `npm start`
-   - Health check path: `/api/health`
-3. **Environment** tab — khai các biến sau (không có trong `render.yaml`, phải nhập tay vì là bí mật):
-   | Biến | Giá trị |
-   |---|---|
-   | `MONGODB_URI` | connection string ở bước 1 |
-   | `JWT_ACCESS_SECRET` | chuỗi ngẫu nhiên dài, KHÁC với secret dùng lúc dev |
-   | `GEMINI_API_KEY` | API key thật từ Google AI Studio |
-   | `CORS_ORIGINS` | domain admin thật trên Vercel (vd `https://betravel-admin.vercel.app`), phân cách dấu phẩy nếu nhiều origin |
-   | `PLACES_PROVIDER` | tùy chọn. Mặc định `mock` (không gọi mạng). `osm` = địa điểm bổ sung từ OpenStreetMap, miễn phí, không cần key (khuyên dùng). `serpapi` = Google Maps qua SerpApi, cần `SERPAPI_KEY` (thiếu thì backend không khởi động). Địa điểm này luôn gắn chưa xác minh. Trần gọi/ngày: `PLACES_DAILY_LIMIT`; Overpass công cộng có chính sách sử dụng công bằng, lưu lượng lớn nên dùng máy chủ riêng qua `PLACES_OVERPASS_URL` |
-   | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | tài khoản admin đầu tiên — **đổi mật khẩu ngay** sau khi đăng nhập lần đầu |
-4. Deploy. Xác nhận `GET https://<service>.onrender.com/api/health` trả `{"ok":true,"data":{"db":"connected",...}}`.
-5. SSH/Shell vào service (Render Dashboard → Shell) hoặc chạy cục bộ với `MONGODB_URI` trỏ tới Atlas thật:
-   ```bash
-   npm run seed        # hoặc npm run seed:demo (seed + reindex bài đã published)
-   ```
-6. **Chống Render free tier ngủ**: repo đã có `.github/workflows/keepalive.yml` (cron `*/10 * * * *` ping `/api/health`). Vào **Settings → Secrets and variables → Actions** của repo GitHub, thêm secret `BACKEND_HEALTH_URL = https://<service>.onrender.com/api/health`. Vào tab **Actions**, chạy thử workflow bằng nút "Run workflow" để xác nhận ping thành công trước khi tin vào lịch cron.
+1. [render.com](https://render.com) → **New → Blueprint**, kết nối repo GitHub, chọn file
+   **`backend/render.yaml`**. File này đã khai sẵn mọi biến không bí mật (mô hình qua APIZ, chế độ tìm
+   theo từ khoá, trợ lý AI bản 2, giá tính chi phí).
+2. Render sẽ hỏi các biến bí mật (`sync: false`) — nhập tay:
+
+   | Biến | Bắt buộc | Giá trị |
+   |---|---|---|
+   | `MONGODB_URI` | có | connection string của user production ở bước 1 |
+   | `JWT_ACCESS_SECRET` | có | chuỗi ngẫu nhiên **ít nhất 32 ký tự**, KHÁC secret lúc dev (thiếu/ngắn thì backend không khởi động) |
+   | `OPENAI_API_KEY` | có | key APIZ: trợ lý AI, bước phụ và dịch (`TRANSLATION_PROVIDER=default` dùng chung nhà cung cấp) |
+   | `CORS_ORIGINS` | có | domain admin trên Vercel, vd `https://betravel-admin.vercel.app` |
+   | `CLIENT_URL` | nên có | domain admin, dùng trong link email đặt lại mật khẩu |
+   | `GOOGLE_CLIENT_ID` | tuỳ chọn | đăng nhập Google |
+   | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD` | tuỳ chọn | gửi email quên mật khẩu |
+   | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` | không cần nếu dùng lại Atlas chung | chỉ dùng khi tạo admin đầu tiên |
+
+3. Deploy. Kiểm tra `GET https://<service>.onrender.com/api/health` trả `db: "connected"`.
+   Log khởi động phải có dòng `[search] đã nạp ... chunk vào RAM`.
+4. **Chống ngủ**: GitHub repo → **Settings → Secrets and variables → Actions** → thêm
+   `BACKEND_HEALTH_URL = https://<service>.onrender.com/api/health`. Hiện workflow `keepalive.yml`
+   đang báo "success" nhưng thực chất bỏ qua vì thiếu secret này.
+5. Tắt nhanh trợ lý AI khi cần: trang Admin → **Trợ lý AI** → công tắc (có hiệu lực ngay), hoặc đặt
+   `ASSISTANT_ENABLED=false` trên Render (khoá chính, cần redeploy).
 
 ## 3. Admin Portal lên Vercel
 
 1. [vercel.com](https://vercel.com) → **New Project** → import repo, chọn root directory `admin`.
 2. Build command: `npm run build` (mặc định Vercel tự nhận Vite). Output directory: `dist`.
-3. **Environment Variables**: `VITE_API_URL = https://<service>.onrender.com/api`.
+3. **Environment Variables**: `VITE_API_BASE_URL = https://<service>.onrender.com/api`.
+   `admin/vercel.json` đã chuyển mọi đường dẫn về `index.html` để tải lại trang con không bị 404.
 4. Deploy. Đăng nhập bằng tài khoản admin đã tạo ở bước 2.5.
 5. Quay lại Render, cập nhật `CORS_ORIGINS` thành đúng domain Vercel vừa có (vd `https://betravel-admin.vercel.app`), redeploy backend.
 
 ## 4. Mobile — build bằng EAS
 
 1. Cài `eas-cli`: `npm install -g eas-cli`, đăng nhập `eas login` bằng tài khoản Expo.
-2. `mobile/app.json` cần `android.config.googleMaps.apiKey` là **key Google Maps thật** (hiện đang là placeholder `REPLACE_WITH_REAL_ANDROID_MAPS_API_KEY`) — tạo tại Google Cloud Console, bật **Maps SDK for Android**, và **đặt quota cap** cho key này (CLAUDE.md Phần 6 "Cạm bẫy đã biết" — hoá đơn bất ngờ nếu không giới hạn).
+2. Bản đồ dùng OpenStreetMap (`EXPO_PUBLIC_MAP_TILES=auto`), không cần key Google Maps.
 3. `mobile/eas.json` đã có profile `preview` (APK nội bộ) và `production` — sửa `EXPO_PUBLIC_API_URL` trong cả hai profile thành domain Render thật (hiện đang là placeholder).
 4. Build APK để nộp bài / demo:
    ```bash
@@ -69,13 +72,14 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_URL` trỏ tới backend đ�
 □ GET /api/health trả db:"connected"
 □ Admin đăng nhập được, đổi mật khẩu mặc định
 □ Mobile (build APK hoặc Expo Go) trỏ đúng EXPO_PUBLIC_API_URL, KHÔNG dùng mock
-□ Atlas Search 2 index đều ACTIVE, npm run seed:demo reindex không lỗi
+□ Log backend có "[search] đã nạp ... chunk vào RAM"; hỏi thử Trợ lý AI trên app ra nhãn nguồn
+□ Trang Admin "Trợ lý AI": công tắc bật, biểu đồ có chi phí
 □ Keepalive workflow đã chạy ít nhất 1 lần thành công (tab Actions)
 □ CORS_ORIGINS khớp đúng domain admin thật -- không còn localhost trong prod
 ```
 
 ## 6. Phương án dự phòng khi demo
 
-- Atlas Search trục trặc giữa buổi demo: đặt `SEARCH_DRIVER=memory` trên Render, redeploy — RAG chuyển sang driver không phụ thuộc Atlas Search (vẫn cần Atlas cho dữ liệu thường, chỉ tắt riêng Search).
+- Trợ lý AI trả lời lỗi giữa buổi demo (APIZ trục trặc): tắt bằng công tắc trên Admin; tab Trợ lý AI báo tạm ngưng, các phần khác của app vẫn chạy.
 - Backend Render chưa "thức dậy" kịp: mở `/api/health` vài lần trước khi demo 5-10 phút.
 - Mạng demo yếu / API lỗi: đặt `EXPO_PUBLIC_USE_MOCKS=true` trong build mobile dự phòng, app chạy lại bằng dữ liệu giả lập.

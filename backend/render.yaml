@@ -5,31 +5,81 @@ services:
     plan: free
     region: singapore
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
+      # Cau hinh khong bi mat: dong bo voi backend/.env dang chay that (cap nhat 08/11/2026).
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 3000
-      # Bí mật (MONGODB_URI, JWT_ACCESS_SECRET, GEMINI_API_KEY, SMTP_*...)
-      # KHÔNG khai giá trị ở đây -- đặt trực tiếp trên Render Dashboard
-      # (Environment tab), xem docs/DEPLOY.md.
+      - key: AUTH_TRANSPORT
+        value: body
+      - key: LEGAL_LOOKUP_ENABLED
+        value: true
+      # Mo hinh qua APIZ (giao thuc OpenAI), xem docs/AI_V2_PLAN.md muc G2.
+      - key: LLM_PROVIDER
+        value: openai
+      - key: OPENAI_BASE_URL
+        value: https://api.apiz.vn/v1
+      - key: OPENAI_JSON_MODE
+        value: false
+      - key: LLM_MODEL
+        value: gpt-6.1-sol
+      - key: QUERY_REWRITE_MODEL
+        value: gpt-6-luna
+      # Khong dung embedding: tim theo tu khoa + muc luc bai, chi so trong RAM (~175 MB do that).
+      - key: RETRIEVAL_MODE
+        value: lexical
+      - key: SEARCH_DRIVER
+        value: memory
+      - key: EMBEDDING_PROVIDER
+        value: mock
+      - key: TRANSLATION_PROVIDER
+        value: default
+      - key: AI_DAILY_QUOTA_USER
+        value: 40
+      - key: AI_DAILY_QUOTA_GLOBAL
+        value: 800
+      # Tro ly AI ban 2: tra web tat, gia de tinh chi phi tren trang Admin.
+      - key: ASSISTANT_ENABLED
+        value: true
+      - key: ASSISTANT_MODEL
+        value: gpt-6-luna
+      - key: ASSISTANT_WEB_SEARCH_ENABLED
+        value: false
+      - key: ASSISTANT_PRICE_INPUT_VND_PER_M
+        value: 1200
+      - key: ASSISTANT_PRICE_OUTPUT_VND_PER_M
+        value: 7200
+      - key: PLACES_PROVIDER
+        value: osm
+      - key: AU_LAW_DEEP_SUMMARY_AUTOGEN
+        value: false
+      - key: AU_LAW_TITLE_TRANSLATION
+        value: true
+      # Bi mat: KHONG khai gia tri o day -- nhap tren Render Dashboard (Environment), xem docs/DEPLOY.md.
       - key: MONGODB_URI
         sync: false
       - key: JWT_ACCESS_SECRET
         sync: false
-      - key: LLM_PROVIDER
-        value: gemini
-      - key: EMBEDDING_PROVIDER
-        value: gemini
-      - key: GEMINI_API_KEY
+      - key: OPENAI_API_KEY
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      - key: AUTH_TRANSPORT
-        value: body
+      - key: CLIENT_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
       - key: SEED_ADMIN_EMAIL
         sync: false
       - key: SEED_ADMIN_PASSWORD
