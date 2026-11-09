@@ -30,3 +30,8 @@ mobile/modules/*/android/build/
 mobile/modules/*/android/.gradle/
 mobile/modules/*/android/.cxx/
 mobile/modules/*/ios/build/
+
+# File cai dat build san (APK/AAB/IPA) -- tai tu expo.dev, khong dua len GitHub
+*.apk
+*.aab
+*.ipa
