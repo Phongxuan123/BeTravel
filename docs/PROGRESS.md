@@ -17,7 +17,8 @@
 - Fix (PR #83): Gemini viet xuong dong that trong chuoi JSON "answer" --> tro ly bao "Chua soan duoc
   cau tra loi". `modelOutput.js` escape ky tu dieu khien trong chuoi roi parse lai. Thu that 8 cau AU
   (ho chieu, moc tui, do an, lai xe, cap cuu, tu choi) deu dung nhan. Con lai: cau hoi tieng Anh
-  Gemini van tra loi tieng Viet (chua chot co can tra tieng Anh khong).
+  Gemini van tra loi tieng Viet --> PR #84: nguoi dung chot hoi tieng Anh tra tieng Anh; buoc phan
+  loai tra ve `language` (nhan dung tieng Viet go khong dau), prompt nhac bang tieng Anh.
 
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
