@@ -85,7 +85,8 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
    (Git Bash cần `MSYS_NO_PATHCONV=1` để không đổi đường dẫn thiết bị).
 6. **Cập nhật không cần cài lại APK (EAS Update)**:
    - Code JS/TS hoặc hình ảnh trong `mobile/` merge vào `main` --> workflow
-     `.github/workflows/eas-update.yml` chạy `eas update --channel preview`. App đã cài tải bản mới
+     `.github/workflows/eas-update.yml` chạy `eas update --channel preview --platform android`
+     (app không có bản web). App đã cài tải bản mới
      khi mở, áp dụng ở lần mở kế tiếp.
    - Cần secret GitHub `EXPO_TOKEN` (expo.dev → Account settings → Access tokens). Thiếu secret thì
      workflow bỏ qua, không lỗi.
