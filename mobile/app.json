@@ -53,6 +53,12 @@
     "updates": {
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ec0bf940-013e-4f30-9820-2ad9519f1b17"
+      }
+    },
+    "owner": "xuanphong123"
   }
 }
