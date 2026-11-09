@@ -6,11 +6,18 @@ import { createOpenAiLlmProvider } from "./openai.llm.js";
 
 let cachedProvider = null;
 
+/*
+ * Do 10/11 tren Render: Gemini thinh thoang tra 503 (qua tai) --> tro ly bao "dang ban" du hoi lai
+ * ngay thi duoc. Thu lai mot lan trong cung timeout, nhu provider dich.
+ */
+const createGeminiChatProvider = (model) =>
+  createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model, retryUnavailable: true });
+
 export function getLlmProvider() {
   if (cachedProvider) return cachedProvider;
 
   if (env.LLM_PROVIDER === "gemini") {
-    cachedProvider = createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model: env.LLM_MODEL });
+    cachedProvider = createGeminiChatProvider(env.LLM_MODEL);
   } else if (env.LLM_PROVIDER === "openai") {
     cachedProvider = createOpenAiLlmProvider({ apiKey: env.OPENAI_API_KEY, model: env.LLM_MODEL });
   } else {
@@ -29,8 +36,7 @@ export function buildAuxiliaryProvider(model) {
   if (!model || model === env.LLM_MODEL) return getLlmProvider();
   if (env.LLM_PROVIDER === "openai")
     return createOpenAiLlmProvider({ apiKey: env.OPENAI_API_KEY, model });
-  if (env.LLM_PROVIDER === "gemini")
-    return createGeminiLlmProvider({ apiKey: env.GEMINI_API_KEY, model });
+  if (env.LLM_PROVIDER === "gemini") return createGeminiChatProvider(model);
   return getLlmProvider();
 }
 
