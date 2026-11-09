@@ -61,3 +61,10 @@ test("dau ra mo hinh: JSON, JSON bi cat, van ban tron deu lay duoc cau tra loi (
   assert.equal(extractAnswer("Hãy bình tĩnh.\n- Hỏi lý do."), "Hãy bình tĩnh.\n- Hỏi lý do.");
   assert.equal(extractAnswer('{"oops":'), "");
 });
+
+test("dau ra mo hinh: xuong dong that trong chuoi JSON van lay duoc cau tra loi (Gemini 09/11)", () => {
+  const raw = '{\n  "answer": "Báo cảnh sát [1].\n- Nộp hồ sơ\t[1]."\n}';
+  assert.equal(extractAnswer(raw), "Báo cảnh sát [1].\n- Nộp hồ sơ\t[1].");
+  assert.equal(extractAnswer('{"answer":"Có [1].\n- Mang'), "Có [1].\n- Mang");
+  assert.equal(extractAnswer('{"answer":"Trích \\"luật\\"\nhết."}'), 'Trích "luật"\nhết.');
+});
