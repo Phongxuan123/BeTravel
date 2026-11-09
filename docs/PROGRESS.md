@@ -1,5 +1,19 @@
 # TIEN DO BE.TRAVEL
 
+## Build APK that + Render chuyen sang Gemini -- 09/11/2026
+
+- EAS: du an `@xuanphong123/FE`, projectId ghi vao `mobile/app.json`; build APK profile `preview`
+  thanh cong, keystore luu tren Expo. `.gitignore` chan `*.apk`, `*.aab`, `*.ipa`.
+- Fix workflow `eas-update.yml`: buoc kiem tra `EXPO_TOKEN` chay o goc workspace (truoc checkout).
+- Chay that APK tren LDPlayer 9 voi backend Render: dang nhap, trang chu, SOS, Tro ly AI deu chay.
+- Tro ly AI tren Render: moi loi goi APIZ het thoi gian cho (classify/rewrite/compose) du key dung,
+  tu may local van nhanh --> production doi sang Gemini (`gemini-3.5-flash-lite`), `render.yaml`
+  cap nhat theo. Do sau deploy: cau hoi AU tra 4.5-13.4s, nhan "Nguon chinh thuc", co trich dan;
+  tren APK cau hoi khong dau van tra loi tieng Viet.
+- Dang vuong: secret `EXPO_TOKEN` tren GitHub (nguoi tu tao) de EAS Update tu phat khi merge.
+- Chua ro: tro ly tu choi `KR` ("chua ho tro quoc gia nay") vi Country KR chua o trang thai active
+  tren production; can quyet dinh co bat KR hay khong.
+
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
 - Cai `expo-updates`; `runtimeVersion` theo `version` trong app.json (khong dung fingerprint: build
