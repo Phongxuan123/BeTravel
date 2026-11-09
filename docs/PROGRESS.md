@@ -10,9 +10,10 @@
   tu may local van nhanh --> production doi sang Gemini (`gemini-3.5-flash-lite`), `render.yaml`
   cap nhat theo. Do sau deploy: cau hoi AU tra 4.5-13.4s, nhan "Nguon chinh thuc", co trich dan;
   tren APK cau hoi khong dau van tra loi tieng Viet.
-- Dang vuong: secret `EXPO_TOKEN` tren GitHub (nguoi tu tao) de EAS Update tu phat khi merge.
-- Chua ro: tro ly tu choi `KR` ("chua ho tro quoc gia nay") vi Country KR chua o trang thai active
-  tren production; can quyet dinh co bat KR hay khong.
+- EXPO_TOKEN da dat (09/11/2026); workflow EAS Update sua chi phat Android (PR #82), da phat thu
+  thanh cong len kenh `preview` runtime 1.0.0, khop APK build `e4ea9122` (commit fca20bc).
+- Quyet dinh: KHONG bat KR tren production (nguoi dung chot 09/11/2026); prod chi AU active,
+  JP/SG/TH dang coming_soon.
 
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
