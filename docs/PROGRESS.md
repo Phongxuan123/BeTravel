@@ -15,6 +15,10 @@
 - Quyet dinh: KHONG bat KR tren production (nguoi dung chot 09/11/2026); prod chi AU active,
   JP/SG/TH dang coming_soon.
 
+- Fix (PR #83): Gemini viet xuong dong that trong chuoi JSON "answer" --> tro ly bao "Chua soan duoc
+  cau tra loi". `modelOutput.js` escape ky tu dieu khien trong chuoi roi parse lai. Thu that 8 cau AU
+  (ho chieu, moc tui, do an, lai xe, cap cuu, tu choi) deu dung nhan. Con lai: cau hoi tieng Anh
+  Gemini van tra loi tieng Viet (chua chot co can tra tieng Anh khong).
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
 - Cai `expo-updates`; `runtimeVersion` theo `version` trong app.json (khong dung fingerprint: build
