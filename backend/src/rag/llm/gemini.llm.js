@@ -16,7 +16,8 @@ export function createGeminiLlmProvider({ apiKey, model, retryUnavailable = fals
   return {
     provider: "gemini",
     model,
-    async complete({ systemPrompt, userPrompt, timeoutMs }) {
+    // onUsage (tuỳ chọn): nhận số token thật để ghi chi phí ai_events, như provider openai.
+    async complete({ systemPrompt, userPrompt, timeoutMs, onUsage }) {
       const url = `${API_BASE}/models/${model}:generateContent?key=${apiKey}`;
       const signal = AbortSignal.timeout(timeoutMs ?? env.AI_PROVIDER_TIMEOUT_MS);
       const options = {
@@ -46,6 +47,12 @@ export function createGeminiLlmProvider({ apiKey, model, retryUnavailable = fals
       if (!text) {
         throw new Error("GEMINI_LLM_EMPTY_RESPONSE");
       }
+      // Token "suy nghĩ" của Gemini cũng tính tiền như token đầu ra.
+      const usage = json.usageMetadata ?? {};
+      onUsage?.({
+        inputTokens: usage.promptTokenCount ?? 0,
+        outputTokens: (usage.candidatesTokenCount ?? 0) + (usage.thoughtsTokenCount ?? 0),
+      });
       return text;
     },
   };
