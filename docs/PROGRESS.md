@@ -19,6 +19,14 @@
   (ho chieu, moc tui, do an, lai xe, cap cuu, tu choi) deu dung nhan. Con lai: cau hoi tieng Anh
   Gemini van tra loi tieng Viet --> PR #84: nguoi dung chot hoi tieng Anh tra tieng Anh; buoc phan
   loai tra ve `language` (nhan dung tieng Viet go khong dau), prompt nhac bang tieng Anh.
+- Fix (PR #85): Gemini thinh thoang tra 503 (qua tai) --> tro ly bao "dang ban". Provider Gemini cho
+  tro ly va buoc phu thu lai mot lan voi 502/503/504 trong cung timeout (nhu provider dich).
+- Chay that tren Render sau deploy #85: tro ly 4 cau (Anh, Viet co dau/khong dau, khan cap) deu 200,
+  nhan "Nguon chinh thuc", 3-12s; dich vi<->en ~1s; noi dung phap ly, tim kiem, SOS gan Sydney, su co,
+  vung rui ro, chuyen di, yeu thich deu 200. Admin: dang nhap, dashboard, cai dat/thong ke tro ly 200;
+  user goi /admin --> 403. Cau mau dich cho AU rong la dung y (AU dung bo cau mau tieng Anh trong app).
+- No ky thuat: `ASSISTANT_PRICE_*` tren Render van la gia APIZ --> chi phi uoc tinh tren Admin chua
+  dung gia Gemini; can nguoi cap nhat gia Gemini that.
 
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
