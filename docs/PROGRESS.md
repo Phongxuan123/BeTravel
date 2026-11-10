@@ -1,5 +1,26 @@
 # TIEN DO BE.TRAVEL
 
+## Hoàn tất kiểm tra nền cục bộ — 10/11/2026 (mới nhất)
+
+Tiến độ giọng Hàn `[###-] 3/4`: code, kiểm thử tự động và tài liệu hoàn tất;
+còn nghe thử trên điện thoại thật. Kết quả dưới đây thay thế các lỗi nền còn mở
+trong mục kiểm tra trước đó, không thay đổi lịch sử ghi nhận.
+
+- Sửa kiểu ref/callback/props tương thích React Native 0.88 đang cài cục bộ;
+  giữ nguyên luồng dịch, bản đồ, chuyến đi, chat và xác thực.
+- Khai báo query-string 7.1.3 trực tiếp trong devDependencies để kiểm thử
+  tương thích dependency không phụ thuộc thư viện bắc cầu; patch có sẵn áp dụng đạt.
+- Khôi phục ba biến còn thiếu trong backend/.env.example cục bộ theo giá trị
+  mặc định của env.js; không sửa .env hoặc dữ liệu thật.
+- Mobile: typecheck, lint không cache, 56 suites/256 tests đạt; export Android
+  và iOS đạt. Backend: lint/format và 308 tests đạt. Admin: lint/typecheck,
+  23 tests và build đạt. Đây không phải kiểm thử âm thanh/APK trên thiết bị thật.
+- Các kết quả áp dụng cho cây làm việc cục bộ Expo 58/RN 0.88. Nâng cấp SDK
+  sẵn có của người dùng và cấu hình env giữ ngoài commit; chỉ ghi nhận riêng
+  sửa code, khai báo devDependency và tài liệu. Không push Git.
+- npm install báo 35 vấn đề audit (1 low, 30 moderate, 4 high); chưa xử lý bằng
+  nâng cấp cưỡng bức. Chưa thể tuyên bố toàn bộ dependency không còn rủi ro.
+
 ## Chốt phần giọng Hàn — 10/11/2026
 
 - Tiếp tục phần đang làm ngày 08/11, không đổi cấu trúc hoặc dependency.

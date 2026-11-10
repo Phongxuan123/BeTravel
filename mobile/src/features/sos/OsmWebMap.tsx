@@ -32,7 +32,8 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
   { center, delta, markers, zones, onReady, onMarkerPress, onZonePress, onLongPress },
   ref,
 ) {
-  const webRef = useRef<WebView>(null);
+  // Generic mặc định undefined của WebView giao với props thành never dưới strict types.
+  const webRef = useRef<WebView<Record<never, never>>>(null);
   const [ready, setReady] = useState(false);
   // Chỉ dựng HTML một lần: đổi source sẽ nạp lại trang và mất vị trí bản đồ. Dịch chuyển sau đó đi qua flyTo.
   const [html] = useState(() =>
@@ -87,7 +88,7 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
   };
 
   return (
-    <WebView
+    <WebView<Record<never, never>>
       ref={webRef}
       style={{ flex: 1 }}
       source={{ html, baseUrl: OSM_REFERER }}

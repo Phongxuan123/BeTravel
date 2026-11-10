@@ -1,5 +1,27 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Sửa lỗi tương thích và kiểm chứng toàn bộ — 10/11/2026
+
+- Dùng ComponentRef để lấy kiểu instance thực của ScrollView/TextInput/View;
+  lấy kiểu callback từ FlatListProps, sửa footer vắng mặt về undefined và bỏ
+  props StatusBar cũ. Giữ barStyle dark-content và luồng nghiệp vụ hiện có.
+- WebView khai báo generic rỗng rõ ràng để tránh giao props với undefined thành
+  never dưới strict types; không đổi nội dung HTML, marker hoặc lệnh bản đồ.
+- Mock Share.share bổ sung activityType theo kiểu trả về. Khai báo query-string
+  7.1.3 làm devDependency để test bảo mật không dựa vào dependency bắc cầu.
+  Giữ patch query-string/decode-uri-component hiện có, cài đặt áp dụng thành công.
+- Backend example cục bộ khôi phục MEMORY_SEARCH_CACHE_TTL_MS=600000,
+  AU_REGISTER_LOOKUP_BUDGET_MS=5000, QUERY_REWRITE_TIMEOUT_MS=15000 theo env.js.
+  Các khóa đã có trên HEAD nên cấu hình cục bộ không đưa vào commit sửa lỗi.
+- Xác minh: mobile typecheck/lint không cache, 256 tests, export Android/iOS;
+  backend lint/format và 308 tests; admin lint/typecheck/build và 23 tests đều đạt.
+  Backend dùng DB tạm. Chưa nghe âm thanh trên thiết bị thật.
+- Chỉ stage phần khai báo devDependency trong package/lock từ baseline Git;
+  giữ nâng cấp Expo 58/RN 0.88 đang làm của người dùng ngoài commit. Các kết quả
+  kiểm tra là trên cây làm việc cục bộ, không phải một lần cài sạch từ commit.
+- npm install báo 35 audit findings (1 low/30 moderate/4 high), còn cần phân tích;
+  không tự chạy audit fix --force. Không push Git, không sửa dữ liệu sản xuất.
+
 ## Chốt kiểm tra giọng Hàn — 10/11/2026
 
 Chạy lại 20 tests mục tiêu và lint file sửa đều đạt; diff không lỗi whitespace.

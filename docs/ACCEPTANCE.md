@@ -1,5 +1,21 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Nghiệm thu bổ sung — 10/11/2026 (mới nhất)
+
+- [v] Mobile typecheck và lint không cache đạt trên cài đặt Expo 58/RN 0.88 cục bộ.
+- [v] Toàn bộ 56 suites/256 tests mobile đạt, gồm các kiểm thử giọng Hàn.
+- [v] Export bundle Android/iOS đạt; không đồng nghĩa đã build/cài APK/IPA.
+- [v] Backend lint/format, 308/308 tests; admin lint/typecheck/build, 23/23 tests đạt.
+- [v] Bổ sung devDependency query-string 7.1.3, áp dụng patch tương thích có sẵn.
+- [v] Khôi phục 3 biến mẫu backend bị thiếu cục bộ; không thay cấu hình bí mật.
+- [v] Giữ riêng thay đổi nâng SDK và env đang có; không push hoặc triển khai.
+- [ ] Nghe thử tiếng Hàn và đọc kết quả trên Android/iOS thật, cả online/offline;
+  cần giọng tiếng Hàn của hệ điều hành trên thiết bị.
+- [ ] Rà soát 35 cảnh báo audit từ cài dependency; chưa nâng cấp cưỡng bức.
+
+Các mục đạt ở đây cập nhật trạng thái các lỗi typecheck/test nền ghi trước đó.
+Không coi kết quả máy cục bộ là xác nhận mọi phiên bản SDK hoặc thiết bị đều đạt.
+
 ## Kiểm lại giọng Hàn — 10/11/2026
 
 - [v] 4 suites / 20 tests mục tiêu đạt; lint các file thay đổi đạt.

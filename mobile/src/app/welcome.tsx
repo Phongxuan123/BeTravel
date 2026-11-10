@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Dimensions, FlatList, Pressable, Text, View, type ViewToken } from 'react-native';
+import { Dimensions, FlatList, Pressable, Text, View, type FlatListProps } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowRight, Check } from 'lucide-react-native';
@@ -61,7 +61,7 @@ export default function WelcomeScreen() {
   const listRef = useRef<FlatList<Slide>>(null);
   const [index, setIndex] = useState(0);
 
-  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+  const onViewableItemsChanged = useCallback<NonNullable<FlatListProps<Slide>['onViewableItemsChanged']>>(({ viewableItems }) => {
     const first = viewableItems[0];
     if (first?.index != null) setIndex(first.index);
   }, []);

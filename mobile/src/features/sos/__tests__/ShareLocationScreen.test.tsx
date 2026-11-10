@@ -22,7 +22,7 @@ beforeEach(() => {
   (Location.getCurrentPositionAsync as jest.Mock).mockImplementation(async () => ({
     coords: { latitude: 21, longitude: 105, accuracy: 12 }, timestamp: Date.now(),
   }));
-  jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+  jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction, activityType: undefined });
 });
 
 test('không tự xin GPS hoặc gửi; lấy GPS rồi phải bấm chia sẻ riêng', async () => {

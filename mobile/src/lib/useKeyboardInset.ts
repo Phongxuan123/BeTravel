@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, Keyboard, Platform, type View } from 'react-native';
 
@@ -32,7 +33,7 @@ export function useKeyboardInset(): number {
  * và kết quả là 0, nên không cộng đôi chiều cao bàn phím làm ô nhập bị đẩy sai chỗ.
  */
 export function useKeyboardOverlap() {
-  const viewRef = useRef<View>(null);
+  const viewRef = useRef<ComponentRef<typeof View>>(null);
   const [overlap, setOverlap] = useState(0);
   const measure = useCallback((keyboardTop: number | null) => {
     if (keyboardTop === null) {

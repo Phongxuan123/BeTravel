@@ -1,3 +1,4 @@
+import type { ComponentRef } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
@@ -84,7 +85,7 @@ function ChatBody() {
   const [useTrip, setUseTrip] = useState(true);
   const [input, setInput] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 80);
