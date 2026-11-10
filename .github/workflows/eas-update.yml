@@ -26,8 +26,10 @@ jobs:
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
     steps:
+      # Buoc nay chay truoc checkout nen thu muc mobile/ chua ton tai: chay o goc workspace.
       - name: Kiem tra secret EXPO_TOKEN
         id: token
+        working-directory: .
         run: |
           if [ -z "$EXPO_TOKEN" ]; then
             echo "Thieu secret EXPO_TOKEN -- bo qua phat cap nhat."
@@ -56,6 +58,8 @@ jobs:
         name: Phat ban cap nhat
         env:
           UPDATE_MESSAGE: ${{ github.event.head_commit.message || 'Phat thu cong' }}
+        # Chi phat cho Android: app chi phat hanh APK, va app khong cai react-native-web nen
+        # xuat ban web se loi.
         run: |
-          eas update --channel preview --environment preview \
+          eas update --channel preview --environment preview --platform android \
             --message "$(printf '%s' "$UPDATE_MESSAGE" | head -n 1)" --non-interactive

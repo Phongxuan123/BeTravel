@@ -9,6 +9,7 @@ const TRIAGE_MAX_OUTPUT_TOKENS = 400;
 const MAX_OPTIONS = 4;
 const MAX_OPTION_LENGTH = 60;
 const MAX_ARTICLES = 3;
+const SUPPORTED_LANGUAGES = new Set(["vi", "en"]);
 
 const INTENT_TO_KIND = Object.freeze({
   answer: AssistantKind.ANSWER,
@@ -30,7 +31,10 @@ const toArticleSlugs = (value, knownSlugs) =>
     .filter((slug) => typeof slug === "string" && knownSlugs?.has(slug))
     .slice(0, MAX_ARTICLES);
 
-// Phat hien ngon ngu tho: co dau tieng Viet --> vi, con lai la chu Latin khong dau --> en.
+/*
+ * Phat hien ngon ngu tho: co dau tieng Viet --> vi, con lai --> en. Chi la duong lui khi buoc phan loai
+ * loi: tieng Viet go khong dau bi nhan nham la en, nen uu tien ngon ngu do mo hinh phan loai tra ve.
+ */
 export const detectLanguage = (text) =>
   /[ăâđêôơưàáạảãèéẹẻẽìíịỉĩòóọỏõùúụủũỳýỵỷỹ]/i.test(text) ? "vi" : "en";
 
@@ -62,6 +66,7 @@ export async function triageMessage({ message, history, articleIndex = null }) {
     const question = typeof parsed.question === "string" && parsed.question.trim();
     return {
       kind,
+      language: SUPPORTED_LANGUAGES.has(parsed.language) ? parsed.language : undefined,
       question: question || message,
       reply: typeof parsed.reply === "string" ? parsed.reply.trim() : "",
       options: kind === AssistantKind.CLARIFY ? toOptions(parsed.options) : [],

@@ -24,15 +24,19 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
 ## 2. Backend lên Render
 
 1. [render.com](https://render.com) → **New → Blueprint**, kết nối repo GitHub, chọn file
-   **`backend/render.yaml`**. File này đã khai sẵn mọi biến không bí mật (mô hình qua APIZ, chế độ tìm
+   **`backend/render.yaml`**. File này đã khai sẵn mọi biến không bí mật (mô hình Gemini, chế độ tìm
    theo từ khoá, trợ lý AI bản 2, giá tính chi phí).
+   Production dùng **Gemini** (`LLM_PROVIDER=gemini`, `gemini-3.5-flash-lite`): ngày 09/11/2026 mọi lời
+   gọi APIZ từ Render (Singapore) đều hết thời gian chờ dù key đúng, trong khi từ máy local vẫn trả lời
+   bình thường. Cấu hình APIZ (`OPENAI_*`) giữ lại để đổi về khi APIZ ổn định.
 2. Render sẽ hỏi các biến bí mật (`sync: false`) — nhập tay:
 
    | Biến | Bắt buộc | Giá trị |
    |---|---|---|
    | `MONGODB_URI` | có | connection string của user production ở bước 1 |
    | `JWT_ACCESS_SECRET` | có | chuỗi ngẫu nhiên **ít nhất 32 ký tự**, KHÁC secret lúc dev (thiếu/ngắn thì backend không khởi động) |
-   | `OPENAI_API_KEY` | có | key APIZ: trợ lý AI, bước phụ và dịch (`TRANSLATION_PROVIDER=default` dùng chung nhà cung cấp) |
+   | `GEMINI_API_KEY` | có | key Gemini: trợ lý AI, bước phụ và dịch (`TRANSLATION_PROVIDER=default` dùng chung nhà cung cấp). Thiếu key thì backend không khởi động |
+   | `OPENAI_API_KEY` | tuỳ chọn | key APIZ, chỉ cần khi đổi `LLM_PROVIDER` về `openai` |
    | `CORS_ORIGINS` | có | domain admin trên Vercel, vd `https://betravel-admin.vercel.app` |
    | `CLIENT_URL` | nên có | domain admin, dùng trong link email đặt lại mật khẩu |
    | `GOOGLE_CLIENT_ID` | tuỳ chọn | đăng nhập Google |
@@ -75,9 +79,14 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
    eas build --platform android --profile preview
    ```
    Build chạy trên máy chủ Expo (không cần máy có Android SDK), xong sẽ có link tải `.apk` trực tiếp.
+   Dự án Expo hiện tại: `@xuanphong123/FE`; keystore ký APK lưu trên máy chủ Expo.
+   File `.apk/.aab/.ipa` đã bị chặn trong `.gitignore`, không đưa lên GitHub.
+   Cài thử trên LDPlayer 9: bật ADB trong cài đặt máy ảo, rồi `adb install <file>.apk`
+   (Git Bash cần `MSYS_NO_PATHCONV=1` để không đổi đường dẫn thiết bị).
 6. **Cập nhật không cần cài lại APK (EAS Update)**:
    - Code JS/TS hoặc hình ảnh trong `mobile/` merge vào `main` --> workflow
-     `.github/workflows/eas-update.yml` chạy `eas update --channel preview`. App đã cài tải bản mới
+     `.github/workflows/eas-update.yml` chạy `eas update --channel preview --platform android`
+     (app không có bản web). App đã cài tải bản mới
      khi mở, áp dụng ở lần mở kế tiếp.
    - Cần secret GitHub `EXPO_TOKEN` (expo.dev → Account settings → Access tokens). Thiếu secret thì
      workflow bỏ qua, không lỗi.
@@ -103,6 +112,6 @@ mobile đều cần `EXPO_PUBLIC_API_URL`/`VITE_API_BASE_URL` trỏ tới backen
 
 ## 6. Phương án dự phòng khi demo
 
-- Trợ lý AI trả lời lỗi giữa buổi demo (APIZ trục trặc): tắt bằng công tắc trên Admin; tab Trợ lý AI báo tạm ngưng, các phần khác của app vẫn chạy.
+- Trợ lý AI trả lời lỗi giữa buổi demo (nhà cung cấp mô hình trục trặc): tắt bằng công tắc trên Admin; tab Trợ lý AI báo tạm ngưng, các phần khác của app vẫn chạy.
 - Backend Render chưa "thức dậy" kịp (UptimeRobot tạm dừng/hết giờ free): mở `/api/health` trước khi demo 5-10 phút.
 - Mạng demo yếu / API lỗi: đặt `EXPO_PUBLIC_USE_MOCKS=true` trong build mobile dự phòng, app chạy lại bằng dữ liệu giả lập.

@@ -1,7 +1,8 @@
 /*
  * Chay bo 50 cau danh gia (eval/au-v2/questions.json) qua pipeline tro ly ban 2 voi mo hinh THAT
  * (ton tien APIZ) va DB that (chi doc). Khong ghi hoi thoai, khong tru quota nguoi dung.
- * Dung: node scripts/eval-assistant.js [--limit 10] [--only Q01,Q05]
+ * Dung: node scripts/eval-assistant.js [--limit 10] [--only Q01,Q05] [--delay-ms 12000]
+ * --delay-ms: nghi giua cac cau -- Gemini goi mien phi gioi han so yeu cau/phut, chay lien tuc bi 429.
  * Ket qua: docs/local/eval/au-v2-<thoi diem>.json + .md (thu muc local, khong commit).
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -105,7 +106,9 @@ const run = async () => {
   const country = await Country.findOne({ code: "AU" }).lean();
   const answered = new Map();
   const rows = [];
-  for (const item of selected) {
+  const delayMs = Number(argValue("--delay-ms") ?? 0);
+  for (const [index, item] of selected.entries()) {
+    if (index > 0 && delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs));
     const result = await runOne(item, country, answered);
     answered.set(item.id, { question: item.question, content: result.content });
     rows.push({

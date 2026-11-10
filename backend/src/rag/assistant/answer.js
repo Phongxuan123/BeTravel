@@ -205,10 +205,10 @@ export async function answerQuestion({
   tripContext = null,
   detailed = false,
 }) {
-  const language = detectLanguage(message);
   const usage = createUsage();
   const articleIndex = await safely("muc luc cam nang", () => getArticleIndex(country.code), null);
   const triage = await triageMessage({ message, history, articleIndex });
+  const language = triage.language ?? detectLanguage(message);
   const baseMeta = {
     question: triage.question,
     chunkIds: [],

@@ -51,6 +51,34 @@ nghe thử điện thoại thật và xử lý các lỗi nền cục bộ còn 
   seed/gọi dịch vụ trả phí. Backend test dùng DB tạm. Xem TRANSLATION.md để thử
   trên máy thật; cần cài giọng 한국어 nếu thiết bị chưa có.
 
+## Build APK that + Render chuyen sang Gemini -- 09/11/2026
+
+- EAS: du an `@xuanphong123/FE`, projectId ghi vao `mobile/app.json`; build APK profile `preview`
+  thanh cong, keystore luu tren Expo. `.gitignore` chan `*.apk`, `*.aab`, `*.ipa`.
+- Fix workflow `eas-update.yml`: buoc kiem tra `EXPO_TOKEN` chay o goc workspace (truoc checkout).
+- Chay that APK tren LDPlayer 9 voi backend Render: dang nhap, trang chu, SOS, Tro ly AI deu chay.
+- Tro ly AI tren Render: moi loi goi APIZ het thoi gian cho (classify/rewrite/compose) du key dung,
+  tu may local van nhanh --> production doi sang Gemini (`gemini-3.5-flash-lite`), `render.yaml`
+  cap nhat theo. Do sau deploy: cau hoi AU tra 4.5-13.4s, nhan "Nguon chinh thuc", co trich dan;
+  tren APK cau hoi khong dau van tra loi tieng Viet.
+- EXPO_TOKEN da dat (09/11/2026); workflow EAS Update sua chi phat Android (PR #82), da phat thu
+  thanh cong len kenh `preview` runtime 1.0.0, khop APK build `e4ea9122` (commit fca20bc).
+- Quyet dinh: KHONG bat KR tren production (nguoi dung chot 09/11/2026); prod chi AU active,
+  JP/SG/TH dang coming_soon.
+- Fix (PR #83): Gemini viet xuong dong that trong chuoi JSON "answer" --> tro ly bao "Chua soan duoc
+  cau tra loi". `modelOutput.js` escape ky tu dieu khien trong chuoi roi parse lai. Thu that 8 cau AU
+  (ho chieu, moc tui, do an, lai xe, cap cuu, tu choi) deu dung nhan. Con lai: cau hoi tieng Anh
+  Gemini van tra loi tieng Viet --> PR #84: nguoi dung chot hoi tieng Anh tra tieng Anh; buoc phan
+  loai tra ve `language` (nhan dung tieng Viet go khong dau), prompt nhac bang tieng Anh.
+- Fix (PR #85): Gemini thinh thoang tra 503 (qua tai) --> tro ly bao "dang ban". Provider Gemini cho
+  tro ly va buoc phu thu lai mot lan voi 502/503/504 trong cung timeout (nhu provider dich).
+- Chay that tren Render sau deploy #85: tro ly 4 cau (Anh, Viet co dau/khong dau, khan cap) deu 200,
+  nhan "Nguon chinh thuc", 3-12s; dich vi<->en ~1s; noi dung phap ly, tim kiem, SOS gan Sydney, su co,
+  vung rui ro, chuyen di, yeu thich deu 200. Admin: dang nhap, dashboard, cai dat/thong ke tro ly 200;
+  user goi /admin --> 403. Cau mau dich cho AU rong la dung y (AU dung bo cau mau tieng Anh trong app).
+- No ky thuat: `ASSISTANT_PRICE_*` tren Render van la gia APIZ --> chi phi uoc tinh tren Admin chua
+  dung gia Gemini; can nguoi cap nhat gia Gemini that.
+
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
 - Cai `expo-updates`; `runtimeVersion` theo `version` trong app.json (khong dung fingerprint: build
