@@ -1,7 +1,8 @@
 import { act, renderHook } from '@testing-library/react-native';
-import { AppState } from 'react-native';
+import { AppState, Platform } from 'react-native';
 import * as Speech from 'expo-speech';
 import { useTranslationSpeech } from '../useTranslationSpeech';
+import * as offlineTranslation from '../offlineTranslation';
 
 jest.mock('expo-speech', () => ({
   maxSpeechInputLength: 4000,
@@ -54,6 +55,43 @@ test('thiếu giọng đích không phát bằng ngôn ngữ khác', async () =>
   expect(Speech.speak).not.toHaveBeenCalled();
   expect(hook.result.current.error).toMatch(/chưa có giọng đọc/);
   await hook.unmount();
+});
+
+test('chọn giọng Hàn theo ID; ID sai ngôn ngữ không làm đọc bằng tiếng Anh', async () => {
+  (Speech.getAvailableVoicesAsync as jest.Mock).mockResolvedValue([
+    { language: 'en-US', identifier: 'english' },
+    { language: 'ko-KR', identifier: 'korean-one' },
+    { language: 'kor_KOR', identifier: 'korean-two' },
+  ]);
+  const hook = await renderHook(({ id }: { id: string }) => useTranslationSpeech('ko-KR', false, id), {
+    initialProps: { id: 'korean-two' },
+  });
+  await act(async () => { await hook.result.current.play('안녕하세요'); });
+  expect(Speech.speak).toHaveBeenLastCalledWith('안녕하세요', expect.objectContaining({ language: 'ko-KR', voice: 'korean-two' }));
+  await hook.rerender({ id: 'english' });
+  await act(async () => { await hook.result.current.play('감사합니다'); });
+  expect(Speech.speak).toHaveBeenLastCalledWith('감사합니다', expect.objectContaining({ language: 'ko-KR', voice: 'korean-one' }));
+  await hook.unmount();
+});
+
+test('offline không chọn giọng Hàn cần mạng dù người dùng đã chọn trước đó', async () => {
+  const platform = jest.replaceProperty(Platform, 'OS', 'android');
+  const native = jest.spyOn(offlineTranslation, 'getOfflineModule').mockReturnValue({
+    offlineVoiceIds: async () => ['korean-local'],
+  } as NonNullable<ReturnType<typeof offlineTranslation.getOfflineModule>>);
+  try {
+    (Speech.getAvailableVoicesAsync as jest.Mock).mockResolvedValue([
+      { language: 'ko-KR', identifier: 'korean-online' },
+      { language: 'ko-KR', identifier: 'korean-local' },
+    ]);
+    const hook = await renderHook(() => useTranslationSpeech('ko-KR', true, 'korean-online'));
+    await act(async () => { await hook.result.current.play('감사합니다'); });
+    expect(Speech.speak).toHaveBeenLastCalledWith('감사합니다', expect.objectContaining({ voice: 'korean-local' }));
+    await hook.unmount();
+  } finally {
+    native.mockRestore();
+    platform.restore();
+  }
 });
 test('hủy khi chờ voice list không phát lại kết quả cũ', async () => {
   let finish!: (value: unknown) => void;

@@ -25,6 +25,7 @@ import { dictionaryInfo, hasBundledPair, type TranslationResult, type Translatio
 import { OfflinePackPanel } from '@/features/translate/OfflinePackPanel';
 import { looksLikeUnaccentedVietnamese } from '@/features/translate/unaccentedVietnamese';
 import { VoiceTools } from '@/features/translate/VoiceTools';
+import { KoreanSpeechPanel } from '@/features/translate/KoreanSpeechPanel';
 import { translateOffline, translationLanguage, OFFLINE_TEXT_LIMIT, ONLINE_TEXT_LIMIT } from '@/features/translate/offlineTranslation';
 
 type SavedPhrase = { vi: string; translated: string; phonetic: string; targetLanguage?: string; engine?: TranslationEngine; sourceTerms?: string[] };
@@ -53,6 +54,7 @@ function TranslatorForm() {
   const [translateError, setTranslateError] = useState<string | null>(null);
   const [englishMode, setEnglishMode] = useState(true);
   const [localLanguage, setLocalLanguage] = useState('');
+  const [koreanVoice, setKoreanVoice] = useState<string>();
   const { isGuest } = useAuth();
   const [autoSpeak, setAutoSpeak] = useState(false);
   const autoSpeakRef = useRef(false);
@@ -69,7 +71,7 @@ function TranslatorForm() {
   const toLabel = reversed ? 'Tiếng Việt' : otherLanguage;
   const sourceLanguage = translationLanguage(fromLabel);
   const targetLanguage = translationLanguage(toLabel);
-  const audio = useTranslationSpeech(speechLocale(toLabel), offlineMode);
+  const audio = useTranslationSpeech(speechLocale(toLabel), offlineMode, speechLocale(toLabel) === 'ko-KR' ? koreanVoice : undefined);
   const voice = useVoiceInput(speechLocale(fromLabel), (text) => {
     requestId.current += 1;
     setLoading(false);
@@ -243,6 +245,13 @@ function TranslatorForm() {
           </Pressable>
           {showMachinePacks && <OfflinePackPanel key={`${sourceLanguage}:${targetLanguage}`} source={sourceLanguage} target={targetLanguage} disabled={loading || voice.busy} />}
         </View>}
+        {speechLocale(toLabel) === 'ko-KR' && <KoreanSpeechPanel
+          selectedVoice={koreanVoice}
+          onSelect={(id) => { audio.cancel(); setKoreanVoice(id); }}
+          onPreview={() => { if (audio.speaking) audio.cancel(); else void audio.play('안녕하세요. 만나서 반갑습니다.'); }}
+          speaking={audio.speaking}
+          disabled={loading || voice.busy}
+        />}
         <VoiceTools key={fromLabel} locale={speechLocale(fromLabel)} disabled={loading || voice.busy || audio.speaking} />
         <View className="rounded-lg border border-line bg-surface p-4">
           <View className="flex-row items-center justify-between">

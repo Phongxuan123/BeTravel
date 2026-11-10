@@ -1,5 +1,27 @@
 # ACCEPTANCE CRITERIA — BE.TRAVEL
 
+## Kiểm lại giọng Hàn — 10/11/2026
+
+- [v] 4 suites / 20 tests mục tiêu đạt; lint các file thay đổi đạt.
+- [ ] Typecheck toàn mobile còn lỗi nền như mục 08/11; chưa kiểm âm thanh thật.
+- [v] Không thêm dependency, không đổi API, không push; cấu hình cục bộ giữ riêng.
+
+## Phát âm tiếng Hàn — 08/11/2026
+
+- [v] Main đã cập nhật ở c814a1d; không có commit mới khi fetch lần này.
+- [v] 20 tests mục tiêu: nghe thử, đọc kết quả, mã Hàn, chọn ID, thiếu giọng,
+  làm mới/retry, không lẫn tiếng Anh, chặn giọng cần mạng trong offline,
+  hủy/đổi locale và hành vi dịch cũ. Lint các file thay đổi đạt.
+- [v] Admin 23 tests, lint/typecheck/build đạt. Backend lint/format đạt.
+- [ ] Full mobile: 254 tests đạt nhưng 1 suite không nạp được query-string;
+  typecheck 25 lỗi trùng baseline cục bộ trước sửa. Không phát sinh loại lỗi
+  TypeScript mới sau thay đổi (so sánh danh sách lỗi bỏ vị trí dòng).
+- [ ] Backend 307/308: kiểm env example thất bại vì ba biến đã thiếu trong
+  bản chỉnh cục bộ. Không ghi đè cấu hình của người dùng để làm xanh kiểm thử.
+- [ ] Máy thật: chọn Tiếng Hàn, chọn từng giọng, nghe thử/dừng, dịch rồi phát,
+  tự phát, đảo chiều về Việt, rời màn khi đang đọc; cài giọng rồi quay lại,
+  chế độ máy bay với giọng offline/native phù hợp. Chưa kiểm âm thanh thực tế.
+
 ## Khôi phục lối tắt tra cứu luật — 26/10/2026
 
 Đã xong: typecheck/lint mobile và 10 kiểm thử lối tắt/dịch đạt.

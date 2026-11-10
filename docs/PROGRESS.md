@@ -1,5 +1,35 @@
 # TIEN DO BE.TRAVEL
 
+## Chốt phần giọng Hàn — 10/11/2026
+
+- Tiếp tục phần đang làm ngày 08/11, không đổi cấu trúc hoặc dependency.
+- Chạy lại 20/20 tests giọng Hàn/dịch và lint toàn bộ file thay đổi: đạt.
+- Typecheck toàn mobile vẫn chưa đạt với lỗi ref/API và query-string đã ghi
+  bên dưới; chưa nghiệm thu âm thanh trên điện thoại thật. Tiến độ vẫn 3/4.
+- Ghi nhận riêng code giọng Hàn và tài liệu trong commit cục bộ; không push.
+  Giữ các file env/package đang chỉnh của người dùng ngoài commit.
+
+## Phát âm tiếng Hàn — 08/11/2026 (hiện hành)
+
+Tiến độ `[###-] 3/4`: triển khai, kiểm thử phần thay đổi và tài liệu xong;
+nghe thử điện thoại thật và xử lý các lỗi nền cục bộ còn mở.
+
+- Đã fetch main, `c814a1d` vẫn mới nhất; Git báo Already up to date.
+- Thêm bảng chọn giọng Hàn theo danh sách thực trên máy, nghe thử/dừng, làm mới
+  khi quay lại từ Cài đặt. Thiếu giọng/lỗi engine có hướng dẫn và thử lại.
+- Giữ hook phát âm chung, hỗ trợ thêm tên/mã tiếng Hàn và ISO 639-2; giọng chọn
+  phải đúng ngôn ngữ và qua bộ lọc offline. Không đổi API dịch, auth, micro,
+  cấu trúc câu lưu, mặc định offline hoặc thêm thư viện.
+- 20/20 tests mục tiêu đạt, lint các file sửa đạt. Full mobile trước test offline
+  cuối: 254 tests đạt, 55 suites đạt/1 suite lỗi vì thiếu query-string đã có từ
+  trước; typecheck 25 lỗi trùng baseline trước sửa (đã đối chiếu bỏ số dòng).
+- Backend lint/format đạt, 307/308 tests đạt: 1 lỗi do .env.example cục bộ thiếu
+  MEMORY_SEARCH_CACHE_TTL_MS, AU_REGISTER_LOOKUP_BUDGET_MS, QUERY_REWRITE_TIMEOUT_MS.
+  Admin lint/typecheck/build và 23/23 tests đạt. Không khẳng định DoD toàn repo xanh.
+- Không sửa các thay đổi cấu hình/dependency của người dùng, không push, không
+  seed/gọi dịch vụ trả phí. Backend test dùng DB tạm. Xem TRANSLATION.md để thử
+  trên máy thật; cần cài giọng 한국어 nếu thiết bị chưa có.
+
 ## Cap nhat app khong can cai lai APK (EAS Update) -- 08/11/2026
 
 - Cai `expo-updates`; `runtimeVersion` theo `version` trong app.json (khong dung fingerprint: build

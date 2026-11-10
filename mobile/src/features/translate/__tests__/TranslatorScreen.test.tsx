@@ -33,6 +33,20 @@ beforeEach(() => {
   Object.defineProperty(AppState, 'currentState', { configurable: true, value: 'active' });
 });
 
+test('nghe thử giọng Hàn và đọc bản dịch Hàn vẫn dùng luồng phát âm hiện có', async () => {
+  (translateText as jest.Mock).mockResolvedValue({ translated: '도와주세요', phonetic: '' });
+  const screen = await setup();
+  await fireEvent.press(screen.getByText('Ngôn ngữ sở tại'));
+  await waitFor(() => expect(screen.getByText('Nghe thử tiếng Hàn')).toBeTruthy());
+  await fireEvent.press(screen.getByText('Nghe thử tiếng Hàn'));
+  await waitFor(() => expect(Speech.speak).toHaveBeenCalledWith('안녕하세요. 만나서 반갑습니다.', expect.objectContaining({ language: 'ko-KR', voice: 'korean' })));
+  await fireEvent.changeText(screen.getByPlaceholderText('Nhập câu cần dịch...'), 'Giúp tôi');
+  await fireEvent.press(screen.getByText('Dịch ngay'));
+  await waitFor(() => expect(screen.getByText('Phát âm to rõ')).toBeTruthy());
+  await fireEvent.press(screen.getByText('Phát âm to rõ'));
+  await waitFor(() => expect(Speech.speak).toHaveBeenLastCalledWith('도와주세요', expect.objectContaining({ language: 'ko-KR' })));
+});
+
 test('micro thiếu native module vẫn cho nhập tay và báo cách dùng bản dựng mới', async () => {
   const screen = await setup();
   await fireEvent.press(screen.getByLabelText('Nhập bằng giọng nói'));

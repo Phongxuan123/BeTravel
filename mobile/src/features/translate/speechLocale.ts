@@ -5,6 +5,10 @@ const LOCALES: Record<string, string> = {
   en: 'en-US',
   'tiếng hàn': 'ko-KR',
   ko: 'ko-KR',
+  kor: 'ko-KR',
+  korean: 'ko-KR',
+  '한국어': 'ko-KR',
+  'ko-kr': 'ko-KR',
   'tiếng nhật': 'ja-JP',
   ja: 'ja-JP',
   'tiếng thái': 'th-TH',
@@ -19,15 +23,16 @@ const LOCALES: Record<string, string> = {
 
 // Ngôn ngữ đến từ lựa chọn dịch, không suy đoán từ mã quốc gia.
 export function speechLocale(label: string): string | null {
-  return LOCALES[label.trim().toLowerCase()] ?? null;
+  return LOCALES[label.trim().normalize('NFC').toLowerCase().replace(/_/g, '-')] ?? null;
 }
 
 export function matchingVoice<T extends { language: string }>(
   voices: T[],
   locale: string,
 ): T | undefined {
-  const normalized = locale.toLowerCase().replace(/_/g, '-');
-  const normalize = (value: string) => value.toLowerCase().replace(/_/g, '-');
+  // Một số engine trả mã ISO 639-2 cho tiếng Hàn.
+  const normalize = (value: string) => value.trim().toLowerCase().replace(/_/g, '-').replace(/^kor(?=-|$)/, 'ko').replace(/^ko-kor(?=-|$)/, 'ko-kr');
+  const normalized = normalize(locale);
   return (
     voices.find((voice) => normalize(voice.language) === normalized) ??
     voices.find((voice) => normalize(voice.language).split('-')[0] === normalized.split('-')[0])

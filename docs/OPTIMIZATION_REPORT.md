@@ -1,5 +1,24 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Chốt kiểm tra giọng Hàn — 10/11/2026
+
+Chạy lại 20 tests mục tiêu và lint file sửa đều đạt; diff không lỗi whitespace.
+Không mở rộng thay đổi sang các lỗi dependency/ref có sẵn. Typecheck toàn repo
+và nghe thử máy thật vẫn là mục chưa hoàn tất, không đánh dấu DoD toàn bộ xanh.
+
+## Lịch sử cập nhật — 08/11/2026: giọng tiếng Hàn
+
+- Bổ sung panel nhỏ trong màn dịch, tái dùng hook phát âm; không nhân bản engine
+  hoặc thay API/dữ liệu. Không gắn cứng ID giọng, không tự cài model/voice.
+- Danh sách refresh khi vào màn, quay lại foreground hoặc bấm làm mới; dùng
+  generation để bỏ kết quả cũ sau unmount hoặc yêu cầu mới. Dọn AppState listener.
+- Giọng người dùng chọn vẫn qua kiểm ngôn ngữ và offline; fallback chỉ cùng
+  ngôn ngữ, không đọc sai bằng tiếng Anh. Thêm nhận diện kor_KOR.
+- 20 tests mục tiêu và lint file sửa đạt; không thêm dependency. Typecheck 25
+  lỗi có sẵn khớp log trước sửa; full suite thiếu query-string, backend thiếu ba
+  biến env trong bản cục bộ. Các mục này còn mở, xem ACCEPTANCE/PROGRESS.
+- Không đổi các file dependency/env đang sửa của người dùng; không push Git.
+
 ## Khôi phục lối tắt tra cứu luật — 26/10/2026
 
 Đã xong: typecheck/lint mobile và 10 kiểm thử lối tắt/dịch đạt.

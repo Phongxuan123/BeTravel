@@ -4,7 +4,7 @@ import * as Speech from 'expo-speech';
 import { matchingVoice } from './speechLocale';
 import { getOfflineModule, splitTranslationText } from './offlineTranslation';
 
-export function useTranslationSpeech(locale: string | null, offlineOnly = false) {
+export function useTranslationSpeech(locale: string | null, offlineOnly = false, preferredVoice?: string) {
   const [speaking, setSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const generation = useRef(0);
@@ -42,7 +42,7 @@ export function useTranslationSpeech(locale: string | null, offlineOnly = false)
       subscription.remove();
     };
   }, [cancel]);
-  useEffect(() => () => cancel(), [locale, offlineOnly, cancel]);
+  useEffect(() => () => cancel(), [locale, offlineOnly, preferredVoice, cancel]);
 
   const play = async (text: string) => {
     const id = ++generation.current;
@@ -62,10 +62,14 @@ export function useTranslationSpeech(locale: string | null, offlineOnly = false)
         voices = voices.filter((voice) => localIds.includes(voice.identifier));
       }
       if (!current() || AppState.currentState !== 'active') return;
-      const voice = matchingVoice(voices, locale);
+      // Giọng được chọn vẫn phải đúng ngôn ngữ và qua bộ lọc offline.
+      const selected = voices.find((item) => item.identifier === preferredVoice);
+      const voice = (selected && matchingVoice([selected], locale)) || matchingVoice(voices, locale);
       if (!voice) {
         setSpeaking(false);
-        setError('Thiết bị chưa có giọng đọc ngôn ngữ này. Hãy cài giọng đọc trong Cài đặt.');
+        setError(locale === 'ko-KR'
+          ? 'Thiết bị chưa có giọng đọc tiếng Hàn phù hợp. Hãy cài giọng 한국어 trong cài đặt Văn bản thành giọng nói, rồi bấm Làm mới giọng Hàn.'
+          : 'Thiết bị chưa có giọng đọc ngôn ngữ này. Hãy cài giọng đọc trong Cài đặt.');
         return;
       }
       setSpeaking(true);

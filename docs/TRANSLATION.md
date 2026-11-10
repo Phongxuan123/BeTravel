@@ -1,5 +1,37 @@
 # Dịch, giọng nói và dịch offline
 
+## Giọng phát âm tiếng Hàn — 08/11/2026
+
+Đã fetch main trước khi sửa; nhánh hiện tại đã chứa `c814a1d` nên không cần merge mới.
+Giữ nguyên API dịch, dữ liệu, luồng micro, nút phát bản dịch, tự phát và bộ offline.
+Không thêm thư viện, không thay bộ Expo 58 đang chỉnh cục bộ, không push Git.
+
+### Cách dùng
+
+1. Mở Dịch, chọn **Ngôn ngữ sở tại**, rồi chọn **Tiếng Hàn**.
+2. Trong **Giọng phát âm tiếng Hàn**, chọn tự động hoặc một giọng do thiết bị cung cấp.
+3. Bấm **Nghe thử tiếng Hàn** để nghe “안녕하세요. 만나서 반갑습니다.”. Bấm Dừng để ngắt.
+4. Dịch như bình thường và bấm **Phát âm to rõ**, hoặc bật tự phát sau khi dịch.
+   Kết quả tiếng Hàn dùng giọng đã chọn; đảo chiều về tiếng Việt vẫn dùng giọng Việt.
+5. Nếu thiếu giọng, xem **Cài giọng đọc / quyền**. Trên Android tìm mục Văn bản thành
+   giọng nói của máy, chọn engine có hỗ trợ 한국어 và cài dữ liệu giọng. Trên iPhone,
+   tìm Giọng nói trong phần nội dung được đọc của Trợ năng; tên mục tùy phiên bản OS.
+   Quay lại app hoặc bấm **Làm mới giọng Hàn**. iPhone cần tắt chế độ im lặng để thử.
+
+Danh sách lấy từ `expo-speech` ở thời điểm chạy, không giả lập giới tính/tên giọng và
+không gắn cứng ID nhà cung cấp. Không đóng gói giọng sở hữu của Google/Samsung/Apple.
+Khả năng có giọng và việc tải gói ban đầu phụ thuộc hệ điều hành. Offline Android vẫn
+lọc bằng native `offlineVoiceIds`; không bỏ qua bước kiểm tra trong Expo Go và không
+tự chuyển sang giọng online. Nếu giọng đã chọn không còn hợp lệ, tìm giọng cùng ngôn
+ngữ; không phát bằng tiếng Anh thay tiếng Hàn. Thiếu giọng thì báo hướng dẫn rõ.
+
+`KoreanSpeechPanel` chỉ hiện khi đích phát âm là Hàn; lựa chọn tồn tại trong phiên màn
+dịch, không đổi cấu trúc câu đã lưu. Hook phát âm nhận thêm tham số tùy chọn, các nơi
+gọi cũ vẫn hoạt động. Có kiểm thử thiếu giọng, làm mới, lựa chọn, ISO 639-2, phát thử,
+phát bản dịch, đổi ngôn ngữ/hủy và bộ lọc offline. Chưa nghe trực tiếp trên điện thoại.
+
+Tài liệu API: https://docs.expo.dev/versions/v58.0.0/sdk/speech/
+
 ## Mặc định chế độ dịch — 26/10/2026
 
 Mỗi lần khởi tạo màn dịch, “Dịch không cần mạng” mặc định **tắt**. Người dùng
