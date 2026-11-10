@@ -1,5 +1,22 @@
 # TIEN DO BE.TRAVEL
 
+## Đồng bộ main và nhánh giọng Hàn — 10/11/2026
+
+- Đã fetch main mới nhất `9bbd39d` và merge vào nhánh
+  `feature/offline-translation-20261012` tại `de7d680`.
+- Conflict duy nhất ở PROGRESS: giữ cả ghi nhận giọng Hàn và tiến độ triển khai
+  từ main. Không có conflict code; không merge hoặc push vào main.
+- Sao lưu HEAD tại `backup/pre-main-sync-20261110`, giữ stash bản SDK/env cục bộ;
+  đã apply lại thành công, không xóa bản sao lưu.
+- Kiểm tra bản cài sạch từ lockfile Git (Expo 57): typecheck, lint không cache,
+  56 suites/256 tests đạt. Cây làm việc Expo 58 cũng đạt cùng các kiểm tra này.
+- Backend lint/format và 309/309 tests đạt; admin lint/typecheck/build và
+  23/23 tests đạt. Bản cài sạch export Android/iOS thành công.
+- Các thay đổi SDK/package và env chưa commit vẫn giữ tại máy, không đưa
+  nhầm vào bản push. Root package.json cục bộ cũng giữ nguyên.
+- Cài sạch báo 23 cảnh báo audit (9 low/9 moderate/5 high); đây là tồn đọng
+  dependency, không phải conflict merge. Chưa nghiệm thu tiếng Hàn trên máy thật.
+
 ## Hoàn tất kiểm tra nền cục bộ — 10/11/2026 (mới nhất)
 
 Tiến độ giọng Hàn `[###-] 3/4`: code, kiểm thử tự động và tài liệu hoàn tất;

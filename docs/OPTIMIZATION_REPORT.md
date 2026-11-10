@@ -1,5 +1,19 @@
 # BAO CAO TOI UU CODE — BE.TRAVEL
 
+## Kiểm tra hợp nhất main — 10/11/2026
+
+- Hợp nhất origin/main `9bbd39d`; giải quyết conflict PROGRESS bằng cách giữ
+  nội dung cả hai nhánh. Không có conflict source code hoặc file chưa resolve.
+- Mobile cài sạch theo lockfile Git Expo 57: typecheck, lint không cache,
+  56 suites/256 tests và export Android/iOS đạt. Mobile Expo 58 cục bộ cũng
+  qua typecheck/lint và 256 tests. Backend lint/format, 309 tests đạt;
+  admin lint/typecheck/build, 23 tests đạt.
+- Giữ nguyên các thay đổi SDK/env chưa commit trên máy và bản stash sao lưu.
+  Không đưa secret hoặc root package.json cục bộ vào commit.
+- Cài sạch còn 23 audit findings (9 low/9 moderate/5 high); chưa thử giọng trên
+  điện thoại thật. Kết quả tự động không thay thế nghiệm thu thiết bị.
+- Người dùng đã cho phép push nhánh feature sau khi kiểm tra đạt; không merge main.
+
 ## Sửa lỗi tương thích và kiểm chứng toàn bộ — 10/11/2026
 
 - Dùng ComponentRef để lấy kiểu instance thực của ScrollView/TextInput/View;
