@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Dimensions, Keyboard, Platform, type View } from 'react-native';
+import { Dimensions, Keyboard, Platform, type ViewInstance } from 'react-native';
 
 /**
  * Chiều cao bàn phím đang mở (0 khi đóng), tính từ đáy màn hình. Expo SDK 57 chạy edge-to-edge nên
@@ -32,7 +32,7 @@ export function useKeyboardInset(): number {
  * và kết quả là 0, nên không cộng đôi chiều cao bàn phím làm ô nhập bị đẩy sai chỗ.
  */
 export function useKeyboardOverlap() {
-  const viewRef = useRef<View>(null);
+  const viewRef = useRef<ViewInstance>(null);
   const [overlap, setOverlap] = useState(0);
   const measure = useCallback((keyboardTop: number | null) => {
     if (keyboardTop === null) {

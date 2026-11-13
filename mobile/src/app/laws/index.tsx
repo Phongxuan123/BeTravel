@@ -116,7 +116,7 @@ export default function AustraliaLawsScreen() {
               loading={lawsQuery.isFetchingNextPage}
               onPress={() => lawsQuery.fetchNextPage()}
             />
-          ) : null
+          ) : undefined
         }
       />
     </View>

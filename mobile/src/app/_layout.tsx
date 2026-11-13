@@ -74,7 +74,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         {/* App chỉ có giao diện sáng: nếu để mặc định, máy ở chế độ tối vẽ giờ/pin màu trắng
             gần như vô hình trên nền sáng (lỗi B06). */}
-        <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+        <StatusBar barStyle="dark-content" />
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <CountryProvider>
