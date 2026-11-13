@@ -136,21 +136,34 @@ export const searchArticles = async (query) => {
     .filter(Boolean)
     .map((word) => new RegExp(toDStrokeInsensitivePattern(escapeRegex(word)), "i"));
 
+  const topics = await LegalTopic.find({ countryCode: query.country.toUpperCase() }).select(
+    "slug label",
+  );
+  // Tu khoa trung ten chu de ("giao thong") khong nhat thiet nam trong tieu de
+  // bai, nen moi tu con duoc khop voi chu de chua tu do.
+  const topicSlugsMatching = (word) =>
+    topics.filter((t) => word.test(normalizeVi(t.label))).map((t) => t.slug);
+
   const filter = {
     ...PUBLISHED_CURRENT_FILTER,
     countryCode: query.country.toUpperCase(),
-    $and: words.map((word) => ({ $or: [{ titleNorm: word }, { summaryNorm: word }] })),
+    $and: words.map((word) => ({
+      $or: [
+        { titleNorm: word },
+        { summaryNorm: word },
+        { topicSlug: { $in: topicSlugsMatching(word) } },
+      ],
+    })),
   };
   if (query.topic) filter.topicSlug = query.topic;
 
-  const [items, total, topics] = await Promise.all([
+  const [items, total] = await Promise.all([
     LegalArticle.find(filter)
       .sort({ updatedAt: -1 })
       .skip(pagination.skip)
       .limit(pagination.limit)
       .select("countryCode slug title summaryVi topicSlug sources"),
     LegalArticle.countDocuments(filter),
-    LegalTopic.find({ countryCode: query.country.toUpperCase() }).select("slug label"),
   ]);
 
   const topicLabelBySlug = new Map(topics.map((t) => [t.slug, t.label]));
