@@ -13,8 +13,9 @@ import { SimpleSheet } from '@/components/common/SimpleSheet';
 import { CountryFlag } from '@/components/brand/CountryFlag';
 import { colors } from '@/lib/theme';
 import { useCountry } from '@/lib/countryContext';
-import { searchArticles, fetchTopics } from '@/lib/data';
+import { searchArticles, fetchArticles, fetchTopics } from '@/lib/data';
 import { isFeatureDisabledError } from '@/lib/api/http';
+import type { SearchResultItem } from '@/mocks/schemas';
 
 export default function SearchScreen() {
   const params = useLocalSearchParams<{ q?: string }>();
@@ -47,10 +48,35 @@ export default function SearchScreen() {
   // mocks/client.ts (CLAUDE.md B3 muc 9) -- loc theo chu de o phia client
   // thay vi them tham so moi cho ham API.
   const allResults = resultsQuery.data?.data ?? [];
-  const results = topicFilter ? allResults.filter((r) => r.topicLabel === topicFilter) : allResults;
   const hasQuery = debounced.trim().length > 0;
+
+  // Chọn chủ đề mà chưa gõ từ khóa: liệt kê bài của chủ đề đó thay vì để màn hình trống.
+  const browseByTopic = !!topicFilter && !hasQuery;
+  const topicKey = topicsQuery.data?.data.find((topic) => topic.label === topicFilter)?.key;
+  const topicArticlesQuery = useQuery({
+    queryKey: ['topic-articles', countryCode, topicKey],
+    queryFn: () => fetchArticles(countryCode, { topicKey }),
+    enabled: browseByTopic && !!topicKey,
+  });
+  const browseResults: SearchResultItem[] = (topicArticlesQuery.data?.data ?? []).map((article) => ({
+    id: article.id,
+    title: article.title,
+    summary: article.summary,
+    topicLabel: topicFilter ?? '',
+    source: article.source.agency || article.source.name,
+    countryCode: article.countryCode,
+    slug: article.slug,
+  }));
+
+  const showList = hasQuery || browseByTopic;
+  const results = browseByTopic
+    ? browseResults
+    : topicFilter
+      ? allResults.filter((r) => r.topicLabel === topicFilter)
+      : allResults;
   const hasResults = results.length > 0;
-  const hasError = resultsQuery.isError;
+  const hasError = browseByTopic ? topicArticlesQuery.isError : resultsQuery.isError;
+  const isLoading = browseByTopic ? topicArticlesQuery.isLoading : resultsQuery.isLoading;
 
   // Tra cuu phap luat dang bi phong toa o backend: chan ca man thay vi bao nham loi mang.
   if (isFeatureDisabledError(resultsQuery.error)) {
@@ -86,17 +112,17 @@ export default function SearchScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 18, paddingBottom: 48 }}>
-        {!hasQuery && (
+        {!showList && (
           <Text className="text-center text-muted">Nhập từ khoá để tìm quy định pháp luật.</Text>
         )}
 
-        {hasQuery && hasError && (
+        {showList && hasError && (
           <View className="rounded-md bg-danger-tint p-4">
             <Text className="text-center text-sm text-danger-strong">Không thể tìm kiếm lúc này. Kiểm tra kết nối mạng và thử lại.</Text>
           </View>
         )}
 
-        {hasQuery && !hasError && hasResults && (
+        {showList && !hasError && hasResults && (
           <>
             <Text className="mb-3 text-[13px] text-muted">
               Tìm thấy {results.length} kết quả phù hợp · {country?.name}
@@ -130,12 +156,14 @@ export default function SearchScreen() {
           </>
         )}
 
-        {hasQuery && !hasError && !hasResults && !resultsQuery.isLoading && (
+        {showList && !hasError && !hasResults && !isLoading && (
           <View>
             <Text className="mb-3 text-[13px] text-muted">Tìm thấy 0 kết quả phù hợp</Text>
             <EmptyState
               title="Không tìm thấy thông tin phù hợp"
-              description={`Chưa có bài viết cố định khớp với từ khóa "${debounced.trim()}". Hãy thử từ khóa gợi ý bên dưới hoặc hỏi Trợ lý AI ở tab Trợ lý AI.`}
+              description={browseByTopic
+                ? `Chủ đề "${topicFilter}" chưa có bài viết nào. Hãy thử chủ đề khác hoặc hỏi Trợ lý AI ở tab Trợ lý AI.`
+                : `Chưa có bài viết cố định khớp với từ khóa "${debounced.trim()}". Hãy thử từ khóa gợi ý bên dưới hoặc hỏi Trợ lý AI ở tab Trợ lý AI.`}
             >
               <Button label="Xem tất cả chủ đề" variant="secondary" onPress={() => router.push('/explore')} />
             </EmptyState>
