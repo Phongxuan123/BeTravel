@@ -1,10 +1,33 @@
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { WebView, type WebViewMessageEvent } from 'react-native-webview';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentType,
+  type Ref,
+} from 'react';
+import { WebView, type WebViewMessageEvent, type WebViewNavigation } from 'react-native-webview';
 import type MapView from 'react-native-maps';
 import { openUrl } from '@/lib/openExternal';
 import { OSM_MAX_ZOOM, OSM_REFERER, OSM_TILE_URL } from './mapRuntime';
 import { buildOsmMapHtml, zoomForDelta } from './osmMapHtml';
 import type { OsmZone } from './riskZones';
+
+// react-native-webview 14 vẫn import kiểu từ react-native/Libraries/*; từ RN 0.87 các kiểu đó
+// không còn nên prop của WebView bị suy thành never. Khai báo lại chữ ký tối thiểu đang dùng
+// thay vì bật react-native-legacy-deep-imports (sẽ đổi kiểu của cả react-native).
+type OsmWebViewProps = {
+  ref?: Ref<WebView>;
+  style?: object;
+  source: { html: string; baseUrl: string };
+  onMessage: (event: WebViewMessageEvent) => void;
+  onShouldStartLoadWithRequest: (request: WebViewNavigation) => boolean;
+  [prop: string]: unknown;
+};
+const OsmWebView = WebView as unknown as ComponentType<OsmWebViewProps>;
 
 export type OsmMarker = { id: string; lat: number; lng: number; color: string; kind: 'me' | 'picked' | 'place' | 'external' };
 
@@ -87,7 +110,7 @@ export const OsmWebMap = forwardRef<MapHandle, Props>(function OsmWebMap(
   };
 
   return (
-    <WebView
+    <OsmWebView
       ref={webRef}
       style={{ flex: 1 }}
       source={{ html, baseUrl: OSM_REFERER }}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, Keyboard } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Keyboard, type ScrollViewInstance, type TextInputInstance } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -105,8 +105,8 @@ export default function TripWizardScreen() {
   const { isGuest } = useAuth();
   const queryClient = useQueryClient();
 
-  const scrollRef = useRef<ScrollView>(null);
-  const cityInputRef = useRef<TextInput>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
+  const cityInputRef = useRef<TextInputInstance>(null);
   const cityCardY = useRef(0);
   const scrollToCityAfterKeyboard = useRef(false);
   // Android edge-to-edge không tự co màn khi bàn phím mở: thêm chiều cao bàn phím vào đệm dưới

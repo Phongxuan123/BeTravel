@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, Linking, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, Linking, Image, type ScrollViewInstance, type TextInputInstance } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
@@ -40,7 +40,7 @@ function TranslatorForm() {
   // Mở từ SOS Hub ("Dịch không cần mạng") thì bật sẵn chế độ offline (V-09).
   const { offline: offlineParam } = useLocalSearchParams<{ offline?: string }>();
   const [offlineMode, setOfflineMode] = useState(offlineParam === '1');
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const [showMachinePacks, setShowMachinePacks] = useState(false);
   const [translationProgress, setTranslationProgress] = useState('');
   const maxLength = offlineMode ? OFFLINE_TEXT_LIMIT : ONLINE_TEXT_LIMIT;
@@ -57,7 +57,7 @@ function TranslatorForm() {
   const [autoSpeak, setAutoSpeak] = useState(false);
   const autoSpeakRef = useRef(false);
   const requestId = useRef(0);
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<TextInputInstance>(null);
   const savedPhrases = useUserStorage<SavedPhrase[]>('saved-phrases', []);
   useEffect(() => () => { requestId.current += 1; }, []);
 
