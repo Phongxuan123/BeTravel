@@ -1,5 +1,15 @@
 # TIEN DO BE.TRAVEL
 
+## App khong tu cap nhat sau khi nang Expo SDK 58 -- 14/11/2026
+
+- Nguyen nhan 1: PR #88 (SDK 57 -> 58) lam `npm ci` do vi patch `query-string` cu (SDK 58 khong con
+  goi nay) --> CI mobile va workflow EAS Update deu do, khong co ban cap nhat nao duoc phat.
+- Nguyen nhan 2: nang SDK la thay doi native nhung `version` van 1.0.0. Neu workflow chay duoc, APK
+  SDK 57 se nhan JS cua SDK 58 (cung runtime) --> nguy co crash.
+- Sua: bo patch/override/patch-package va test tuong thich query-string; tang `version` 1.1.0. APK cu
+  (1.0.0) KHONG nhan ban moi nua: phai cai APK build moi (1.1.0) roi moi nhan EAS Update tiep.
+- Kiem tra (cai sach): tsc, expo lint sach; jest 250/250; expo-doctor 20/20; `expo export` android chay.
+
 ## Build APK that + Render chuyen sang Gemini -- 09/11/2026
 
 - EAS: du an `@xuanphong123/FE`, projectId ghi vao `mobile/app.json`; build APK profile `preview`
