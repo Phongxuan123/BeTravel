@@ -1,7 +1,7 @@
 import AiEvent from "../models/AiEvent.js";
 import AssistantConversation from "../models/AssistantConversation.js";
 import AssistantMessage from "../models/AssistantMessage.js";
-import { AssistantKind, AssistantRole } from "../core/constants.js";
+import { AssistantKind, AssistantRole, SourceTier } from "../core/constants.js";
 import { buildPageMeta, parsePagination } from "../core/pagination.js";
 import { maskPersonalData } from "../utils/maskPersonalData.js";
 
@@ -163,10 +163,34 @@ function groupEventsByDay(since) {
   ]);
 }
 
+// Dem so luot theo mot field enum, luon du moi key (khong co luot = 0) de bieu do khong thieu cot.
+const countByValues = (rows, values) =>
+  Object.fromEntries(
+    values.map((value) => [value, rows.find((row) => row._id === value)?.count ?? 0]),
+  );
+
+// Phan bo tang nguon + loai cau tra loi -- Admin dung de trinh bay "AI tra loi tu dau".
+async function countBreakdown(since) {
+  const [facets] = await AiEvent.aggregate([
+    { $match: { createdAt: { $gte: since }, kind: { $ne: null } } },
+    {
+      $facet: {
+        sourceTier: [{ $group: { _id: "$sourceTier", count: { $sum: 1 } } }],
+        kind: [{ $group: { _id: "$kind", count: { $sum: 1 } } }],
+      },
+    },
+  ]);
+  return {
+    sourceTier: countByValues(facets.sourceTier, Object.values(SourceTier)),
+    kind: countByValues(facets.kind, Object.values(AssistantKind)),
+  };
+}
+
 export async function getAssistantMetrics({ days = DEFAULT_METRICS_DAYS, now = new Date() } = {}) {
   const today = startOfUtcDay(now);
   const since = new Date(today.getTime() - (days - 1) * DAY_MS);
-  const groups = new Map((await groupEventsByDay(since)).map((group) => [group._id, group]));
+  const [dayRows, breakdown] = await Promise.all([groupEventsByDay(since), countBreakdown(since)]);
+  const groups = new Map(dayRows.map((group) => [group._id, group]));
 
   const dayKeys = Array.from({ length: days }, (_, index) =>
     toDateKey(new Date(since.getTime() + index * DAY_MS)),
@@ -193,6 +217,7 @@ export async function getAssistantMetrics({ days = DEFAULT_METRICS_DAYS, now = n
     from: dayKeys[0],
     to: dayKeys[dayKeys.length - 1],
     totals: { ...summarize(totals), guardViolations: totals.guardViolations },
+    breakdown,
     daily: dayGroups.map((day) => ({ date: day.date, ...summarize(day) })),
   };
 }

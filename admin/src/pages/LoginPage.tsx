@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Plane } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/useAuth';
 import { ApiError } from '../lib/apiClient';
@@ -44,10 +45,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm rounded-lg border border-line bg-white p-6 shadow-sm">
-        <h1 className="mb-1 text-lg font-semibold text-ink">Be.Travel Admin</h1>
-        <p className="mb-5 text-sm text-muted">Đăng nhập bằng tài khoản có quyền quản trị.</p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-dark via-brand to-sky-500 px-4">
+      <form onSubmit={onSubmit} className="w-full max-w-sm rounded-2xl bg-white p-7 shadow-xl">
+        <div className="mb-6 flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
+            <Plane size={20} />
+          </span>
+          <div>
+            <h1 className="text-lg font-semibold text-ink">Be.Travel Admin</h1>
+            <p className="text-xs text-muted">Đăng nhập bằng tài khoản có quyền quản trị.</p>
+          </div>
+        </div>
 
         <div className="flex flex-col gap-4">
           <Input

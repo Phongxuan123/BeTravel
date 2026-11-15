@@ -343,6 +343,7 @@ Router/query-string: nếu upstream đã dùng decoder đã vá, gỡ patch cùn
 
 ## 7. LICH SU CAP NHAT
 
+- 15/11/2026: giao dien Admin -- gom nhan trang thai/tang nguon/loai cau tra loi vao `lib/labels.ts` va dinh dang so vao `lib/format.ts` (Rule 3, truoc lap o Dashboard, QaLogTable, AssistantMetricsPanel); them StatCard/Panel/DistributionBar dung chung; xoa `analyticsApi` + kieu `AnalyticsOverview` khong con dung (Rule 10); sua W3 bang sr-only keo dai trang. Backend 309 test, admin 23 test.
 - 02/11/2026: tro ly ban 2 chon bai theo muc luc (gop ham lay chunk theo bai `fetchArticleChunks`, Rule 3), trich `safely()` thay ham bat loi rieng, sua ma hoa tieng Viet hong trong test route; trang Admin tro ly (giai doan 6). Backend 292 test + 10 test admin tren nhanh admin, lint sach.
 - 01/11/2026: go tang tra loi AI (chat, guard, scope, FAQ, feedback, tra web, bo nho cau lap lai) cung bien env, rate limit, ErrorCode noi bo va test di kem; giu tang nen RAG. Backend 277 test, mobile 246 test, admin 22 test.
 - 28/10/2026: sua loi theo ke hoach kiem dinh (phan luong khan cap 2 tang, model buoc phu du phong, bo so thu tu trong y, nguon quoc gia duy nhat, ban phim khong che o nhap, the loi chat, token tuong phan); backend 413 test (+golden scope-vi 44 cau), mobile 272 test.

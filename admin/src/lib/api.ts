@@ -10,7 +10,6 @@ import type {
   ContentStatus,
   RagArticleStatus,
   AuLawRagStatus,
-  AnalyticsOverview,
   AssistantSettings,
   AssistantQaItem,
   AssistantMetrics,
@@ -83,10 +82,6 @@ export const ragApi = {
     apiRequest<{ queued: string[]; skipped: string[] }>('/admin/rag/au-laws/index', { method: 'POST', body: { titleIds } }),
   removeAuLaw: (titleId: string) =>
     apiRequest<{ titleId: string; deleted: number }>(`/admin/rag/au-laws/${titleId}`, { method: 'DELETE' }),
-};
-
-export const analyticsApi = {
-  overview: (days?: number) => apiRequest<AnalyticsOverview>('/admin/analytics/overview', { query: { days } }),
 };
 
 export const assistantAdminApi = {

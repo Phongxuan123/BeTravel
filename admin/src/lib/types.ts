@@ -165,19 +165,6 @@ export type RagArticleStatus = {
   updatedAt: string;
 };
 
-// B5 -- A01 Dashboard nang cap, tu ai_events (backend/src/services/analytics.service.js).
-export type AnalyticsOverview = {
-  days: number;
-  totalChats: number;
-  fallbackCount: number;
-  fallbackRate: number;
-  avgLatencyMs: number;
-  costEstimateUsd: number;
-  // Số lượt theo luồng phân loại: legal, emergency, out_of_scope, greeting, personal_advice.
-  routeCounts: Record<string, number>;
-  topFallbackQuestions: { question: string; count: number }[];
-};
-
 // Tro ly AI ban 2 -- Admin (contracts/README.md muc 27).
 export type AssistantKind = 'answer' | 'emergency' | 'clarify' | 'refuse_scope' | 'refuse_harm';
 export type AssistantSourceTier = 'official' | 'web' | 'general';
@@ -225,6 +212,10 @@ export type AssistantMetrics = {
   from: string;
   to: string;
   totals: AssistantDayMetrics & { guardViolations: number };
+  breakdown: {
+    sourceTier: Record<AssistantSourceTier, number>;
+    kind: Record<AssistantKind, number>;
+  };
   daily: (AssistantDayMetrics & { date: string })[];
 };
 

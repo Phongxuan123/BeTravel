@@ -1,5 +1,20 @@
 # TIEN DO BE.TRAVEL
 
+## Giao dien Admin truc quan hon, che do trinh chieu -- 15/11/2026
+
+- Sidebar toi nhom theo 4 lop san pham (Kho tri thuc, Ho tro tai cho, Tro ly AI, He thong); header
+  co avatar va nut **Trinh chieu** (an menu, phong to chu 112.5%, vao toan man hinh; Esc de thoat).
+- Dashboard moi: banner tong quan (bai dang xuat ban, luot hoi AI 7 ngay, ty le tra loi co nguon
+  chinh thuc), the KPI co mau, thanh phan bo bai luat theo trang thai va tang nguon AI, bieu do luot
+  hoi theo ngay, danh sach cau hoi chi tra loi duoc bang kien thuc chung (goi y bo sung kho).
+- Dashboard bo so lieu `analytics/overview` cu: sau ban 2 `fallbackReason` = tang nguon nen "ty le
+  fallback" dem ca cau co nguon chinh thuc (sai nghia). Thay bang `assistant/metrics`.
+- Contract: `GET /admin/assistant/metrics` them `breakdown { sourceTier, kind }` (fixture + test 3 phia).
+- Badge trang thai hien tieng Viet; sua loi bang sr-only cua bieu do keo dai trang (lo vien sidebar).
+- Kiem tra that: backend + admin chay local voi DB tam trong RAM va du lieu thu (khong dung Atlas),
+  dang nhap tai khoan admin thu, xem Dashboard / Tro ly AI / Bai luat, bat-tat trinh chieu.
+  Backend lint + 309 test, admin typecheck/lint/23 test/build xanh.
+
 ## App khong tu cap nhat sau khi nang Expo SDK 58 -- 14/11/2026
 
 - Nguyen nhan 1: PR #88 (SDK 57 -> 58) lam `npm ci` do vi patch `query-string` cu (SDK 58 khong con

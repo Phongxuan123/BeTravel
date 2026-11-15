@@ -193,6 +193,13 @@ test("bieu do: du so ngay, tong luot, chi phi, phan vi do tre va ty le tu choi",
   assert.equal(metrics.totals.costEstimateVnd, 4.8);
   assert.equal(metrics.daily.at(-1).questions, 2);
   assert.equal(metrics.daily[0].questions, 0);
+  assert.deepEqual(sortedKeys(metrics.breakdown.kind), sortedKeys(fixture.breakdown.kind));
+  assert.deepEqual(
+    sortedKeys(metrics.breakdown.sourceTier),
+    sortedKeys(fixture.breakdown.sourceTier),
+  );
+  assert.equal(metrics.breakdown.kind.refuse_scope, 1);
+  assert.equal(metrics.breakdown.kind.answer, 1);
 
   assert.equal((await adminGet(admin.accessToken, "metrics")).body.data.daily.length, 30);
   assert.equal((await adminGet(admin.accessToken, "metrics?days=365")).status, 400);
