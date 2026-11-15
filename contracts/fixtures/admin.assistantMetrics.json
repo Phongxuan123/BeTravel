@@ -13,6 +13,20 @@
       "refusalRate": 0.25,
       "guardViolations": 1
     },
+    "breakdown": {
+      "sourceTier": {
+        "official": 2,
+        "web": 0,
+        "general": 1
+      },
+      "kind": {
+        "answer": 3,
+        "emergency": 0,
+        "clarify": 0,
+        "refuse_scope": 1,
+        "refuse_harm": 0
+      }
+    },
     "daily": [
       {
         "date": "2026-11-01",

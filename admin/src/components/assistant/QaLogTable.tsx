@@ -4,32 +4,13 @@ import { assistantAdminApi } from '../../lib/api';
 import { ApiError } from '../../lib/apiClient';
 import type { AssistantKind, AssistantSourceTier } from '../../lib/types';
 import { Badge } from '../ui/Badge';
+import { KIND_LABEL, TIER_LABEL, TIER_TONE } from '../../lib/labels';
 import { Select } from '../ui/Field';
 import { EmptyState, ErrorState, LoadingState } from '../ui/Feedback';
 import { Pagination } from '../ui/Pagination';
 import { Table, Tbody, Td, Th, Thead } from '../ui/Table';
 
 const LIMIT = 20;
-
-const KIND_LABEL: Record<AssistantKind, string> = {
-  answer: 'Trả lời',
-  emergency: 'Khẩn cấp',
-  clarify: 'Hỏi lại',
-  refuse_scope: 'Ngoài phạm vi',
-  refuse_harm: 'Từ chối (nguy hại)',
-};
-
-const TIER_LABEL: Record<AssistantSourceTier, string> = {
-  official: 'Nguồn chính thức',
-  web: 'Tra cứu web',
-  general: 'Kiến thức chung',
-};
-
-const TIER_TONE: Record<AssistantSourceTier, 'success' | 'brand' | 'warn'> = {
-  official: 'success',
-  web: 'brand',
-  general: 'warn',
-};
 
 const isRefusal = (kind: AssistantKind | null) => kind === 'refuse_scope' || kind === 'refuse_harm';
 

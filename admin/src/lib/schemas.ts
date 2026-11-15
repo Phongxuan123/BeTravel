@@ -114,6 +114,16 @@ export const assistantMetricsFixtureSchema = z.strictObject({
   from: z.string(),
   to: z.string(),
   totals: z.strictObject({ ...assistantDayMetricsShape, guardViolations: z.number() }),
+  breakdown: z.strictObject({
+    sourceTier: z.strictObject({ official: z.number(), web: z.number(), general: z.number() }),
+    kind: z.strictObject({
+      answer: z.number(),
+      emergency: z.number(),
+      clarify: z.number(),
+      refuse_scope: z.number(),
+      refuse_harm: z.number(),
+    }),
+  }),
   daily: z.array(z.strictObject({ date: z.string(), ...assistantDayMetricsShape })),
 });
 

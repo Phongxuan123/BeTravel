@@ -947,11 +947,16 @@ voi cau hoi lien truoc trong cung cuoc tro chuyen, moi nhat truoc:
 { "days": 30, "from": "2026-10-04", "to": "2026-11-02",
   "totals": { "questions": 12, "costEstimateVnd": 41.5, "p50LatencyMs": 7200,
               "p90LatencyMs": 9800, "refusals": 1, "refusalRate": 0.083, "guardViolations": 2 },
+  "breakdown": {
+    "sourceTier": { "official": 7, "web": 1, "general": 3 },
+    "kind": { "answer": 10, "emergency": 0, "clarify": 1, "refuse_scope": 1, "refuse_harm": 0 } },
   "daily": [{ "date": "2026-11-02", "questions": 3, "costEstimateVnd": 10.2,
               "p50LatencyMs": 7000, "p90LatencyMs": 9100, "refusals": 0, "refusalRate": 0 }] }
 ```
 
 `daily` co du `days` phan tu (ngay khong co cau hoi = 0), tang dan theo ngay. `refusals` = so luot
-`kind` la `refuse_scope` hoac `refuse_harm`. Chi phi uoc tinh = token vao/ra cong don moi buoc goi
+`kind` la `refuse_scope` hoac `refuse_harm`. `breakdown` dem so luot trong ca khoang theo tang
+nguon (`sourceTier`, luot tu choi khong co tang nen khong tinh) va theo `kind`; luon du moi key,
+khong co luot = 0. Chi phi uoc tinh = token vao/ra cong don moi buoc goi
 mo hinh trong luot x `ASSISTANT_PRICE_INPUT_VND_PER_M` / `ASSISTANT_PRICE_OUTPUT_VND_PER_M`;
 bang 0 neu chua cau hinh gia.
